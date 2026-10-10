@@ -76,9 +76,88 @@
           '<div class="fng-date">' + T('加密货币恐惧贪婪指数 · 数据来源 alternative.me',
             'Crypto Fear & Greed Index · data by alternative.me') + '</div></div></div>' +
           '<div class="fng-bar"><div class="fng-marker" style="left:' + pct + '%"></div></div>';
+        /* 首页 Market Status 条：同步更新恐惧贪婪迷你项 */
+        var msFng = document.getElementById('ms-fng');
+        if (msFng) msFng.textContent = value + ' · ' + label;
       })
       .catch(function () {
         el.innerHTML = '<div class="load-fail">' + T('指数加载失败', 'Index unavailable') + '</div>';
+        var msFngWrap = document.getElementById('ms-fng-wrap');
+        if (msFngWrap) msFngWrap.style.display = 'none';
+      });
+  }
+
+  /* ---- 首页 Market Status 条：24h 总市值与涨跌 / BTC 市占率 ---- */
+  function loadMarketStatus() {
+    var strip = document.getElementById('market-status');
+    if (!strip) return;
+    var mcapWrap = document.getElementById('ms-mcap-wrap');
+    var domWrap = document.getElementById('ms-dom-wrap');
+    fetch('https://api.coingecko.com/api/v3/global')
+      .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+      .then(function (d) {
+        var data = (d && d.data) || {};
+        var mcap = data.total_market_cap && data.total_market_cap.usd;
+        var chg = data.market_cap_change_percentage_24h_usd;
+        var btc = data.market_cap_percentage && data.market_cap_percentage.btc;
+        if (mcapWrap) {
+          if (mcap) {
+            document.getElementById('ms-mcap').textContent = '$' + (mcap / 1e12).toFixed(2) + 'T';
+            var chgEl = document.getElementById('ms-mcap-chg');
+            if (chgEl) { chgEl.textContent = chgText(chg); chgEl.className = 'ms-chg ' + chgClass(chg); }
+          } else { mcapWrap.style.display = 'none'; }
+        }
+        if (domWrap) {
+          if (btc) { document.getElementById('ms-dom').textContent = Number(btc).toFixed(1) + '%'; }
+          else { domWrap.style.display = 'none'; }
+        }
+      })
+      .catch(function () {
+        if (mcapWrap) mcapWrap.style.display = 'none';
+        if (domWrap) domWrap.style.display = 'none';
+      });
+  }
+
+  /* ---- 首页：今日涨跌榜（Top50 按 24h 涨跌取头尾各 5） ---- */
+  function loadMovers() {
+    var el = document.getElementById('movers');
+    if (!el) return;
+    var url = 'https://api.coingecko.com/api/v3/coins/markets' +
+      '?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false&price_change_percentage=24h';
+    fetch(url).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+      .then(function (d) {
+        var valid = (d || []).filter(function (c) {
+          return c && c.price_change_percentage_24h !== null &&
+            c.price_change_percentage_24h !== undefined && !isNaN(c.price_change_percentage_24h);
+        });
+        if (valid.length < 10) throw new Error('empty');
+        var sorted = valid.slice().sort(function (a, b) {
+          return b.price_change_percentage_24h - a.price_change_percentage_24h;
+        });
+        var gainers = sorted.slice(0, 5);
+        var losers = sorted.slice(-5).reverse();
+        function row(c, i) {
+          var sym = (c.symbol || '').toLowerCase();
+          var digits = c.current_price < 1 ? 4 : 2;
+          var nameHtml = sym
+            ? '<a href="markets.html#coin-' + esc(sym) + '">' + esc(c.symbol.toUpperCase()) + '</a>'
+            : esc((c.symbol || '').toUpperCase());
+          return '<div class="mover-row"><span class="mover-rank">' + (i + 1) + '</span>' +
+            '<span class="mover-name">' + nameHtml + ' <span style="color:#9ca3af">' +
+            esc(c.name || '') + '</span></span>' +
+            '<span class="mover-price">' + fmtUSD(c.current_price, digits) + '</span>' +
+            '<span class="mover-chg ' + chgClass(c.price_change_percentage_24h) + '">' +
+            chgText(c.price_change_percentage_24h) + '</span></div>';
+        }
+        function col(title, list) {
+          var h = '<div class="mover-col"><h3>' + esc(title) + '</h3>';
+          list.forEach(function (c, i) { h += row(c, i); });
+          return h + '</div>';
+        }
+        el.innerHTML = col(T('涨幅榜', 'Top gainers'), gainers) + col(T('跌幅榜', 'Top losers'), losers);
+      })
+      .catch(function () {
+        el.innerHTML = '<div class="load-fail">' + T('涨跌榜加载失败', 'Movers unavailable') + '</div>';
       });
   }
 
@@ -141,7 +220,8 @@
         var html = '';
         d.forEach(function (c, i) {
           var digits = c.current_price < 1 ? 4 : 2;
-          html += '<tr><td class="num">' + (i + 1) + '</td>' +
+          var rowId = c.symbol ? 'coin-' + String(c.symbol).toLowerCase() : '';
+          html += '<tr' + (rowId ? ' id="' + esc(rowId) + '"' : '') + '><td class="num">' + (i + 1) + '</td>' +
             '<td><strong>' + esc(c.symbol ? c.symbol.toUpperCase() : '') + '</strong> <span style="color:#9ca3af">' +
             esc(c.name || '') + '</span></td>' +
             '<td class="num">' + fmtUSD(c.current_price, digits) + '</td>' +
@@ -160,6 +240,6 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    loadTicker(); loadFng(); loadLatest(); loadArchive(); loadMarkets();
+    loadTicker(); loadFng(); loadMarketStatus(); loadMovers(); loadLatest(); loadArchive(); loadMarkets();
   });
 })();
