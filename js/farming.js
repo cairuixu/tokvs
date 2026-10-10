@@ -14,6 +14,69 @@
 
   /* 按空投 id 映射的精选步骤：每项 4-6 步，中英双语 */
   var STEPS = {
+    'airdrop-20261010-pushchain': [
+      { zh: '进入 Push Chain 官方 Rewards Portal 并注册',
+        en: 'Open the official Push Chain Rewards Portal and register' },
+      { zh: '领取测试币', en: 'Claim test tokens' },
+      { zh: '完成测试网兑换、提供流动性等交互',
+        en: 'Complete testnet swaps, liquidity provision and other interactions' },
+      { zh: '每日参与转盘与任务，持续攒积分',
+        en: 'Do daily spins and quests to keep stacking points' },
+      { zh: '关注官方公告，等待快照',
+        en: 'Follow official channels for the snapshot announcement' }
+    ],
+    'airdrop-20261010-asentum': [
+      { zh: '阅读官方测试网指南', en: 'Read the official testnet guide' },
+      { zh: '在水龙头领取测试币', en: 'Claim test tokens from the faucet' },
+      { zh: '每日完成转账、兑换、提供流动性，攒 XP',
+        en: 'Do daily transfers, swaps and liquidity to stack XP' },
+      { zh: '（可选）用普通电脑运行验证者，赚更多 XP',
+        en: '(Optional) run a validator on consumer hardware for more XP' },
+      { zh: '关注官方快照公告', en: 'Watch for the official snapshot announcement' }
+    ],
+    'airdrop-20261010-gyndore': [
+      { zh: '进入 Gyndore 官方 DropWave 活动页',
+        en: 'Open the official Gyndore DropWave campaign page' },
+      { zh: '钱包切换到 Base Sepolia 测试网',
+        en: 'Switch your wallet to the Base Sepolia testnet' },
+      { zh: '领取测试 cbBTC', en: 'Claim test cbBTC' },
+      { zh: '完成存入、借出等协议交互，攒 Chips 与 Gynpoints',
+        en: 'Complete deposits, borrows and other interactions to stack Chips and Gynpoints' },
+      { zh: '关注 TGE 公告', en: 'Watch for the TGE announcement' }
+    ],
+    'airdrop-20261010-pharos': [
+      { zh: '打开 Pharos 官方领取门户（认准官方域名）',
+        en: 'Open the official Pharos claim portal (verify the official domain)' },
+      { zh: '连接参与测试网时的同一钱包',
+        en: 'Connect the same wallet you used on testnet' },
+      { zh: '查询领取资格与额度',
+        en: 'Check your eligibility and allocation' },
+      { zh: '确认领取并等待到账', en: 'Confirm the claim and wait for it to arrive' },
+      { zh: '不要等到 10-25 当天，提前领取',
+        en: "Don't leave it to Oct 25 — claim early" }
+    ],
+    'airdrop-20261010-sonic': [
+      { zh: '打开 Sonic 官方领取门户 my.soniclabs.com/airdrop（认准官方域名）',
+        en: 'Open the official Sonic claim portal my.soniclabs.com/airdrop (verify the official domain)' },
+      { zh: '连接有领取资格的钱包', en: 'Connect your eligible wallet' },
+      { zh: '确认 Season 1 / Season 2 分配额度',
+        en: 'Confirm your Season 1 / Season 2 allocation' },
+      { zh: '完成链上领取（需少量 gas）',
+        en: 'Complete the on-chain claim (small gas fee required)' },
+      { zh: '10-15 截止，逾期视为放弃',
+        en: 'Deadline Oct 15 — unclaimed allocations are forfeited' }
+    ],
+    'airdrop-20261010-htx': [
+      { zh: '注册 HTX 并完成 KYC L3 认证',
+        en: 'Register on HTX and complete KYC L3 verification' },
+      { zh: '在活动页点击报名', en: 'Hit "Register now" on the campaign page' },
+      { zh: 'C2C 完成 1 笔 ≥20 USDT 交易',
+        en: 'Complete one C2C trade of at least 20 USDT' },
+      { zh: '闪兑完成 1 笔 ≥20 USDT 交易，领取 1 USDT',
+        en: 'Complete one Convert trade of at least 20 USDT to earn 1 USDT' },
+      { zh: '按需冲更高交易档位，瓜分奖池',
+        en: 'Optionally push higher volume tiers for a bigger pool share' }
+    ],
     'sample-l2-testnet': [
       { zh: '创建一个全新钱包并切换到该 L2 测试网（不要导入主网私钥）',
         en: 'Create a fresh wallet and switch to the L2 testnet (never import a mainnet private key)' },
