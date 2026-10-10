@@ -1,7 +1,7 @@
 /* Fee calculator logic: pure functions, testable under node */
 var EXCHANGES = [
   { id: 'binance', name: 'Binance', ref: 'https://account.binance.com/register?ref=76257270&?registerChannel=user_center', futuresMaker: 0.0002,  futuresTaker: 0.0005  },
-  { id: 'okx',     name: 'OKX',     ref: 'https://www.mitnpkwxvfr.com/join/AZTPA7SQ',     futuresMaker: 0.0002,  futuresTaker: 0.0005  },
+  { id: 'okx',     name: 'OKX',     ref: 'https://www.okx.com/join/AZTPA7SQ',     futuresMaker: 0.0002,  futuresTaker: 0.0005  },
   { id: 'bybit',   name: 'Bybit',   ref: 'https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link',   futuresMaker: 0.0002,  futuresTaker: 0.00055 },
   { id: 'bitget',  name: 'Bitget',  ref: 'https://www.bitget.com',  futuresMaker: 0.0002,  futuresTaker: 0.0006  }
 ];
