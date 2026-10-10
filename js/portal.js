@@ -28,7 +28,7 @@
     var el = document.getElementById('ticker-grid');
     if (!el) return;
     var url = 'https://api.coingecko.com/api/v3/simple/price' +
-      '?ids=bitcoin,ethereum,binancecoin,solana&vs_currencies=usd&include_24h_change=true';
+      '?ids=bitcoin,ethereum,binancecoin,solana&vs_currencies=usd&include_24hr_change=true';
     fetch(url).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
       .then(function (d) {
         var coins = [
