@@ -15,9 +15,13 @@
       var c = document.querySelector('link[rel="canonical"]');
       if (c && c.href) return new URL(c.href).origin + '/';
     } catch (e) {}
+    try { return window.location.origin + '/'; } catch (e2) {}
     return '/';
   }
-  function dataUrl(rel) { return new URL(rel, siteRoot()).href; }
+  function dataUrl(rel) {
+    try { return new URL(rel, siteRoot()).href; }
+    catch (e) { return rel; }
+  }
 
   var coinsCache = null;
   function getCoins() {
@@ -152,9 +156,9 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
-    initSearch();
-    initStats();
-    initHashScroll();
+    try { initSearch(); } catch (e) {}
+    try { initStats(); } catch (e) {}
+    try { initHashScroll(); } catch (e) {}
   });
 
   /* 暴露给 node 自测 */
