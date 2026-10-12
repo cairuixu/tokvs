@@ -1,6 +1,10 @@
 /* 币VS · TokVS v2 空投列表渲染 + 撸毛进度追踪
    数据来自 js/airdrops-data.js 的 window.TOKVS_AIRDROPS（改数据不动本文件）。
    进度存 localStorage `tokvs_farming`（格式 {airdropId: [已完成步骤下标]}，与旧站兼容）。
+   步骤跳转：item.checklist_links 与 checklist 等长，非空时在步骤后渲染「打开 ↗」。
+   链接解析约定：https:// 完整 URL 原样使用；站内路径（如 "guides/wallet-safety.html"）
+   按当前页面的语言目录相对解析——根 airdrops.html 与 en/airdrops.html 都位于各自
+   语言树的顶层，同名相对路径自动落到本语言对应页，数据里不要加 en/ 前缀。
    语言按 <html lang> 自动切换。数据缺失/异常时显示兜底文案，不影响页面其余部分。 */
 (function () {
   'use strict';
@@ -84,6 +88,19 @@
       span.textContent = s;
       label.appendChild(cb);
       label.appendChild(span);
+      var stepLinks = item.checklist_links || [];
+      if (stepLinks[idx]) {
+        var a = document.createElement('a');
+        a.className = 'step-link';
+        a.href = stepLinks[idx];
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = T('打开 ↗', 'Open ↗');
+        /* 链接是 label 内的交互元素，点击只跳转、不应触发勾选切换：
+           规范上交互后代的点击不激活 label 关联控件，再 stopPropagation 兜底 */
+        a.addEventListener('click', function (ev) { ev.stopPropagation(); });
+        label.appendChild(a);
+      }
       li.appendChild(label);
       if (cb.checked) li.classList.add('done');
       cb.addEventListener('change', function () {
