@@ -1,4 +1,4 @@
-/* 币VS v2 首页逻辑：市场状态 / 今日行情 / ETF 流向（读 data/etf.json）/ Meme 热度（点币跳 DexScreener K 线图）/ 本周大事（读 data/calendar.json）/ 空投精选（读 js/airdrops-data.js）/ 快讯（读 data/news.json）
+/* 币VS v2 首页逻辑：市场状态 / 今日行情 / ETF 流向（读 data/etf.json）/ Meme 热度（点币跳 DexScreener K 线图）/ 空投精选（读 js/airdrops-data.js）/ 快讯（读 data/news.json）
    语言按 <html lang> 切换；数据基路径由页面内联 window.TOKVS_DATA_BASE 指定（如 'data/' 或 '../data/'）。
    所有外部请求失败时显示占位文案，不留白。逻辑沿用旧站 portal.js / daily.js。 */
 (function () {
@@ -192,8 +192,8 @@
       .catch(function () { fail('etf-rows', 'ETF 数据加载失败', 'ETF data unavailable'); });
   }
 
-  /* ---- Meme 热度：CoinGecko meme-token 板块 24h 涨幅 Top5 ----
-     每个币渲染成可点药丸：先给 DexScreener 搜索页兜底链接，渲染后逐个异步查
+  /* ---- Meme 热度：CoinGecko meme-token 板块 24h 涨幅 Top8 榜单 ----
+     每行整行可点：先给 DexScreener 搜索页兜底链接，渲染后逐个异步查
      DexScreener 搜索 API，命中同符号、流动性最大的交易对时把链接升级为
      该交易对的 K 线图页（dexscreener.com/<chainId>/<pairAddress>）；失败保留兜底。 */
   function upgradeMemeLink(a, sym) {
@@ -229,68 +229,28 @@
         if (!valid.length) throw new Error('empty');
         var top = valid.slice().sort(function (a, b) {
           return b.price_change_percentage_24h - a.price_change_percentage_24h;
-        }).slice(0, 5);
-        var classes = ['chip-a', 'chip-b', 'chip-c', 'chip-d', 'chip-c'];
+        }).slice(0, 8);
         var h = '';
         top.forEach(function (c, i) {
           var sym = (c.symbol || '').toUpperCase();
-          h += '<a class="meme-chip ' + classes[i % classes.length] + '"' +
-            ' href="https://dexscreener.com/search?q=' + encodeURIComponent(sym) + '"' +
+          var v = c.price_change_percentage_24h;
+          var pr = c.current_price;
+          var prTxt = (pr === null || pr === undefined || isNaN(pr)) ? '--'
+            : (pr >= 1 ? fmtUSD(pr, 2) : (pr >= 0.01 ? fmtUSD(pr, 4) : '$' + Number(pr).toPrecision(3)));
+          h += '<a class="mm-row" href="https://dexscreener.com/search?q=' + encodeURIComponent(sym) + '"' +
             ' target="_blank" rel="noopener" data-sym="' + esc(sym) + '">' +
-            esc(sym) + ' ' + chgText(c.price_change_percentage_24h) + '</a>';
+            '<span class="mm-rk">' + (i + 1) + '</span>' +
+            '<span class="mm-nm">' + esc(c.name || sym) + '<small>' + esc(sym) + '</small></span>' +
+            '<span class="mm-pr num">' + prTxt + '</span>' +
+            '<span class="mm-c num ' + chgClass(v) + '">' + chgText(v) + '</span></a>';
         });
         el.innerHTML = h;
-        var links = el.querySelectorAll('a.meme-chip');
+        var links = el.querySelectorAll('a.mm-row');
         for (var k = 0; k < links.length; k++) {
           upgradeMemeLink(links[k], links[k].getAttribute('data-sym') || '');
         }
       })
       .catch(function () { fail('meme-chips', 'Meme 数据加载失败', 'Meme data unavailable'); });
-  }
-
-  /* ---- 本周大事：data/calendar.json 取今天起 7 天内最近 4 条 ---- */
-  var CAL_TYPES = {
-    unlock: ['代币解锁', 'Unlock'],
-    airdrop: ['空投', 'Airdrop'],
-    tge: ['TGE / 上线', 'TGE / Listing'],
-    event: ['行业事件', 'Event'],
-    macro: ['宏观', 'Macro']
-  };
-  function loadWeekEvents() {
-    var el = document.getElementById('week-events');
-    if (!el) return;
-    fetch(dataUrl('calendar.json'))
-      .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
-      .then(function (d) {
-        if (!d || !d.length) throw new Error('empty');
-        function ds(date) {
-          function p2(n) { return (n < 10 ? '0' : '') + n; }
-          return date.getFullYear() + '-' + p2(date.getMonth() + 1) + '-' + p2(date.getDate());
-        }
-        var now = new Date();
-        var start = ds(now);
-        var end = ds(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7));
-        var list = d.filter(function (e) {
-          return e && e.date && e.date >= start && e.date <= end;
-        }).sort(function (a, b) {
-          return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0);
-        }).slice(0, 4);
-        if (!list.length) {
-          el.innerHTML = '<div class="load-fail">' +
-            esc(T('近 7 天暂无重要日程', 'No major events in the next 7 days')) + '</div>';
-          return;
-        }
-        var tf = isEn ? 'title_en' : 'title_zh';
-        var h = '';
-        list.forEach(function (e) {
-          var t = CAL_TYPES[e.type] || CAL_TYPES.event;
-          h += '<div class="we-row"><span class="we-date num">' + esc(String(e.date).slice(5)) + '</span>' +
-            '<span class="we-badge type-' + esc(e.type || 'event') + '">' + esc(t[isEn ? 1 : 0]) + '</span>' +
-            '<span class="we-title">' + esc(e[tf] || e.title_zh || '') + '</span></div>';
-        });
-        el.innerHTML = h;
-      })
-      .catch(function () { fail('week-events', '日程加载失败', 'Events unavailable'); });
   }
 
   /* ---- 空投精选：js/airdrops-data.js 的 TOKVS_AIRDROPS 前 3 条（页面在 home.js 之前加载该脚本） ---- */
@@ -360,7 +320,6 @@
     try { loadMovers(); } catch (e) {}
     try { loadETF(); } catch (e) {}
     try { loadMeme(); } catch (e) {}
-    try { loadWeekEvents(); } catch (e) {}
     try { loadHomeAirdrops(); } catch (e) {}
     try { loadNews(); } catch (e) {}
   });
