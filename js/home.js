@@ -1,4 +1,4 @@
-/* 币VS v2 首页逻辑：市场状态 / 今日行情 / ETF 流向（读 data/etf.json）/ Meme 热度 / 快讯（读 data/news.json）
+/* 币VS v2 首页逻辑：市场状态 / 今日行情 / ETF 流向（读 data/etf.json）/ Meme 热度 / 空投精选（读 js/airdrops-data.js）/ 快讯（读 data/news.json）
    语言按 <html lang> 切换；数据基路径由页面内联 window.TOKVS_DATA_BASE 指定（如 'data/' 或 '../data/'）。
    所有外部请求失败时显示占位文案，不留白。逻辑沿用旧站 portal.js / daily.js。 */
 (function () {
@@ -177,7 +177,45 @@
       .catch(function () { fail('meme-chips', 'Meme 数据加载失败', 'Meme data unavailable'); });
   }
 
-  /* ---- 快讯流：data/news.json [{date, title_zh, title_en, url_zh, url_en}] ---- */
+  /* ---- 空投精选：js/airdrops-data.js 的 TOKVS_AIRDROPS 前 3 条（页面在 home.js 之前加载该脚本） ---- */
+  function briefDesc(s) {
+    s = String(s || '');
+    var cap = isEn ? 170 : 90, cut = -1, idx;
+    if (isEn) { idx = s.indexOf('. '); if (idx >= 0) cut = idx + 1; }
+    else { idx = s.indexOf('。'); if (idx >= 0) cut = idx + 1; }
+    if (cut > 0 && cut <= cap) return s.slice(0, cut);
+    return s.length > cap ? s.slice(0, cap) + '…' : s;
+  }
+  function loadHomeAirdrops() {
+    var box = document.getElementById('home-airdrops');
+    if (!box) return;
+    var list = window.TOKVS_AIRDROPS;
+    if (!list || !list.length) { fail('home-airdrops', '空投数据加载失败', 'Airdrop data unavailable'); return; }
+    var nf = isEn ? 'name_en' : 'name_zh';
+    var df = isEn ? 'desc_en' : 'desc_zh';
+    var themes = ['t1', 't2', 't3'];
+    var colors = ['#6D4BD8', '#0E9F6E', '#D97008'];
+    var href = 'airdrops.html'; /* 同语言目录内的空投页：根页与 en 页同理 */
+    var h = '';
+    list.slice(0, 3).forEach(function (it, i) {
+      var name = it[nf] || it.name_zh || '';
+      var letter = String(it.name_en || name).charAt(0).toUpperCase() || '?';
+      var tag = (it.tags && it.tags[0]) ? (isEn ? it.tags[0].en : it.tags[0].zh) : '';
+      var m = String(it.deadline || '').match(/-(\d{2})-(\d{2})/);
+      var pill = m
+        ? '<span class="dl num">' + esc(T(m[1] + '-' + m[2] + ' 截止', 'Ends ' + m[1] + '-' + m[2])) + '</span>'
+        : '<span class="dl">' + esc(T('进行中', 'Ongoing')) + '</span>';
+      h += '<div class="air ' + themes[i % themes.length] + '">' +
+        '<div class="top"><div class="ava" style="color:' + colors[i % colors.length] + ';">' + esc(letter) + '</div>' +
+        '<div><div class="nm">' + esc(name) + '</div><div class="tp">' + esc(tag || '') + '</div></div></div>' +
+        '<p>' + esc(briefDesc(it[df] || it.desc_zh)) + '</p>' +
+        '<div class="ft">' + pill + '<a class="join" href="' + esc(href) + '">' +
+        esc(T('查看任务', 'View tasks')) + '</a></div></div>';
+    });
+    box.innerHTML = h;
+  }
+
+  /* ---- 快讯流：data/news.json [{date, title_zh, title_en, link}]（link 为外部来源 URL，可缺省） ---- */
   function loadNews() {
     var el = document.getElementById('news-rows');
     if (!el) return;
@@ -186,12 +224,13 @@
       .then(function (d) {
         if (!d || !d.length) throw new Error('empty');
         var tf = isEn ? 'title_en' : 'title_zh';
-        var uf = isEn ? 'url_en' : 'url_zh';
         var h = '';
         d.slice(0, 5).forEach(function (it) {
-          var url = rootPrefix() + (it[uf] || '');
-          h += '<div class="nrow"><span class="dot"></span>' +
-            '<a class="tt" href="' + esc(url) + '">' + esc(it[tf] || '') + '</a>' +
+          var title = esc(it[tf] || '');
+          var tt = it.link
+            ? '<a class="tt" href="' + esc(it.link) + '" target="_blank" rel="noopener">' + title + '</a>'
+            : '<span class="tt">' + title + '</span>';
+          h += '<div class="nrow"><span class="dot"></span>' + tt +
             '<span class="tm">' + esc(it.date || '') + '</span></div>';
         });
         el.innerHTML = h;
@@ -204,6 +243,7 @@
     try { loadPrices(); } catch (e) {}
     try { loadETF(); } catch (e) {}
     try { loadMeme(); } catch (e) {}
+    try { loadHomeAirdrops(); } catch (e) {}
     try { loadNews(); } catch (e) {}
   });
 })();
