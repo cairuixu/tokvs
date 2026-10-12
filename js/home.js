@@ -192,13 +192,15 @@
       .catch(function () { fail('etf-rows', 'ETF 数据加载失败', 'ETF data unavailable'); });
   }
 
-  /* ---- Meme 热度：CoinGecko meme-token 板块 ----
-     卡顶重点位「今日热度最高」= 24h 成交额最大的币（深色块整块可点）；
-     若成交额冠军涨幅数据缺失/异常则退回按涨幅第一名做重点位。
-     下方榜单按 24h 涨幅排序、排除重点位币取前 7 行（整行可点）。
-     所有链接先给 DexScreener 搜索页兜底，渲染后逐个异步查 DexScreener
-     搜索 API，命中同符号、流动性最大的交易对时升级为该交易对的 K 线图页
-     （dexscreener.com/<chainId>/<pairAddress>）；失败保留兜底。 */
+  /* ---- Meme 热度：卡内两个分区 ----
+     上区「24h 新币热度」：DexScreener 最新代币档案 → 批量查交易对，每个代币
+     取流动性最大的那对，只留 pairCreatedAt 在最近 24h 内、流动性 ≥ $5,000、
+     24h 成交额有值的，按 24h 成交额降序取前 5，整行直达该交易对的
+     DexScreener K 线页（数据本就来自 DexScreener，无需再异步升级）；
+     接口失败或合格新币不足 3 个时整区不渲染（不留空壳、不报错）。
+     下区「涨幅榜」：CoinGecko meme-token 板块按 24h 涨幅取前 5（整行可点），
+     链接先给 DexScreener 搜索页兜底，渲染后逐个异步查 DexScreener 搜索 API，
+     命中同符号、流动性最大的交易对时升级为该交易对的 K 线图页；失败保留兜底。 */
   function fmtVol(n) {
     if (n === null || n === undefined || isNaN(n)) return '--';
     n = Number(n);
@@ -231,44 +233,99 @@
       })
       .catch(function () { /* 升级失败不报错，保留搜索兜底链接 */ });
   }
+  function fmtAge(createdAt) {
+    var diff = Date.now() - Number(createdAt);
+    if (isNaN(diff) || diff < 0) diff = 0;
+    var mins = Math.floor(diff / 60000);
+    if (mins < 60) return T(Math.max(mins, 1) + 'm 前', Math.max(mins, 1) + 'm ago');
+    return T(Math.floor(mins / 60) + 'h 前', Math.floor(mins / 60) + 'h ago');
+  }
+  function renderFresh(profs, pairs) {
+    var now = Date.now(), DAY = 24 * 3600 * 1000;
+    var rows = [];
+    profs.forEach(function (pf) {
+      var addr = String(pf.tokenAddress), addrL = addr.toLowerCase();
+      var best = null, bestLiq = -1;
+      pairs.forEach(function (p) {
+        if (!p || p.chainId !== pf.chainId || !p.baseToken) return;
+        var ba = String(p.baseToken.address || '');
+        if (ba !== addr && ba.toLowerCase() !== addrL) return;
+        var liq = (p.liquidity && Number(p.liquidity.usd)) || 0;
+        if (liq > bestLiq) { bestLiq = liq; best = p; }
+      });
+      if (!best) return;
+      var created = Number(best.pairCreatedAt);
+      if (isNaN(created) || created > now || now - created > DAY) return;
+      if (bestLiq < 5000) return;
+      var volRaw = best.volume ? best.volume.h24 : null;
+      if (volRaw === null || volRaw === undefined || isNaN(Number(volRaw))) return;
+      rows.push({ p: best, vol: Number(volRaw), created: created });
+    });
+    rows.sort(function (a, b) { return b.vol - a.vol; });
+    rows = rows.slice(0, 5);
+    if (rows.length < 3) return '';
+    var h = '<div class="mm-sec"><span class="mm-sec-t">' +
+      esc(T('🔥 24h 新币热度', '🔥 New in 24h')) + '</span>' +
+      '<span class="mm-sec-note">' +
+      esc(T('按 24h 成交额排序 · 新币风险极高', 'By 24h volume · New tokens, extreme risk')) +
+      '</span></div>';
+    rows.forEach(function (rw, i) {
+      var p = rw.p;
+      var name = (p.baseToken && p.baseToken.name) || '';
+      var sym = ((p.baseToken && p.baseToken.symbol) || '').toUpperCase();
+      var href = p.url || ('https://dexscreener.com/' + p.chainId + '/' + p.pairAddress);
+      var pc = p.priceChange ? p.priceChange.h24 : null;
+      var chgHtml = (pc === null || pc === undefined || isNaN(Number(pc)))
+        ? '<span class="mm-c num">–</span>'
+        : '<span class="mm-c num ' + chgClass(Number(pc)) + '">' + chgText(Number(pc)) + '</span>';
+      h += '<a class="mm-row" href="' + esc(href) + '" target="_blank" rel="noopener">' +
+        '<span class="mm-rk">' + (i + 1) + '</span>' +
+        '<span class="mm-nm">' + esc(name || sym) + '<small>' + esc(sym) + ' · ' +
+        esc(fmtAge(rw.created)) + '</small></span>' +
+        '<span class="mm-pr num">' + memePriceTxt(Number(p.priceUsd)) +
+        '<small class="mm-vol">' + esc(T('量 ', 'Vol ')) + fmtVol(rw.vol) + '</small></span>' +
+        chgHtml + '</a>';
+    });
+    return h;
+  }
+  function loadMemeFresh() {
+    return fetch('https://api.dexscreener.com/token-profiles/latest/v1')
+      .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+      .then(function (list) {
+        var profs = (list || []).filter(function (p) {
+          return p && p.chainId && p.tokenAddress;
+        }).slice(0, 30);
+        if (!profs.length) return '';
+        var q = profs.map(function (p) { return p.tokenAddress; }).join(',');
+        return fetch('https://api.dexscreener.com/latest/dex/tokens/' + q)
+          .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+          .then(function (d) { return renderFresh(profs, (d && d.pairs) || []); });
+      })
+      .catch(function () { return ''; });
+  }
   function loadMeme() {
     var el = document.getElementById('meme-chips');
     if (!el) return;
+    var freshP = loadMemeFresh();
     var url = 'https://api.coingecko.com/api/v3/coins/markets' +
       '?vs_currency=usd&category=meme-token&order=market_cap_desc&per_page=30&page=1&sparkline=false&price_change_percentage=24h';
     fetch(url).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
       .then(function (d) {
-        var all = (d || []).filter(function (c) { return c && (c.name || c.symbol); });
-        function chgOk(c) {
-          return c.price_change_percentage_24h !== null &&
-            c.price_change_percentage_24h !== undefined && !isNaN(c.price_change_percentage_24h);
-        }
-        var valid = all.filter(chgOk);
+        var valid = (d || []).filter(function (c) {
+          return c && (c.name || c.symbol) &&
+            c.price_change_percentage_24h !== null &&
+            c.price_change_percentage_24h !== undefined &&
+            !isNaN(c.price_change_percentage_24h);
+        });
         if (!valid.length) throw new Error('empty');
-        var byChg = valid.slice().sort(function (a, b) {
+        var top = valid.slice().sort(function (a, b) {
           return b.price_change_percentage_24h - a.price_change_percentage_24h;
-        });
-        /* 重点位：成交额最大且涨幅数据正常的币；异常时退回涨幅第一名 */
-        var hero = null, heroVol = -1;
-        all.forEach(function (c) {
-          var vol = Number(c.total_volume);
-          if (!isNaN(vol) && vol > heroVol) { heroVol = vol; hero = c; }
-        });
-        if (!hero || !chgOk(hero)) hero = byChg[0];
-        var top = byChg.filter(function (c) { return c !== hero; }).slice(0, 7);
+        }).slice(0, 5);
         function dexHref(c) {
           return 'https://dexscreener.com/search?q=' + encodeURIComponent((c.symbol || '').toUpperCase());
         }
-        var hsym = (hero.symbol || '').toUpperCase();
-        var hv = hero.price_change_percentage_24h;
-        var h = '<a class="mm-hero" href="' + dexHref(hero) + '"' +
-          ' target="_blank" rel="noopener" data-sym="' + esc(hsym) + '">' +
-          '<span class="mm-hero-tag">' + esc(T('🔥 今日热度最高', '🔥 Today\'s Hottest')) + '</span>' +
-          '<span class="mm-hero-main"><span class="mm-hero-nm">' + esc(hero.name || hsym) +
-          '<small>' + esc(hsym) + '</small></span>' +
-          '<span class="mm-hero-pr num">' + memePriceTxt(hero.current_price) + '</span></span>' +
-          '<span class="mm-hero-meta"><span class="mm-hero-c num ' + chgClass(hv) + '">' + chgText(hv) + '</span>' +
-          '<span class="mm-hero-vol">' + esc(T('24h 成交额 ', '24h Volume ')) + fmtVol(hero.total_volume) + '</span></span></a>';
+        var h = '<div class="mm-sec"><span class="mm-sec-t">' +
+          esc(T('涨幅榜', 'Top Gainers')) + '</span></div>';
         top.forEach(function (c, i) {
           var sym = (c.symbol || '').toUpperCase();
           var v = c.price_change_percentage_24h;
@@ -279,13 +336,20 @@
             '<span class="mm-pr num">' + memePriceTxt(c.current_price) + '</span>' +
             '<span class="mm-c num ' + chgClass(v) + '">' + chgText(v) + '</span></a>';
         });
-        el.innerHTML = h;
-        var links = el.querySelectorAll('a.mm-row, a.mm-hero');
-        for (var k = 0; k < links.length; k++) {
-          upgradeMemeLink(links[k], links[k].getAttribute('data-sym') || '');
-        }
+        return freshP.then(function (freshHtml) {
+          el.innerHTML = (freshHtml || '') + h;
+          var links = el.querySelectorAll('a.mm-row[data-sym]');
+          for (var k = 0; k < links.length; k++) {
+            upgradeMemeLink(links[k], links[k].getAttribute('data-sym') || '');
+          }
+        });
       })
-      .catch(function () { fail('meme-chips', 'Meme 数据加载失败', 'Meme data unavailable'); });
+      .catch(function () {
+        freshP.then(function (freshHtml) {
+          if (freshHtml) { el.innerHTML = freshHtml; return; }
+          fail('meme-chips', 'Meme 数据加载失败', 'Meme data unavailable');
+        });
+      });
   }
 
   /* ---- 空投精选：js/airdrops-data.js 的 TOKVS_AIRDROPS 前 3 条（页面在 home.js 之前加载该脚本） ---- */
