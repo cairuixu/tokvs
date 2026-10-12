@@ -14,6 +14,66 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261013-push',
+    name_zh: 'Push Chain（$PC）Season 3 积分计划',
+    name_en: 'Push Chain ($PC) Season 3 Points Program',
+    desc_zh: '每日 10–20 分钟 · 0 资金，测试网 gas 由官方水龙头提供（每 6 小时刷新），无需投入真钱。需连接钱包或社交账号登录，仅钱包签名、不索要私钥/助记词。注意：代币经济学确认 10% 的 $PC 预留空投，但 Season 3 的 TGE 日期官方尚未公布，持续参与赚积分即可。',
+    desc_en: '~10–20 minutes daily · zero cost — testnet gas comes from the official faucet (refreshes every 6 hours), no real money needed. Connect a wallet or sign in with a social account; signature only, never shares private keys/mnemonics. Note: tokenomics reserve 10% of $PC for airdrops, but the Season 3 TGE date is not yet announced — keep earning points.',
+    deadline: '',
+    tags: [
+      { zh: '测试网积分', en: 'Testnet points' },
+      { zh: '潜在空投', en: 'Potential airdrop' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '0 资金', en: 'Zero cost' }
+    ],
+    link: 'https://portal.push.org/rewards',
+    checklist_zh: [
+      '打开官方奖励门户 portal.push.org/rewards 并连接钱包/社交账号',
+      '从 portal 内置水龙头领取免费测试网 $PC（每 6 小时可领）',
+      '验证 X/Discord 社交账号解锁任务板',
+      '做每周轮换的 App 任务赚 XP（流动性/兑换/游戏/预测等）',
+      '每日签到 + Spin 转盘累积 Rare Pass'
+    ],
+    checklist_en: [
+      'Open the official rewards portal portal.push.org/rewards and connect a wallet/social account',
+      'Claim free testnet $PC from the portal faucet (refreshes every 6 hours)',
+      'Verify your X/Discord social accounts to unlock the quest board',
+      'Complete rotating weekly App tasks to earn XP (liquidity/swap/gaming/prediction etc.)',
+      'Daily check-in + Spin to collect Rare Passes'
+    ],
+    checklist_links: ['https://portal.push.org/rewards', '', 'guides/wallet-safety.html', '', '']
+  },
+  {
+    id: 'airdrop-20261013-titan',
+    name_zh: 'Titan Exchange 测试网交互（Canton Perp DEX）',
+    name_en: 'Titan Exchange Testnet (Canton Perp DEX)',
+    desc_zh: '首次约 5–10 分钟 · 0 资金，全程测试币 + 钱包签名，无需 KYC。注意：空投尚未官宣，积分不等于代币承诺，按"潜在空投"收录；测试网请用全新钱包，只认官方域名，不索要私钥/助记词。',
+    desc_en: '~5–10 minutes for the first run · zero cost — test tokens and wallet signatures only, no KYC. Note: no airdrop has been announced, so points are NOT a token promise — filed as a "potential airdrop"; use a fresh wallet on testnet, official domains only, never share private keys/mnemonics.',
+    deadline: '',
+    tags: [
+      { zh: '测试网交互', en: 'Testnet' },
+      { zh: '潜在空投（未确认）', en: 'Potential airdrop (unconfirmed)' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '0 资金', en: 'Zero cost' }
+    ],
+    link: 'https://testnet.titanx.cc',
+    checklist_zh: [
+      '打开官方测试网 testnet.titanx.cc（认准官方域名）',
+      '连接钱包（与 waitlist 用同一钱包）',
+      '从应用内水龙头领取测试 USDC',
+      '点击 Enable Trading 并在钱包里确认一次签名',
+      '选择 BTC-USDCx 等市场完成一次自然交易'
+    ],
+    checklist_en: [
+      'Open the official testnet at testnet.titanx.cc (verify the official domain)',
+      'Connect your wallet (same one used for the waitlist)',
+      'Claim test USDC from the in-app faucet',
+      'Click "Enable Trading" and confirm one signature in your wallet',
+      'Complete one natural trade on a market such as BTC-USDCx'
+    ],
+    checklist_links: ['https://testnet.titanx.cc', '', 'guides/wallet-safety.html', '', '']
+  },
+  {
     id: 'airdrop-20261012-sonic',
     name_zh: 'Sonic（S）第一/二季空投领取',
     name_en: 'Sonic (S) Season 1 & 2 Airdrop Claim',
