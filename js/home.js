@@ -106,6 +106,48 @@
       .catch(function () { fail('price-rows', '行情加载失败', 'Market data unavailable'); });
   }
 
+  /* ---- 今日涨跌榜：CoinGecko 市值 Top100 按 24h 涨跌幅取涨前 5 / 跌前 5（失败 4 秒后自动重试一次） ---- */
+  function fetchMoversOnce(url) {
+    return fetch(url).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); });
+  }
+  function loadMovers() {
+    var el = document.getElementById('movers-rows');
+    if (!el) return;
+    var url = 'https://api.coingecko.com/api/v3/coins/markets' +
+      '?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h';
+    fetchMoversOnce(url).catch(function () {
+      return new Promise(function (res) { setTimeout(res, 4000); }).then(function () {
+        return fetchMoversOnce(url);
+      });
+    }).then(function (d) {
+      var valid = (d || []).filter(function (c) {
+        return c && c.price_change_percentage_24h !== null &&
+          c.price_change_percentage_24h !== undefined && !isNaN(c.price_change_percentage_24h);
+      });
+      if (valid.length < 2) throw new Error('empty');
+      var sorted = valid.slice().sort(function (a, b) {
+        return b.price_change_percentage_24h - a.price_change_percentage_24h;
+      });
+      var gainers = sorted.slice(0, 5);
+      var losers = sorted.slice(-5).reverse();
+      function row(c) {
+        var digits = c.current_price < 1 ? 4 : 2;
+        var sym = (c.symbol || '').toUpperCase();
+        var v = c.price_change_percentage_24h;
+        return '<div class="mv-row"><span class="mv-nm">' + esc(c.name || sym) + '<small>' + esc(sym) + '</small></span>' +
+          '<span class="mv-pr num">' + fmtUSD(c.current_price, digits) + '</span>' +
+          '<span class="mv-c num ' + chgClass(v) + '">' + chgText(v) + '</span></div>';
+      }
+      el.innerHTML = '<div class="movers">' +
+        '<div class="mv-col"><div class="mv-head up">' + esc(T('涨幅榜', 'Top gainers')) + '</div>' +
+        gainers.map(row).join('') + '</div>' +
+        '<div class="mv-col"><div class="mv-head down">' + esc(T('跌幅榜', 'Top losers')) + '</div>' +
+        losers.map(row).join('') + '</div></div>';
+    }).catch(function () {
+      el.innerHTML = '<div class="load-fail">' + esc(T('涨跌榜加载失败', 'Movers unavailable')) + '</div>';
+    });
+  }
+
   /* ---- ETF 资金流向：data/etf.json {btc:[{date,flow_m}], eth:[...], updated} ---- */
   function fmtFlow(v) {
     if (v === null || v === undefined || isNaN(v)) return '--';
@@ -241,6 +283,7 @@
   document.addEventListener('DOMContentLoaded', function () {
     try { loadStatus(); } catch (e) {}
     try { loadPrices(); } catch (e) {}
+    try { loadMovers(); } catch (e) {}
     try { loadETF(); } catch (e) {}
     try { loadMeme(); } catch (e) {}
     try { loadHomeAirdrops(); } catch (e) {}
