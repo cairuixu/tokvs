@@ -6,7 +6,12 @@
         deadline                 截止日期字符串（如 "2026-10-15"），无明确截止留空字符串
         tags                     [{zh, en}] 类型与要求标签
         link                     来源/官方链接（禁止放交易所返佣链接；交易所活动只放官方活动页/官网）
-        checklist_zh / checklist_en  撸毛步骤清单（与 desc 配套） */
+        checklist_zh / checklist_en  撸毛步骤清单（与 desc 配套）
+        checklist_links           与 checklist 等长的步骤跳转链接（中英共用一份）：
+                                  完整 URL（https://…）原样使用；站内页写语言目录相对路径
+                                  （如 "guides/wallet-safety.html"，中英空投页各自在本语言
+                                  目录下解析，不要加 en/ 前缀）；没有合适链接的步骤放 ""。
+                                  只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
     id: 'airdrop-20261012-sonic',
@@ -34,7 +39,8 @@ window.TOKVS_AIRDROPS = [
       'Confirm your Season 1 / Season 2 allocation',
       'Complete the on-chain claim (small gas fee required)',
       'Deadline Oct 15 — unclaimed allocations are forfeited, do not wait'
-    ]
+    ],
+    checklist_links: ['https://my.soniclabs.com/airdrop', 'guides/wallet-safety.html', '', 'https://my.soniclabs.com/airdrop', '']
   },
   {
     id: 'airdrop-20261012-concrete',
@@ -63,7 +69,8 @@ window.TOKVS_AIRDROPS = [
       'Connect the same wallet you deposited with',
       'Confirm your USDC allocation, sized by your recorded Vault position value',
       'Complete the claim'
-    ]
+    ],
+    checklist_links: ['', '', 'guides/wallet-safety.html', '', '']
   },
   {
     id: 'airdrop-20261012-giwa',
@@ -91,7 +98,8 @@ window.TOKVS_AIRDROPS = [
       'Complete basic interactions such as a contract deployment',
       "Follow GIWA's official account for mainnet news",
       'Use only links shared by official channels'
-    ]
+    ],
+    checklist_links: ['guides/wallet-safety.html', '', '', '', '']
   },
   {
     id: 'airdrop-20261012-dogeos',
@@ -120,7 +128,8 @@ window.TOKVS_AIRDROPS = [
       'Earn XP, medals and tickets as you complete tasks',
       'Watch for later chapters and the official reveal',
       'Beware of fake tokens trading on the DogeOS name'
-    ]
+    ],
+    checklist_links: ['', 'guides/wallet-safety.html', '', '', '']
   },
   {
     id: 'airdrop-20261012-pharos',
@@ -147,7 +156,8 @@ window.TOKVS_AIRDROPS = [
       'Check your eligibility and allocation',
       'Confirm the claim and wait for it to arrive',
       "Don't leave it to Oct 25 — claim early"
-    ]
+    ],
+    checklist_links: ['', 'guides/wallet-safety.html', '', '', '']
   },
   {
     id: 'airdrop-20261010-htx',
@@ -175,6 +185,7 @@ window.TOKVS_AIRDROPS = [
       'Complete one C2C trade of at least 20 USDT',
       'Complete one Convert trade of at least 20 USDT to earn 1 USDT',
       'Optionally push higher volume tiers for a bigger pool share'
-    ]
+    ],
+    checklist_links: ['https://www.htx.com/', 'https://www.htx.com/', '', '', '']
   }
 ];
