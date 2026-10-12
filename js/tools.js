@@ -36,10 +36,18 @@
   }
 
   var CG = 'https://api.coingecko.com/api/v3/coins/markets';
-  function fetchMarkets(params) {
+  function fetchMarketsOnce(params) {
     return fetch(CG + params).then(function (r) {
       if (!r.ok) throw new Error('http ' + r.status);
       return r.json();
+    });
+  }
+  function fetchMarkets(params) {
+    /* CoinGecko 免费层容易限流：失败后等 4 秒自动重试一次 */
+    return fetchMarketsOnce(params).catch(function () {
+      return new Promise(function (res) { setTimeout(res, 4000); }).then(function () {
+        return fetchMarketsOnce(params);
+      });
     });
   }
 
