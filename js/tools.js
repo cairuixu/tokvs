@@ -1,8 +1,8 @@
 /* 币VS · TokVS v2 工具页：自选清单 + 价格提醒 + 事件日历（纯前端，无需登录）
-   tokvs_watchlist: [{id, symbol}]             自选币种（localStorage，与旧站兼容）
+   tokvs_watchlist: [{id, symbol}]             自选币种（localStorage，与旧站兼容，格式严禁变）
    tokvs_alerts:   [{id, symbol, target, dir}] 价格提醒，dir: above|below
    日历数据：fetch(TOKVS_DATA_BASE + 'calendar.json')，基路径由页面内联脚本指定。
-   所有 fetch 均带 catch 兜底，失败只显示提示文案。 */
+   渲染结构与 tools.html 页内 .tk- 样式配套；所有 fetch 均带 catch 兜底，失败只显示提示文案。 */
 (function () {
   'use strict';
   var isEn = document.documentElement.lang === 'en';
@@ -25,6 +25,19 @@
     return (v >= 0 ? '+' : '') + Number(v).toFixed(2) + '%';
   }
 
+  /* 币种字母头像配色（按符号哈希取色，与首页口径一致的一组柔和色） */
+  var AVA_COLORS = ['#6D4BD8', '#0E9F6E', '#D97008', '#2563EB', '#C2185B', '#0E7490', '#7C3AED', '#B45309'];
+  function avaColor(symbol) {
+    var s = String(symbol || '?'), h = 0;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return AVA_COLORS[h % AVA_COLORS.length];
+  }
+  function avaHTML(symbol, small) {
+    var sym = String(symbol || '?').toUpperCase();
+    return '<span class="tk-ava' + (small ? ' sm' : '') + '" style="background:' +
+      avaColor(sym) + ';">' + esc(sym.charAt(0) || '?') + '</span>';
+  }
+
   var LS_WL = 'tokvs_watchlist';
   var LS_AL = 'tokvs_alerts';
   function readLS(key) {
@@ -33,6 +46,14 @@
   }
   function writeLS(key, val) {
     try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { /* ignore */ }
+  }
+
+  /* 页头小统计：自选数 / 提醒数（事件数由日历加载后写入） */
+  function updateStats() {
+    var w = document.getElementById('tk-stat-watch');
+    var a = document.getElementById('tk-stat-alerts');
+    if (w) w.textContent = readLS(LS_WL).length;
+    if (a) a.textContent = readLS(LS_AL).length;
   }
 
   var CG = 'https://api.coingecko.com/api/v3/coins/markets';
@@ -66,18 +87,20 @@
     var html = '';
     list.forEach(function (c) {
       var digits = c.current_price < 1 ? 4 : 2;
+      var sym = (c.symbol || '').toUpperCase();
       var added = !!inWL[c.id];
-      html += '<tr><td class="num" style="color:#B9BEB0;font-weight:800;">' + (c.market_cap_rank || '') + '</td>' +
-        '<td><strong>' + esc((c.symbol || '').toUpperCase()) + '</strong> <span class="coin-name">' +
-        esc(c.name || '') + '</span></td>' +
-        '<td class="num" style="font-weight:800;">' + fmtUSD(c.current_price, digits) + '</td>' +
-        '<td class="num ' + chgClass(c.price_change_percentage_24h) + '" style="font-weight:800;">' +
+      html += '<tr><td class="tk-rank">' + (c.market_cap_rank || '') + '</td>' +
+        '<td><div class="tk-coin">' + avaHTML(sym, true) +
+        '<span class="nm">' + esc(c.name || '') + '</span>' +
+        '<span class="sy">' + esc(sym) + '</span></div></td>' +
+        '<td class="r tk-price">' + fmtUSD(c.current_price, digits) + '</td>' +
+        '<td class="r tk-chg ' + chgClass(c.price_change_percentage_24h) + '">' +
         chgText(c.price_change_percentage_24h) + '</td>' +
-        '<td class="num">' +
+        '<td class="r">' +
         (added
-          ? '<span class="tag">' + esc(T('已自选', 'Watching')) + '</span>'
-          : '<button type="button" class="btn-add" data-add="' + esc(c.id) + '" data-sym="' +
-            esc((c.symbol || '').toUpperCase()) + '">＋' + esc(T('自选', 'Watch')) + '</button>') +
+          ? '<span class="tk-tag">' + esc(T('已自选', 'Watching')) + '</span>'
+          : '<button type="button" class="tk-btn" data-add="' + esc(c.id) + '" data-sym="' +
+            esc(sym) + '">＋' + esc(T('自选', 'Watch')) + '</button>') +
         '</td></tr>';
     });
     tb.innerHTML = html;
@@ -123,10 +146,12 @@
     var wl = readLS(LS_WL);
     var alerts = readLS(LS_AL);
     if (!wl.length) {
-      wrap.innerHTML = '<div class="card wl-empty">' +
-        '<div class="wl-empty-title">' + esc(T('还没有自选币种', 'No coins in your watchlist yet')) + '</div>' +
+      wrap.innerHTML = '<div class="tk-empty">' +
+        '<div class="tk-empty-title">' + esc(T('还没有自选币种', 'No coins in your watchlist yet')) + '</div>' +
         '<p>' + esc(T('在下方 Top100 表格中搜索并点击「＋自选」，把关心的币种加进来。价格提醒保存在本机浏览器，无需注册。',
-          'Search the Top100 table below and click "+ Watch" to add coins you care about. Alerts are stored in this browser — no sign-up needed.')) + '</p></div>';
+          'Search the Top 100 table below and click "+ Watch" to add coins you care about. Alerts are stored in this browser — no sign-up needed.')) + '</p>' +
+        '<a class="tk-btn green" href="#top100-card">' + esc(T('去下方表格添加 ↓', 'Add from the table below ↓')) + '</a></div>';
+      updateStats();
       return;
     }
     var html = '';
@@ -136,27 +161,28 @@
       var coinAlerts = alerts.filter(function (a) { return a.id === w.id; });
       var alertHtml = coinAlerts.map(function (a, idx) {
         var dirTxt = a.dir === 'above' ? T('高于', 'above') : T('低于', 'below');
-        return '<div class="alert-item"><span>' + esc(T('价格', 'Price') + dirTxt +
+        return '<div class="tk-alert-item"><span>' + esc(T('价格', 'Price') + dirTxt +
           ' ' + fmtUSD(a.target) + T('时提醒', ' alert')) + '</span>' +
-          '<button type="button" class="link-del" data-del-alert="' + idx + '" data-id="' + esc(w.id) + '">' +
+          '<button type="button" class="tk-del" data-del-alert="' + idx + '" data-id="' + esc(w.id) + '">' +
           esc(T('删除', 'Remove')) + '</button></div>';
       }).join('');
-      html += '<div class="card wl-card">' +
-        '<div class="wl-head"><div><strong>' + esc(w.symbol) + '</strong>' +
-        '<span class="coin-name">' + esc(p.name || '') + '</span></div>' +
-        '<button type="button" class="link-del" data-del="' + esc(w.id) + '">' + esc(T('移除', 'Remove')) + '</button></div>' +
-        '<div class="wl-price num">' + fmtUSD(p.current_price, digits) +
-        ' <span class="' + chgClass(p.price_change_percentage_24h) + '">' +
+      html += '<div class="tk-wl-item">' +
+        '<div class="tk-wl-top"><div class="tk-wl-id">' + avaHTML(w.symbol, false) +
+        '<div><strong>' + esc(w.symbol) + '</strong>' +
+        '<span class="tk-coin-name">' + esc(p.name || '') + '</span></div></div>' +
+        '<button type="button" class="tk-del" data-del="' + esc(w.id) + '">' + esc(T('移除', 'Remove')) + '</button></div>' +
+        '<div class="tk-wl-price">' + fmtUSD(p.current_price, digits) +
+        ' <span class="chg ' + chgClass(p.price_change_percentage_24h) + '">' +
         chgText(p.price_change_percentage_24h) + '</span></div>' +
-        '<div class="wl-alert-form">' +
-        '<input type="number" min="0" step="any" placeholder="' + esc(T('提醒价，如 85000', 'Alert price, e.g. 85000')) +
+        '<div class="tk-wl-form">' +
+        '<input class="tk-in" type="number" min="0" step="any" placeholder="' + esc(T('提醒价，如 85000', 'Alert price, e.g. 85000')) +
         '" data-target="' + esc(w.id) + '">' +
-        '<select data-dir="' + esc(w.id) + '">' +
+        '<select class="tk-sel" data-dir="' + esc(w.id) + '">' +
         '<option value="above">' + esc(T('高于', 'Above')) + '</option>' +
         '<option value="below">' + esc(T('低于', 'Below')) + '</option></select>' +
-        '<button type="button" class="btn-add" data-set-alert="' + esc(w.id) + '" data-sym="' + esc(w.symbol) + '">' +
+        '<button type="button" class="tk-btn" data-set-alert="' + esc(w.id) + '" data-sym="' + esc(w.symbol) + '">' +
         esc(T('设提醒', 'Set alert')) + '</button></div>' +
-        (alertHtml ? '<div class="alert-list">' + alertHtml + '</div>' : '') +
+        (alertHtml ? '<div class="tk-alert-list">' + alertHtml + '</div>' : '') +
         '</div>';
     });
     wrap.innerHTML = html;
@@ -192,6 +218,7 @@
         refreshWatchlist();
       });
     });
+    updateStats();
   }
 
   /* ---------- 提醒检查 ---------- */
@@ -254,6 +281,7 @@
     if (!document.getElementById('top100-body')) return;
     var search = document.getElementById('top100-search');
     if (search) search.addEventListener('input', applySearch);
+    updateStats();
     fetchMarkets('?vs_currency=usd&order=market_cap_desc&per_page=100&page=1' +
       '&sparkline=false&price_change_percentage=24h')
       .then(function (d) {
@@ -281,6 +309,9 @@
     var m = TYPE_LABEL[t] || TYPE_LABEL.event;
     return isEn ? m.en : m.zh;
   }
+  var MONTH_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+  function isoOf(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
 
   function initCalendar() {
     var el = document.getElementById('cal-list');
@@ -295,24 +326,39 @@
         if (!Array.isArray(d) || !d.length) throw new Error('empty');
         var now = new Date();
         var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        var todayStr = isoOf(today);
         var cutoff = new Date(today.getTime() - 7 * 864e5);
+        var weekStr = isoOf(new Date(today.getTime() + 7 * 864e5));
         var items = d
           .filter(function (e) { return e && e.date && new Date(e.date + 'T00:00:00') >= cutoff; })
           .sort(function (a, b) { return a.date < b.date ? -1 : 1; });
         if (!items.length) throw new Error('empty');
-        var html = '';
+        var upcoming = 0;
+        items.forEach(function (e) { if (e.date >= todayStr && e.date <= weekStr) upcoming++; });
+        var stat = document.getElementById('tk-stat-events');
+        if (stat) stat.textContent = upcoming;
+        var html = '<div class="tk-cal-list">';
         items.forEach(function (e) {
-          var past = new Date(e.date + 'T00:00:00') < today;
-          html += '<div class="cal-item' + (past ? ' past' : '') + '">' +
-            '<div class="cal-date num">' + esc(e.date) + '</div>' +
-            '<div class="cal-body">' +
-            '<span class="cal-badge type-' + esc(e.type || 'event') + '">' + esc(typeLabel(e.type)) + '</span>' +
+          var past = e.date < todayStr;
+          var isToday = e.date === todayStr;
+          var parts = String(e.date).split('-');
+          var dayNum = parts.length === 3 ? String(parseInt(parts[2], 10)) : '';
+          var monNum = parts.length === 3 ? parseInt(parts[1], 10) : 0;
+          var monTxt = isEn ? (MONTH_EN[monNum - 1] || '') : (monNum ? monNum + '月' : '');
+          html += '<div class="tk-cal-item' + (past ? ' past' : '') + (isToday ? ' today' : '') + '">' +
+            '<div class="tk-cal-date"><span class="d">' + esc(dayNum) + '</span>' +
+            '<span class="m">' + esc(monTxt) + '</span></div>' +
+            '<div class="tk-cal-body">' +
+            '<div class="tk-cal-meta"><span class="tk-badge type-' + esc(e.type || 'event') + '">' +
+            esc(typeLabel(e.type)) + '</span>' +
+            '<span class="tk-cal-when">' + esc(e.date) + '</span></div>' +
             '<h3>' + esc(isEn ? e.title_en : e.title_zh) + '</h3>' +
             '<p>' + esc(isEn ? e.desc_en : e.desc_zh) + '</p>' +
-            (e.link ? '<a class="cal-more" href="' + esc(e.link) + '" target="_blank" rel="noopener">' +
+            (e.link ? '<a class="tk-cal-more" href="' + esc(e.link) + '" target="_blank" rel="noopener">' +
               esc(T('查看原文 →', 'Source →')) + '</a>' : '') +
             '</div></div>';
         });
+        html += '</div>';
         el.innerHTML = html;
       })
       .catch(function () {
