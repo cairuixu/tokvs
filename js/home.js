@@ -192,10 +192,26 @@
       .catch(function () { fail('etf-rows', 'ETF 数据加载失败', 'ETF data unavailable'); });
   }
 
-  /* ---- Meme 热度：CoinGecko meme-token 板块 24h 涨幅 Top8 榜单 ----
-     每行整行可点：先给 DexScreener 搜索页兜底链接，渲染后逐个异步查
-     DexScreener 搜索 API，命中同符号、流动性最大的交易对时把链接升级为
-     该交易对的 K 线图页（dexscreener.com/<chainId>/<pairAddress>）；失败保留兜底。 */
+  /* ---- Meme 热度：CoinGecko meme-token 板块 ----
+     卡顶重点位「今日热度最高」= 24h 成交额最大的币（深色块整块可点）；
+     若成交额冠军涨幅数据缺失/异常则退回按涨幅第一名做重点位。
+     下方榜单按 24h 涨幅排序、排除重点位币取前 7 行（整行可点）。
+     所有链接先给 DexScreener 搜索页兜底，渲染后逐个异步查 DexScreener
+     搜索 API，命中同符号、流动性最大的交易对时升级为该交易对的 K 线图页
+     （dexscreener.com/<chainId>/<pairAddress>）；失败保留兜底。 */
+  function fmtVol(n) {
+    if (n === null || n === undefined || isNaN(n)) return '--';
+    n = Number(n);
+    function trim(x) { return String(parseFloat(x.toFixed(2))); }
+    if (n >= 1e9) return '$' + trim(n / 1e9) + 'B';
+    if (n >= 1e6) return '$' + trim(n / 1e6) + 'M';
+    if (n >= 1e3) return '$' + trim(n / 1e3) + 'K';
+    return '$' + trim(n);
+  }
+  function memePriceTxt(pr) {
+    if (pr === null || pr === undefined || isNaN(pr)) return '--';
+    return pr >= 1 ? fmtUSD(pr, 2) : (pr >= 0.01 ? fmtUSD(pr, 4) : '$' + Number(pr).toPrecision(3));
+  }
   function upgradeMemeLink(a, sym) {
     if (!a || !sym) return;
     fetch('https://api.dexscreener.com/latest/dex/search?q=' + encodeURIComponent(sym))
@@ -222,30 +238,49 @@
       '?vs_currency=usd&category=meme-token&order=market_cap_desc&per_page=30&page=1&sparkline=false&price_change_percentage=24h';
     fetch(url).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
       .then(function (d) {
-        var valid = (d || []).filter(function (c) {
-          return c && c.price_change_percentage_24h !== null &&
+        var all = (d || []).filter(function (c) { return c && (c.name || c.symbol); });
+        function chgOk(c) {
+          return c.price_change_percentage_24h !== null &&
             c.price_change_percentage_24h !== undefined && !isNaN(c.price_change_percentage_24h);
-        });
+        }
+        var valid = all.filter(chgOk);
         if (!valid.length) throw new Error('empty');
-        var top = valid.slice().sort(function (a, b) {
+        var byChg = valid.slice().sort(function (a, b) {
           return b.price_change_percentage_24h - a.price_change_percentage_24h;
-        }).slice(0, 8);
-        var h = '';
+        });
+        /* 重点位：成交额最大且涨幅数据正常的币；异常时退回涨幅第一名 */
+        var hero = null, heroVol = -1;
+        all.forEach(function (c) {
+          var vol = Number(c.total_volume);
+          if (!isNaN(vol) && vol > heroVol) { heroVol = vol; hero = c; }
+        });
+        if (!hero || !chgOk(hero)) hero = byChg[0];
+        var top = byChg.filter(function (c) { return c !== hero; }).slice(0, 7);
+        function dexHref(c) {
+          return 'https://dexscreener.com/search?q=' + encodeURIComponent((c.symbol || '').toUpperCase());
+        }
+        var hsym = (hero.symbol || '').toUpperCase();
+        var hv = hero.price_change_percentage_24h;
+        var h = '<a class="mm-hero" href="' + dexHref(hero) + '"' +
+          ' target="_blank" rel="noopener" data-sym="' + esc(hsym) + '">' +
+          '<span class="mm-hero-tag">' + esc(T('🔥 今日热度最高', '🔥 Today\'s Hottest')) + '</span>' +
+          '<span class="mm-hero-main"><span class="mm-hero-nm">' + esc(hero.name || hsym) +
+          '<small>' + esc(hsym) + '</small></span>' +
+          '<span class="mm-hero-pr num">' + memePriceTxt(hero.current_price) + '</span></span>' +
+          '<span class="mm-hero-meta"><span class="mm-hero-c num ' + chgClass(hv) + '">' + chgText(hv) + '</span>' +
+          '<span class="mm-hero-vol">' + esc(T('24h 成交额 ', '24h Volume ')) + fmtVol(hero.total_volume) + '</span></span></a>';
         top.forEach(function (c, i) {
           var sym = (c.symbol || '').toUpperCase();
           var v = c.price_change_percentage_24h;
-          var pr = c.current_price;
-          var prTxt = (pr === null || pr === undefined || isNaN(pr)) ? '--'
-            : (pr >= 1 ? fmtUSD(pr, 2) : (pr >= 0.01 ? fmtUSD(pr, 4) : '$' + Number(pr).toPrecision(3)));
-          h += '<a class="mm-row" href="https://dexscreener.com/search?q=' + encodeURIComponent(sym) + '"' +
+          h += '<a class="mm-row" href="' + dexHref(c) + '"' +
             ' target="_blank" rel="noopener" data-sym="' + esc(sym) + '">' +
             '<span class="mm-rk">' + (i + 1) + '</span>' +
             '<span class="mm-nm">' + esc(c.name || sym) + '<small>' + esc(sym) + '</small></span>' +
-            '<span class="mm-pr num">' + prTxt + '</span>' +
+            '<span class="mm-pr num">' + memePriceTxt(c.current_price) + '</span>' +
             '<span class="mm-c num ' + chgClass(v) + '">' + chgText(v) + '</span></a>';
         });
         el.innerHTML = h;
-        var links = el.querySelectorAll('a.mm-row');
+        var links = el.querySelectorAll('a.mm-row, a.mm-hero');
         for (var k = 0; k < links.length; k++) {
           upgradeMemeLink(links[k], links[k].getAttribute('data-sym') || '');
         }
