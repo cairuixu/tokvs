@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261014-allox',
+    name_zh: 'AlloX（$ALLOX）积分与 Gems 奖励',
+    name_en: 'AlloX ($ALLOX) Points & Gems Rewards',
+    desc_zh: '注册约 15–20 分钟起、每日任务约 10 分钟 · 需真实资金：组合在链上执行、投入的是真钱（有市场波动风险，非测试网）· 需连接钱包 + X 账号。35% 的 $ALLOX 总量预留给社区，官方确认积分将计入未来 $ALLOX 奖励（具体分配规则待公布）；$100 万公募 10 月 12 日已在 Coinbase 旗下 Sonar 以 $0.065 开启。只认官方域名 app.allox.ai，谨防仿冒。',
+    desc_en: '~15–20 minutes to set up, ~10 minutes daily · requires real funds: portfolios execute on-chain with real money (market risk — this is NOT a testnet) · wallet + X account required. 35% of $ALLOX supply is reserved for the community, and the team confirmed Points count toward future $ALLOX rewards (allocation rules TBA); a $1M public sale opened Oct 12 on Coinbase-owned Sonar at $0.065. Official domain only: app.allox.ai — beware of copycats.',
+    deadline: '',
+    tags: [
+      { zh: '积分/Gems', en: 'Points/Gems' },
+      { zh: '潜在空投', en: 'Potential airdrop' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '需真实资金', en: 'Real funds needed' }
+    ],
+    link: 'https://app.allox.ai',
+    checklist_zh: [
+      '打开官方应用 app.allox.ai 并连接钱包（认准官方域名）',
+      '领取 5000 积分迎新奖励，完成每日签到任务',
+      '用 AI 创建一个叙事组合（投入少量真实资金，注意市场风险）',
+      '分享组合卡片到 X，参与 Gems 奖励活动',
+      '开启推荐链接，邀请好友创建组合赚多级奖励'
+    ],
+    checklist_en: [
+      'Open the official app at app.allox.ai and connect your wallet (verify the official domain)',
+      'Claim the 5,000-Point welcome bonus and complete daily check-in tasks',
+      'Create a narrative portfolio with the AI (invest a small amount of real funds — mind the market risk)',
+      'Share your portfolio card on X to join the Gems rewards campaign',
+      'Activate your referral link and earn multi-tier rewards when friends create portfolios'
+    ],
+    checklist_links: ['https://app.allox.ai', '', 'guides/wallet-safety.html', '', '']
+  },
+  {
     id: 'airdrop-20261013-push',
     name_zh: 'Push Chain（$PC）Season 3 积分计划',
     name_en: 'Push Chain ($PC) Season 3 Points Program',
@@ -160,36 +190,6 @@ window.TOKVS_AIRDROPS = [
       'Use only links shared by official channels'
     ],
     checklist_links: ['guides/wallet-safety.html', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261012-dogeos',
-    name_zh: 'DogeOS「Grand Heist」忠诚活动',
-    name_en: 'DogeOS Grand Heist Loyalty Campaign',
-    desc_zh: '约 30 分钟起 · 0 资金，当前测试网活动免费参与，无需充值。注意：DogeOS 尚未发布原生代币、未确认空投，当前奖励为 XP、徽章与门票，不等于代币承诺；项目方已警告提防冒名假币，参与只认官方活动页。',
-    desc_en: '~30 minutes to start · zero cost — current testnet activities are free, no deposit needed. Note: DogeOS has not launched a native token and has not confirmed an airdrop — current rewards are XP, medals and tickets, not a token promise; the project itself warns against scam tokens using its name.',
-    deadline: '',
-    tags: [
-      { zh: '测试网活动', en: 'Testnet campaign' },
-      { zh: '潜在空投（未确认）', en: 'Potential airdrop (unconfirmed)' },
-      { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '0 资金', en: 'Zero cost' }
-    ],
-    link: 'https://cryptoworldheadline.com/dogeos-airdrop-information-the-best-way-to-be-a-part-of-the-grand-heist/',
-    checklist_zh: [
-      '通过 DogeOS 官方渠道进入 Grand Heist 活动页',
-      '连接钱包/账号参与 Chapter 1 任务',
-      '完成任务积累 XP、徽章与门票',
-      '留意后续章节与官方揭晓公告',
-      '警惕冒用 DogeOS 名义的假代币'
-    ],
-    checklist_en: [
-      'Enter the Grand Heist campaign through DogeOS official channels',
-      'Connect your wallet/account and join Chapter 1 quests',
-      'Earn XP, medals and tickets as you complete tasks',
-      'Watch for later chapters and the official reveal',
-      'Beware of fake tokens trading on the DogeOS name'
-    ],
-    checklist_links: ['', 'guides/wallet-safety.html', '', '', '']
   },
   {
     id: 'airdrop-20261012-pharos',
