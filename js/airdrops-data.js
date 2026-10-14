@@ -14,6 +14,66 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261015-dogeos',
+    name_zh: 'DogeOS「The Grand Heist」测试网任务',
+    name_en: 'DogeOS "The Grand Heist" Testnet Quests',
+    desc_zh: '约 30–60 分钟（一次性） · 0 资金，测试 DOGE 从官方水龙头免费领，无需真实资金。需连接钱包。MyDoge V3 与 25+ 测试网应用于 10 月 8 日上线，10 月 12 日官方宣布任务完成数突破 10 万。注意：官方未公布代币与空投条款，属未确认潜在机会；测试网请用全新钱包，只认官方域名，不索要私钥/助记词。',
+    desc_en: '~30–60 minutes one-time · zero cost — test DOGE is free from the official faucet, no real funds needed. Wallet connection required. MyDoge V3 and 25+ testnet apps went live Oct 8, and the team announced 100K+ completed quests on Oct 12. Note: no token or airdrop terms announced — unconfirmed potential only; use a fresh wallet on testnet, official domains only, never share private keys/mnemonics.',
+    deadline: '',
+    tags: [
+      { zh: '测试网交互', en: 'Testnet' },
+      { zh: '潜在空投（未确认）', en: 'Potential airdrop (unconfirmed)' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '0 资金', en: 'Zero cost' }
+    ],
+    link: 'https://heist.dogeos.com',
+    checklist_zh: [
+      '打开官方任务平台 heist.dogeos.com（认准官方域名）',
+      '在官方水龙头 faucet.testnet.dogeos.com 领取测试 DOGE',
+      '把 DogeOS 测试网添加到钱包（以官方文档的 Chain ID 为准）',
+      '体验 Moar Finance 等测试网应用（供应/借出/还款等）',
+      '完成 The Grand Heist 任务页的可用任务'
+    ],
+    checklist_en: [
+      'Open the official quest platform heist.dogeos.com (verify the official domain)',
+      'Claim test DOGE from the official faucet faucet.testnet.dogeos.com',
+      'Add the DogeOS testnet to your wallet (use the Chain ID from official docs)',
+      'Try testnet apps like Moar Finance (supply/borrow/repay etc.)',
+      'Complete available quests on The Grand Heist quest page'
+    ],
+    checklist_links: ['https://heist.dogeos.com', 'https://faucet.testnet.dogeos.com', 'guides/wallet-safety.html', '', '']
+  },
+  {
+    id: 'airdrop-20261015-hyperlynx',
+    name_zh: 'Hyperlynx（$LYNX）「The Hunt」积分',
+    name_en: 'Hyperlynx ($LYNX) "The Hunt" Points',
+    desc_zh: '每日 10–20 分钟 · 需真实资金：在 HyperEVM 上交易与提供流动性赚积分，gas 用 HYPE 支付。3 亿枚 $LYNX（总量 30%）已确认为空投池，TGE 时按积分占比分配；TGE 时间官方尚未公布。注意：团队匿名，属高风险 DeFi 交互；只认官方域名 hyperlynx.fi，不索要私钥/助记词。',
+    desc_en: '~10–20 minutes daily · requires real funds: trade and provide liquidity on HyperEVM to earn points, gas paid in HYPE. 300M $LYNX (30% of supply) is confirmed as the airdrop pool, distributed pro-rata at TGE; the TGE date is not announced. Note: the team is anonymous — high-risk DeFi interaction; official domain only: hyperlynx.fi, never share private keys/mnemonics.',
+    deadline: '',
+    tags: [
+      { zh: 'DeFi 积分', en: 'DeFi points' },
+      { zh: '已确认分配', en: 'Confirmed allocation' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '需真实资金', en: 'Real funds needed' }
+    ],
+    link: 'https://www.hyperlynx.fi/',
+    checklist_zh: [
+      '打开官网 hyperlynx.fi 并连接 HyperEVM 兼容钱包（认准官方域名）',
+      '准备 HYPE（付 gas）与 USDC 等做市资金，注意真实资金风险',
+      '在现货市场做兑换赚取交易积分（占积分池 30%）',
+      '向 HYPE/USDC 等池子提供集中流动性赚大头积分（占 70%，保持在价格区间内）',
+      '每周检查仓位维持在区间内，累积连续周忠诚加成'
+    ],
+    checklist_en: [
+      'Open hyperlynx.fi and connect a HyperEVM-compatible wallet (verify the official domain)',
+      'Prepare HYPE (for gas) and USDC etc. as LP capital — real funds at risk',
+      'Swap on spot markets to earn trading points (30% of the points pool)',
+      'Provide concentrated liquidity to pools like HYPE/USDC for the bulk of points (70% — stay in range)',
+      'Check positions weekly to stay in range and stack the loyalty bonus'
+    ],
+    checklist_links: ['https://www.hyperlynx.fi/', 'guides/wallet-safety.html', '', '', '']
+  },
+  {
     id: 'airdrop-20261014-allox',
     name_zh: 'AlloX（$ALLOX）积分与 Gems 奖励',
     name_en: 'AlloX ($ALLOX) Points & Gems Rewards',
@@ -104,35 +164,6 @@ window.TOKVS_AIRDROPS = [
     checklist_links: ['https://testnet.titanx.cc', '', 'guides/wallet-safety.html', '', '']
   },
   {
-    id: 'airdrop-20261012-sonic',
-    name_zh: 'Sonic（S）第一/二季空投领取',
-    name_en: 'Sonic (S) Season 1 & 2 Airdrop Claim',
-    desc_zh: '约 15 分钟 · 0 资金，需连接钱包并支付少量 gas 完成链上领取。10-15 后约 3269 万枚未领 S 将被销毁，逾期无法补领；只认官方领取门户，谨防钓鱼网站。',
-    desc_en: '~15 minutes · zero cost — connect a wallet and pay a small gas fee to complete the on-chain claim. After Oct 15, ~32.69M unclaimed S will be burned and late claims cannot be recovered; use only the official claim portal and beware of phishing sites.',
-    deadline: '2026-10-15',
-    tags: [
-      { zh: '空投领取', en: 'Claim' },
-      { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '需少量 gas', en: 'Gas needed' }
-    ],
-    link: 'https://cryptocompass.com/articles/the-most-profitable-crypto-airdrops-of-the-week-week-41-and-the-october-15-sonic-burn',
-    checklist_zh: [
-      '打开 Sonic 官方领取门户 my.soniclabs.com/airdrop（认准官方域名）',
-      '连接有领取资格的钱包',
-      '确认 Season 1 / Season 2 分配额度',
-      '完成链上领取（需少量 gas）',
-      '10-15 截止，逾期视为放弃，不要再拖'
-    ],
-    checklist_en: [
-      'Open the official Sonic claim portal my.soniclabs.com/airdrop (verify the official domain)',
-      'Connect an eligible wallet',
-      'Confirm your Season 1 / Season 2 allocation',
-      'Complete the on-chain claim (small gas fee required)',
-      'Deadline Oct 15 — unclaimed allocations are forfeited, do not wait'
-    ],
-    checklist_links: ['https://my.soniclabs.com/airdrop', 'guides/wallet-safety.html', '', 'https://my.soniclabs.com/airdrop', '']
-  },
-  {
     id: 'airdrop-20261012-concrete',
     name_zh: 'Concrete（CT）Earn Vault 用户 USDC 奖励领取',
     name_en: "Concrete (CT) Earn Vault Users' USDC Claim",
@@ -163,61 +194,32 @@ window.TOKVS_AIRDROPS = [
     checklist_links: ['', '', 'guides/wallet-safety.html', '', '']
   },
   {
-    id: 'airdrop-20261012-giwa',
-    name_zh: 'GIWA Chain 测试网交互',
-    name_en: 'GIWA Chain Testnet Interaction',
-    desc_zh: '约 30–60 分钟（一次性） · 0 资金，全程使用免费测试币，无需充值、无需预存资金。注意：官方尚未把测试网活动与任何奖励挂钩，空投未确认，不要为此投入真实资金；测试网请用全新钱包，只认官方渠道。',
-    desc_en: '~30–60 minutes one-time · zero cost — free test tokens only, no deposit or pre-funding needed. Note: GIWA has NOT linked testnet activity to any reward, so any airdrop is unconfirmed — do not spend real funds chasing it; use a fresh wallet on testnets and only official links.',
-    deadline: '',
-    tags: [
-      { zh: '测试网交互', en: 'Testnet' },
-      { zh: '潜在空投（未确认）', en: 'Potential airdrop (unconfirmed)' },
-      { zh: '0 资金', en: 'Zero cost' }
-    ],
-    link: 'https://usethebitcoin.com/airdrop/giwa-chain-airdrop-guide/',
-    checklist_zh: [
-      '打开 GIWA Sepolia 测试网浏览器并连接钱包添加网络',
-      '在官方水龙头领取测试 ETH（每日限额）',
-      '完成一次合约部署等基础交互',
-      '关注 GIWA 官方账号等待主网消息',
-      '只使用官方公布的链接'
-    ],
-    checklist_en: [
-      'Open the GIWA Sepolia testnet explorer and connect a wallet to add the network',
-      'Claim test ETH from the official faucet (daily limit)',
-      'Complete basic interactions such as a contract deployment',
-      "Follow GIWA's official account for mainnet news",
-      'Use only links shared by official channels'
-    ],
-    checklist_links: ['guides/wallet-safety.html', '', '', '', '']
-  },
-  {
     id: 'airdrop-20261012-pharos',
     name_zh: 'Pharos（PROS）空投领取',
     name_en: 'Pharos (PROS) Airdrop Claim',
-    desc_zh: '约 15 分钟 · 0 资金，需连接参与测试网时的同一钱包领取（gas 安排以官方公告为准）。资格面向测试网参与者等特定人群，先查资格再操作；逾期未领将退回基金会，只认官方领取门户，谨防仿冒。',
-    desc_en: '~15 minutes · zero cost — connect the same wallet you used on testnet to claim (gas per the official announcement). Eligibility targets testnet participants and similar groups, so check first; unclaimed tokens return to the Foundation afterwards. Use only the official portal and beware of copycats.',
-    deadline: '2026-10-25',
+    desc_zh: '约 15 分钟 · 0 资金，需连接参与测试网时的同一钱包领取（gas 安排以官方公告为准）。资格面向测试网参与者等特定人群，先查资格再操作；10 月 31 日截止，逾期未领将退回社区储备；只认官方领取门户 claim.pharos.xyz，谨防仿冒。',
+    desc_en: '~15 minutes · zero cost — connect the same wallet you used on testnet to claim (gas per the official announcement). Eligibility targets testnet participants and similar groups, so check first; the claim window closes October 31; unclaimed tokens return to the community reserve afterwards. Use only the official portal claim.pharos.xyz and beware of copycats.',
+    deadline: '2026-10-31',
     tags: [
       { zh: '空投领取', en: 'Claim' },
       { zh: '需连接钱包', en: 'Wallet required' }
     ],
-    link: 'https://cryptocompass.com/articles/the-most-profitable-crypto-airdrops-of-the-week-week-41-and-the-october-15-sonic-burn',
+    link: 'https://claim.pharos.xyz',
     checklist_zh: [
-      '打开 Pharos 官方领取门户（认准官方域名）',
+      '打开 Pharos 官方领取门户 claim.pharos.xyz（认准官方域名）',
       '连接参与测试网时的同一钱包',
       '查询领取资格与额度',
       '确认领取并等待到账',
-      '不要等到 10-25 当天，提前领取'
+      '不要等到 10-31 当天，提前领取'
     ],
     checklist_en: [
       'Open the official Pharos claim portal (verify the official domain)',
       'Connect the same wallet you used on testnet',
       'Check your eligibility and allocation',
       'Confirm the claim and wait for it to arrive',
-      "Don't leave it to Oct 25 — claim early"
+      "Don't leave it to Oct 31 — claim early"
     ],
-    checklist_links: ['', 'guides/wallet-safety.html', '', '', '']
+    checklist_links: ['https://claim.pharos.xyz', 'guides/wallet-safety.html', '', '', '']
   },
   {
     id: 'airdrop-20261010-htx',
