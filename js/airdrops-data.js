@@ -14,6 +14,35 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261017-bybit-stocks',
+    name_zh: 'Bybit「Full Stocks Ahead」美股交易活动（15万USDC奖池）',
+    name_en: 'Bybit "Full Stocks Ahead" Stock Trading Campaign (150K USDC Prize Pool)',
+    desc_zh: '每天约 15–30 分钟 · 需真实资金：在 Bybit 美股/ETF 交易板块参与 20 天活动（10 月 12 日–10 月 31 日），按交易量与持仓瓜分 15 万 USDC。含首单奖励、每日奖励盒（单日美股交易超 2000 美元领最高 50 USDC 奖励盒）、10 万 USDC Stock Splash 交易量分成（至少交易 1000 美元股票且活动结束时持仓不少于 1000 美元）、联盟推荐榜 2 万 USDC。需 KYC 认证，具体资格与发奖以官方规则为准；只认官方域名 www.bybit.com，不索要私钥/助记词。',
+    desc_en: '~15–30 minutes daily · requires real funds: trade US stocks/ETFs on Bybit in a 20-day campaign (Oct 12–31) to share a 150,000 USDC pool. Includes a first-trade reward, a daily reward box (trade >$2,000 in stocks per day for a box worth up to 50 USDC), the 100,000 USDC Stock Splash volume share (trade at least $1,000 in stocks and hold at least $1,000 in stocks at campaign end), and a 20,000 USDC affiliate leaderboard. KYC required; official rules prevail. Official domain only: www.bybit.com, never share private keys/mnemonics.',
+    deadline: '2026-10-31',
+    tags: [
+      { zh: '交易所活动', en: 'Exchange campaign' },
+      { zh: '需真实资金', en: 'Real funds needed' },
+      { zh: '需 KYC', en: 'KYC required' }
+    ],
+    link: 'https://www.bybit.com/',
+    checklist_zh: [
+      '注册 Bybit 账号并完成 KYC 认证（认准官方域名）',
+      '进入活动页报名参加 Full Stocks Ahead（按官方规则）',
+      '完成首笔美股/ETF 交易领取首单奖励',
+      '每日交易超 2000 美元美股，领取每日奖励盒',
+      '保持活动期间交易量与持仓达标，参与 10 万 USDC 交易量分成'
+    ],
+    checklist_en: [
+      'Register a Bybit account and complete KYC (verify the official domain)',
+      'Sign up for Full Stocks Ahead on the campaign page (per official rules)',
+      'Place your first US stock/ETF trade to earn the first-trade reward',
+      'Trade over $2,000 in stocks daily to collect the daily reward box',
+      'Keep your volume and holdings on target to share the 100K USDC Stock Splash'
+    ],
+    checklist_links: ['https://www.bybit.com/', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261015-dogeos',
     name_zh: 'DogeOS「The Grand Heist」测试网任务',
     name_en: 'DogeOS "The Grand Heist" Testnet Quests',
@@ -162,36 +191,6 @@ window.TOKVS_AIRDROPS = [
       'Complete one natural trade on a market such as BTC-USDCx'
     ],
     checklist_links: ['https://testnet.titanx.cc', '', 'guides/wallet-safety.html', '', '']
-  },
-  {
-    id: 'airdrop-20261012-concrete',
-    name_zh: 'Concrete（CT）Earn Vault 用户 USDC 奖励领取',
-    name_en: "Concrete (CT) Earn Vault Users' USDC Claim",
-    desc_zh: '约 15 分钟 · 领取本身 0 资金（链上领取需少量 gas）。仅限此前用过 Concrete Earn Vault 的用户，额度按已记录的 Vault 持仓价值决定，现在新存入不计入本次分配；只认官方领取门户，谨防仿冒领取站。',
-    desc_en: '~15 minutes · free to claim (a small on-chain gas fee applies). Restricted to existing Concrete Earn Vault users — allocation is sized by your recorded Vault position and new deposits do not count; use only the official claim portal and beware of copycat claim sites.',
-    deadline: '2026-10-16 20:00',
-    tags: [
-      { zh: '空投领取', en: 'Claim' },
-      { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '需少量 gas', en: 'Gas needed' },
-      { zh: '限 Vault 老用户', en: 'Existing Vault users only' }
-    ],
-    link: 'https://www.bitrue.com/blog/concrete-tge',
-    checklist_zh: [
-      '确认自己此前用过 Concrete Earn Vault',
-      '10-16 20:00（北京时间）后打开官方领取门户（认准官方域名）',
-      '连接当时存入 Vault 的同一钱包',
-      '按已记录的 Vault 持仓价值确认 USDC 分配额度',
-      '完成领取'
-    ],
-    checklist_en: [
-      'Confirm you previously used Concrete Earn Vault',
-      'After Oct 16 12:00 UTC, open the official claim portal (verify the official domain)',
-      'Connect the same wallet you deposited with',
-      'Confirm your USDC allocation, sized by your recorded Vault position value',
-      'Complete the claim'
-    ],
-    checklist_links: ['', '', 'guides/wallet-safety.html', '', '']
   },
   {
     id: 'airdrop-20261012-pharos',
