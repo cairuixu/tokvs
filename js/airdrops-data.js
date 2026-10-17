@@ -14,6 +14,64 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261018-okx-kat',
+    name_zh: 'OKX 闪赚 Lite「KAT 质押赚币」（3000 万 KAT 奖池）',
+    name_en: 'OKX Simple Earn Lite "KAT Staking Rewards" (30M KAT Prize Pool)',
+    desc_zh: '约 15 分钟操作 + 资金锁仓 5 天 · 需真实资金：在 OKX 闪赚 Lite 锁仓 BTC 或 KAT 参与申购（10 月 19 日 15:00 至 10 月 24 日 15:00，东八区时间），按申购份额瓜分 30,000,000 枚 KAT（Katana）空投奖励。可提前申购（奖励从活动开始日起计），也可直接用活期简单赚币资产申购。注意：质押期间资金锁定 5 天，币价波动风险自担；具体申购规则以 OKX 官方活动页为准；只认官方域名 www.okx.com，不索要私钥/助记词。',
+    desc_en: '~15 minutes to set up + 5-day fund lockup · requires real funds: stake BTC or KAT via OKX Simple Earn Lite (Oct 19, 15:00 – Oct 24, 15:00, UTC+8) to share a 30,000,000 KAT (Katana) airdrop pool pro-rata. Early sign-up is allowed (rewards accrue from the campaign start), and Flexible Earn assets can be staked directly. Note: funds are locked for 5 days; market risk is on you. The rules on the official OKX campaign page prevail. Official domain only: www.okx.com, never share private keys/mnemonics.',
+    deadline: '2026-10-24',
+    tags: [
+      { zh: '交易所活动', en: 'Exchange campaign' },
+      { zh: '需真实资金（锁仓）', en: 'Real funds needed (staking)' },
+      { zh: '质押赚币', en: 'Staking rewards' }
+    ],
+    link: 'https://www.okx.com/',
+    checklist_zh: [
+      '注册 OKX 账号并完成身份认证（认准官方域名 www.okx.com）',
+      '进入「闪赚 Lite」找到 KAT「质押赚币」活动页完成报名',
+      '准备 BTC 或 KAT，提前参与申购（奖励从 10 月 19 日 15:00 起计）',
+      '锁仓完成后保持至 10 月 24 日，等待 KAT 空投奖励到账',
+      '活动结束按份额领取空投，核对到账金额与官方规则'
+    ],
+    checklist_en: [
+      'Register an OKX account and complete identity verification (verify the official domain www.okx.com)',
+      'Open "Simple Earn Lite", find the KAT Staking Rewards campaign and sign up',
+      'Prepare BTC or KAT and sign up early (rewards accrue from Oct 19, 15:00)',
+      'Keep your stake locked through Oct 24 and wait for the KAT airdrop',
+      'Claim the airdrop pro-rata after the campaign and check amounts against official rules'
+    ],
+    checklist_links: ['https://www.okx.com/', '', 'guides/wallet-safety.html', '', '']
+  },
+  {
+    id: 'airdrop-20261018-binance-usd1',
+    name_zh: 'Binance「USD1 持仓空投」第二阶段（分享 7500 万 WLFI + 250 万 USD1）',
+    name_en: 'Binance "USD1 Holding Airdrop" Phase 2 (Share 75M WLFI + 2.5M USD1)',
+    desc_zh: '每周约 5–10 分钟 · 需真实资金：在币安现货 / 资金 / 杠杆 / U 本位合约账户中持有 USD1（净资产），按持仓快照分享总奖池，奖励每周六 02:00（东八区）前直接空投到现货账户。第二阶段：10 月 16 日–10 月 30 日，7500 万枚 WLFI + 最多 250 万枚 USD1；杠杆/合约账户 USD1 每日未平仓量不低于 300 可获 1.2 倍加成（以官方最新条款为准）。注意：借入稳定币换得的 USD1 按 70% 折算；第二阶段细则以币安官方公告为准；不索要私钥/助记词，谨防仿冒公告。',
+    desc_en: '~5–10 minutes weekly · requires real funds: hold USD1 (net assets) in your Binance Spot / Funding / Margin / USDⓈ-M Futures accounts to share the pool by balance snapshot; rewards airdrop directly to Spot weekly (before 02:00 UTC+8 on Saturdays). Phase 2: Oct 16–30 — 75M WLFI + up to 2.5M USD1; USD1 futures/margin positions with daily open interest ≥300 earn a 1.2x boost (per the latest official terms). Note: USD1 obtained by borrowing other stablecoins is discounted 70%; Phase 2 details per Binance official announcements. No private keys/mnemonics needed — beware of fake announcements.',
+    deadline: '2026-10-30',
+    tags: [
+      { zh: '交易所活动', en: 'Exchange campaign' },
+      { zh: '需真实资金（持仓）', en: 'Real funds needed (holding)' },
+      { zh: '每周发放', en: 'Weekly payouts' }
+    ],
+    link: 'https://www.binance.com/',
+    checklist_zh: [
+      '注册币安账号并完成 KYC（认准官方域名 www.binance.com）',
+      '查看 USD1 持仓空投第二阶段官方公告条款（10 月 16 日–30 日）',
+      '在现货/资金/杠杆/合约账户中持有 USD1（保持净资产为正）',
+      '如有条件，保持 USD1 合约交易对每日未平仓量 ≥300 拿 1.2 倍加成',
+      '每周六前核查现货账户到账的 WLFI/USD1 空投'
+    ],
+    checklist_en: [
+      'Register a Binance account and complete KYC (verify the official domain www.binance.com)',
+      'Read the official Phase 2 announcement terms (Oct 16–30)',
+      'Hold USD1 (positive net assets) in Spot / Funding / Margin / Futures accounts',
+      'If possible, keep daily open interest ≥300 on USD1 futures pairs for the 1.2x boost',
+      'Check your Spot account each Saturday for the WLFI/USD1 airdrop'
+    ],
+    checklist_links: ['https://www.binance.com/', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261017-bybit-stocks',
     name_zh: 'Bybit「Full Stocks Ahead」美股交易活动（15万USDC奖池）',
     name_en: 'Bybit "Full Stocks Ahead" Stock Trading Campaign (150K USDC Prize Pool)',
@@ -219,34 +277,5 @@ window.TOKVS_AIRDROPS = [
       "Don't leave it to Oct 31 — claim early"
     ],
     checklist_links: ['https://claim.pharos.xyz', 'guides/wallet-safety.html', '', '', '']
-  },
-  {
-    id: 'airdrop-20261010-htx',
-    name_zh: 'HTX C2C / 闪兑交易活动',
-    name_en: 'HTX C2C / Convert Trading Campaign',
-    desc_zh: '约 20 分钟 · 需预存真实交易资金。注册 HTX 并完成 KYC L3 认证、在活动页报名后，C2C 与闪兑各完成 1 笔 ≥20 USDT 交易即可领取奖励，也可按需冲更高交易档位瓜分奖池；具体规则以 HTX 官方活动页为准。',
-    desc_en: '~20 minutes · requires real trading funds. Register on HTX, complete KYC L3 verification and sign up on the campaign page, then complete one C2C trade and one Convert trade of at least 20 USDT each to earn rewards; higher volume tiers share a bigger pool. The rules on the official HTX campaign page prevail.',
-    deadline: '2026-10-18',
-    tags: [
-      { zh: '交易所活动', en: 'Exchange campaign' },
-      { zh: '需 KYC', en: 'KYC required' },
-      { zh: '需预存资金', en: 'Deposit required' }
-    ],
-    link: 'https://www.htx.com/',
-    checklist_zh: [
-      '注册 HTX 并完成 KYC L3 认证',
-      '在活动页点击报名',
-      'C2C 完成 1 笔 ≥20 USDT 交易',
-      '闪兑完成 1 笔 ≥20 USDT 交易，领取 1 USDT',
-      '按需冲更高交易档位，瓜分奖池'
-    ],
-    checklist_en: [
-      'Register on HTX and complete KYC L3 verification',
-      'Hit "Register now" on the campaign page',
-      'Complete one C2C trade of at least 20 USDT',
-      'Complete one Convert trade of at least 20 USDT to earn 1 USDT',
-      'Optionally push higher volume tiers for a bigger pool share'
-    ],
-    checklist_links: ['https://www.htx.com/', 'https://www.htx.com/', '', '', '']
   }
 ];
