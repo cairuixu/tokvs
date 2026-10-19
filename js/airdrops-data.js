@@ -14,6 +14,35 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261020-binance-pick',
+    name_zh: 'Binance「Pick」预测市场活动（最高 100 万 USDC 奖池）',
+    name_en: 'Binance "Pick" Prediction Campaign (Up to 1M USDC Prize Pool)',
+    desc_zh: '报名 10–20 分钟 + 每天几分钟签到 · 预测使用活动积分（Scores，仅活动积分、无货币价值，不可兑换现金），奖池按早鸟预约人数浮动、最高 100 万 USDC：50 万赛季排行榜（前 2 万名）、每周 10 万 USDC（共 4 周）、10 万参与奖（完成至少 5 次签到，每人最高 5 USDC）。早鸟预约 10 月 19 日–20 日 23:59（UTC）；预测期 10 月 21 日–11 月 15 日。部分任务（如交易类）需真实资金；需币安账号 + KYC，任务可用性因地区而异；只认官方域名 www.binance.com，不索要私钥/助记词，谨防仿冒活动页。',
+    desc_en: '10–20 minutes to sign up + a few minutes of daily check-ins · predictions spend campaign-only Scores (no monetary value, cannot be redeemed for cash). The prize pool scales with early-bird sign-ups, up to 1M USDC: 500K season leaderboard (top 20,000), 100K USDC per week for 4 weeks, and a 100K participation pool (at least 5 check-ins, up to 5 USDC each). Early-bird reservations Oct 19–20, 23:59 UTC; prediction period Oct 21–Nov 15. Some tasks (e.g. trading) require real funds; Binance account + KYC required, task availability varies by region. Official domain only: www.binance.com, never share private keys/mnemonics, beware of fake campaign pages.',
+    deadline: '2026-11-15',
+    tags: [
+      { zh: '交易所活动', en: 'Exchange campaign' },
+      { zh: '预测市场', en: 'Prediction markets' },
+      { zh: '签到+任务积分', en: 'Check-ins + task scores' }
+    ],
+    link: 'https://www.binance.com/',
+    checklist_zh: [
+      '注册币安账号并完成 KYC（认准官方域名 www.binance.com）',
+      '在 10 月 20 日 23:59（UTC）前完成 Pick 活动早鸟预约',
+      '预测期（10 月 21 日–11 月 15 日）每天签到、做任务赚取 Scores',
+      '用 Scores 在预测市场中做预测，冲赛季榜与每周榜',
+      '赛季结束后核对排名，按官方规则领取 USDC 奖励'
+    ],
+    checklist_en: [
+      'Register a Binance account and complete KYC (verify the official domain www.binance.com)',
+      'Complete the Pick campaign early-bird reservation before 23:59 UTC on Oct 20',
+      'During the prediction period (Oct 21–Nov 15), check in daily and complete tasks to earn Scores',
+      'Use Scores to make predictions in the prediction markets; chase the season and weekly leaderboards',
+      'Check your ranking after the season and claim USDC rewards per official rules'
+    ],
+    checklist_links: ['https://www.binance.com/', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261018-okx-kat',
     name_zh: 'OKX 闪赚 Lite「KAT 质押赚币」（3000 万 KAT 奖池）',
     name_en: 'OKX Simple Earn Lite "KAT Staking Rewards" (30M KAT Prize Pool)',
@@ -189,66 +218,6 @@ window.TOKVS_AIRDROPS = [
       'Activate your referral link and earn multi-tier rewards when friends create portfolios'
     ],
     checklist_links: ['https://app.allox.ai', '', 'guides/wallet-safety.html', '', '']
-  },
-  {
-    id: 'airdrop-20261013-push',
-    name_zh: 'Push Chain（$PC）Season 3 积分计划',
-    name_en: 'Push Chain ($PC) Season 3 Points Program',
-    desc_zh: '每日 10–20 分钟 · 0 资金，测试网 gas 由官方水龙头提供（每 6 小时刷新），无需投入真钱。需连接钱包或社交账号登录，仅钱包签名、不索要私钥/助记词。注意：代币经济学确认 10% 的 $PC 预留空投，但 Season 3 的 TGE 日期官方尚未公布，持续参与赚积分即可。',
-    desc_en: '~10–20 minutes daily · zero cost — testnet gas comes from the official faucet (refreshes every 6 hours), no real money needed. Connect a wallet or sign in with a social account; signature only, never shares private keys/mnemonics. Note: tokenomics reserve 10% of $PC for airdrops, but the Season 3 TGE date is not yet announced — keep earning points.',
-    deadline: '',
-    tags: [
-      { zh: '测试网积分', en: 'Testnet points' },
-      { zh: '潜在空投', en: 'Potential airdrop' },
-      { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '0 资金', en: 'Zero cost' }
-    ],
-    link: 'https://portal.push.org/rewards',
-    checklist_zh: [
-      '打开官方奖励门户 portal.push.org/rewards 并连接钱包/社交账号',
-      '从 portal 内置水龙头领取免费测试网 $PC（每 6 小时可领）',
-      '验证 X/Discord 社交账号解锁任务板',
-      '做每周轮换的 App 任务赚 XP（流动性/兑换/游戏/预测等）',
-      '每日签到 + Spin 转盘累积 Rare Pass'
-    ],
-    checklist_en: [
-      'Open the official rewards portal portal.push.org/rewards and connect a wallet/social account',
-      'Claim free testnet $PC from the portal faucet (refreshes every 6 hours)',
-      'Verify your X/Discord social accounts to unlock the quest board',
-      'Complete rotating weekly App tasks to earn XP (liquidity/swap/gaming/prediction etc.)',
-      'Daily check-in + Spin to collect Rare Passes'
-    ],
-    checklist_links: ['https://portal.push.org/rewards', '', 'guides/wallet-safety.html', '', '']
-  },
-  {
-    id: 'airdrop-20261013-titan',
-    name_zh: 'Titan Exchange 测试网交互（Canton Perp DEX）',
-    name_en: 'Titan Exchange Testnet (Canton Perp DEX)',
-    desc_zh: '首次约 5–10 分钟 · 0 资金，全程测试币 + 钱包签名，无需 KYC。注意：空投尚未官宣，积分不等于代币承诺，按"潜在空投"收录；测试网请用全新钱包，只认官方域名，不索要私钥/助记词。',
-    desc_en: '~5–10 minutes for the first run · zero cost — test tokens and wallet signatures only, no KYC. Note: no airdrop has been announced, so points are NOT a token promise — filed as a "potential airdrop"; use a fresh wallet on testnet, official domains only, never share private keys/mnemonics.',
-    deadline: '',
-    tags: [
-      { zh: '测试网交互', en: 'Testnet' },
-      { zh: '潜在空投（未确认）', en: 'Potential airdrop (unconfirmed)' },
-      { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '0 资金', en: 'Zero cost' }
-    ],
-    link: 'https://testnet.titanx.cc',
-    checklist_zh: [
-      '打开官方测试网 testnet.titanx.cc（认准官方域名）',
-      '连接钱包（与 waitlist 用同一钱包）',
-      '从应用内水龙头领取测试 USDC',
-      '点击 Enable Trading 并在钱包里确认一次签名',
-      '选择 BTC-USDCx 等市场完成一次自然交易'
-    ],
-    checklist_en: [
-      'Open the official testnet at testnet.titanx.cc (verify the official domain)',
-      'Connect your wallet (same one used for the waitlist)',
-      'Claim test USDC from the in-app faucet',
-      'Click "Enable Trading" and confirm one signature in your wallet',
-      'Complete one natural trade on a market such as BTC-USDCx'
-    ],
-    checklist_links: ['https://testnet.titanx.cc', '', 'guides/wallet-safety.html', '', '']
   },
   {
     id: 'airdrop-20261012-pharos',
