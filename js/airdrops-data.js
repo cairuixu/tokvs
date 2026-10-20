@@ -14,6 +14,35 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261021-binance-p2p7',
+    name_zh: 'Binance P2P 七周年庆（1 BTC 奖池）',
+    name_en: 'Binance P2P 7th Anniversary (1 BTC Prize Pool)',
+    desc_zh: '约 10–20 分钟 · 需真实资金：在币安 P2P 完成买币订单即自动参加，无需报名；每笔合格订单换 1 次每日转盘抽奖机会（每人每天限 1 次）。新用户（无 P2P 交易史）首笔买币 ≥30 USDT 即可参与；已有用户每日 P2P 买单 ≥300 USDT。活动 10 月 13 日–27 日（UTC）；每日 5815 份 BTC 代金券（最高 0.0005 BTC），另每周抽 1 名 0.01 BTC 大奖（第 7 天/第 14 天各 1 名）。先到先得，奖励在 3 个工作日内发放，BTC 代金券 7 天内未领取作废。需 KYC；部分国家/地区（美/英/欧盟/香港/新加坡等）不参与；只认官方域名 www.binance.com，不索要私钥/助记词，谨防仿冒活动页。',
+    desc_en: '~10–20 minutes · requires real funds: complete P2P buy orders on Binance during Oct 13–27 (UTC) to enter automatically — no sign-up needed. Each qualifying order earns one daily spin (one spin per account per day). New P2P users: first buy ≥30 USDT qualifies; existing users: daily P2P buys ≥300 USDT. A 1 BTC prize pool, first-come first-served: 5,815 daily BTC token vouchers (up to 0.0005 BTC) plus a weekly 0.01 BTC grand prize (1 winner on Day 7 and Day 14). Rewards arrive within 3 business days; vouchers expire 7 days after issuance. KYC required; users in the US/UK/EU/HK/Singapore and other restricted jurisdictions are excluded. Official domain only: www.binance.com, never share private keys/mnemonics, beware of fake campaign pages.',
+    deadline: '2026-10-27',
+    tags: [
+      { zh: '交易所活动', en: 'Exchange campaign' },
+      { zh: '需真实资金（P2P 交易）', en: 'Real funds needed (P2P trading)' },
+      { zh: '先到先得', en: 'First come, first served' }
+    ],
+    link: 'https://www.binance.com/en/support/announcement/detail/db06ed7ddca1438b88f63c1367dc2e79',
+    checklist_zh: [
+      '注册币安账号并完成 KYC（认准官方域名 www.binance.com）',
+      '活动期（10 月 13–27 日 UTC）在 P2P 板块完成买币订单：新用户首笔 ≥30 USDT，已有用户每日 ≥300 USDT',
+      '用当日抽奖机会去活动落地页转盘抽奖（每人每天 1 次）',
+      '每天可重复参加：第二天再下合格买单拿新的抽奖机会',
+      '抽奖结果即时显示；中奖后 3 个工作日内查收 BTC 代金券，7 天内领取使用'
+    ],
+    checklist_en: [
+      'Register a Binance account and complete KYC (verify the official domain www.binance.com)',
+      'During the campaign (Oct 13–27 UTC), place P2P buy orders: ≥30 USDT first order for new P2P users, ≥300 USDT daily for existing users',
+      'Use the day\'s spin on the campaign landing page (one spin per account per day)',
+      'Repeat daily: place another qualifying order the next day for a fresh spin',
+      'Rewards show instantly; winning BTC vouchers arrive within 3 business days — claim and use within 7 days'
+    ],
+    checklist_links: ['https://www.binance.com/en/support/announcement/detail/db06ed7ddca1438b88f63c1367dc2e79', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261020-binance-pick',
     name_zh: 'Binance「Pick」预测市场活动（最高 100 万 USDC 奖池）',
     name_en: 'Binance "Pick" Prediction Campaign (Up to 1M USDC Prize Pool)',
@@ -158,36 +187,6 @@ window.TOKVS_AIRDROPS = [
       'Complete available quests on The Grand Heist quest page'
     ],
     checklist_links: ['https://heist.dogeos.com', 'https://faucet.testnet.dogeos.com', 'guides/wallet-safety.html', '', '']
-  },
-  {
-    id: 'airdrop-20261015-hyperlynx',
-    name_zh: 'Hyperlynx（$LYNX）「The Hunt」积分',
-    name_en: 'Hyperlynx ($LYNX) "The Hunt" Points',
-    desc_zh: '每日 10–20 分钟 · 需真实资金：在 HyperEVM 上交易与提供流动性赚积分，gas 用 HYPE 支付。3 亿枚 $LYNX（总量 30%）已确认为空投池，TGE 时按积分占比分配；TGE 时间官方尚未公布。注意：团队匿名，属高风险 DeFi 交互；只认官方域名 hyperlynx.fi，不索要私钥/助记词。',
-    desc_en: '~10–20 minutes daily · requires real funds: trade and provide liquidity on HyperEVM to earn points, gas paid in HYPE. 300M $LYNX (30% of supply) is confirmed as the airdrop pool, distributed pro-rata at TGE; the TGE date is not announced. Note: the team is anonymous — high-risk DeFi interaction; official domain only: hyperlynx.fi, never share private keys/mnemonics.',
-    deadline: '',
-    tags: [
-      { zh: 'DeFi 积分', en: 'DeFi points' },
-      { zh: '已确认分配', en: 'Confirmed allocation' },
-      { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '需真实资金', en: 'Real funds needed' }
-    ],
-    link: 'https://www.hyperlynx.fi/',
-    checklist_zh: [
-      '打开官网 hyperlynx.fi 并连接 HyperEVM 兼容钱包（认准官方域名）',
-      '准备 HYPE（付 gas）与 USDC 等做市资金，注意真实资金风险',
-      '在现货市场做兑换赚取交易积分（占积分池 30%）',
-      '向 HYPE/USDC 等池子提供集中流动性赚大头积分（占 70%，保持在价格区间内）',
-      '每周检查仓位维持在区间内，累积连续周忠诚加成'
-    ],
-    checklist_en: [
-      'Open hyperlynx.fi and connect a HyperEVM-compatible wallet (verify the official domain)',
-      'Prepare HYPE (for gas) and USDC etc. as LP capital — real funds at risk',
-      'Swap on spot markets to earn trading points (30% of the points pool)',
-      'Provide concentrated liquidity to pools like HYPE/USDC for the bulk of points (70% — stay in range)',
-      'Check positions weekly to stay in range and stack the loyalty bonus'
-    ],
-    checklist_links: ['https://www.hyperlynx.fi/', 'guides/wallet-safety.html', '', '', '']
   },
   {
     id: 'airdrop-20261014-allox',
