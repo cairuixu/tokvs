@@ -14,6 +14,35 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261023-binance-rlusd-xrp',
+    name_zh: 'Binance「持有 RLUSD 分享 60 万 XRP」持仓空投',
+    name_en: 'Binance "Hold RLUSD to Share 600,000 XRP" Holding Airdrop',
+    desc_zh: '约 10 分钟操作 + 持仓 4 周 · 需真实资金：在币安任意账户持有 RLUSD（每日快照取当日最低余额），按 7 日均余额分享 60 万 XRP 奖池，分 4 周发放；奖励每周六 02:00 前（东八区）直接空投到主账户现货账户。奖励自 10 月 23 日 08:00（东八区）起计。注意：用借入的 USDT/USDC/USD1 等稳定币换来的 RLUSD，杠杆部分只按 40% 折算计入；细则以币安官方公告为准；不索要私钥/助记词，谨防仿冒公告。',
+    desc_en: '~10 minutes to set up + 4-week holding period · requires real funds: hold RLUSD in any Binance account (daily eligible balance = the lowest balance in hourly snapshots that day) to share a 600,000 XRP prize pool by 7-day average balance, paid weekly over 4 weeks directly to your main account\'s Spot account (by 02:00 UTC+8 every Saturday). Rewards start accruing from Oct 23, 08:00 (UTC+8). Note: RLUSD obtained by borrowing other stablecoins (USDT/USDC/USD1 etc.) counts the leveraged portion at only 40%; official announcement terms prevail. No private keys/mnemonics needed — beware of fake announcements.',
+    deadline: '2026-11-20',
+    tags: [
+      { zh: '交易所活动', en: 'Exchange campaign' },
+      { zh: '需真实资金（持仓）', en: 'Real funds needed (holding)' },
+      { zh: '每周发放', en: 'Weekly payouts' }
+    ],
+    link: 'https://www.binance.com/en/square/post/379640270716781',
+    checklist_zh: [
+      '注册币安账号并完成 KYC（认准官方域名 www.binance.com）',
+      '阅读「持有 RLUSD 分享 60 万 XRP」官方公告，确认活动周期与计息规则',
+      '在现货/资金/杠杆等任意账户持有 RLUSD（每日保持余额稳定，快照取当日最低值）',
+      '每周六 02:00（东八区）前核查主账户现货账户到账的 XRP',
+      '注意：用借入的 USDT/USDC/USD1 等换 RLUSD 的杠杆部分只按 40% 计入；波动风险自担'
+    ],
+    checklist_en: [
+      'Register a Binance account and complete KYC (verify the official domain www.binance.com)',
+      'Read the official "Hold RLUSD to Share 600,000 XRP" announcement and confirm the campaign terms',
+      'Hold RLUSD in any Spot / Funding / Margin account (keep the balance stable — snapshots take the day\'s lowest balance)',
+      'Check your main account\'s Spot account each Saturday (before 02:00 UTC+8) for the XRP airdrop',
+      'Note: the leveraged portion of RLUSD obtained by borrowing USDT/USDC/USD1 etc. counts at only 40%; market risk is on you'
+    ],
+    checklist_links: ['https://www.binance.com/en/square/post/379640270716781', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261021-binance-p2p7',
     name_zh: 'Binance P2P 七周年庆（1 BTC 奖池）',
     name_en: 'Binance P2P 7th Anniversary (1 BTC Prize Pool)',
