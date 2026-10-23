@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261024-elyon',
+    name_zh: 'ELYON Chain「Incentivized Testnet Season 1」测试网任务',
+    name_en: 'ELYON Chain "Incentivized Testnet Season 1" Testnet Quests',
+    desc_zh: '约 1–2 小时完成全部任务 + 每天几分钟签到 · 0 资金：激励测试网第一季，连接钱包（仅签名、无需 gas）、从官方水龙头领测试 ELN、发测试交易、委托验证者、铸造任务徽章等 8 个任务，单次做完共 390 积分；另有每日任务、社交任务与推荐奖励（推荐人拿被推荐人 10% 积分）。注意：官方未公布代币分配规则，积分≠未来代币，属未确认潜在机会；测试网请用全新钱包，需连接钱包，只认官方域名 airdrop.elyon.network，不索要私钥/助记词。',
+    desc_en: '~1–2 hours for all quests + a few minutes daily · zero cost: Incentivized Testnet Season 1 — connect a wallet (one signature, no gas), claim test ELN from the official faucet, send test transactions, delegate to a validator, mint a quest badge and more across 8 quests (390 points for one-time completion). Extra points from daily quests, social tasks and referrals (referrers earn 10% of referred friends\' points). Note: no confirmed token allocation — points do NOT guarantee future tokens; unconfirmed potential only. Use a fresh wallet, connect via the official domain only: airdrop.elyon.network, never share private keys/mnemonics.',
+    deadline: '',
+    tags: [
+      { zh: '测试网交互', en: 'Testnet' },
+      { zh: '潜在空投（未确认）', en: 'Potential airdrop (unconfirmed)' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '0 资金', en: 'Zero cost' }
+    ],
+    link: 'https://airdrop.elyon.network',
+    checklist_zh: [
+      '打开官方活动网站 airdrop.elyon.network（认准官方域名）',
+      '连接钱包完成签名（仅签名、不消耗 gas），创建活动档案',
+      '在官方水龙头领取测试 ELN（每日可领，计 20 积分任务）',
+      '完成发送测试交易、委托验证者 10 测试 ELN、铸造任务徽章',
+      '每天做一次每日任务（水龙头、交易、发推文）持续累积积分'
+    ],
+    checklist_en: [
+      'Open the official campaign site airdrop.elyon.network (verify the official domain)',
+      'Connect your wallet and sign (signature only, no gas) to create your campaign profile',
+      'Claim test ELN from the official faucet (daily task worth 20 points)',
+      'Send a test transaction, delegate 10 test ELN to a validator, mint the quest badge',
+      'Do the daily tasks each day (faucet claim, test transaction, tweet) to keep earning points'
+    ],
+    checklist_links: ['https://airdrop.elyon.network', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261023-binance-rlusd-xrp',
     name_zh: 'Binance「持有 RLUSD 分享 60 万 XRP」持仓空投',
     name_en: 'Binance "Hold RLUSD to Share 600,000 XRP" Holding Airdrop',
@@ -99,35 +129,6 @@ window.TOKVS_AIRDROPS = [
       'Check your ranking after the season and claim USDC rewards per official rules'
     ],
     checklist_links: ['https://www.binance.com/', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261018-okx-kat',
-    name_zh: 'OKX 闪赚 Lite「KAT 质押赚币」（3000 万 KAT 奖池）',
-    name_en: 'OKX Simple Earn Lite "KAT Staking Rewards" (30M KAT Prize Pool)',
-    desc_zh: '约 15 分钟操作 + 资金锁仓 5 天 · 需真实资金：在 OKX 闪赚 Lite 锁仓 BTC 或 KAT 参与申购（10 月 19 日 15:00 至 10 月 24 日 15:00，东八区时间），按申购份额瓜分 30,000,000 枚 KAT（Katana）空投奖励。可提前申购（奖励从活动开始日起计），也可直接用活期简单赚币资产申购。注意：质押期间资金锁定 5 天，币价波动风险自担；具体申购规则以 OKX 官方活动页为准；只认官方域名 www.okx.com，不索要私钥/助记词。',
-    desc_en: '~15 minutes to set up + 5-day fund lockup · requires real funds: stake BTC or KAT via OKX Simple Earn Lite (Oct 19, 15:00 – Oct 24, 15:00, UTC+8) to share a 30,000,000 KAT (Katana) airdrop pool pro-rata. Early sign-up is allowed (rewards accrue from the campaign start), and Flexible Earn assets can be staked directly. Note: funds are locked for 5 days; market risk is on you. The rules on the official OKX campaign page prevail. Official domain only: www.okx.com, never share private keys/mnemonics.',
-    deadline: '2026-10-24',
-    tags: [
-      { zh: '交易所活动', en: 'Exchange campaign' },
-      { zh: '需真实资金（锁仓）', en: 'Real funds needed (staking)' },
-      { zh: '质押赚币', en: 'Staking rewards' }
-    ],
-    link: 'https://www.okx.com/',
-    checklist_zh: [
-      '注册 OKX 账号并完成身份认证（认准官方域名 www.okx.com）',
-      '进入「闪赚 Lite」找到 KAT「质押赚币」活动页完成报名',
-      '准备 BTC 或 KAT，提前参与申购（奖励从 10 月 19 日 15:00 起计）',
-      '锁仓完成后保持至 10 月 24 日，等待 KAT 空投奖励到账',
-      '活动结束按份额领取空投，核对到账金额与官方规则'
-    ],
-    checklist_en: [
-      'Register an OKX account and complete identity verification (verify the official domain www.okx.com)',
-      'Open "Simple Earn Lite", find the KAT Staking Rewards campaign and sign up',
-      'Prepare BTC or KAT and sign up early (rewards accrue from Oct 19, 15:00)',
-      'Keep your stake locked through Oct 24 and wait for the KAT airdrop',
-      'Claim the airdrop pro-rata after the campaign and check amounts against official rules'
-    ],
-    checklist_links: ['https://www.okx.com/', '', 'guides/wallet-safety.html', '', '']
   },
   {
     id: 'airdrop-20261018-binance-usd1',
@@ -251,9 +252,9 @@ window.TOKVS_AIRDROPS = [
     id: 'airdrop-20261012-pharos',
     name_zh: 'Pharos（PROS）空投领取',
     name_en: 'Pharos (PROS) Airdrop Claim',
-    desc_zh: '约 15 分钟 · 0 资金，需连接参与测试网时的同一钱包领取（gas 安排以官方公告为准）。资格面向测试网参与者等特定人群，先查资格再操作；10 月 31 日截止，逾期未领将退回社区储备；只认官方领取门户 claim.pharos.xyz，谨防仿冒。',
-    desc_en: '~15 minutes · zero cost — connect the same wallet you used on testnet to claim (gas per the official announcement). Eligibility targets testnet participants and similar groups, so check first; the claim window closes October 31; unclaimed tokens return to the community reserve afterwards. Use only the official portal claim.pharos.xyz and beware of copycats.',
-    deadline: '2026-10-31',
+    desc_zh: '约 15 分钟 · 0 资金，需连接参与测试网时的同一钱包领取（gas 安排以官方公告为准）。资格面向测试网参与者等特定人群，先查资格再操作；10 月 25 日 19:00（北京时间）截止（以官方领取页 claim.pharos.xyz 倒计时为准，10-23 日纠正此前所写 10-31），逾期未领将退回社区储备；只认官方领取门户 claim.pharos.xyz，谨防仿冒。',
+    desc_en: '~15 minutes · zero cost — connect the same wallet you used on testnet to claim (gas per the official announcement). Eligibility targets testnet participants and similar groups, so check first; the claim window closes October 25 at 19:00 Beijing time (per the official portal\'s countdown — corrected Oct 23); unclaimed tokens return to the community reserve afterwards. Use only the official portal claim.pharos.xyz and beware of copycats.',
+    deadline: '2026-10-25',
     tags: [
       { zh: '空投领取', en: 'Claim' },
       { zh: '需连接钱包', en: 'Wallet required' }
@@ -264,7 +265,7 @@ window.TOKVS_AIRDROPS = [
       '连接参与测试网时的同一钱包',
       '查询领取资格与额度',
       '确认领取并等待到账',
-      '不要等到 10-31 当天，提前领取'
+      '不要等到 10-25 当天，提前领取'
     ],
     checklist_en: [
       'Open the official Pharos claim portal (verify the official domain)',
