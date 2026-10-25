@@ -248,32 +248,4 @@ window.TOKVS_AIRDROPS = [
     ],
     checklist_links: ['https://app.allox.ai', '', 'guides/wallet-safety.html', '', '']
   },
-  {
-    id: 'airdrop-20261012-pharos',
-    name_zh: 'Pharos（PROS）空投领取',
-    name_en: 'Pharos (PROS) Airdrop Claim',
-    desc_zh: '约 15 分钟 · 0 资金，需连接参与测试网时的同一钱包领取（gas 安排以官方公告为准）。资格面向测试网参与者等特定人群，先查资格再操作；10 月 25 日 19:00（北京时间）截止（以官方领取页 claim.pharos.xyz 倒计时为准，10-23 日纠正此前所写 10-31），逾期未领将退回社区储备；只认官方领取门户 claim.pharos.xyz，谨防仿冒。',
-    desc_en: '~15 minutes · zero cost — connect the same wallet you used on testnet to claim (gas per the official announcement). Eligibility targets testnet participants and similar groups, so check first; the claim window closes October 25 at 19:00 Beijing time (per the official portal\'s countdown — corrected Oct 23); unclaimed tokens return to the community reserve afterwards. Use only the official portal claim.pharos.xyz and beware of copycats.',
-    deadline: '2026-10-25',
-    tags: [
-      { zh: '空投领取', en: 'Claim' },
-      { zh: '需连接钱包', en: 'Wallet required' }
-    ],
-    link: 'https://claim.pharos.xyz',
-    checklist_zh: [
-      '打开 Pharos 官方领取门户 claim.pharos.xyz（认准官方域名）',
-      '连接参与测试网时的同一钱包',
-      '查询领取资格与额度',
-      '确认领取并等待到账',
-      '不要等到 10-25 当天，提前领取'
-    ],
-    checklist_en: [
-      'Open the official Pharos claim portal (verify the official domain)',
-      'Connect the same wallet you used on testnet',
-      'Check your eligibility and allocation',
-      'Confirm the claim and wait for it to arrive',
-      "Don't leave it to Oct 31 — claim early"
-    ],
-    checklist_links: ['https://claim.pharos.xyz', 'guides/wallet-safety.html', '', '', '']
-  }
 ];
