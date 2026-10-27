@@ -14,6 +14,35 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261028-bybit-usd1',
+    name_zh: 'Bybit「USD1 持币赚币」加码月（2700 万 WLFI 奖池）',
+    name_en: 'Bybit "USD1 Hold & Earn" Bonus Month (27M WLFI Pool)',
+    desc_zh: '约 5 分钟设置 + 每日自动计息 · 需真实资金：在 Bybit 账户持有至少 1 枚 USD1 即自动参与，无需质押/锁仓/申购；加码月 10 月 17 日–11 月 15 日，2700 万 WLFI 奖池，每日按小时快照的有效持仓与当日 APR 计息，次日约 06:00（UTC）发放到主账户资金账户；前 50 名大户另有持仓排行榜。注意：APR 随总参与量与市场价浮动，官方未公布固定收益率；需 KYC，资格与发奖以 Bybit 官方规则为准；只认官方域名 www.bybit.com，不索要私钥/助记词。',
+    desc_en: '~5 minutes to set up + automatic daily accrual · requires real funds: hold at least 1 USD1 in your Bybit account to join automatically — no staking, subscription or lock-up. Bonus month Oct 17–Nov 15: a 27,000,000 WLFI pool, daily rewards from hourly snapshots of effective holdings and the day\'s APR, credited to the Main Account Funding Wallet around 06:00 UTC the next day; a Top-50 holder leaderboard runs alongside. Note: APR varies with total participation and market prices — no fixed yield is published; KYC required, official rules prevail. Official domain only: www.bybit.com, never share private keys/mnemonics.',
+    deadline: '2026-11-15',
+    tags: [
+      { zh: '交易所活动', en: 'Exchange campaign' },
+      { zh: '需真实资金（持仓）', en: 'Real funds needed (holding)' },
+      { zh: '每日发放', en: 'Daily payouts' }
+    ],
+    link: 'https://www.bybit.com/',
+    checklist_zh: [
+      '注册 Bybit 账号并完成 KYC 认证（认准官方域名 www.bybit.com）',
+      '在账户中持有至少 1 枚 USD1（无需质押或锁仓，自动参与）',
+      '保持持仓稳定：每日按小时快照的有效持仓决定当日奖励',
+      '次日约 06:00（UTC）核查主账户资金账户到账的 WLFI',
+      '加码月 10 月 17 日–11 月 15 日结束前留意官方规则与 APR 变化'
+    ],
+    checklist_en: [
+      'Register a Bybit account and complete KYC (verify the official domain www.bybit.com)',
+      'Hold at least 1 USD1 in your account (no staking or lock-up — participation is automatic)',
+      'Keep your balance stable: daily rewards are based on hourly snapshots of effective holdings',
+      'Check your Main Account Funding Wallet around 06:00 UTC the next day for the WLFI credit',
+      'Watch official rules and APR changes through the bonus month (Oct 17–Nov 15)'
+    ],
+    checklist_links: ['https://www.bybit.com/', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261024-elyon',
     name_zh: 'ELYON Chain「Incentivized Testnet Season 1」测试网任务',
     name_en: 'ELYON Chain "Incentivized Testnet Season 1" Testnet Quests',
@@ -71,35 +100,6 @@ window.TOKVS_AIRDROPS = [
       'Note: the leveraged portion of RLUSD obtained by borrowing USDT/USDC/USD1 etc. counts at only 40%; market risk is on you'
     ],
     checklist_links: ['https://www.binance.com/en/square/post/379640270716781', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261021-binance-p2p7',
-    name_zh: 'Binance P2P 七周年庆（1 BTC 奖池）',
-    name_en: 'Binance P2P 7th Anniversary (1 BTC Prize Pool)',
-    desc_zh: '约 10–20 分钟 · 需真实资金：在币安 P2P 完成买币订单即自动参加，无需报名；每笔合格订单换 1 次每日转盘抽奖机会（每人每天限 1 次）。新用户（无 P2P 交易史）首笔买币 ≥30 USDT 即可参与；已有用户每日 P2P 买单 ≥300 USDT。活动 10 月 13 日–27 日（UTC）；每日 5815 份 BTC 代金券（最高 0.0005 BTC），另每周抽 1 名 0.01 BTC 大奖（第 7 天/第 14 天各 1 名）。先到先得，奖励在 3 个工作日内发放，BTC 代金券 7 天内未领取作废。需 KYC；部分国家/地区（美/英/欧盟/香港/新加坡等）不参与；只认官方域名 www.binance.com，不索要私钥/助记词，谨防仿冒活动页。',
-    desc_en: '~10–20 minutes · requires real funds: complete P2P buy orders on Binance during Oct 13–27 (UTC) to enter automatically — no sign-up needed. Each qualifying order earns one daily spin (one spin per account per day). New P2P users: first buy ≥30 USDT qualifies; existing users: daily P2P buys ≥300 USDT. A 1 BTC prize pool, first-come first-served: 5,815 daily BTC token vouchers (up to 0.0005 BTC) plus a weekly 0.01 BTC grand prize (1 winner on Day 7 and Day 14). Rewards arrive within 3 business days; vouchers expire 7 days after issuance. KYC required; users in the US/UK/EU/HK/Singapore and other restricted jurisdictions are excluded. Official domain only: www.binance.com, never share private keys/mnemonics, beware of fake campaign pages.',
-    deadline: '2026-10-27',
-    tags: [
-      { zh: '交易所活动', en: 'Exchange campaign' },
-      { zh: '需真实资金（P2P 交易）', en: 'Real funds needed (P2P trading)' },
-      { zh: '先到先得', en: 'First come, first served' }
-    ],
-    link: 'https://www.binance.com/en/support/announcement/detail/db06ed7ddca1438b88f63c1367dc2e79',
-    checklist_zh: [
-      '注册币安账号并完成 KYC（认准官方域名 www.binance.com）',
-      '活动期（10 月 13–27 日 UTC）在 P2P 板块完成买币订单：新用户首笔 ≥30 USDT，已有用户每日 ≥300 USDT',
-      '用当日抽奖机会去活动落地页转盘抽奖（每人每天 1 次）',
-      '每天可重复参加：第二天再下合格买单拿新的抽奖机会',
-      '抽奖结果即时显示；中奖后 3 个工作日内查收 BTC 代金券，7 天内领取使用'
-    ],
-    checklist_en: [
-      'Register a Binance account and complete KYC (verify the official domain www.binance.com)',
-      'During the campaign (Oct 13–27 UTC), place P2P buy orders: ≥30 USDT first order for new P2P users, ≥300 USDT daily for existing users',
-      'Use the day\'s spin on the campaign landing page (one spin per account per day)',
-      'Repeat daily: place another qualifying order the next day for a fresh spin',
-      'Rewards show instantly; winning BTC vouchers arrive within 3 business days — claim and use within 7 days'
-    ],
-    checklist_links: ['https://www.binance.com/en/support/announcement/detail/db06ed7ddca1438b88f63c1367dc2e79', '', '', '', '']
   },
   {
     id: 'airdrop-20261020-binance-pick',
