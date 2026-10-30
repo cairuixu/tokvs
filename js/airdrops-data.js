@@ -14,6 +14,35 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261031-hyperlynx',
+    name_zh: 'Hyperlynx「The Hunt」积分计划（3 亿 $LYNX 奖池）',
+    name_en: 'Hyperlynx "The Hunt" Points Program (300M $LYNX Pool)',
+    desc_zh: '约 30 分钟上手 + 持续做市/交易 · 需真实资金：HyperEVM 上的现货 DEX 与交易终端，积分计划 The Hunt 已确认 3 亿枚 $LYNX（占固定 10 亿总量的 30%），TGE（官方窗口 2026 年 10–11 月，具体日期未公布）时按积分占比瓜分；积分 70% 来自提供流动性、30% 来自交易，创世期 2 倍加成已结束。需连接 HyperEVM 兼容钱包并投入真实 HYPE/USDC 做市或交易，有无常损失与市场波动风险；积分在 TGE 前不可转让，具体分配以官方规则为准；只认官方域名 hyperlynx.fi，不索要私钥/助记词。',
+    desc_en: '~30 minutes to start + ongoing LP/trading · requires real funds: a spot DEX and trading terminal on HyperEVM. The Hunt points program is confirmed at 300M $LYNX (30% of the fixed 1B supply), claimable pro-rata by points share at TGE (official window Oct–Nov 2026, exact date TBA); 70% of points come from providing liquidity, 30% from trading; the 2x Genesis bonus has ended. Requires a HyperEVM-compatible wallet plus real HYPE/USDC for LP or trading — impermanent loss and market risk apply; points are non-transferable until TGE and official rules prevail. Official domain only: hyperlynx.fi, never share private keys/mnemonics.',
+    deadline: '',
+    tags: [
+      { zh: '积分计划', en: 'Points program' },
+      { zh: '需真实资金（做市/交易）', en: 'Real funds needed (LP/trading)' },
+      { zh: '需连接钱包', en: 'Wallet required' }
+    ],
+    link: 'https://www.hyperlynx.fi/',
+    checklist_zh: [
+      '打开官方网站 hyperlynx.fi（认准官方域名）',
+      '连接 HyperEVM 兼容钱包，并准备 HYPE 与 USDC',
+      '在现货交易终端完成交易赚取交易积分（占积分池 30%）',
+      '在 HYPE 相关池子提供区间流动性赚取做市积分（占 70%）',
+      '留意官方 TGE 公告，TGE 时按积分占比领取 $LYNX'
+    ],
+    checklist_en: [
+      'Open the official site hyperlynx.fi (verify the official domain)',
+      'Connect a HyperEVM-compatible wallet and prepare HYPE and USDC',
+      'Trade on the spot terminal to earn trading points (30% of the points pool)',
+      'Provide in-range liquidity in HYPE pools to earn LP points (70%)',
+      'Watch official TGE announcements and claim $LYNX pro-rata by points at TGE'
+    ],
+    checklist_links: ['https://www.hyperlynx.fi/', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261028-bybit-usd1',
     name_zh: 'Bybit「USD1 持币赚币」加码月（2700 万 WLFI 奖池）',
     name_en: 'Bybit "USD1 Hold & Earn" Bonus Month (27M WLFI Pool)',
@@ -127,35 +156,6 @@ window.TOKVS_AIRDROPS = [
       'During the prediction period (Oct 21–Nov 15), check in daily and complete tasks to earn Scores',
       'Use Scores to make predictions in the prediction markets; chase the season and weekly leaderboards',
       'Check your ranking after the season and claim USDC rewards per official rules'
-    ],
-    checklist_links: ['https://www.binance.com/', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261018-binance-usd1',
-    name_zh: 'Binance「USD1 持仓空投」第二阶段（分享 7500 万 WLFI + 250 万 USD1）',
-    name_en: 'Binance "USD1 Holding Airdrop" Phase 2 (Share 75M WLFI + 2.5M USD1)',
-    desc_zh: '每周约 5–10 分钟 · 需真实资金：在币安现货 / 资金 / 杠杆 / U 本位合约账户中持有 USD1（净资产），按持仓快照分享总奖池，奖励每周六 02:00（东八区）前直接空投到现货账户。第二阶段：10 月 16 日–10 月 30 日，7500 万枚 WLFI + 最多 250 万枚 USD1；杠杆/合约账户 USD1 每日未平仓量不低于 300 可获 1.2 倍加成（以官方最新条款为准）。注意：借入稳定币换得的 USD1 按 70% 折算；第二阶段细则以币安官方公告为准；不索要私钥/助记词，谨防仿冒公告。',
-    desc_en: '~5–10 minutes weekly · requires real funds: hold USD1 (net assets) in your Binance Spot / Funding / Margin / USDⓈ-M Futures accounts to share the pool by balance snapshot; rewards airdrop directly to Spot weekly (before 02:00 UTC+8 on Saturdays). Phase 2: Oct 16–30 — 75M WLFI + up to 2.5M USD1; USD1 futures/margin positions with daily open interest ≥300 earn a 1.2x boost (per the latest official terms). Note: USD1 obtained by borrowing other stablecoins is discounted 70%; Phase 2 details per Binance official announcements. No private keys/mnemonics needed — beware of fake announcements.',
-    deadline: '2026-10-30',
-    tags: [
-      { zh: '交易所活动', en: 'Exchange campaign' },
-      { zh: '需真实资金（持仓）', en: 'Real funds needed (holding)' },
-      { zh: '每周发放', en: 'Weekly payouts' }
-    ],
-    link: 'https://www.binance.com/',
-    checklist_zh: [
-      '注册币安账号并完成 KYC（认准官方域名 www.binance.com）',
-      '查看 USD1 持仓空投第二阶段官方公告条款（10 月 16 日–30 日）',
-      '在现货/资金/杠杆/合约账户中持有 USD1（保持净资产为正）',
-      '如有条件，保持 USD1 合约交易对每日未平仓量 ≥300 拿 1.2 倍加成',
-      '每周六前核查现货账户到账的 WLFI/USD1 空投'
-    ],
-    checklist_en: [
-      'Register a Binance account and complete KYC (verify the official domain www.binance.com)',
-      'Read the official Phase 2 announcement terms (Oct 16–30)',
-      'Hold USD1 (positive net assets) in Spot / Funding / Margin / Futures accounts',
-      'If possible, keep daily open interest ≥300 on USD1 futures pairs for the 1.2x boost',
-      'Check your Spot account each Saturday for the WLFI/USD1 airdrop'
     ],
     checklist_links: ['https://www.binance.com/', '', '', '', '']
   },
