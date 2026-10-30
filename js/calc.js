@@ -59,10 +59,10 @@ if (typeof document !== 'undefined') {
       var html = rows.map(function (r, i) {
         var best = i === 0 ? ' <span class="best">' + (CALC_EN ? 'Lowest' : '最省') + '</span>' : '';
         return '<tr><td class="name">' + r.name + best + '</td>' +
-          '<td class="num">' + fmt(r.openFee) + ' U</td>' +
-          '<td class="num">' + fmt(r.closeFee) + ' U</td>' +
-          '<td class="num"><strong>' + fmt(r.total) + ' U</strong></td>' +
-          '<td class="num">' + fmt(margin) + ' U</td>' +
+          '<td class="num" data-label="' + (CALC_EN ? 'Open fee' : '开仓手续费') + '">' + fmt(r.openFee) + ' U</td>' +
+          '<td class="num" data-label="' + (CALC_EN ? 'Close fee' : '平仓手续费') + '">' + fmt(r.closeFee) + ' U</td>' +
+          '<td class="num" data-label="' + (CALC_EN ? 'Total' : '开平总计') + '"><strong>' + fmt(r.total) + ' U</strong></td>' +
+          '<td class="num" data-label="' + (CALC_EN ? 'Margin needed' : '所需保证金') + '">' + fmt(margin) + ' U</td>' +
           '<td><a class="btn-ref" href="' + r.ref + '" target="_blank" rel="nofollow noopener">' +
           (CALC_EN ? 'Sign up' : '注册') + '</a></td></tr>';
       }).join('');
