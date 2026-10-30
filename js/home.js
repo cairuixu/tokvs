@@ -29,6 +29,14 @@
     var el = document.getElementById(id);
     if (el) el.innerHTML = '<div class="load-fail">' + T(zh, en) + '</div>';
   }
+  function fetchTimeout(url, ms) {
+    return new Promise(function (res, rej) {
+      var done = false;
+      var timer = setTimeout(function () { if (!done) { done = true; rej(new Error('timeout')); } }, ms);
+      fetch(url).then(function (r) { if (!done) { done = true; clearTimeout(timer); res(r); } },
+        function (e) { if (!done) { done = true; clearTimeout(timer); rej(e); } });
+    });
+  }
 
   /* ---- Hero 市场状态：恐惧贪婪 + 总市值/BTC 市占（CoinGecko global） ---- */
   function loadStatus() {
@@ -85,7 +93,7 @@
     if (!el) return;
     var url = 'https://api.coingecko.com/api/v3/coins/markets' +
       '?vs_currency=usd&order=market_cap_desc&per_page=5&page=1&sparkline=false&price_change_percentage=24h';
-    fetch(url).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+    fetchTimeout(url, 8000).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
       .then(function (d) {
         if (!d || !d.length) throw new Error('empty');
         var html = '';
@@ -108,7 +116,7 @@
 
   /* ---- 今日涨跌榜：CoinGecko 市值 Top100 按 24h 涨跌幅取涨前 5 / 跌前 5（失败 4 秒后自动重试一次） ---- */
   function fetchMoversOnce(url) {
-    return fetch(url).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); });
+    return fetchTimeout(url, 8000).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); });
   }
   function loadMovers() {
     var el = document.getElementById('movers-rows');
@@ -156,7 +164,7 @@
   function loadETF() {
     var box = document.getElementById('etf-rows');
     if (!box) return;
-    fetch(dataUrl('etf.json'))
+    fetchTimeout(dataUrl('etf.json'), 8000)
       .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
       .then(function (d) {
         var btc = (d && d.btc) || [], eth = (d && d.eth) || [];
