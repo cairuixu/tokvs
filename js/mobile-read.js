@@ -90,33 +90,13 @@
           cur.nodes.push(child);
         }
       });
-      groups.forEach(function (g) {
+      // No hint bar: the user explicitly rejected the "Tap a heading /
+      // Expand all" bar. Headings carry a ▾ chevron instead, and the first
+      // section starts open so real text is visible immediately on load.
+      groups.forEach(function (g, i) {
         var body = wrapAfter(g.head, g.nodes, 'm-body');
-        makeToggle(g.head, body, false);
+        makeToggle(g.head, body, i === 0);
       });
-      if (groups.length > 1 && !document.querySelector('.m-hint')) {
-        var bar = document.createElement('div');
-        bar.className = 'm-hint';
-        var txt = document.createElement('span');
-        txt.textContent = ZH ? '点标题展开正文，内容都在下面' : 'Tap a heading to expand — everything is below.';
-        var exp = document.createElement('button');
-        exp.className = 'm-btn';
-        exp.type = 'button';
-        exp.textContent = ZH ? '展开全部' : 'Expand all';
-        var col = document.createElement('button');
-        col.className = 'm-btn';
-        col.type = 'button';
-        col.textContent = ZH ? '收起全部' : 'Collapse all';
-        function setAll(open) {
-          document.querySelectorAll('.m-head').forEach(function (h) {
-            if (h._mBody) setOpen(h, h._mBody, open);
-          });
-        }
-        exp.addEventListener('click', function () { setAll(true); });
-        col.addEventListener('click', function () { setAll(false); });
-        bar.appendChild(txt); bar.appendChild(exp); bar.appendChild(col);
-        article.parentNode.insertBefore(bar, article);
-      }
     });
 
     // ---- 3. Long-list "show more" buttons (CSS does the truncating) ----
