@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261101-titan',
+    name_zh: 'Titan Exchange 测试网积分（Canton 隐私永续合约测试网）',
+    name_en: 'Titan Exchange Testnet Points (Canton Privacy Perpetuals Testnet)',
+    desc_zh: '约 30 分钟上手 + 每周交易攒积分 · 0 资金：Canton Network 上的隐私永续合约交易所测试网（10 月 1 日上线），应用内免费领 1 万测试 USDC，完成首笔交易教程拿 250 积分奖励，每周按交易量与盈亏结算积分并上排行榜，邀请好友可获额外积分加成。注意：官方未确认代币与空投，积分用途未公布，属未确认潜在机会；等候名单条款亦说明加入名单本身不给任何代币或分配。测试网请用全新钱包，需连接钱包（支持 Canton/EVM 钱包或邮箱登录），只认官方域名 titanx.cc，不索要私钥/助记词。',
+    desc_en: '~30 minutes to start + weekly trading for points · zero cost: a privacy-focused perpetuals exchange testnet on Canton Network (live since Oct 1) — claim 10,000 free test USDC in the app, earn a 250-point bonus for completing the first-trade tutorial, then weekly points based on trading volume and PnL with a public leaderboard, plus referral point bonuses. Note: no token or airdrop is confirmed and the purpose of points is unpublished — unconfirmed potential only; the waitlist terms also state joining gives no token or allocation. Use a fresh wallet on testnet; wallet connection required (Canton/EVM wallets or email login). Official domain only: titanx.cc, never share private keys/mnemonics.',
+    deadline: '',
+    tags: [
+      { zh: '测试网交互', en: 'Testnet' },
+      { zh: '潜在空投（未确认）', en: 'Potential airdrop (unconfirmed)' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '0 资金', en: 'Zero cost' }
+    ],
+    link: 'https://testnet.titanx.cc/',
+    checklist_zh: [
+      '打开官方测试网 testnet.titanx.cc（认准官方域名 titanx.cc，勿与同名 Solana 聚合器 titan.exchange 混淆）',
+      '连接 Canton 或 EVM 钱包（或邮箱登录），完成等候名单签名',
+      '在应用内领取 1 万测试 USDC（余额低于 2000 可免费补充）',
+      '完成首笔交易教程拿 250 积分，之后每周按交易量与盈亏攒积分',
+      '在 Rewards 页查看积分与排行榜，留意官方主网与积分用途公告'
+    ],
+    checklist_en: [
+      'Open the official testnet testnet.titanx.cc (verify the official domain titanx.cc — not the unrelated Solana aggregator titan.exchange)',
+      'Connect a Canton or EVM wallet (or log in by email) and sign the waitlist message',
+      'Claim 10,000 test USDC in the app (top up free once your balance drops under 2,000)',
+      'Complete the first-trade tutorial for a 250-point bonus, then earn weekly points from volume and PnL',
+      'Check your points and rank on the Rewards page and watch official mainnet and points announcements'
+    ],
+    checklist_links: ['https://testnet.titanx.cc/', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261031-hyperlynx',
     name_zh: 'Hyperlynx「The Hunt」积分计划（3 亿 $LYNX 奖池）',
     name_en: 'Hyperlynx "The Hunt" Points Program (300M $LYNX Pool)',
@@ -158,35 +188,6 @@ window.TOKVS_AIRDROPS = [
       'Check your ranking after the season and claim USDC rewards per official rules'
     ],
     checklist_links: ['https://www.binance.com/', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261017-bybit-stocks',
-    name_zh: 'Bybit「Full Stocks Ahead」美股交易活动（15万USDC奖池）',
-    name_en: 'Bybit "Full Stocks Ahead" Stock Trading Campaign (150K USDC Prize Pool)',
-    desc_zh: '每天约 15–30 分钟 · 需真实资金：在 Bybit 美股/ETF 交易板块参与 20 天活动（10 月 12 日–10 月 31 日），按交易量与持仓瓜分 15 万 USDC。含首单奖励、每日奖励盒（单日美股交易超 2000 美元领最高 50 USDC 奖励盒）、10 万 USDC Stock Splash 交易量分成（至少交易 1000 美元股票且活动结束时持仓不少于 1000 美元）、联盟推荐榜 2 万 USDC。需 KYC 认证，具体资格与发奖以官方规则为准；只认官方域名 www.bybit.com，不索要私钥/助记词。',
-    desc_en: '~15–30 minutes daily · requires real funds: trade US stocks/ETFs on Bybit in a 20-day campaign (Oct 12–31) to share a 150,000 USDC pool. Includes a first-trade reward, a daily reward box (trade >$2,000 in stocks per day for a box worth up to 50 USDC), the 100,000 USDC Stock Splash volume share (trade at least $1,000 in stocks and hold at least $1,000 in stocks at campaign end), and a 20,000 USDC affiliate leaderboard. KYC required; official rules prevail. Official domain only: www.bybit.com, never share private keys/mnemonics.',
-    deadline: '2026-10-31',
-    tags: [
-      { zh: '交易所活动', en: 'Exchange campaign' },
-      { zh: '需真实资金', en: 'Real funds needed' },
-      { zh: '需 KYC', en: 'KYC required' }
-    ],
-    link: 'https://www.bybit.com/',
-    checklist_zh: [
-      '注册 Bybit 账号并完成 KYC 认证（认准官方域名）',
-      '进入活动页报名参加 Full Stocks Ahead（按官方规则）',
-      '完成首笔美股/ETF 交易领取首单奖励',
-      '每日交易超 2000 美元美股，领取每日奖励盒',
-      '保持活动期间交易量与持仓达标，参与 10 万 USDC 交易量分成'
-    ],
-    checklist_en: [
-      'Register a Bybit account and complete KYC (verify the official domain)',
-      'Sign up for Full Stocks Ahead on the campaign page (per official rules)',
-      'Place your first US stock/ETF trade to earn the first-trade reward',
-      'Trade over $2,000 in stocks daily to collect the daily reward box',
-      'Keep your volume and holdings on target to share the 100K USDC Stock Splash'
-    ],
-    checklist_links: ['https://www.bybit.com/', '', '', '', '']
   },
   {
     id: 'airdrop-20261015-dogeos',
