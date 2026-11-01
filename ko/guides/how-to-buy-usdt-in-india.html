@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>인도에서 USDT 가장 저렴하게 구매하기: UPI와 P2P 수수료 비교 — TokVS</title>
+<meta name="description" content="UPI나 은행 송금으로 인도에서 USDT를 가장 저렴하게 구매하는 방법: P2P 프리미엄 대 카드 수수료, 판매자 안전 확인, 쉬운 말로 설명한 1% TDS / 30% 이익세. 소액 테스트 금액으로 시작하세요.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/how-to-buy-usdt-in-india">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-usdt-in-india">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-india">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-usdt-in-india">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-usdt-in-india">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-usdt-in-india">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-usdt-in-india">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-usdt-in-india">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-usdt-in-india">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-usdt-in-india">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-india">
+<meta property="og:title" content="인도에서 USDT 구매: UPI 및 P2P 가이드 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="인도를 위한 UPI와 은행 송금 P2P 안내, 세금 안내, 안전 체크리스트.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/how-to-buy-usdt-in-india">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"인도에서 USDT 구매","item":"https://tokvs.com/ko/guides/how-to-buy-usdt-in-india"}]},{"@type":"Article","headline":"인도에서 USDT 구매 방법: UPI, 은행, P2P","description":"UPI나 은행 송금을 통한 P2P로 인도에서 USDT 구매하기: 단계별 안내, 판매자 안전, 수수료, 세금 안내. 소액 테스트 금액으로 시작하세요.","datePublished":"2026-10-16","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/how-to-buy-usdt-in-india","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"인도에서 가장 좋은 거래소는 어디인가요?","acceptedAnswer":{"@type":"Answer","text":"Binance와 OKX 모두 UPI 지원을 갖춘 깊은 INR P2P 시장을 운영합니다. Binance는 판매자가 가장 많고, OKX는 앱 경험이 더 원활합니다. 어느 쪽도 괜찮습니다. 하나를 선택하고, 인증하고, 소액으로 시작하세요."}},{"@type":"Question","name":"P2P 없이 INR로 직접 USDT를 구매할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"직접 INR 페어는 제한적입니다. P2P가 표준 경로이며 보통 가장 저렴합니다. 카드 기반 즉시 구매도 존재하지만 비용이 더 들고 거절되는 경우가 더 많습니다."}},{"@type":"Question","name":"최소 금액이 있나요?","acceptedAnswer":{"@type":"Answer","text":"P2P 판매자가 자체 최소 한도를 설정합니다. 많은 판매자가 수백 루피부터 주문을 받아들입니다. 절차를 배우기 위해 ₹1,000–2,000으로 시작하세요."}},{"@type":"Question","name":"인도인에게 WazirX와 CoinDCX 중 어느 것이 더 좋은가요?","acceptedAnswer":{"@type":"Answer","text":"둘 다 INR 페어를 갖춘 인도 중심 거래소입니다. 편리할 수 있지만, 확정하기 전에 전체 비용과 유동성을 Binance/OKX P2P와 비교하세요. 가장 깊은 P2P 시장이 보통 가격에서 승리합니다."}},{"@type":"Question","name":"주말에도 P2P를 사용할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"예 — P2P는 절대 잠들지 않지만, 늦은 밤에는 온라인 판매자가 적어 호가가 넓어집니다. UPI는 24시간 작동합니다. 은행 송금 시기는 경로에 따라 다릅니다."}},{"@type":"Question","name":"P2P 소득을 세금 신고에 어떻게 보고하나요?","acceptedAnswer":{"@type":"Answer","text":"모든 주문 기록(날짜, INR, USDT, 주문 ID)을 보관하고 세무 전문가와 상담하세요. 인도의 암호화폐 세금 규칙에는 1% TDS와 30% 고정 이익세가 포함되지만, 적용 세부 사항은 변경됩니다. 기록이 먼저, 조언이 그 다음입니다."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / 인도에서 USDT 구매</div>
+      <h1>인도에서 USDT 구매 방법</h1>
+      <p class="sub">UPI와 은행 송금 P2P가 인도가 USDT를 구매하는 방법입니다. 빠르고, 저렴하며, 에스크로로 보호됩니다. 정확한 과정과 모두가 필요한 세금 안내를 소개합니다.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 8분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기 →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>상황: 인도가 실제로 USDT를 구매하는 방법</h2>
+      <p>인도 사용자에게 P2P는 암호화폐로 들어가는 주요 도로입니다. 거래소 앱 안에서 인증된 판매자와 직접 거래합니다. 여러분 측에서는 UPI나 은행 송금, 상대 측에서는 에스크로에서 해제되는 USDT입니다. 카드 기반 즉시 구매도 존재하지만 덜 흔하고 비쌉니다. 은행 경로와 P2P가 거래량이 있는 곳입니다. 아래 모든 내용은 0에서 시작한다고 가정합니다.</p>
+      <h2>시작하기 전에 필요한 것</h2>
+      <ul>
+        <li><strong>인증된 거래소 계좌</strong>(Binance 또는 OKX — 둘 다 전체 P2P 시장과 함께 인도 사용자를 대상으로 합니다). KYC용 정부 발급 신분증.</li>
+        <li><strong>휴대폰에 설정된 UPI</strong> — 인도의 즉시 결제 시스템이며 가장 빠른 P2P 경로입니다. 대안으로 넷뱅킹/IMPS/NEFT 접근.</li>
+        <li><strong>인증된 거래소 이름과 일치하는 본인 명의의 결제 계좌</strong>. 이름이 일치하지 않으면 주문이 취소됩니다.</li>
+      </ul>
+      <p class="in-cta">먼저 계좌를 준비하세요. <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a><a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></p>
+      <h2>방법 1: UPI를 이용한 P2P(가장 빠름)</h2>
+      <ol>
+        <li>앱에서 P2P 열기 → 구매 → USDT → INR → 결제 방법 필터: <strong>UPI</strong>.</li>
+        <li>판매자를 선택하세요. 수백 건의 완료된 주문, 95% 이상의 완료율, 오래된 계정. 약관을 읽으세요. 대부분의 UPI 판매자는 UPI ID 형식과 시기를 명시합니다.</li>
+        <li>INR 금액을 입력하고 주문하세요. 판매자의 USDT가 에스크로에 잠기고 결제 타이머가 시작됩니다.</li>
+        <li>UPI 앱을 통해 판매자의 UPI ID로 결제하세요. <strong>결제 참조: 주문 번호만</strong> — 'crypto', 'USDT', 'BTC'라고 절대 쓰지 마세요.</li>
+        <li>'송금 완료'를 누르고, 해제를 기다리고, USDT가 Funding 지갑에 도착했는지 확인하세요.</li>
+      </ol>
+      <p>UPI 송금은 몇 초 안에 정산되므로 전체 거래는 보통 10분 안에 끝납니다. 절차를 배우기 위해 ₹1,000–2,000으로 시작하세요.</p>
+      <h2>방법 2: 은행 송금(IMPS/NEFT)을 이용한 P2P</h2>
+      <p>동일한 절차, 다른 경로: UPI 대신 <strong>은행 송금</strong>으로 필터링하세요. IMPS는 거의 즉시 이루어집니다. NEFT 배치는 몇 시간이 걸릴 수 있습니다. 은행 송금은 깨끗한 명세서 기록을 원하는 큰 금액에 적합합니다. 그 외 모든 것 — 판매자 확인, 에스크로, 이의 제기 절차 — 는 방법 1과 동일합니다.</p>
+      <h2>세금: 인도에서는 누구도 건너뛰지 않는 부분</h2>
+      <p>인도는 암호화폐 송금에 세금을 부과합니다. 임계값을 초과하는 암호화폐 거래에 <strong>1% TDS</strong>(원천징수세)가 적용되고, 이익에는 고정 <strong>30%</strong> 세율이 적용됩니다. 이러한 규칙은 공개되어 있으며 2022년부터 시행되어 왔습니다. 하지만 세법은 변경되므로 이를 조언이 아닌 안내로 받아들이세요. 규모 있는 거래 전에 현재 규칙을 확인하거나 세무 전문가와 상담하세요. 그와 관계없이 모든 매수와 매도 기록을 보관하세요.</p>
+      <div class="callout warn"><b>India-specific traps:</b>1. 플랫폼 밖에서 'TDS 없는 USDT'를 제공하는 사람은 동결된 계좌나 그보다 더 나쁜 것을 팔고 있는 것입니다. 2. UPI PIN이나 OTP를 절대 공유하지 마세요. 합법적인 판매자는 절대 묻지 않습니다. 3. Telegram의 가짜 'Binance India 지원'을 조심하세요.</div>
+      <h2>비용</h2>
+      <p>P2P 자체에는 보통 플랫폼 수수료가 없습니다. 여러분의 비용은 시장 대비 판매자의 호가(프리미엄)이며, 보통 카드 구매 수수료보다 훨씬 낮습니다. 여러분 측의 UPI 송금은 무료입니다. 은행이 자체 IMPS/NEFT 수수료를 부과할 수 있지만 보통 아주 작습니다. 큰 거래에서는 1% TDS를 정신적 계산에 포함하세요.</p>
+      <h2>INR 온램프 옵션 비교</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>방법</th><th>속도</th><th>일반적인 비용</th><th>추천 대상</th></tr></thead>
+        <tbody>
+          <tr><td>P2P + UPI</td><td>몇 분</td><td>판매자 프리미엄만</td><td>대부분의 구매</td></tr>
+          <tr><td>P2P + 은행 송금</td><td>몇 분~몇 시간</td><td>판매자 프리미엄만</td><td>큰 금액</td></tr>
+          <tr><td>즉시 구매(카드)</td><td>즉시</td><td>그 위에 카드 수수료</td><td>첫 아주 작은 테스트</td></tr>
+        </tbody>
+      </table></div>
+      <h2>KYC 안내: 예상되는 것</h2>
+      <ol>
+        <li>이메일이나 전화번호로 가입하고 강력하고 고유한 비밀번호를 설정하세요.</li>
+        <li>인증을 시작하세요. 인도를 선택하고, 문서 유형을 선택하고, 안내를 따르세요. 보통 정부 발급 사진 신분증과 실시간 얼굴 확인입니다.</li>
+        <li>승인은 보통 몇 분에서 몇 시간 안에 도착합니다. 지연되면 더 좋은 빛에서 사진을 다시 찍으세요. 흐릿한 문서가 대부분의 거절 원인입니다.</li>
+        <li>무엇이든 입금하기 전에 즉시 2FA(인증 앱, SMS 아님)와 피싱 방지 코드를 활성화하세요.</li>
+      </ol>
+      <h2>구매 후: USDT 보관 장소</h2>
+      <p>세 가지 선택지, 어디에서나 동일합니다. <strong>거래소</strong>(거래에 편리하고 플랫폼 위험을 안음), <strong>자신의 지갑</strong>(시드 문구를 직접 보유 — 더 큰 장기 보유에 가장 좋음), 또는 <strong>수익 상품</strong>(추가 수익, 추가 위험 — 약관을 읽으세요). 첫 구매에서는 배우는 동안 거래소에 두는 것이 완벽히 괜찮습니다. 금액이 여러분에게 중요해지면 자기 수탁으로 이동하세요. 당사 <a href="wallet-safety.html">지갑 보안 가이드</a>는 시드 문구를 제대로 다룹니다.</p>
+      <h2>인도 초보자가 저지르는 흔한 실수</h2>
+      <ul>
+        <li><strong>이익 계산에서 TDS 무시하기.</strong> 그 1%는 모든 송금에서 빠져나갑니다. 첫날부터 원가 기준에 반영하세요.</li>
+        <li><strong>다른 사람의 UPI ID 사용하기.</strong> 이름 불일치는 주문을 취소되게 하고 거래 도중에 동결될 수 있습니다. 여러분의 계좌, 여러분의 이름, 항상.</li>
+        <li><strong>절대적으로 가장 저렴한 판매자를 쫓기.</strong> 완료율 60%인 판매자의 0.2% 더 좋은 호가는 여러분이 만들 가장 비싼 '절약'입니다.</li>
+        <li><strong>모든 것을 하나의 거래소에 두기.</strong> 시작에는 괜찮습니다. 보유량이 커지면 자기 수탁을 배우세요.</li>
+      </ul>
+      <h2>P2P 대 INR 현물 페어: 언제 어느 경로인가</h2>
+      <p>일부 플랫폼은 주요 코인에 대한 직접 INR 거래 페어를 상장합니다. 이용 가능할 때는 P2P보다 간단합니다. 한 번의 클릭, 판매자 없음. 하지만 INR 페어의 유동성은 USDT 페어보다 얇아 가격이 더 나쁠 수 있으며, 이용 가능 여부는 규제 분위기에 따라 왔다 갔다 합니다. 대부분의 인도 트레이더가 사용하는 실용적인 설정: <strong>USDT용 P2P</strong>(가장 깊은 시장, 가장 좋은 가격), 그 뒤 다른 모든 것에는 <strong>USDT 현물 페어</strong>. 두 단계, 양쪽의 장점.</p>
+      <h2>기록 보관: 30초 템플릿</h2>
+      <p>모든 거래마다 다섯 가지 항목을 기록하세요. 날짜, 플랫폼, INR 금액, 받은 USDT, 주문 ID. 그게 전부입니다. 세금 시즌에는 이것이 원가 기준과 TDS 기록이 됩니다. 메모 앱도 괜찮습니다. 스프레드시트가 더 좋습니다. 신고 시즌에 피해를 보는 트레이더는 거래를 가장 많이 한 사람이 아니라 가장 적게 기록한 사람입니다.</p>
+      <h2>졸업: USDT에서 포트폴리오로</h2>
+      <p>USDT는 온램프이지 목적지가 아닙니다. 익숙해지면: USDT를 Funding에서 Spot으로 이동하고(무료, 즉시), USDT 페어에서 BTC/ETH를 구매하고, 절차는 당사 <a href="how-to-buy-bitcoin.html">비트코인 안내</a>를 읽으세요. 기록, TDS 인식, 전용 결제 계좌 등 인도 특유의 습관을 다음에 무엇을 구매하든 유지하세요.</p>
+      <h2>전체 첫 구매 체크리스트(인도판)</h2>
+      <ol>
+        <li>계좌 인증 완료, 2FA와 피싱 방지 코드 활성화.</li>
+        <li>UPI 앱 준비 완료, 계좌 이름이 거래소 KYC 이름과 일치.</li>
+        <li>P2P → 구매 → USDT → INR → UPI 필터. 세 판매자 호가를 스크린샷하고, 가격만이 아니라 체크리스트로 선택하세요.</li>
+        <li>₹1,000–2,000 테스트 주문을 하세요. 결제하고, 송금 완료를 누르고, Funding 지갑에서 USDT를 확인하세요.</li>
+        <li>거래 기록: 날짜, 지불한 INR, 받은 USDT, 주문 ID.(미래의 세금 시즌의 여러분이 고맙다고 말합니다.)</li>
+        <li>절차가 지루하게 느껴지면 실제 규모로 반복하세요. 지루하다는 것은 배웠다는 뜻입니다.</li>
+      </ol>
+      <h2>선택 사항이 아닌 UPI 안전 규칙</h2>
+      <ul>
+        <li>여러분의 UPI PIN은 여러분이 시작한 결제를 승인하기 위해 <strong>오직 UPI 앱 안에서만</strong> 입력합니다. <em>여러분이</em> 다른 곳에서 그것을 묻는 사람은 훔치고 있는 것입니다.</li>
+        <li>낯선 사람의 '수금 요청': 거절하세요. 판매자는 <em>자신의</em> UPI ID를 제공합니다. 여러분이 그들에게 결제합니다. 돈은 한 방향으로 흐릅니다.</li>
+        <li>결제 전에 판매자의 UPI 이름이 P2P 표시 이름과 일치하는지 확인하세요. 불일치는 취소 및 신고 신호입니다.</li>
+        <li>결제 뒤 성공 화면을 스크린샷하세요. 문제가 생기면 이의 제기 증거가 됩니다.</li>
+      </ul>
+      <h2>UPI P2P만으로 충분하지 않을 때</h2>
+      <p>두 가지 경우: <strong>큰 금액</strong>에서 은행 송금 서류 기록을 원할 때(P2P 결제 필터를 전환하세요, 동일한 에스크로 방식), 그리고 <strong>늦은 밤 유동성이 낮은 시간대</strong>에 UPI 판매자가 드물 때(아침까지 기다리거나 약간 더 넓은 호가를 받아들이세요). 어느 쪽도 문제가 아닙니다. 시장이 일정을 말해주는 것뿐입니다. ₹1 lakh를 초과하는 모든 것에는 두 판매자와 두 시간대에 걸쳐 분할하세요. 집중이 좋은 체결의 적입니다.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Ready?</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">가입은 약 10분이 걸립니다. 한 번 인증하고, 2FA를 활성화한 뒤, 위 단계를 따르세요. 이 사이트의 가이드가 나머지를 안내합니다. B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+        </div>
+        <p class="note">직접 가입할 때와 동일한 수수료 — 당사 링크는 추가 비용이 들지 않습니다.</p>
+      </div>
+      
+      <h3>인도에서 가장 좋은 거래소는 어디인가요?</h3>
+      <p>Binance와 OKX 모두 UPI 지원을 갖춘 깊은 INR P2P 시장을 운영합니다. Binance는 판매자가 가장 많고, OKX는 앱 경험이 더 원활합니다. 어느 쪽도 괜찮습니다. 하나를 선택하고, 인증하고, 소액으로 시작하세요.</p>
+      <h3>P2P 없이 INR로 직접 USDT를 구매할 수 있나요?</h3>
+      <p>직접 INR 페어는 제한적입니다. P2P가 표준 경로이며 보통 가장 저렴합니다. 카드 기반 즉시 구매도 존재하지만 비용이 더 들고 거절되는 경우가 더 많습니다.</p>
+      <h3>최소 금액이 있나요?</h3>
+      <p>P2P 판매자가 자체 최소 한도를 설정합니다. 많은 판매자가 수백 루피부터 주문을 받아들입니다. 절차를 배우기 위해 ₹1,000–2,000으로 시작하세요.</p>
+      
+      <h3>인도인에게 WazirX와 CoinDCX 중 어느 것이 더 좋은가요?</h3>
+      <p>둘 다 INR 페어를 갖춘 인도 중심 거래소입니다. 편리할 수 있지만, 확정하기 전에 전체 비용과 유동성을 Binance/OKX P2P와 비교하세요. 가장 깊은 P2P 시장이 보통 가격에서 승리합니다.</p>
+      <h3>주말에도 P2P를 사용할 수 있나요?</h3>
+      <p>예 — P2P는 절대 잠들지 않지만, 늦은 밤에는 온라인 판매자가 적어 호가가 넓어집니다. UPI는 24시간 작동합니다. 은행 송금 시기는 경로에 따라 다릅니다.</p>
+      
+      <h3>P2P 소득을 세금 신고에 어떻게 보고하나요?</h3>
+      <p>모든 주문 기록(날짜, INR, USDT, 주문 ID)을 보관하고 세무 전문가와 상담하세요. 인도의 암호화폐 세금 규칙에는 1% TDS와 30% 고정 이익세가 포함되지만, 적용 세부 사항은 변경됩니다. 기록이 먼저, 조언이 그 다음입니다.</p>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="buy-usdt.html">USDT 구매 방법: 모든 방법 비교</a></li>
+        <li><a href="how-to-buy-bitcoin.html">입문 가이드: 여기서 시작하세요</a></li>
+        <li><a href="avoid-scams.html">암호화폐는 사기인가요? 알아야 할 8가지 사기</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

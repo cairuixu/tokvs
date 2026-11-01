@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Binance는 안전한가? 안전 기능, SAFU, 보안 체크리스트 — TokVS</title>
+<meta name="description" content="Binance 보안 설명: SAFU 기금, 준비금 증명, 계좌 안전 체크리스트 — 그리고 커버하지 않는 것. 증거 기반 답변, 그 뒤 여러분이 결정하세요.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/is-binance-safe">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/is-binance-safe">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/is-binance-safe">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/is-binance-safe">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/is-binance-safe">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/is-binance-safe">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/is-binance-safe">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/is-binance-safe">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/is-binance-safe">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/is-binance-safe">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/is-binance-safe">
+<meta property="og:title" content="Binance는 안전한가? 증거 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="SAFU, 준비금 증명, 9년 실적 — 그리고 솔직한 주의사항.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/is-binance-safe">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"Binance는 안전한가요?","item":"https://tokvs.com/ko/guides/is-binance-safe"}]},{"@type":"Article","headline":"Binance는 안전한가? 보안과 SAFU 설명","description":"Binance 보안 설명: SAFU 기금, 준비금 증명, 계좌 안전 체크리스트 — 그리고 커버하지 않는 것. 증거 기반 답변, 그 뒤 여러분이 결정하세요.","datePublished":"2026-10-16","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/is-binance-safe","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"모든 암호화폐를 Binance에 두어야 하나요?","acceptedAnswer":{"@type":"Answer","text":"활발한 거래 금액에 대해서는 그렇습니다. 그것이 목적입니다. 큰 장기 보유분에 대해서는 자기 수탁을 배우세요. 하드웨어 지갑은 플랫폼 위험을 완전히 제거합니다. 많은 사람이 둘 다 합니다."}},{"@type":"Question","name":"2FA가 정말 그렇게 중요한가요?","acceptedAnswer":{"@type":"Answer","text":"다른 모든 것을 합친 것보다 더 중요합니다. '해킹당한 거래소 계좌' 이야기의 압도적 다수는 비밀번호 재사용 + 2FA 없음입니다. 인증 앱은 그 구멍을 완전히 닫습니다."}},{"@type":"Question","name":"Binance가 규제되나요?","acceptedAnswer":{"@type":"Answer","text":"Binance는 전 세계적으로 다양한 라이선스와 등록 하에 운영되며, 이용 가능 여부는 국가마다 다릅니다. 일부 지역은 전체 서비스, 다른 지역은 제한됩니다. 기사를 신뢰하는 대신 관할 지역의 현재 상태는 공식 사이트에서 확인하세요."}},{"@type":"Question","name":"Binance가 Coinbase보다 안전한가요?","acceptedAnswer":{"@type":"Answer","text":"강점이 다릅니다. Coinbase는 미국 상장 기업으로 미국 규제 명확성을 갖고 있습니다. Binance는 SAFU 실적과 함께 전 세계적으로 더 큽니다. 둘 다 최상위권입니다. 대부분의 비미국 사용자에게 실질적인 차이는 안전이 아니라 기능과 수수료입니다."}},{"@type":"Question","name":"Binance가 내 국가에서 문을 닫으면 내 암호화폐는 어떻게 되나요?","acceptedAnswer":{"@type":"Answer","text":"관할 지역 전반의 역사적 패턴: 서비스가 안내와 함께 축소되고 출금은 종료 기간 동안 계속 이용 가능합니다. 기한을 기다리지 마세요. 첫 신뢰할 만한 신호에서 자금을 이동하세요."}},{"@type":"Question","name":"Binance에 모든 사용자를 자동으로 위한 SAFU 같은 보험이 있나요?","acceptedAnswer":{"@type":"Answer","text":"예 — SAFU는 기본적으로 모든 사용자를 커버합니다. 가입할 것이 없습니다. 거래 수수료로 조달되며 공개적으로 한 번 사용되었습니다(2019년 해킹). 모든 사용자 손실을 전액 커버했습니다."}},{"@type":"Question","name":"Binance는 초보자에게 안전한가요?","acceptedAnswer":{"@type":"Answer","text":"초보자에게 플랫폼 측은 견고합니다. SAFU, 준비금 증명, 긴 실적 — 하지만 대부분의 초보자 손실은 계좌 측에서 옵니다. 재사용된 비밀번호, 2FA 없음, 피싱 링크. 아래 10분 설정을 수행하면 가장 큰 위험이 커버됩니다."}},{"@type":"Question","name":"Binance 계좌를 어떻게 더 안전하게 만드나요?","acceptedAnswer":{"@type":"Answer","text":"인증 앱 2FA를 켜고, 피싱 방지 코드를 설정하고, 출금 주소 화이트리스트를 활성화하고, 이메일이나 채팅 메시지의 링크에서는 절대 로그인하지 마세요. 단계별 안내는 위의 '10분 보안 설정'에 있습니다."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / Binance는 안전한가?</div>
+      <h1>Binance는 안전한가요?</h1>
+      <p class="sub">중앙화 거래소만큼 안전합니다. 단 솔직한 주의사항과 함께. SAFU, 준비금, 실적에 대한 증거, 그리고 커버되지 않는 것을 소개합니다.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 10분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>짧은 답변</h2>
+      <p><strong>예 — Binance는 중앙화 거래소만큼 안전합니다. 단 하나의 솔직한 주의사항과 함께:</strong> 어떤 거래소도 은행이 아니며, '안전'이 '무위험'을 의미하지는 않습니다. 다음은 증거입니다. 보호 기금, 준비금 증명, 실적 — 그리고 그것들이 <em>커버하지 않는</em> 것. 그 뒤 여러분이 결정하세요. 그 주의사항은 실질적입니다. 2023년 11월 Binance는 미국의 자금 세탁 방지 및 제재 위반에 대해 유죄를 인정하고 약 43억 달러를 지불하기로 합의했습니다. 집행 기록은 각주가 아니라 안전 그림의 일부입니다.</p>
+      <h2>SAFU: 이름이 있는 비상 기금</h2>
+      <p>SAFU — <strong>Secure Asset Fund for Users</strong> — 는 Binance의 비상 보험 기금이며, 공개적이고 검증 가능합니다. Binance는 사용자 손실을 극단적인 보안 사건에서 커버하기 위해 거래 수수료의 일부를 SAFU에 할당하며, 암호화폐(BTC, BNB, 스테이블코인 위주)로 보유합니다. 실제로 사용된 적이 있습니다. 2019년 Binance가 해킹당했을 때(~7,000 BTC 탈취), <strong>사용자 자금은 SAFU에 의해 전액 커버되었습니다</strong>. 해킹 자체로 한 사토시도 잃은 사람이 없습니다. SAFU는 약 10억 달러(2026년 초)로 보고되었습니다. 이것은 보험이 아니라 재량 기금입니다. Binance 자체 문구는 커버를 로그인 자격 증명을 노출시키는 자체 시스템의 결함으로 인한 손실로 제한하며, Binance는 지급에 대한 완전한 재량을 보유합니다. 사용자의 피싱이나 실수로 인한 손실은 커버하지 않습니다. 침해 후 자체 보험 기금에서 지급하는 거래소는 정확히 여러분이 원하는 대로 행동하고 있는 것입니다.</p>
+      <h2>준비금 증명: 신뢰하지 말고 검증하세요</h2>
+      <p>Binance는 <strong>준비금 증명(PoR)</strong>을 게시합니다. 고객 자산이 대출되거나 도박에 사용되지 않고 1:1로 온체인에 존재한다는 암호학적 증거입니다. PoR 페이지는 공개되어 있으며 정기적으로 새로고침됩니다. 올바른 습관: 누군가의 스크린샷을 신뢰하는 대신 가끔 공식 도메인에서 직접 확인하세요. PoR은 완벽하지 않습니다(자산을 보여주지 부채를 보여주지 않습니다). 하지만 게시하는 거래소는 게시하지 않는 거래소보다 엄격히 더 투명합니다.</p>
+      <h2>여러분이 통제하는 보안(솔직히 대부분입니다)</h2>
+      <p>불편한 진실은 다음과 같습니다. 뉴스에서 '거래소 해킹'이라고 하는 대부분의 사건은 실제로 <strong>계좌 탈취</strong>입니다. 피싱, SIM 교환, 유출된 비밀번호. 거래소는 괜찮았습니다. 사용자가 그렇지 않았습니다. Binance는 도구를 제공합니다. 2FA(인증 앱을 사용하세요, SMS가 아닙니다), 이메일의 피싱 방지 코드, 출금 주소 화이트리스트, 기기 관리. <strong>가입 후 10분 안에 네 가지를 모두 활성화하세요.</strong> SAFU 기금은 Binance의 실패로부터 여러분을 보호하지 여러분의 실패로부터 보호하지 않습니다.</p>
+      <p class="in-cta">보안은 진짜 계좌에서 시작됩니다. <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></p>
+      <h2>실적: 9년, 전체 사이클</h2>
+      <p>2017년에 설립된 Binance는 2021–2022년 하락을 포함해 여러 번의 완전한 상승-하락 사이클을 거치며 운영되었고, 그 하락은 더 작은 플랫폼을 죽였습니다. 압도적인 격차로 거래량 기준 가장 큰 거래소입니다. 양날의 검입니다(가장 큰 표적). 하지만 규모는 더 작은 거래소가 감당할 수 없는 보안 예산도 제공합니다. 장수가 미래 안전의 증거는 아니지만, 커버되지 않은 사건으로 고객 자금을 잃지 않은 9년은 이 업계가 제공하는 최고의 증거입니다.</p>
+      <h2>SAFU가 커버하지 않는 것(이 부분을 읽으세요)</h2>
+      <ul>
+        <li><strong>여러분 자신의 실수.</strong> 피싱된 자격 증명, 가짜 앱, 유출된 시드 문구 — 지구상의 어떤 기금도 이것들을 커버하지 않습니다.</li>
+        <li><strong>시장 손실.</strong> SAFU는 보안 보험이지 투자 보험이 아닙니다. 코인이 50% 하락한다면 그것은 시장입니다.</li>
+        <li><strong>규제 조치.</strong> 이용 가능 여부와 기능은 국가마다 다릅니다. 지역의 상태는 Binance 공식 사이트에서 확인하세요.</li>
+      </ul>
+      <h2>은행 비교, 솔직히</h2>
+      <p>은행 예금은 정부 보험(FDIC, 미국의 경우)을 가질 수 있습니다. <strong>암호화폐 거래소에는 동등한 것이 없습니다.</strong> SAFU는 회사 기금이지 정부 보증이 아닙니다. 솔직한 틀: Binance는 가장 안전한 <em>암호화폐 거래소</em> 중 하나이며, 암호화폐 거래소는 범주로서 은행이 갖지 않는 위험을 가집니다. 그에 맞게 노출 규모를 정하세요. 그리고 큰 장기 보유분에 대해서는 자기 수탁을 배우세요(당사 <a href="wallet-safety.html">지갑 보안 가이드</a> 참조).</p>
+      <h2>Binance가 암호화폐를 보관하는 방법(공개 사실)</h2>
+      <p>모든 주요 거래소와 마찬가지로 Binance는 고객 자산의 대부분을 <strong>콜드 스토리지</strong>에 보관합니다. 키가 절대 인터넷에 닿지 않는 지갑입니다. 운영 자금만 핫 지갑에 있습니다. 출금은 핫 자금에서 나옵니다. 콜드 준비금은 오프라인으로 유지됩니다. 이 구조는 업계 표준이며 공개적으로 설명되어 있습니다. 콜드 스토리지가 절도를 불가능하게 만들지는 않지만, 공격 표면을 '인터넷'에서 '물리적 고보안 시설'로 이동시키며, 이는 의미 있는 향상입니다.</p>
+      <h2>Binance 안전 기능 한눈에 보기</h2>
+      <p>Binance 보안은 두 부분으로 작동합니다. 플랫폼이 운영하는 것과 여러분이 켜는 것. 이 목록은 플랫폼 부분입니다. 아래 설정 섹션은 여러분의 것입니다.</p>
+      <ul>
+        <li><b>2단계 인증(2FA):</b> 비밀번호 위에 인증 앱 코드. 이 하나의 설정이 대부분의 계좌 탈취를 막습니다.</li>
+        <li><b>출금 주소 화이트리스트:</b> 출금은 미리 승인한 주소로만 갈 수 있습니다.</li>
+        <li><b>피싱 방지 코드:</b> 모든 진짜 Binance 이메일에서 나타나는 여러분이 선택한 단어, 그래서 가짜 이메일이 눈에 띕니다.</li>
+        <li><b>기기 및 세션 관리:</b> 로그인된 모든 기기를 보고 인식하지 못하는 세션을 종료하세요.</li>
+        <li><b>SAFU 비상 기금:</b> 거래 수수료로 조달되는 플랫폼 준비금으로, 2019년에 해킹으로 인한 모든 사용자 손실을 전액 커버하기 위해 공개적으로 한 번 사용되었습니다.</li>
+        <li><b>패스키 로그인:</b> 인증 앱 2FA와 함께, 계좌에서 이용 가능한 경우 기기에 연결된 로그인 옵션.</li>
+        <li><b>준비금 증명:</b> 플랫폼의 말을 그대로 받아들이는 대신 직접 검증할 수 있는 게시된 지갑 스냅샷.</li>
+      </ul>
+      <h2>10분 보안 설정(먼저 하세요)</h2>
+      <ol>
+        <li><strong>인증 앱 2FA.</strong> SMS가 아닙니다. SIM 교환이 SMS 코드를 무력화합니다. Google/Microsoft Authenticator 또는 하드웨어 키.</li>
+        <li><strong>피싱 방지 코드.</strong> 여러분이 선택한 단어, 모든 진짜 Binance 이메일 안에 포함됩니다. 코드 없음 = Binance에서 온 것이 아닙니다. 삭제하세요.</li>
+        <li><strong>출금 화이트리스트.</strong> 출금을 미리 승인한 주소로 잠그세요. 비밀번호가 있어도 공격자는 자금을 자신의 지갑으로 보낼 수 없습니다.</li>
+        <li><strong>고유한 비밀번호 + 전용 이메일.</strong> 비밀번호 관리자가 이를 수월하게 만듭니다. 거래소 비밀번호를 다른 곳에서 절대 재사용하지 마세요.</li>
+      </ol>
+      <p>이 네 가지가 다른 모든 보안 조언을 합친 것보다 낫습니다. 대부분의 탈취 피해자는 이 중 하나도 활성화하지 않았습니다.</p>
+      <h2>Binance와 아무 관련 없는 위험 신호</h2>
+      <ul>
+        <li><strong>가짜 앱.</strong> 비공식 앱 스토어의 복제된 Binance 앱은 첫 로그인 시 자격 증명을 수확합니다. 공식 사이트나 공식 앱 스토어, 확인된 개발자 이름 — 항상.</li>
+        <li><strong>'지원' DM.</strong> 진짜 Binance 지원은 Telegram/WhatsApp으로 먼저 DM을 보내지 않습니다. 그렇게 하는 사람은 수확하고 있는 것입니다.</li>
+        <li><strong>주소 오염.</strong> 사기꾼은 다음에 잘못된 주소를 복사해 붙여넣기를 바라면서 유사 주소에서 더스트 거래를 보냅니다. 항상 전체 주소를 확인하고, 화이트리스트를 사용하세요.</li>
+        <li><strong>화면 공유 '도움'.</strong> 합법적인 사람은 여러분의 화면을 볼 필요가 없습니다. 절대.</li>
+      </ul>
+      <h2>Binance 자체가 나쁜 날을 보낸다면</h2>
+      <p>사람들이 실제로 걱정하는 두 가지 시나리오: <strong>보안 침해</strong> — 위에서 다뤘습니다. SAFU가 정확히 이를 위해 존재하며, 2019년 선례는 사용자 전액 보상입니다. <strong>귀하의 국가에서의 규제 조치</strong> — 기능이 제한되고, 출금은 축소 기간 동안 보통 계속 이용 가능합니다. 여러 관할 지역에서 전개되었으며 패턴은 일관됩니다. 벽에 쓰인 글을 볼 때 자금을 일찍 빼세요. 기한을 기다리지 마세요. 어느 시나리오도 유쾌하지 않습니다. 둘 다 기본 위생으로 살아남을 수 있습니다.</p>
+      <h2>안전 측면에서 Binance 대 다른 최상위 거래소</h2>
+      <p>Binance가 안전 축에서 OKX, Bybit, Bitget과 어떻게 비교되나요? 솔직히: <strong>같은 등급입니다.</strong> 모두 준비금 증명을 게시하고, 모두 2FA/피싱 방지/화이트리스트를 지원하며, 모두 완전한 시장 사이클을 살아남았습니다. Binance의 차별점은 규모(가장 큰 보안 예산)와 실제로 지급한 SAFU 기금의 공개 실적입니다. 어떤 주요 거래소도 의미 있게 더 나은 <em>구조적</em> 안전 이야기를 갖고 있지 않습니다. 좋은 소식입니다. 결정을 수수료와 기능에 맡길 수 있다는 뜻입니다.</p>
+      <h2>사건 역사: 솔직한 타임라인</h2>
+      <ul>
+        <li><strong>2019:</strong> 정교한 해킹으로 ~7,000 BTC가 도난당했습니다. SAFU가 모든 사용자 손실을 전액 커버했습니다. 업계에서 가장 잘 처리된 침해.</li>
+        <li><strong>2022:</strong> BNB Chain 브릿지 익스플로잇 — 거래소 핫 지갑 침해와 구별되는 체인 수준 사건, 거래소 사용자 계좌가 털리지 않았습니다.</li>
+        <li><strong>2023:</strong> Binance는 미국에서 자금 세탁 방지 및 제재 위반에 대해 유죄를 인정하고 약 43.16억 달러(약 25.11억 달러 몰수 + 약 18.05억 달러 형사 벌금)를 지불하기로 합의했으며, 수년간의 규제 준수 감독을 받았습니다. 회사에는 고통스러웠지만, 사용자 자금은 절대 문제가 아니었습니다. 그리고 그것이 <em>여러분의</em> 안전 질문에 대한 관련 지표입니다.</li>
+        <li><strong>진행 중:</strong> 준비금 증명 게시, 정기 보안 보고서. 지루합니다. 거래소 보안 페이지에서 정확히 원하는 것입니다.</li>
+      </ul>
+      <h2>실제로 중요한 하나의 질문</h2>
+      <p>사람들은 'Binance는 안전한가?'라고 묻지만, 결과를 결정하는 질문은 <strong>'내 설정은 안전한가?'</strong>입니다. 인증 앱 2FA, 화이트리스트 켜기, 고유한 비밀번호, 공식 출처의 앱, 자기 수탁 시 오프라인 시드 문구. 피싱당한 사용자와 함께하는 난공불락의 거래소는 돈을 잃습니다. 규율 있는 사용자와 함께하는 그저 좋은 거래소는 잃지 않습니다. 보안 예산을 거래소 쇼핑이 아니라 체크리스트에 쓰세요.</p>
+      <h2>준비금 증명을 직접 읽는 방법</h2>
+      <p>Binance의 PoR 페이지는 누구나 암호학적으로 보유를 검증할 수 있게 합니다. 2분 버전은 다음과 같습니다. 공식 PoR 페이지를 열고(공식 도메인만), 주요 자산이 100% 이상의 비율을 보이는지 확인하고, 감사 타임스탬프를 기록하세요. PoR이 증명하는 것: 자산이 존재합니다. 증명하지 않는 것: 부채가 그것을 초과하지 않는다거나, 자금이 내일 이동할 수 없다는 것. 스냅샷이지 보장이 아닙니다. 하지만 스냅샷을 게시하는 플랫폼은 아무것도 게시하지 않는 플랫폼보다 엄격히 더 책임이 있습니다. 분기별 2분 습관으로 만드세요.</p>
+      <h2>Binance와 귀하의 국가: 실용적인 확인</h2>
+      <p>확정하기 전에: Binance 공식 사이트를 열고 귀하의 국가 서비스 상태 — 전체, 제한, 또는 이용 불가 — 를 확인하세요. 제한은 보통 파생상품과 법정화폐 경로를 먼저 칩니다. 현물과 출금은 보통 마지막에 영향을 받습니다. 지역이 제한된다면 VPN으로 맞서지 마세요(가장 필요할 때 출금을 동결시킬 수 있는 서비스 약관 위반입니다). 대신 여러분이 사는 곳에서 완전히 이용 가능한 거래소를 사용하세요. 당사 거래소 비교 페이지는 <a href="../exchanges.html#availability">국가 이용 가능 여부 표</a>(미국, 유럽연합, 캐나다, 영국, 호주)를 갖고 있으며, 2026년 10월 30일에 확인되었습니다. 최고의 거래소는 법적으로 여러분을 대상으로 하는 거래소입니다.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Ready?</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">가입은 약 10분이 걸립니다. 한 번 인증하고, 2FA를 활성화한 뒤, 위 단계를 따르세요. 이 사이트의 가이드가 나머지를 안내합니다. B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+        </div>
+        <p class="note">직접 가입할 때와 동일한 수수료 — 당사 링크는 추가 비용이 들지 않습니다.</p>
+      </div>
+      
+      <h3>모든 암호화폐를 Binance에 두어야 하나요?</h3>
+      <p>활발한 거래 금액에 대해서는 그렇습니다. 그것이 목적입니다. 큰 장기 보유분에 대해서는 자기 수탁을 배우세요. 하드웨어 지갑은 플랫폼 위험을 완전히 제거합니다. 많은 사람이 둘 다 합니다.</p>
+      <h3>2FA가 정말 그렇게 중요한가요?</h3>
+      <p>다른 모든 것을 합친 것보다 더 중요합니다. '해킹당한 거래소 계좌' 이야기의 압도적 다수는 비밀번호 재사용 + 2FA 없음입니다. 인증 앱은 그 구멍을 완전히 닫습니다.</p>
+      <h3>Binance가 규제되나요?</h3>
+      <p>Binance는 전 세계적으로 다양한 라이선스와 등록 하에 운영되며, 이용 가능 여부는 국가마다 다릅니다. 일부 지역은 전체 서비스, 다른 지역은 제한됩니다. 기사를 신뢰하는 대신 관할 지역의 현재 상태는 공식 사이트에서 확인하세요.</p>
+      
+      <h3>Binance가 Coinbase보다 안전한가요?</h3>
+      <p>강점이 다릅니다. Coinbase는 미국 상장 기업으로 미국 규제 명확성을 갖고 있습니다. Binance는 SAFU 실적과 함께 전 세계적으로 더 큽니다. 둘 다 최상위권입니다. 대부분의 비미국 사용자에게 실질적인 차이는 안전이 아니라 기능과 수수료입니다.</p>
+      <h3>Binance가 내 국가에서 문을 닫으면 내 암호화폐는 어떻게 되나요?</h3>
+      <p>관할 지역 전반의 역사적 패턴: 서비스가 안내와 함께 축소되고 출금은 종료 기간 동안 계속 이용 가능합니다. 기한을 기다리지 마세요. 첫 신뢰할 만한 신호에서 자금을 이동하세요.</p>
+      
+      <h3>Binance에 모든 사용자를 자동으로 위한 SAFU 같은 보험이 있나요?</h3>
+      <p>예 — SAFU는 기본적으로 모든 사용자를 커버합니다. 가입할 것이 없습니다. 거래 수수료로 조달되며 공개적으로 한 번 사용되었습니다(2019년 해킹). 모든 사용자 손실을 전액 커버했습니다.</p>
+      <h3>Binance는 초보자에게 안전한가요?</h3>
+      <p>초보자에게 플랫폼 측은 견고합니다. SAFU, 준비금 증명, 긴 실적 — 하지만 대부분의 초보자 손실은 계좌 측에서 옵니다. 재사용된 비밀번호, 2FA 없음, 피싱 링크. 아래 10분 설정을 수행하면 가장 큰 위험이 커버됩니다.</p>
+      <h3>Binance 계좌를 어떻게 더 안전하게 만드나요?</h3>
+      <p>인증 앱 2FA를 켜고, 피싱 방지 코드를 설정하고, 출금 주소 화이트리스트를 활성화하고, 이메일이나 채팅 메시지의 링크에서는 절대 로그인하지 마세요. 단계별 안내는 위의 '10분 보안 설정'에 있습니다.</p>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="../reviews/binance.html">Binance 리뷰: 수수료와 리베이트</a></li>
+        <li><a href="choose-exchange.html">거래소 선택 방법: 6가지 확인 사항</a></li>
+        <li><a href="wallet-safety.html">지갑 및 시드 문구 보안</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

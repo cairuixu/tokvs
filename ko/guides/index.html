@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>암호화폐 초보자 가이드: 비트코인 구매, 거래소 — TokVS</title>
+<meta name="description" content="TokVS 가이드 라이브러리: 비트코인 구매, USDT 구매, 거래소 선택, 수수료, 레버리지, 지갑 보안, 에어드롭, 사기 예방 — 22개의 이중 언어 가이드.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/index">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/index">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/index">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/index">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/index">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/index">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/index">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/index">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/index">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/index">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/index">
+<meta property="og:title" content="초보자 가이드 | 구매, 비교, 안전하게 이용하기 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="22개의 초보자 가이드: 첫 비트코인 구매, 수수료 설명, 레버리지 위험, 지갑 보안, 에어드롭, 사기 예방.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tokvs.com/ko/guides/index">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"암호화폐 초보자 가이드: 비트코인 구매, 거래소","item":"https://tokvs.com/ko/guides/"}]},{"@type":"Article","headline":"암호화폐 초보자 가이드: 비트코인 구매, 거래소","description":"TokVS 가이드 라이브러리: 비트코인 구매, USDT 구매, 거래소 선택, 수수료, 레버리지, 지갑 보안, 에어드롭, 사기 예방 — 22개의 이중 언어 가이드.","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/"},"inLanguage":"en"}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ 가이드</div>
+      <h1>초보자 가이드</h1>
+      <p class="sub">첫 구매자가 막히는 질문을 하나씩 답합니다. 어떻게 구매하는지, 어디서 구매하는지, 비용은 얼마인지, 어떻게 보관하는지, 어떻게 사기를 피하는지. 5단계 경로로 첫 구매를 마친 뒤, 필요할 때 개별 가이드를 참고하세요.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="sec-head"><h2>경로로 시작하기</h2><span class="desc">첫 비트코인까지 5단계</span></div>
+    <div class="steps">
+      <a class="step" href="../start/step1.html"><div class="n">1</div><div class="t">비트코인 만나기</div><div class="d">비트코인이 무엇이고 왜 가치가 있는지</div><span class="arr">›</span></a>
+      <a class="step" href="../start/step2.html"><div class="n">2</div><div class="t">거래소 선택</div><div class="d">수수료와 안전성을 먼저 비교</div><span class="arr">›</span></a>
+      <a class="step" href="../start/step3.html"><div class="n">3</div><div class="t">가입하기</div><div class="d">눈에 보이는 단계, 첫 시도에 KYC 통과</div><span class="arr">›</span></a>
+      <a class="step" href="../start/step4.html"><div class="n">4</div><div class="t">USDT 구매</div><div class="d">계좌에 자금을 넣는 올바른 방법</div><span class="arr">›</span></a>
+      <a class="step" href="../start/step5.html"><div class="n">5</div><div class="t">첫 코인 구매</div><div class="d">현물 주문 + 안전한 보관</div></a>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>모든 가이드</h2><span class="desc">50개 가이드 · 정기 업데이트</span></div>
+    <div class="rev-grid">
+      <a class="card rev-card" href="how-to-buy-bitcoin.html"><div><div class="tt">초보자를 위한 비트코인 구매 방법</div><div class="dd">한 페이지에 담긴 전체 여정: 거래소 선택, 본인 인증, USDT 구매, 첫 BTC 주문.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="buy-usdt.html"><div><div class="tt">USDT 구매 방법</div><div class="dd">즉시 구매, P2P, 현물 전환 비교 — 프리미엄과 카드 동결 위험 포함.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="choose-exchange.html"><div><div class="tt">초보자를 위한 최고의 암호화폐 거래소</div><div class="dd">거래소가 신뢰할 만한지 알려주는 여섯 가지 확인 사항과 빅4에 대한 판정.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="binance-vs-okx.html"><div><div class="tt">Binance vs OKX</div><div class="dd">수수료, 코인, 상품, 앱 경험을 항목별로 비교하고 한 줄 판정을 제시합니다.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="crypto-fees.html"><div><div class="tt">암호화폐 수수료 설명</div><div class="dd">메이커 대 테이커, 현물·선물 수수료, 펀딩 수수료, 출금 비용 — 실제 계산과 함께.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="leverage-guide.html"><div><div class="tt">레버리지와 청산</div><div class="dd">암호화폐 레버리지란 무엇인가요? 청산이 일어나는 과정을 예시로 설명합니다. 거래 전에 읽어보세요.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="wallet-safety.html"><div><div class="tt">지갑 및 시드 문구 보안</div><div class="dd">시드 문구가 무엇인지, 어떻게 보관하는지, 분실하거나 유출되었을 때 어떻게 해야 하는지.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="airdrop-guide.html"><div><div class="tt">암호화폐 에어드롭이란?</div><div class="dd">에어드롭의 작동 방식, 참여할 만한 세 가지 유형, 참여 단계, 사기 레드라인.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="stablecoins.html"><div><div class="tt">USDT vs USDC</div><div class="dd">발행자, 준비금, 규제, 디페깅 위험 — 어떤 디지털 달러를 보유해야 할까요?</div></div><span class="go">›</span></a>
+            <a class="card rev-card" href="how-to-buy-usdt-on-binance-p2p.html"><div><div class="tt">Binance P2P에서 USDT 구매</div><div class="dd">에스크로, 판매자 체크리스트, 결제 안전 — 가장 저렴하게 USDT를 구매하는 올바른 방법.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-india.html"><div><div class="tt">인도에서 USDT 구매</div><div class="dd">UPI와 은행 송금 P2P 안내, 판매자 안전, 수수료, 세금 안내.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-nigeria.html"><div><div class="tt">나이지리아에서 USDT 구매</div><div class="dd">나이라-USDT P2P 가이드: 판매자 검증, 호가 읽기, 함정 피하기.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="okx-vs-bybit.html"><div><div class="tt">OKX vs Bybit</div><div class="dd">수수료, 선물 유동성, 앱, 보안을 비교하고 거래 방식에 맞는 판정을 제시합니다.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="lowest-fee-crypto-exchange.html"><div><div class="tt">가장 낮은 수수료의 암호화폐 거래소</div><div class="dd">빅4의 실제 메이커/테이커 숫자와 지출을 줄이는 다섯 가지 습관.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="is-binance-safe.html"><div><div class="tt">Binance는 안전한가요?</div><div class="dd">SAFU, 준비금 증명, 실적 — 근거와 솔직한 주의사항.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-bitcoin-with-paypal.html"><div><div class="tt">PayPal로 비트코인 구매하기</div><div class="dd">PayPal로 비트코인을 구매하는 세 가지 실제 경로, 각 경로의 비용과 함정.</div></div><span class="go">›</span></a>
+<a class="card rev-card" href="crypto-futures-fees-comparison.html"><div><div class="tt">선물 수수료 비교</div><div class="dd">Binance, OKX, Bybit, Bitget의 메이커/테이커 수수료와 펀딩 수수료 설명.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="binance-vs-okx-fees-2026.html"><div><div class="tt">Binance vs OKX 수수료 2026</div><div class="dd">현물, 선물, 출금 수수료를 항목별로 비교 — 어느 쪽이 더 저렴한가요?</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="what-is-usdt.html"><div><div class="tt">USDT란 무엇인가요?</div><div class="dd">달러 연동 스테이블코인 설명: 페그 메커니즘, 준비금, 솔직한 위험.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="best-crypto-exchange-2026.html"><div><div class="tt">2026년 최고의 거래소</div><div class="dd">초보자 경험을 기준으로 Binance, OKX, Bybit를 평가합니다. 5분 만에 선택하세요.</div></div><span class="go">›</span></a>
+            <a class="card rev-card" href="best-crypto-exchange-for-beginners.html"><div><div class="tt">초보자를 위한 최고의 거래소</div><div class="dd">첫 사용자를 위한 OKX, Binance, Bitget 비교와 첫 주 일별 안내.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-ethereum.html"><div><div class="tt">Ethereum(ETH) 구매 방법</div><div class="dd">ETH 초보자 안내: 가스 수수료, 메인넷 대 L2 네트워크, 가장 안전한 첫 구매 경로.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-solana.html"><div><div class="tt">Solana(SOL) 구매 방법</div><div class="dd">SOL 초보자 안내: 지갑 선택, 중단 이력을 쉬운 말로 설명, 첫 구매 단계.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-xrp.html"><div><div class="tt">XRP(Ripple) 구매 방법</div><div class="dd">XRP 초보자 안내: 데스티네이션 태그, 지역 규정, 메모 누락으로 코인을 잃지 않는 방법.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-vietnam.html"><div><div class="tt">베트남에서 USDT 구매</div><div class="dd">은행 송금과 MoMo P2P 안내, 판매자 안전, 수수료 안내.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-philippines.html"><div><div class="tt">필리핀에서 USDT 구매</div><div class="dd">GCash와 Maya P2P 가이드: 호가, 판매자 확인, 함정.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-brazil.html"><div><div class="tt">브라질에서 USDT 구매</div><div class="dd">Pix와 TED P2P 안내, 실제 비용, 현지 함정.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-turkey.html"><div><div class="tt">터키에서 USDT 구매</div><div class="dd">은행 FAST와 Papara P2P 가이드, 리라 환율 함정, 판매자 안전.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-crypto-for-beginners.html"><div><div class="tt">초보자를 위한 암호화폐 구매 방법</div><div class="dd">5단계 핵심: 배우기, 거래소 선택, 인증, 구매, 보관 — 각 상세 가이드 링크 포함.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="what-is-bitcoin.html"><div><div class="tt">비트코인이란 무엇인가요?</div><div class="dd">2009년 기원, 블록체인과 채굴, 2,100만 개 상한, 구매 방법, 솔직한 위험.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="what-is-cryptocurrency.html"><div><div class="tt">암호화폐란 무엇인가요?</div><div class="dd">코인 대 토큰, 블록체인 기초, 지갑과 거래소 — 순수 초보자를 위한 암호화폐 설명.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="bitcoin-vs-ethereum.html"><div><div class="tt">비트코인 vs 이더리움</div><div class="dd">목적, 합의 방식, 공급량, 수수료, 생태계를 비교하고 유형에 맞는 판정을 제시합니다.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="best-crypto-wallet-for-beginners.html"><div><div class="tt">초보자를 위한 최고의 암호화폐 지갑</div><div class="dd">핫 월렛 대 콜드 월렛, MetaMask, Trust Wallet, Ledger, Trezor — 그리고 시드 문구 보안.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-sell-crypto.html"><div><div class="tt">암호화폐 매도 및 현금화 방법</div><div class="dd">USDT 현물 매도, P2P 매도, 은행 출금 — 수수료, 소요 시간, 세금 안내.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-dogecoin.html"><div><div class="tt">Dogecoin 구매 방법</div><div class="dd">DOGE 초보자 안내: 거래소, USDT 교환, 보관 — 솔직한 밈코인 위험 안내 포함.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-europe.html"><div><div class="tt">유럽에서 USDT 구매</div><div class="dd">대부분의 EU 국가를 위한 SEPA 은행 송금과 P2P 안내, 이용 가능 여부 주의사항.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="how-to-buy-usdt-in-usa.html"><div><div class="tt">미국에서 USDT 구매 방법</div><div class="dd">ACH, 송금, 카드, P2P: 미국 구매자를 위한 비용, 속도, KYC.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="how-to-buy-usdt-in-uk.html"><div><div class="tt">영국에서 USDT 구매 방법</div><div class="dd">Faster Payments, 카드, P2P: GBP 경로, 비용, 확인 사항.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="how-to-buy-usdt-with-bank-transfer.html"><div><div class="tt">은행 송금으로 USDT 구매 방법</div><div class="dd">P2P와 직접 입금: 소요 시간, 수수료, 피해야 할 실수.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="how-to-buy-usdt-with-debit-card.html"><div><div class="tt">직불카드로 USDT 구매 방법</div><div class="dd">즉시 카드 구매: 수수료, 한도, 거절되었을 때 대처 방법.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="can-you-buy-usdt-with-paypal.html"><div><div class="tt">PayPal로 USDT를 구매할 수 있나요?</div><div class="dd">솔직한 답변: 직접은 안 됩니다 — 실제로 통하는 세 가지 우회 방법 포함.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="how-to-keep-your-binance-account-safe.html"><div><div class="tt">Binance 계정을 안전하게 유지하는 방법</div><div class="dd">2FA, 피싱 방지 코드, 출금 화이트리스트, 피싱 식별 방법.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="binance-vs-coinbase.html"><div><div class="tt">초보자를 위한 Binance vs Coinbase</div><div class="dd">수수료, 자금 조달, 사용 편의성, 안전성 — 초보자를 위한 명확한 선택.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="how-to-withdraw-from-binance.html"><div><div class="tt">Binance에서 출금하는 방법</div><div class="dd">은행, P2P 매도, 지갑: 네트워크, 수수료, 소요 시간, 멈춘 출금.</div></div><span class="go">›</span></a> <a class="card rev-card" href="how-to-buy-usdt-in-canada.html"><div><div class="tt">캐나다에서 USDT 구매 방법</div><div class="dd">캐나다를 잘 서비스하는 비교 대상 거래소는 없습니다. 확인할 사항, Interac 결제망, 솔직한 대안.</div></div><span class="go">›</span></a> <a class="card rev-card" href="how-to-buy-usdt-in-australia.html"><div><div class="tt">호주에서 USDT 구매 방법</div><div class="dd">PayID, 은행 송금, 카드: 첫 구매, 수수료, AUD 안내.</div></div><span class="go">›</span></a> <a class="card rev-card" href="how-to-buy-usdt-in-eea.html"><div><div class="tt">EEA에서 USDT 구매 방법</div><div class="dd">2026년 7월 이후 MiCA: 누가 서비스하는지, USDC가 더 간단한 스테이블코인인 이유, SEPA 경로.</div></div><span class="go">›</span></a> <a class="card rev-card" href="crypto-taxes-for-beginners.html"><div><div class="tt">초보자를 위한 암호화폐 세금</div><div class="dd">보유 대 처분, 기록 보관, 교환이 과세 대상이 될 수 있는 이유 — 일반 정보만 제공합니다.</div></div><span class="go">›</span></a> <a class="card rev-card" href="exchanges-to-avoid.html"><div><div class="tt">피해야 할 암호화폐 거래소</div><div class="dd">공개 기록에 있는 붕괴한 거래소, 위험 신호, 대신 해야 할 일.</div></div><span class="go">›</span></a>
+<a class="card rev-card" href="avoid-scams.html"><div><div class="tt">암호화폐는 사기인가요?</div><div class="dd">흔한 암호화폐 사기 여덟 가지, 식별 방법, 이미 돈을 보냈다면 해야 할 일.</div></div><span class="go">›</span></a>
+    </div>
+    <p class="note">가이드는 상시 업데이트되며 플랫폼 규칙이 바뀌면 개정됩니다. 수수료와 정책에 대해서는 각 거래소의 최신 공식 공지가 항상 우선합니다.</p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>직불카드로 USDT 구매 방법: 수수료, 한도, 거절 — TokVS</title>
+<meta name="description" content="직불카드로 즉시 USDT 구매하기: 단계별, 수수료, 일일 한도, 3D Secure, 카드가 거절되었을 때의 조치. 소액 테스트 구매로 시작하세요.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/how-to-buy-usdt-with-debit-card">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-usdt-with-debit-card">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-usdt-with-debit-card">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-usdt-with-debit-card">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-usdt-with-debit-card">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-usdt-with-debit-card">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-usdt-with-debit-card">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-usdt-with-debit-card">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-usdt-with-debit-card">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-usdt-with-debit-card">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-usdt-with-debit-card">
+<meta property="og:title" content="직불카드로 USDT 구매 방법: 수수료, 한도, 거절 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="직불카드 USDT 구매: 즉시 단계, 수수료, 한도, 3D Secure, 거절 해결.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/how-to-buy-usdt-with-debit-card">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"직불카드로 USDT 구매하기","item":"https://tokvs.com/ko/guides/how-to-buy-usdt-with-debit-card"}]},{"@type":"Article","headline":"직불카드로 USDT 구매 방법: 수수료, 한도, 거절","description":"직불카드로 즉시 USDT 구매하기: 단계별, 수수료, 일일 한도, 3D Secure, 카드가 거절되었을 때의 조치. 소액 테스트 구매로 시작하세요.","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/how-to-buy-usdt-with-debit-card","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"왜 직불카드로 USDT를 구매하는 것이 더 비싼가요?","acceptedAnswer":{"@type":"Answer","text":"카드 구매는 은행 입금보다 처리 비용이 높으며, 거래소는 그 비용을 더 높은 수수료로 전가합니다. 편의성은 현실입니다. 거래가 즉시 이루어집니다. 하지만 큰 금액에서는 수수료 차이가 빠르게 쌓이므로 먼저 은행 입금과 비교하세요."}},{"@type":"Question","name":"왜 직불카드가 거절되었나요?","acceptedAnswer":{"@type":"Answer","text":"가장 흔한 원인은 은행 사기 차단, 실패한 3D Secure 확인, 청구 주소 불일치, 또는 일일 한도입니다. 정보를 확인하고, 인증 안내를 완료하고, 그래도 실패하면 은행에 전화하거나 은행 송금이나 P2P로 전환하세요."}},{"@type":"Question","name":"대신 신용카드를 사용할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"일부 거래소는 신용카드를 받아들이지만, 많은 은행이 신용카드의 암호화폐 구매를 차단하거나 추가 수수료가 있는 현금 서비스로 취급합니다. 직불카드가 더 안전한 선택입니다. 그리고 신용카드가 거절되면 계속 재시도하지 마세요."}},{"@type":"Question","name":"일일 한도는 얼마인가요?","acceptedAnswer":{"@type":"Answer","text":"한도는 인증 수준과 거래소에 따라 다르며, 보통 더 많은 인증 단계를 완료할수록 높아집니다. 시작 전에 구매 화면을 확인하세요. 현재 한도를 보여줍니다. 그리고 큰 구매는 며칠에 걸쳐 나누거나 대신 은행 송금으로 계획하세요."}},{"@type":"Question","name":"직불카드 구매는 즉시 이루어지나요?","acceptedAnswer":{"@type":"Answer","text":"보통 그렇습니다. 결제가 승인되고 3D Secure가 완료되면 USDT가 보통 몇 분 안에 계좌에 나타납니다. 나타나지 않는다면 지원에 문의하기 전에 주문 상태 페이지를 확인하세요. 대부분의 지연은 저절로 해결됩니다."}},{"@type":"Question","name":"다른 사람의 직불카드를 사용할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. 카드는 인증된 거래소 계좌와 동일한 이름이어야 합니다. 다른 사람의 카드를 사용하면 결제가 거절되며, 반복된 시도는 계좌의 보안 검토를 촉발할 수 있습니다."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / 직불카드로 USDT 구매하기</div>
+      <h1>직불카드로 USDT 구매 방법</h1>
+      <p class="sub">가장 빠른 진입, 솔직한 가격: 즉시 단계, 실제 수수료, 일일 한도, 은행이 거절할 때 정확히 해야 할 일.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 11분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기 →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>왜 직불카드가 초보자의 정문인가</h2>
+      <p>직불카드로 USDT를 구매하는 것은 암호화폐에서 원클릭 구매에 가장 가까운 것입니다. 기다릴 입금도, 복사할 은행 정보도, 협상할 판매자도 없습니다. 카드 정보를 입력하고, 결제를 확인하면, USDT가 보통 몇 분 안에 계좌에 도착합니다. 그래서 이 사이트를 포함한 거의 모든 초보자 가이드가 첫 구매자에게 아주 첫 구매에 카드 경로를 가리키는 것입니다. 위협적인 과정을 다른 온라인 결제처럼 느껴지는 것으로 바꾸며, 배우고 있을 때 그 익숙함은 실제 돈의 가치가 있습니다.</p>
+      <p>솔직한 트레이드오프는 비용입니다. 카드 구매는 흔한 구매 방법 중 가장 높은 수수료를 부과합니다. 카드 처리가 비싸고 거래소가 그 비용을 전가하기 때문입니다. 소액 테스트 구매에서는 수수료가 사소합니다. 정기적이거나 큰 구매에서는 실제 돈으로 누적됩니다. 카드를 현명하게 사용하는 방법은 시작 경로로 사용하는 것입니다. 소액 카드 구매로 절차를 배우고, 그 뒤 진지한 금액에는 은행 입금으로 넘어가세요. 이 가이드는 단계와 전환해야 할 순간을 모두 보여줍니다.</p>
+      <h2>시작하기 전에 필요한 것</h2>
+      <ul>
+        <li><strong>인증된 거래소 계좌.</strong> 카드 구매 전에 본인 인증이 필요합니다. 사진 신분증을 준비하고 실시간 얼굴 확인을 예상하세요.</li>
+        <li><strong>본인 명의의 직불카드</strong>와 은행이 보유한 대로 정확히 일치하는 청구 주소. 카드 이름이 인증된 계좌 이름과 일치해야 합니다.</li>
+        <li><strong>3D Secure 접근.</strong> 대부분의 은행은 이제 온라인 카드 결제에 앱 내 승인이나 일회용 코드를 요구합니다. 은행 앱이나 휴대폰을 가까이 두세요.</li>
+        <li><strong>2단계 인증</strong>을 인증 앱으로, 첫 구매 전에 피싱 방지 코드와 함께 설정하세요.</li>
+        <li><strong>소액 테스트 금액.</strong> 첫 카드 구매는 거절이나 예상 밖 수수료가 문제가 아니라 불편함이 될 정도로 작아야 합니다.</li>
+      </ul>
+      <p class="in-cta">먼저 계좌를 준비하세요. <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a><a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></p>
+      <h2>단계별: 첫 직불카드 구매</h2>
+      <ol>
+        <li>거래소 계좌에서 인증을 완료하고 2FA를 활성화하세요.</li>
+        <li>암호화폐 구매나 즉시 구매로 이동해 USDT를 선택하고, 현지 통화를 결제 통화로 선택하세요.</li>
+        <li>쓰고 싶은 금액을 입력하세요. 화면은 수수료와 받게 될 정확한 USDT를 보여줍니다. 계속하기 전에 양쪽을 읽으세요. 수수료가 놀라움을 준다면 멈추고 먼저 은행 입금과 비교하세요.</li>
+        <li>결제 방법으로 직불카드를 선택하고 카드를 추가하세요. 번호, 유효 기간, CVV, 은행이 보유한 대로 정확한 청구 주소.</li>
+        <li>구매를 확인하세요. 은행이 보통 승인을 요청합니다. 앱 안에서, 코드로, 또는 3D Secure 안내로. 안내를 신속히 완료하세요. 시간 초과된 승인은 거절된 구매를 의미합니다.</li>
+        <li>확인을 기다린 뒤 지갑에서 USDT를 확인하세요. 거래를 기록하세요. 날짜, 지출한 금액, 받은 USDT, 주문 ID.</li>
+      </ol>
+      <p>아무것도 잘못되지 않을 때 전체 절차는 5분 안에 끝납니다. 무언가 잘못될 때는 거의 항상 아래 거절 섹션의 문제 중 하나입니다. 첫 시도 전에 그 섹션을 읽으면 다섯 번이 아니라 한 번의 재시도로 대부분의 실패를 처리할 수 있습니다.</p>
+      <h2>비용: 수수료 구조</h2>
+      <p>카드 구매는 최대 세 가지 비용 층을 가지며, 구매 화면은 보통 이를 하나의 호가 가격으로 묶습니다. 첫째, 거래소의 즉시 구매 수수료로, 현물 거래 수수료보다 높습니다. 즉시성과 거래소가 카드 위험을 떠안는 것에 대해 지불하고 있는 것입니다. 둘째, 스프레드: 호가 USDT 가격과 시장 가격 사이의 격차로, 빠르게 움직이는 날에는 넓어집니다. 셋째, 은행 측의 가능한 수수료: 일부 은행은 카드 암호화폐 구매를 현금성 거래로 취급하거나 자체 수수료를 적용하므로, 구매에 예상 밖 추가 수수료가 붙어 게시된다면 은행 약관을 확인하세요.</p>
+      <p>이 숫자 중 어느 것도 고정되어 있지 않으며, 이 페이지는 읽는 시점에 이미 오래되었을 수 있는 비율을 제시하지 않을 것입니다. 규칙은 간단합니다. 구매 화면의 최종 USDT 수치를 읽고, 동일한 금액에 대해 은행 입금과 현물 매수와 비교하고, 확정 전에 거래소의 공식 수수료 페이지에서 현재 수수료를 확인하세요. 소액에서는 카드가 편의성에서 승리합니다. 큰 금액에서는 은행 경로가 보통 비용에서 승리하며, 종종 중요할 정도로 승리합니다.</p>
+      <h2>일일 한도: 실제로 얼마나 구매할 수 있나요?</h2>
+      <p>카드 구매에는 한도가 있으며, 초보자는 최악의 순간 — 결제 도중 — 에 이를 발견합니다. 한도는 인증 수준과 거래소에 따라 다릅니다. 기본 인증은 보통 적당한 일일 금액을 허용하며, 추가 인증 단계를 완료할수록 한도가 보통 높아집니다. 구매 화면은 결제 전에 현재 한도를 보여주므로, 특정 금액을 중심으로 계획하기 전에 확인하세요.</p>
+      <p>세 가지 실질적인 결과가 뒤따릅니다. 첫째, 계획한 구매가 한도를 초과한다면 며칠에 걸쳐 나누거나 보통 더 높은 한도를 가진 은행 송금을 사용하세요. 둘째, 한도는 종종 달력 기준이 아니라 일일 롤링 기준입니다. 오후 11시의 구매는 일부 시스템에서 다음 날의 기간에도 여전히 포함되므로, 한도 안내의 정확한 문구를 확인하세요. 셋째, 한도로 인한 거절된 구매는 은행 문제가 아니며 은행에 전화해도 해결되지 않습니다. 다음 인증 단계를 완료하거나 방법을 전환하세요.</p>
+      <h2>카드가 거절되었을 때: 해결 가이드</h2>
+      <p>거절은 가장 흔한 카드 구매 좌절이며, 거의 모두 지루한 원인이 있습니다. 순서대로 이 목록을 진행하세요.</p>
+      <ol>
+        <li><strong>청구 주소 불일치.</strong> 거래소의 주소는 우편번호 형식을 포함해 은행 기록과 정확히 일치해야 합니다. 수정하고 한 번 재시도하세요.</li>
+        <li><strong>실패하거나 시간 초과된 3D Secure.</strong> 은행 앱에서 안내를 신속히 승인하세요. 만료되었다면 동일한 오래된 세션을 재시도하는 대신 구매를 다시 시작하세요.</li>
+        <li><strong>은행 사기 차단.</strong> 첫 암호화폐 구매는 사기 시스템을 촉발합니다. 은행에 전화하고, 거래가 본인의 것인지 확인하고, 허용해 달라고 요청한 뒤 한 번 재시도하세요.</li>
+        <li><strong>일일 한도 도달.</strong> 구매 화면의 한도 안내를 확인하세요. 상한에 도달했다면 기다리거나 은행 송금으로 전환하세요.</li>
+        <li><strong>온라인 구매에 활성화되지 않은 카드.</strong> 일부 카드, 특히 새 카드나 교체 카드는 먼저 은행 앱에서 온라인 결제를 활성화해야 합니다.</li>
+        <li><strong>잘못된 카드 유형.</strong> 신용카드는 암호화폐에 대해 종종 차단되거나 현금 서비스로 취급됩니다. 본인 명의의 직불카드로 전환하세요.</li>
+      </ol>
+      <p>수정당 한 번의 재시도, 연속 다섯 번의 재시도가 아닙니다. 반복된 거절은 은행과 거래소 양쪽에 사기로 보이며, 2분짜리 해결을 이틀짜리 대기로 바꾸는 일시적 차단을 촉발할 수 있습니다. 두 가지 다른 해결이 실패하면 방법을 전환하세요. 은행 송금이나 P2P 주문이 카드 문제가 해결되는 동안 USDT를 가져다줄 것입니다.</p>
+      <h2>직불카드 대 은행 송금 대 P2P</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>방법</th><th>속도</th><th>일반적인 비용</th><th>추천 대상</th></tr></thead>
+        <tbody>
+          <tr><td>직불카드 즉시 구매</td><td>몇 분</td><td>세 가지 중 가장 높은 수수료</td><td>첫 소액 테스트, 긴급 구매</td></tr>
+          <tr><td>은행 송금 + 현물</td><td>경로별 몇 분에서 며칠</td><td>종종 무료 입금 + 현물 수수료</td><td>정기 및 큰 구매</td></tr>
+          <tr><td>P2P</td><td>매칭되면 몇 분</td><td>시장 대비 판매자 호가</td><td>입금이나 카드가 실패할 때</td></tr>
+        </tbody>
+      </table></div>
+      <p>패턴은 일관됩니다. 속도는 돈이 들고, 인내는 돈을 절약합니다. 배우고 있을 때나 지금 USDT가 필요할 때 카드를 사용하세요. 수수료 차이가 시간의 가치를 초과할 정도로 금액이 클 때는 은행을 사용하세요.</p>
+      <h2>카드 보안: 주의할 것</h2>
+      <p>거래소에 카드를 저장하는 것은 편리하고 흔하지만, 저장된 모든 결제 방법처럼 취급하세요. 2FA, 강력하고 고유한 비밀번호, 피싱 방지 코드 뒤에 있어야 합니다. 메시지나 이메일의 링크에서 도달한 페이지에는 절대 카드 정보를 입력하지 마세요. 거래소 앱을 열거나 주소를 직접 입력하세요. 합법적인 지원 담당자는 절대 전체 카드 번호, CVV, 3D Secure 코드를 묻지 않으며, 묻는 사람은 실시간으로 여러분을 훔치고 있는 것입니다. 카드 정보가 유출된 것으로 의심된다면 즉시 은행 앱에서 카드를 동결하고 그 뒤에 거래소 계좌를 정리하세요. 카드가 긴급한 부분입니다.</p>
+      <div class="callout warn"><b>Card-buying traps:</b>1. 자신의 카드로 여러분을 위해 USDT를 구매해주겠다는 사람은 사기꾼입니다. 2. CVV나 3D Secure 코드를 절대 공유하지 마세요. 합법적인 담당자는 절대 묻지 않습니다. 3. 소셜 미디어와 메시징 앱의 가짜 거래소 지원 계정을 조심하세요.</div>
+      <h2>구매 후: USDT 보관 장소</h2>
+      <p>세 가지 선택지, 어디에서나 동일합니다. <strong>거래소</strong>(거래에 편리하고 플랫폼 위험을 안음), <strong>자신의 지갑</strong>(복구 문구를 직접 보유 — 더 큰 장기 보유에 가장 좋음), 또는 <strong>수익 상품</strong>(추가 수익, 추가 위험 — 만지기 전에 약관을 읽으세요). 첫 구매에서는 배우는 동안 거래소에 두는 것이 완벽히 괜찮습니다. 금액이 여러분에게 중요해지면 자기 수탁으로 이동하세요. 당사 <a href="best-crypto-wallet-for-beginners.html">초보자 지갑 가이드</a>는 복구 문구를 제대로 설명합니다.</p>
+      <h2>카드 초보자가 저지르는 흔한 실수</h2>
+      <ul>
+        <li><strong>습관적으로 큰 금액에 카드 수수료 지불하기.</strong> 카드는 시작 경로입니다. 정기적으로 구매하고 나면 은행 입금과 현물 매수가 실제 돈을 절약합니다.</li>
+        <li><strong>다른 사람의 카드 사용하기.</strong> 카드는 인증된 계좌와 동일한 이름이어야 합니다. 다른 사람의 카드는 거절되고 보안 검토를 촉발할 수 있습니다.</li>
+        <li><strong>거절을 반복해서 재시도하기.</strong> 반복된 거절은 사기로 보입니다. 수정당 한 번 재시도한 뒤 방법을 전환하세요.</li>
+        <li><strong>최종 USDT 수치 무시하기.</strong> 수수료 비율보다 실제로 받는 USDT가 더 중요합니다. 최종 숫자를 매번 읽으세요.</li>
+        <li><strong>기록 건너뛰기.</strong> 모든 구매를 기록하세요. 날짜, 지출한 금액, 받은 USDT, 주문 ID. 미래의 여러분이 세금 시즌에 고마워할 것입니다.</li>
+      </ul>
+      <h2>졸업: 카드 구매에서 더 저렴한 경로로</h2>
+      <p>자연스러운 진행은 다음과 같습니다. 절차를 배우기 위한 카드 첫 구매, 자신의 숫자로 실제 비용 차이를 비교하기 위한 카드나 은행 송금 두 번째 구매, 그 뒤 절차가 지루하게 느껴지면 모든 것에 은행 송금. USDT 이후에 오는 것의 절차는 당사 <a href="how-to-buy-crypto-for-beginners.html">초보자 구매 가이드</a>를 읽으세요. 그리고 어느 경로에 정착하든 최종 수치 확인, 기록, 2FA 등 카드 습관을 유지하세요.</p>
+      <h2>전체 첫 카드 구매 체크리스트</h2>
+      <ol>
+        <li>계좌 인증 완료, 2FA와 피싱 방지 코드 활성화, 본인 명의의 직불카드.</li>
+        <li>결제 전에 구매 화면의 한도와 최종 USDT 수치를 확인하세요. 수수료가 놀라움을 준다면 먼저 은행 입금과 비교하세요.</li>
+        <li>3D Secure 안내를 신속히 완료하세요. USDT가 지갑에 도착하는지 확인하세요.</li>
+        <li>거래 기록: 날짜, 지출한 금액, 받은 USDT, 주문 ID.</li>
+        <li>다음 구매에서는 카드 대비 은행 송금 경로의 가격을 책정하세요. 절약이 대기보다 클 때 전환하세요.</li>
+        <li>금액이 중요해지면 장기 보유분을 자신의 지갑으로 이동하세요.</li>
+      </ol>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Ready?</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">가입은 약 10분이 걸립니다. 한 번 인증하고, 2FA를 활성화한 뒤, 위 단계를 따르세요. 이 사이트의 가이드가 나머지를 안내합니다. B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">Y</div><div><div class="tt">Bybit</div><div class="dd">파생상품과 현물 거래</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit 계정 만들기</a></div>
+        </div>
+        <p class="note">직접 가입하는 것과 동일한 수수료 — 당사 링크는 여러분에게 추가 비용이 들지 않습니다. Bitget은 추천 계약 없이 여기에 연결되어 있습니다(<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">bitget.com</a>) — 그 링크를 통해서는 리베이트가 적용되지 않습니다.</p>
+      </div>
+
+      <h3>왜 직불카드로 USDT를 구매하는 것이 더 비싼가요?</h3>
+      <p>카드 구매는 은행 입금보다 처리 비용이 높으며, 거래소는 그 비용을 더 높은 수수료로 전가합니다. 편의성은 현실입니다. 거래가 즉시 이루어집니다. 하지만 큰 금액에서는 수수료 차이가 빠르게 쌓이므로 먼저 은행 입금과 비교하세요.</p>
+      <h3>왜 직불카드가 거절되었나요?</h3>
+      <p>가장 흔한 원인은 은행 사기 차단, 실패한 3D Secure 확인, 청구 주소 불일치, 또는 일일 한도입니다. 정보를 확인하고, 인증 안내를 완료하고, 그래도 실패하면 은행에 전화하거나 은행 송금이나 P2P로 전환하세요.</p>
+      <h3>대신 신용카드를 사용할 수 있나요?</h3>
+      <p>일부 거래소는 신용카드를 받아들이지만, 많은 은행이 신용카드의 암호화폐 구매를 차단하거나 추가 수수료가 있는 현금 서비스로 취급합니다. 직불카드가 더 안전한 선택입니다. 그리고 신용카드가 거절되면 계속 재시도하지 마세요.</p>
+
+      <h3>일일 한도는 얼마인가요?</h3>
+      <p>한도는 인증 수준과 거래소에 따라 다르며, 보통 더 많은 인증 단계를 완료할수록 높아집니다. 시작 전에 구매 화면을 확인하세요. 현재 한도를 보여줍니다. 그리고 큰 구매는 며칠에 걸쳐 나누거나 대신 은행 송금으로 계획하세요.</p>
+      <h3>직불카드 구매는 즉시 이루어지나요?</h3>
+      <p>보통 그렇습니다. 결제가 승인되고 3D Secure가 완료되면 USDT가 보통 몇 분 안에 계좌에 나타납니다. 나타나지 않는다면 지원에 문의하기 전에 주문 상태 페이지를 확인하세요. 대부분의 지연은 저절로 해결됩니다.</p>
+
+      <h3>다른 사람의 직불카드를 사용할 수 있나요?</h3>
+      <p>아닙니다. 카드는 인증된 거래소 계좌와 동일한 이름이어야 합니다. 다른 사람의 카드를 사용하면 결제가 거절되며, 반복된 시도는 계좌의 보안 검토를 촉발할 수 있습니다.</p>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">초보자를 위한 암호화폐 구매 방법: 전체 안내</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">초보자를 위한 최고의 암호화폐 지갑</a></li>
+        <li><a href="buy-usdt.html">USDT 구매 방법: 모든 방법 비교</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

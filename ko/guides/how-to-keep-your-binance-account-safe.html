@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Binance 계좌 안전하게 지키는 방법: 2FA, 피싱 방지, 출금 화이트리스트 — TokVS</title>
+<meta name="description" content="초보자를 위한 Binance 계좌 안전 체크리스트: 인증 앱 2FA, 피싱 방지 코드, 출금 화이트리스트, 기기 관리, 비용이 들기 전에 피싱 링크를 식별하는 방법.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-keep-your-binance-account-safe">
+<meta property="og:title" content="Binance 계좌 안전하게 지키는 방법 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="인증 앱 2FA, 피싱 방지 코드, 출금 화이트리스트, 기기 확인, 피싱 식별 — 전체 Binance 안전 체크리스트.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/how-to-keep-your-binance-account-safe">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"Binance 계좌 안전하게 지키기","item":"https://tokvs.com/ko/guides/how-to-keep-your-binance-account-safe"}]},{"@type":"Article","headline":"Binance 계정을 안전하게 유지하는 방법","description":"초보자를 위한 Binance 계좌 안전 체크리스트: 인증 앱 2FA, 피싱 방지 코드, 출금 화이트리스트, 기기 관리, 피싱 식별.","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/how-to-keep-your-binance-account-safe","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"SMS 2FA가 Binance에 충분한가요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. SMS 코드는 SIM 교환 공격을 통해 가로챌 수 있습니다. 사기꾼이 통신사에 여러분의 번호를 자신의 SIM으로 이동하도록 설득하는 것입니다. 인증 앱은 본인 기기에서 코드를 생성하며 그 수법에 취약하지 않습니다. 인증 앱을 기본 2FA 방법으로 사용하세요."}},{"@type":"Question","name":"Binance 피싱 방지 코드란 무엇이며 왜 중요한가요?","acceptedAnswer":{"@type":"Answer","text":"보안 설정에서 설정하는 짧은 단어나 문구입니다. 그러면 Binance는 보내는 모든 진짜 이메일에 그 코드를 포함합니다. Binance에서 온 것으로 주장하는 이메일이 여러분의 코드가 없다면 가짜입니다. 삭제하고 그 안의 어떤 것도 클릭하지 마세요."}},{"@type":"Question","name":"출금 화이트리스트는 무엇을 하나요?","acceptedAnswer":{"@type":"Answer","text":"활성화되면 출금은 미리 승인한 주소로만 갈 수 있습니다. 누군가 계좌에 들어와도 자금을 자신의 지갑으로 보낼 수 없습니다. 새 주소를 추가하면 대기 기간이 촉발되어, 변경이 본인의 것이 아니었다면 대응할 시간을 줍니다."}},{"@type":"Question","name":"본인 계좌가 해킹당했을 때 SAFU가 나를 보호하나요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. SAFU는 플랫폼 측 장애를 커버하는 비상 기금이며, 2019년 해킹 이후 모든 사용자 손실을 전액 커버한 것으로 유명합니다. 유출된 본인 비밀번호, 피싱 클릭, 가짜 지원 사기로 인한 손실은 커버하지 않습니다. 계좌 측 보안은 여러분의 일입니다."}},{"@type":"Question","name":"피싱 링크를 클릭했습니다. 먼저 무엇을 해야 하나요?","acceptedAnswer":{"@type":"Answer","text":"빠르게 행동하세요. 깨끗한 기기에서 비밀번호를 변경하고, 모든 활성 세션과 API 키를 취소하고, 출금 화이트리스트와 최근 출금을 확인하고, 공식 앱이나 사이트를 통해서만 Binance 지원에 문의하세요. 속도보다 당황이 중요하지 않습니다. 지원팀은 이를 매일 봅니다."}},{"@type":"Question","name":"모든 암호화폐를 Binance에 두어야 하나요?","acceptedAnswer":{"@type":"Answer","text":"활발히 거래하는 경우 자금을 거래소에 두는 것은 정상적이고 편리합니다. 큰 장기 보유분은 시드 문구를 직접 통제하는 자신의 지갑으로 이동하세요. 대부분의 경험 많은 사용자가 정착하는 분할은 다음과 같습니다. 거래 자금은 거래소에, 저축은 자기 수탁에."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / Binance 계좌 안전하게 지키기</div>
+      <h1>Binance 계정을 안전하게 유지하는 방법</h1>
+      <p class="sub">대부분의 '해킹당한 거래소 계좌' 이야기는 전혀 거래소 해킹이 아닙니다. 재사용된 비밀번호, 누락된 2FA, 한 번의 부주의한 클릭입니다. 이 체크리스트는 약 10분 안에 세 가지 구멍을 모두 닫습니다.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 12분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기 →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Binance 안전에 대한 30초 진실</h2>
+      <p>아래 모든 것을 형성하는 불편한 사실은 다음과 같습니다. 초보자가 암호화폐를 잃을 때 거래소의 금고가 거의 절대 문제가 아닙니다. 패턴은 1년에 수천 번 반복됩니다. 누군가 오래된 데이터 유출에서 유출된 비밀번호를 재사용합니다. 누군가 유사 도메인으로 이어지는 Google 광고를 통해 로그인합니다. 누군가 인증 코드를 요구하는 Telegram의 '지원 담당자'를 신뢰합니다. 자금은 유효한 자격 증명과 함께 정문을 통해 나가며, 지구상의 어떤 보안 시스템도 그 로그인을 여러분의 것과 구분할 수 없습니다.</p>
+      <p>그것이 실제로 좋은 소식입니다. 가장 큰 위험이 여러분이 한 번에, 무료로, 제거할 수 있는 것들이라는 뜻이기 때문입니다. Binance의 플랫폼 측 보호 — SAFU 비상 기금, 준비금 증명, 대량 자산의 콜드 스토리지 — 는 거래의 거래소 측을 커버합니다. 이 가이드는 여러분의 측을 다룹니다. 전체 체크리스트를 한 번 수행하면, 계좌에 대한 가장 흔한 공격 경로는 그냥 작동을 멈춥니다.</p>
+      <p class="in-cta">아직 계좌가 없나요? <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a><a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></p>
+      <h2>1단계: 다른 곳에 존재하지 않는 비밀번호</h2>
+      <p>Binance 비밀번호는 Binance에만 고유해야 합니다. 이메일 비밀번호의 변형도, '!'를 추가한 오래된 좋아하는 비밀번호도 아닙니다. 자격 증명 스터핑 공격은 다른 사이트에서 유출된 비밀번호를 암호화폐 거래소에 시도함으로써 작동하며, 사람들이 비밀번호를 재사용하기 때문에 정확히 규모 있게 성공합니다. 비밀번호 관리자가 이를 제대로 해결합니다. 긴 무작위 비밀번호를 생성하고, 기억하고, 여러분을 위해 입력합니다. 관리자를 사용하지 않겠다면 긴 암호를 종이에 적어 안전한 곳에 보관하세요. 메모 앱, 자신에게 보내는 채팅 메시지, 스크린샷에는 절대 보관하지 마세요.</p>
+      <p>두 가지 규칙이 더 있습니다. 첫째, 직접 입력하거나 북마크에서 도달한 진짜 Binance 앱이나 진짜 binance.com 도메인 외의 어디에도 비밀번호를 입력하지 마세요. 이메일, 광고, 메시지의 링크에서는 절대 입력하지 마세요. 둘째, 유출된 것으로 의심되면 즉시 비밀번호를 변경하고, 예상 밖의 '비밀번호 재설정' 이메일은 따라야 할 지시가 아니라 경고 신호로 취급하세요.</p>
+      <h2>2단계: SMS가 아니라 인증 앱 2FA</h2>
+      <p>2단계 인증은 이 페이지에서 가장 가치가 높은 설정이며, 유형이 중요합니다. SMS 코드는 편리하게 느껴지지만 SIM 교환 공격을 통해 가로챌 수 있습니다. 사기꾼이 이동통신사에 여러분의 번호를 자신이 통제하는 SIM으로 이동하도록 설득하면, 갑자기 문자 코드가 그들의 휴대폰으로 도착합니다. 유명인뿐 아니라 일반인에게도 일어납니다.</p>
+      <p>인증 앱(Google Authenticator, Authy 등)은 본인 기기에서 시간 기반 코드를 생성합니다. 속일 통신사도, 가로챌 문자도 없습니다. Binance 앱의 보안에서 설정하고, 백업 키를 보여줄 때 그 키를 오프라인으로 저장하세요. 종이에, 안전한 곳에. 백업 키 없이 휴대폰을 잃으면 복구는 느린 본인 인증 절차가 됩니다. 백업 키를 보관하면 복구는 몇 분이면 됩니다.</p>
+      <div class="callout warn"><b>Never share a 2FA code with anyone, ever.</b>Binance 직원도, 지원 담당자도, '보안팀'도 절대 그것을 묻지 않을 것입니다. 묻는 사람은 사기꾼입니다. 그만입니다. 전문적으로 들리고 여러분의 이름을 이미 아는 사람을 포함합니다.</div>
+      <h2>3단계: 피싱 방지 코드 설정하기</h2>
+      <p>이것은 Binance에서 가장 활용도가 낮은 안전 기능이며, 30초면 됩니다. 보안 설정에서 짧은 단어나 문구를 설정할 수 있습니다. 오직 여러분만 알아볼 것을 선택하세요. 그때부터 Binance의 모든 진짜 이메일은 그 코드를 포함합니다. 여러분의 코드가 없는 Binance에서 온 것으로 주장하는 이메일은 로고, 레이아웃, 긴급 경고가 아무리 설득력 있어 보여도 가짜입니다.</p>
+      <p>이것을 반사로 만드세요. 암호화폐 관련 이메일의 어떤 것이든 클릭하기 전에 여러분의 코드를 확인하세요. 코드가 없으면 클릭도 없습니다. 피싱 이메일은 가짜 로그인 페이지의 1위 전달 방법이며, 이 하나의 설정이 대부분을 명백한 가짜로 바꿉니다. 이메일 설정에 있는 동안 계좌의 이메일 주소가 실제로 통제하고 모니터링하는 주소인지도 확인하세요. 오래되거나 공유된 받은 편지함은 약한 고리입니다.</p>
+      <h2>4단계: 출금 화이트리스트 켜기</h2>
+      <p>출금 화이트리스트(주소 관리 허용 목록이라고도 함)는 최후의 방어선이며, 잔인할 정도로 효과적입니다. 활성화되면 출금은 미리 승인한 지갑 주소로만 갈 수 있습니다. 공격자가 어떻게든 비밀번호, 2FA를 포함해 계좌에 완전히 접근하더라도, 자금을 자신의 지갑으로 보낼 수 없습니다. 먼저 자신의 주소를 추가해야 하며, 새 주소를 추가하면 대기 기간과 이메일 알림이 촉발되어, 계좌를 동결할 시간을 줍니다.</p>
+      <p>설정은 간단합니다. 출금 주소 관리로 이동해 실제로 사용하는 주소만 추가하세요(자신의 지갑, 그리고 정기적으로 보내는 거래소 계좌). 그리고 화이트리스트를 활성화하세요. 네, 새 곳으로 처음 출금할 때 작은 지연이 추가됩니다. 그 지연이 전체 요점입니다. 의미 있는 금액을 보유한 계좌에서는 이를 끄고 둘 좋은 이유가 없습니다.</p>
+      <h2>5단계: 기기와 세션 관리하기</h2>
+      <p>모든 로그인은 흔적을 남깁니다. 보안 설정에서 계좌에 현재 로그인된 기기와 세션 — 기기 유형, 위치, 시간 — 을 볼 수 있습니다. 이 목록을 한 달에 한 번, 그리고 이상한 일이 있은 직후(여러분이 촉발하지 않은 로그인 알림, 새 기기에 대한 이메일)에 검토하세요. 인식하지 못하는 기기를 보면 즉시 제거하고 비밀번호를 변경하세요.</p>
+      <p>비용이 들지 않는 관련 습관: 공유 컴퓨터에서는 로그아웃하고, 화면 잠금 없이 잃을 수 있는 휴대폰에서는 절대 로그인 상태를 유지하지 않으며, 휴대폰 운영 체제를 업데이트된 상태로 유지하세요. 휴대폰은 이제 여러분의 두 번째 요소입니다. 화면 잠금이 없는 휴대폰은 문이 열린 금고입니다. 또한 로그인 알림이 아직 켜져 있지 않다면 켜세요. 가본 적 없는 도시에서의 로그인에 대한 알림은 어떤 백신보다 가치가 있습니다.</p>
+      <h2>6단계: 피싱 링크 — 클릭 전에 식별하는 방법</h2>
+      <p>오늘날 피싱 페이지는 픽셀 단위로 완벽해 보입니다. 단서는 다른 곳에 있습니다.</p>
+      <ul>
+        <li><strong>도메인.</strong> 진짜: binance.com. 가짜: binance-support.com, binance-login.net, binance.com.verify-account.io. 진짜 도메인을 북마크하고 북마크를 사용하세요.</li>
+        <li><strong>긴급성.</strong> '24시간 안에 인증하지 않으면 계좌가 폐쇄됩니다'는 대본입니다. 진짜 거래소는 이메일 링크로 계좌 폐쇄를 위협하지 않습니다.</li>
+        <li><strong>채널.</strong> Binance 지원은 Telegram, WhatsApp, Twitter DM으로 먼저 연락하지 않습니다. 그렇게 하는 사람은 지원을 사칭하고 있는 것입니다.</li>
+        <li><strong>요청.</strong> 시드 문구, 비밀번호, 2FA 코드, 원격 데스크톱 접근은 절대 합법적인 요청이 아닙니다. 진짜 지원 담당자는 백엔드 도구를 갖고 있으며 이 중 어느 것도 필요하지 않습니다.</li>
+        <li><strong>광고.</strong> 사기꾼은 거래소 자체 이름에 대한 검색 광고를 구매합니다. Binance를 검색하고 최상위 결과를 클릭했다면 로그인 전에 도메인을 다시 확인하세요. 또는 더 나은, 북마크를 사용하세요.</li>
+      </ul>
+      <p>한 가지 더 현대적인 함정: 가짜 앱. Binance 앱은 Binance가 게시한 공식 Apple App Store나 Google Play 목록에서만 설치하고, 개발자 이름과 리뷰 건수를 확인하세요. 무작위 웹사이트에서 사이드로드한 APK는 자격 증명을 낯선 사람에게 넘기는 고전적인 방법입니다.</p>
+      <h2>7단계: API 키 — 사용하는 경우에만</h2>
+      <p>대부분의 초보자는 API 키가 절대 필요하지 않으며, 그것이 무엇인지 모른다면 이 섹션을 건너뛰세요. 키가 없으면 더 안전합니다. 거래 봇이나 포트폴리오 추적기를 연결한다면 세 가지 규칙을 따르세요. 각 키의 권한을 도구가 필요로 하는 것으로 정확히 제한하세요(읽기만 한다면 읽기 전용). 가능하면 도구의 IP 주소로 제한하세요. 그리고 웹사이트, 채팅, 지원 티켓에 키를 절대 붙여넣지 마세요. 출금 권한이 있는 유출된 키는 유출된 비밀번호나 다름없으며, API 키는 2FA 안내를 촉발하지 않습니다. 더 이상 사용하지 않는 키는 삭제하세요. 잊힌 키는 잊힌 구멍입니다.</p>
+      <h2>SAFU가 커버하는 것과 커버하지 않는 것</h2>
+      <p>Binance의 SAFU 기금은 거래 수수료로 조달되는 비상 준비금이며, 실제 실적이 있습니다. 약 7,000 BTC가 탈취된 2019년 해킹 이후 SAFU는 모든 사용자 손실을 전액 커버했습니다. 그것이 플랫폼 측 안전망이며, Binance가 당사 <a href="is-binance-safe.html">Binance가 안전한가</a> 분석에서 가장 안전한 대형 거래소 중 하나로 평가되는 이유 중 하나입니다.</p>
+      <p>하지만 이해해야 할 SAFU의 경계가 있습니다. Binance의 실패를 커버하지 여러분의 실패를 커버하지 않습니다. 비밀번호가 유출되었기 때문에, 피싱 링크를 클릭했기 때문에, 또는 사기꾼의 주소로 암호화폐를 보냈기 때문에 잃은 자금을 보상하지 않습니다. 시장 손실도 커버하지 않습니다. 코인이 50% 하락한다면 그것은 시장이지 보안 사건이 아닙니다. 그리고 그것은 회사 기금이지 정부 보증이 아닙니다. 그 뒤에 FDIC식 보장은 없습니다. 솔직한 틀은 다음과 같습니다. Binance는 거래하기 가장 안전한 곳 중 하나이며, 여러분의 계좌 위생이 여전히 자금이 여러분의 것으로 남는지를 결정하는 요소입니다.</p>
+      <h2>거래소에 얼마나 두어야 하나</h2>
+      <p>보안과 편의는 반대 방향으로 잡아당기며, 올바른 균형은 돈이 무엇을 위한 것인지에 따라 다릅니다. 활발히 거래하는 자금은 거래소에 속합니다. 모든 거래를 위해 왔다 갔다 이동하면 수수료와 시간이 낭비됩니다. 수개월 또는 수년간 보유할 계획인 자금, 특히 잃으면 진정으로 아플 금액은, 시드 문구를 직접 통제하는 자신의 지갑에 속합니다. 거래소 계좌가 단일 실패 지점이 될 수 없는 곳입니다. 당사 <a href="best-crypto-wallet-for-beginners.html">초보자 지갑 가이드</a>는 그 이동을 단계별로 안내합니다. 실용적인 경험칙: 잃으면 여러분의 한 달이 바뀔 것이라면, 모두 하나의 비밀번호 뒤에 있어서는 안 됩니다. 동일한 논리가 사용하는 모든 플랫폼에 적용됩니다. <a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit</a>를 포함해, 동일한 체크리스트(고유한 비밀번호, 인증 앱 2FA, 피싱 방지 코드, 화이트리스트)가 적용되는 또 다른 주요 거래소입니다.</p>
+      <h2>10분 설정 체크리스트</h2>
+      <ol>
+        <li>고유한 비밀번호, 비밀번호 관리자에 저장(또는 종이에, 오프라인으로).</li>
+        <li>인증 앱 2FA 활성화, 백업 키 오프라인 저장.</li>
+        <li>피싱 방지 코드 설정, 클릭 전에 모든 Binance 이메일에서 확인.</li>
+        <li>본인 주소만 승인된 출금 화이트리스트 활성화.</li>
+        <li>로그인 알림 켜기, 현재 기기와 세션 검토.</li>
+        <li>binance.com 북마크, 이메일 링크, 광고, 메시지에서는 절대 로그인하지 않기.</li>
+        <li>휴대폰에 화면 잠금과 최신 소프트웨어 업데이트.</li>
+        <li>금액이 중요해지면 장기 보유분을 자신의 지갑으로 이동.</li>
+      </ol>
+      <p>이 여덟 가지를 수행하면 초보자 손실의 압도적 다수 뒤에 있는 공격 경로를 닫은 것입니다. 보안은 절대 끝나지 않습니다. 새로운 사기가 계속 나타납니다. 하지만 위의 기본은 쉬운 표적과 어려운 표적의 차이이며, 공격자는 압도적으로 쉬운 표적을 선택합니다.</p>
+      <h2>침해된 것으로 생각되면</h2>
+      <p>속도가 당황보다 중요합니다. 첫째, 깨끗한 기기에서 비밀번호를 변경하고 모든 활성 세션과 API 키를 취소하세요. 둘째, 최근 출금과 화이트리스트를 확인하세요. 출금이 아직 보류 중이라면 즉시 지원에 문의하세요. 막을 수 있는 기간이 있을 수 있습니다. 셋째, 공식 앱이나 웹사이트를 통해서만 Binance 지원에 문의하고, 정확히 무슨 일이 일어났는지 설명하세요. 넷째, 자금이 이미 나갔다면 모든 기록(거래 ID, 주소, 타임스탬프, 채팅 로그)을 저장하세요. 회수는 가능성이 낮지만 불가능하지는 않으며, 기록이 그것을 가능하게 만듭니다. 수수료를 받고 암호화폐를 '회수'해주겠다고 약속하는 사람에게는 절대 지불하지 마세요. 그것은 첫 사기의 피해자를 겨냥한 두 번째 사기 입니다.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Ready?</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">가입은 약 10분이 걸립니다. 한 번 인증하고, 2FA를 활성화한 뒤, 위 단계를 따르세요. 이 사이트의 가이드가 나머지를 안내합니다. B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+        </div>
+        <p class="note">직접 가입할 때와 동일한 수수료 — 당사 링크는 추가 비용이 들지 않습니다. Bitget(<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">bitget.com</a>)도 이용할 수 있습니다. 현재 Bitget과는 리베이트 계약이 없음을 참고하세요.</p>
+      </div>
+
+      <h3>SMS 2FA가 Binance에 충분한가요?</h3>
+      <p>아닙니다. SMS 코드는 SIM 교환 공격을 통해 가로챌 수 있습니다. 사기꾼이 통신사에 여러분의 번호를 자신의 SIM으로 이동하도록 설득하는 것입니다. 인증 앱은 본인 기기에서 코드를 생성하며 그 수법에 취약하지 않습니다. 인증 앱을 기본 2FA 방법으로 사용하세요.</p>
+      <h3>Binance 피싱 방지 코드란 무엇이며 왜 중요한가요?</h3>
+      <p>보안 설정에서 설정하는 짧은 단어나 문구입니다. 그러면 Binance는 보내는 모든 진짜 이메일에 그 코드를 포함합니다. Binance에서 온 것으로 주장하는 이메일이 여러분의 코드가 없다면 가짜입니다. 삭제하고 그 안의 어떤 것도 클릭하지 마세요.</p>
+      <h3>출금 화이트리스트는 무엇을 하나요?</h3>
+      <p>활성화되면 출금은 미리 승인한 주소로만 갈 수 있습니다. 누군가 계좌에 들어와도 자금을 자신의 지갑으로 보낼 수 없습니다. 새 주소를 추가하면 대기 기간이 촉발되어, 변경이 본인의 것이 아니었다면 대응할 시간을 줍니다.</p>
+      <h3>본인 계좌가 해킹당했을 때 SAFU가 나를 보호하나요?</h3>
+      <p>아닙니다. SAFU는 플랫폼 측 장애를 커버하는 비상 기금이며, 2019년 해킹 이후 모든 사용자 손실을 전액 커버한 것으로 유명합니다. 유출된 본인 비밀번호, 피싱 클릭, 가짜 지원 사기로 인한 손실은 커버하지 않습니다. 계좌 측 보안은 여러분의 일입니다.</p>
+      <h3>피싱 링크를 클릭했습니다. 먼저 무엇을 해야 하나요?</h3>
+      <p>빠르게 행동하세요. 깨끗한 기기에서 비밀번호를 변경하고, 모든 활성 세션과 API 키를 취소하고, 출금 화이트리스트와 최근 출금을 확인하고, 공식 앱이나 사이트를 통해서만 Binance 지원에 문의하세요. 속도보다 당황이 중요하지 않습니다. 지원팀은 이를 매일 봅니다.</p>
+      <h3>모든 암호화폐를 Binance에 두어야 하나요?</h3>
+      <p>활발히 거래하는 경우 자금을 거래소에 두는 것은 정상적이고 편리합니다. 큰 장기 보유분은 시드 문구를 직접 통제하는 자신의 지갑으로 이동하세요. 대부분의 경험 많은 사용자가 정착하는 분할은 다음과 같습니다. 거래 자금은 거래소에, 저축은 자기 수탁에.</p>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="is-binance-safe.html">Binance는 안전한가요? SAFU, 준비금, 솔직한 주의사항</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">초보자를 위한 최고의 암호화폐 지갑</a></li>
+        <li><a href="how-to-buy-crypto-for-beginners.html">초보자를 위한 암호화폐 구매 방법</a></li>
+        <li><a href="buy-usdt.html">USDT 구매 방법: 모든 방법 비교</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
