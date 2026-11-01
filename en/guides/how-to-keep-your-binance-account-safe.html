@@ -4,22 +4,47 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light">
-<script src="/js/route-guard-404.js?v=20261030e"></script>
+<script src="/js/route-guard-404.js?v=20261031a"></script>
 <!-- tokvs-lang-router -->
 <script>
 (function () {
   try {
     var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
     var _ua = navigator.userAgent || '';
-    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return; // crawlers: no auto language redirect
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
     function norm(p) {
       if (!p) return '/';
       if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
       if (p === 'index.html') p = '/';
-      return p;
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
     }
     function treeOf(p) {
-      return (p === '/en' || p.indexOf('/en/') === 0) ? 'en' : 'zh';
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
     }
     var cur = norm(location.pathname);
     var curTree = treeOf(cur);
@@ -30,39 +55,53 @@
         if (!a || !a.pathname) return;
         if (a.host && location.host && a.host !== location.host) return;
         var tt = treeOf(norm(a.pathname));
-        if (tt !== curTree) {
-          try { localStorage.setItem(KEY, tt); } catch (ignore1) {}
-        }
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
       } catch (ignore2) {}
     });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
     var pref = null;
-    try { pref = localStorage.getItem(KEY); } catch (ignore3) {}
-    var want;
-    if (pref === 'zh' || pref === 'en') {
-      want = pref;
-    } else {
-      var nav = (navigator.languages && navigator.languages[0]) || navigator.language || '';
-      want = String(nav).toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en';
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
     }
     if (want === curTree) return;
-    var EN_ONLY = ['/en/guides/how-to-buy-usdt-on-binance-p2p', '/en/guides/how-to-buy-usdt-in-india', '/en/guides/how-to-buy-usdt-in-nigeria', '/en/guides/okx-vs-bybit', '/en/guides/lowest-fee-crypto-exchange', '/en/guides/is-binance-safe', '/en/guides/how-to-buy-bitcoin-with-paypal', '/en/guides/best-crypto-exchange-for-beginners', '/en/guides/crypto-futures-fees-comparison', '/en/guides/binance-vs-okx-fees-2026', '/en/guides/what-is-usdt', '/en/guides/best-crypto-exchange-2026', '/en/guides/how-to-buy-ethereum', '/en/guides/how-to-buy-solana', '/en/guides/how-to-buy-xrp', '/en/guides/how-to-buy-usdt-in-vietnam', '/en/guides/how-to-buy-usdt-in-philippines', '/en/guides/how-to-buy-usdt-in-brazil', '/en/guides/how-to-buy-usdt-in-turkey', '/en/tools/quiz', '/en/guides/how-to-buy-crypto-for-beginners', '/en/guides/what-is-bitcoin', '/en/guides/what-is-cryptocurrency', '/en/guides/bitcoin-vs-ethereum', '/en/guides/best-crypto-wallet-for-beginners', '/en/guides/how-to-sell-crypto', '/en/guides/how-to-buy-dogecoin', '/en/guides/how-to-buy-usdt-in-europe', '/en/guides/how-to-buy-usdt-in-usa', '/en/guides/how-to-buy-usdt-in-uk', '/en/guides/how-to-buy-usdt-with-bank-transfer', '/en/guides/how-to-buy-usdt-with-debit-card', '/en/guides/can-you-buy-usdt-with-paypal', '/en/guides/how-to-keep-your-binance-account-safe', '/en/guides/binance-vs-coinbase', '/en/guides/how-to-withdraw-from-binance', '/en/methodology', '/en/disclosure', '/en/guides/how-to-buy-usdt-in-canada', '/en/guides/how-to-buy-usdt-in-australia', '/en/guides/how-to-buy-usdt-in-eea', '/en/guides/crypto-taxes-for-beginners', '/en/guides/exchanges-to-avoid'];
-    if (want === 'zh' && EN_ONLY.indexOf(cur) !== -1) return; // EN-only page: no redirect to Chinese
-
-    var dest;
-    if (want === 'en') {
-      dest = (cur === '/') ? '/en/' : '/en' + cur;
-    } else if (cur === '/en' || cur === '/en/') {
-      dest = '/';
-    } else {
-      dest = cur.slice(3);
-    }
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
     location.replace(dest + location.search + location.hash);
   } catch (ignore0) {}
 })();
 </script>
+
 <title>How to Keep Your Binance Account Safe: 2FA, Anti-Phishing & Withdrawal Whitelist — TokVS</title>
 <meta name="description" content="The Binance account safety checklist for beginners: authenticator 2FA, anti-phishing code, withdrawal whitelist, device management, and how to spot phishing links before they cost you.">
 <link rel="canonical" href="https://tokvs.com/en/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-keep-your-binance-account-safe">
 <meta property="og:title" content="How to Keep Your Binance Account Safe — TokVS">
 <meta property="og:site_name" content="TokVS">
 <meta property="og:description" content="Authenticator 2FA, anti-phishing code, withdrawal whitelist, device checks, and phishing spotting — the full Binance safety checklist.">
@@ -70,9 +109,7 @@
 <meta property="og:url" content="https://tokvs.com/en/guides/how-to-keep-your-binance-account-safe">
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary">
-<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-keep-your-binance-account-safe">
-<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-keep-your-binance-account-safe">
-<link rel="stylesheet" href="../../styles.css?v=20261030l">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -110,7 +147,7 @@ document.addEventListener('click', function (e) {
     <nav class="main">
       <a href="../start/step1.html">Beginner Path</a><a href="index.html" class="on">Guides</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Tools</a>
     </nav>
-    <div class="top-right"><span class="lang"><a href="../../guides/index.html">中文</a> · <b>EN</b></span></div>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en" selected>English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
   </div>
 </div>
 
