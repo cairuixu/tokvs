@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>비트코인이란 무엇인가? 초보자를 위한 쉬운 말 가이드 — TokVS</title>
+<meta name="description" content="비트코인이란 무엇인가, 쉬운 말로: 2009년의 기원, 블록체인과 채굴이 작동하는 방식, 왜 2,100만 개만 존재하는지, 구매 방법, 솔직히 밝힌 위험. 전망 없음.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/what-is-bitcoin">
+<meta property="og:title" content="비트코인이란 무엇인가? 쉬운 말 가이드 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="전문 용어 없이 설명하는 비트코인: 기원, 블록체인, 채굴, 2,100만 개 상한, 구매 방법, 솔직한 위험.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/what-is-bitcoin">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"비트코인이란 무엇인가요?","item":"https://tokvs.com/ko/guides/what-is-bitcoin"}]},{"@type":"Article","headline":"비트코인이란 무엇인가요?","description":"비트코인이란 무엇인가, 쉬운 말로: 2009년의 기원, 블록체인과 채굴이 작동하는 방식, 왜 2,100만 개만 존재하는지, 구매 방법, 솔직히 밝힌 위험. 전망 없음.","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/what-is-bitcoin","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"비트코인을 통제하는 사람은 누구인가요?","acceptedAnswer":{"@type":"Answer","text":"어떤 개인, 회사, 정부도 비트코인을 통제하지 않습니다. 그 규칙은 수천 명의 독립적인 참여자가 운영하는 오픈 소스 소프트웨어에 있습니다. 규칙을 변경하려면 채굴자, 노드 운영자, 사용자 전반의 광범위한 합의가 필요합니다."}},{"@type":"Question","name":"비트코인을 복사하거나 복제할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"누구나 소프트웨어를 복사할 수 있지만, 복사본은 비트코인의 네트워크, 원장 역사, 보유자를 물려받지 않습니다. 가치는 코드에 의해서만이 아니라 모두가 실제로 사용하는 살아 있는 네트워크에서 옵니다."}},{"@type":"Question","name":"비트코인은 모두 몇 개나 존재하게 되나요?","acceptedAnswer":{"@type":"Answer","text":"2,100만 개로, 코드에 의해 강제됩니다. 새로운 코인은 채굴 보상을 통해서만 들어오며, 이는 대략 4년마다 절반으로 줄어들어 발행이 누구나 검증할 수 있는 일정에 따라 느려집니다."}},{"@type":"Question","name":"비트코인 한 개를 통째로 구매해야 하나요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. 비트코인은 코인당 1억 사토시로 나뉘므로 정확히 $10어치를 구매할 수 있습니다. 대부분의 초보자는 한 개 전체가 아니라 코인의 일부를 소유합니다."}},{"@type":"Question","name":"비트코인은 익명인가요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. 가명입니다. 거래는 블록체인에 영원히 공개되며, 규제 대상 거래소는 주소를 실제 신원과 연결합니다. 온체인 활동이 추적 가능하다고 가정하세요."}},{"@type":"Question","name":"2,100만 개가 모두 채굴되면 어떻게 되나요?","acceptedAnswer":{"@type":"Answer","text":"채굴 보상이 끝나고 채굴자는 거래 수수료로만 지급받게 됩니다. 그 전환은 수십 년 뒤의 일이며 이미 설계의 일부입니다. 네트워크를 중단시키지 않습니다."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / 비트코인이란 무엇인가?</div>
+      <h1>비트코인이란 무엇인가요?</h1>
+      <p class="sub">회사도, 본사도, 전망도 없습니다. 비트코인이 무엇인지, 어떻게 작동하는지, 구매 전에 알아야 할 것만을 다룹니다.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 10분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기 →</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">초보자 친화적인 앱, 깊은 유동성</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit 가입하기</a></div></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+
+      <h2>짧은 답변</h2>
+      <p>비트코인은 탈중앙화 디지털 통화입니다. 은행, 결제 회사, 또는 책임을 맡은 어떤 단일 회사 없이 인터넷을 통해 이동하는 돈입니다. 2009년에 출시되었고, 블록체인이라 불리는 공개 원장에서 운영되며, 총 공급량은 2,100만 개로 제한됩니다. 누구도 일방적으로 변경할 수 없는 코드에 쓰인 한도입니다. 사람들은 가치 저장, 국경을 넘는 송금, 그리고 점점 더 넓은 암호화폐 시장으로의 진입점으로 이를 사용합니다. 한 문장만 기억한다면 이것을 기억하세요. <strong>비트코인은 발행자가 없는 돈으로, 기관이 아니라 네트워크가 정직하게 유지합니다.</strong></p>
+      <h2>비트코인이 온 곳</h2>
+      <p>2008년 10월, 글로벌 금융 위기 한가운데, Satoshi Nakamoto라는 가명을 사용하는 사람 또는 그룹이 'Bitcoin: A Peer-to-Peer Electronic Cash System'이라는 짧은 논문을 발표했습니다. 그 논문은 사람들이 은행이나 결제 처리업체가 중개하도록 신뢰하지 않고 온라인에서 직접 서로에게 가치를 보내는 방법을 설명했습니다. 2009년 1월 네트워크가 첫 블록과 함께 가동되면서 아이디어는 논문이 아니게 되었습니다. Satoshi가 누구였는지 아무도 모르며, 그것은 풀어야 할 미스터리가 아니라 설계의 일부입니다. 비트코인에는 체포할 창립자도, 압박할 CEO도, 자신의 이익을 위해 규칙을 변경할 수 있는 회사도 없습니다. 개발은 열려 있습니다. 누구나 코드를 읽고, 변경을 제안하고, 소프트웨어를 실행할 수 있습니다.</p>
+      <p>그 기원 이야기가 중요한 이유는 비트코인의 특이한 속성을 설명하기 때문입니다. 전통적인 돈은 발행자를 신뢰하기 때문에 작동합니다. 중앙은행이 공급을 관리하고 은행 시스템이 그것을 이동시킵니다. 비트코인은 어떤 단일 당사도 신뢰할 필요가 없기 때문에 작동합니다. 규칙은 공개되어 있고, 원장은 공개되어 있으며, 수천 명의 독립적인 참여자가 동일한 규칙을 집행합니다. 추상적으로 들린다면 다음 섹션이 구체적으로 만듭니다.</p>
+      <h2>비트코인이 실제로 작동하는 방식</h2>
+      <p>세 가지 요소가 모든 일을 합니다. 첫째, <strong>블록체인</strong>: 전 세계 수천 대의 컴퓨터에 복사된 공개 원장으로, 이루어진 모든 비트코인 거래를 기록합니다. 거래는 '블록'으로 그룹화되며, 각 블록은 이전 블록과 연결되어 체인을 형성합니다. 블록이 충분한 이후 블록 아래에 묻히면, 그것을 변경하려면 대다수의 복사본에서 그 이후의 모든 것을 다시 써야 합니다. 사실상 불가능하며, 그래서 원장은 최종적인 것으로 취급됩니다.</p>
+      <p>둘째, <strong>채굴</strong>: 새로운 블록을 추가하고 새로운 코인을 발행하는 과정. 채굴자는 계산 퍼즐을 풀기 위해 경쟁하는 컴퓨터입니다. 승자는 다음 블록을 추가하고 새로 생성된 비트코인을 보상으로 받습니다. 채굴은 두 가지 일을 한 번에 합니다. 거래를 정직하게 순서화하고(속이려면 정직한 다수를 능가하는 계산을 해야 하며, 이는 실제 전기와 하드웨어 비용이 듭니다), 고정된 일정에 따라 새로운 코인의 방출을 통제합니다. 셋째, <strong>키</strong>: 여러분의 비트코인은 개인 키 — 긴 비밀 숫자 — 에 의해 통제되며, 공개 주소는 그것으로부터 도출됩니다. 개인 키를 가진 사람은 코인을 사용할 수 있습니다. 가지지 않은 사람은 사용할 수 없습니다. 그 하나의 사실이 비트코인의 보안과 가장 유명한 위험을 모두 설명합니다. 키를 잃으면 코인을 잃으며, 비밀번호 재설정은 없습니다.</p>
+      <h2>왜 2,100만 개가 중요한가</h2>
+      <p>비트코인의 코드는 총 공급량을 2,100만 개로 제한하며, 새로운 코인은 시간이 지남에 따라 줄어드는 채굴 보상을 통해 유통에 들어옵니다. 대략 4년마다 <strong>반감기</strong>라 불리는 사건이 채굴 보상을 절반으로 줄여, 누구나 미리 검증할 수 있는 일정에 따라 새로운 공급을 늦춥니다. 이것은 중앙은행이 마음대로 공급을 확대할 수 있는 법정화폐가 작동하는 방식의 반대입니다. 희소성 자체가 무언가를 가치 있게 만들지는 않습니다. 가치 없는 희소한 것은 많습니다. 하지만 예측 가능하고 변경할 수 없는 공급이 바로 사람들이 비트코인을 '디지털 금'이라 설명하는 이유입니다. 미래 발행량을 누구도 조용히 부풀릴 수 없는 자산.</p>
+      <p>두 가지 실용적인 결과가 뒤따릅니다. 하나, 비트코인은 나눌 수 있습니다. 한 개 전체를 구매할 필요가 절대 없습니다. 비트코인 한 개는 사토시라 불리는 더 작은 단위 1억 개로 나뉘므로, 금 가루 $10어치를 소유하는 것과 정확히 같이 $10어치의 비트코인을 소유할 수 있습니다. 둘, 잃어버린 코인은 영원히 사라집니다. 키를 잃은 코인도 2,100만 개에 포함되므로, 사용할 수 있는 공급량은 헤드라인 숫자보다 작습니다. 어느 사실도 가격 전망을 믿을 것을 요구하지 않습니다. 그것들은 구조이며, 구조가 결정을 기반으로 해야 할 것입니다.</p>
+      <h2>은행의 돈 대 비트코인</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>특징</th><th>비트코인</th><th>은행 돈</th></tr></thead>
+        <tbody>
+          <tr><td>발행자</td><td>아무도 — 네트워크 규칙</td><td>중앙은행 + 은행</td></tr>
+          <tr><td>총 공급량</td><td>2,100만 개로 상한 설정</td><td>정책에 따라 확대 가능</td></tr>
+          <tr><td>시간</td><td>24시간, 공휴일 포함</td><td>영업 시간 + 정산 지연</td></tr>
+          <tr><td>국경 간 송금</td><td>어디에서나 동일한 과정</td><td>중개 은행, 며칠, 수수료</td></tr>
+          <tr><td>되돌릴 수 있음</td><td>거래는 최종적입니다</td><td>차지백 가능</td></tr>
+          <tr><td>계좌 동결 위험</td><td>자신의 키를 보유하면 없음</td><td>은행이나 법원이 동결 가능</td></tr>
+          <tr><td>가격 안정성</td><td>매우 변동적</td><td>자체 통화에서는 안정적</td></tr>
+        </tbody>
+      </table></div>
+      <p>그 표는 또한 솔직한 트레이드오프입니다. 비트코인은 검열 저항, 국경 없음, 예측 가능한 공급에서 승리하고, 가격 안정성과 소비자 보호에서는 크게 집니다. 사기당했을 때 은행 송금은 되돌릴 수 있습니다. 비트코인 송금은 되돌릴 수 없습니다. 은행 계좌는 집주인이 받아들이는 통화로 표시됩니다. 비트코인 가격은 일주일 안에 급격히 변동할 수 있습니다. 원장의 어느 쪽도 단독으로 비트코인을 구매하거나 피할 이유는 아닙니다. 그것은 여러분의 재정에 얼마나, 만약 있다면, 속하는지를 결정하기 위한 맥락입니다.</p>
+      <h2>사람들이 비트코인을 구매하는 방법</h2>
+      <p>표준 초보자 경로는 거래소를 거칩니다. 가입하고, 신분증을 인증하고, 법정화폐로 USDT를 구매한 뒤, 현물 페어에서 USDT를 이용해 BTC를 구매하세요. 당사 <a href="how-to-buy-bitcoin.html">비트코인 안내</a>는 그 절차를 단계별로 다루고, 당사 <a href="how-to-buy-crypto-for-beginners.html">초보자 구매 가이드</a>는 암호화폐 전반에 대해 동일한 내용을 다룹니다. 구매 뒤 보관 장소를 선택합니다. 금액이 작고 배우는 동안에는 거래소에 두고, 또는 자신의 지갑으로 이동하세요. 개인 키를 오직 여러분만 보유하는 곳입니다. 금액이 중요해지면 말입니다. 당사 <a href="wallet-safety.html">지갑 보안 가이드</a>는 자기 수탁 지갑을 백업하는 12개 또는 24개의 단어인 시드 문구와 그것이 요구하는 규율을 설명합니다.</p>
+      <p>첫날에 하지 말아야 할 것: 레버리지로 구매하기, 온라인의 누군가가 수익을 약속했기 때문에 코인을 쫓기, 또는 어떤 이유로든 낯선 사람이 준 주소로 비트코인을 보내기 — '경품', '지원', '투자 두 배 만들기', 모두 그렇습니다. 비트코인의 최종성은 정직한 송금에는 기능이고 사기꾼에게는 무기입니다. 방어는 지루하고 절대적입니다. 주소를 직접 확인하고, 키나 코드를 절대 공유하지 않으며, 모든 원치 않는 제안을 반증될 때까지 함정으로 가정하세요.</p>
+      <h2>비트코인 결제가 정산되는 방법</h2>
+      <p>비트코인을 보낼 때 지갑은 서명된 거래를 네트워크에 방송하며, 거래는 mempool이라 불리는 준비 구역에서 대기합니다. 채굴자는 mempool에서 거래를 선택합니다. 공간이 부족할 때는 보통 더 높은 수수료의 거래를 선호합니다. 그리고 승리한 채굴자는 약 10분 뒤 다음 블록에 여러분의 거래를 포함합니다. 그 첫 블록이 여러분의 첫 확인입니다. 대부분의 수신자는 몇 번의 확인 뒤에 결제가 정산된 것으로 간주합니다. 위에 묻힌 각 추가 블록이 거래를 되돌리는 것을 기하급수적으로 더 어렵게 만들기 때문입니다. 작은 일상 금액에서는 보통 한 번의 확인으로 충분합니다. 큰 금액에서는 여섯 번을 기다리는 것이 흔한 관례입니다. 이 중 어느 것도 수신자나 중개자를 신뢰할 것을 요구하지 않습니다. 네트워크의 공유 규칙이 검증을 수행하며, 지갑은 증가하는 확인 횟수를 표시합니다.</p>
+      <p>그 구조 교훈에서 두 가지 실용적인 습관이 뒤따릅니다. 첫째, 수수료는 메뉴가 아니라 시장입니다. mempool이 붐빌 때 수수료가 오르며, 지갑이 제안하는 수수료를 지불하는 것이 보통 초보자에게 옳습니다. 둘째, 확인되지 않은 거래를 완료된 돈으로 절대 취급하지 마세요. 판매자가 확인 전에 상품을 해제하고 거래가 나중에 실패하거나 교체되면, 호소할 사람이 없습니다. 인내는 프로토콜의 일부입니다. 블록에 10분, 확신에 몇 블록, 그리고 어느 쪽도 건너뛰는 지름길은 없습니다.</p>
+      <h2>위험, 솔직히 밝히면</h2>
+      <p><strong>변동성.</strong> 비트코인 가격은 고점 대비 절반 이상 반복적으로 하락했고 회복하는 데 수개월 또는 수년이 걸렸습니다. 보유량이 급격히 하락하는 것을 패닉 매도 없이 지켜볼 수 없는 사람은 그에 맞게 규모를 정하거나 빠지세요.</p>
+      <p><strong>되돌릴 수 없음.</strong> 잘못된 주소나 사기꾼의 주소는 코인이 사라졌다는 뜻입니다. 지원 데스크도, 차지백도, 사용자 오류에 대한 보험 기금도 없습니다.</p>
+      <p><strong>자기 수탁 책임.</strong> 자신의 키를 보유하면 거래소 위험이 제거되고 개인 책임으로 대체됩니다. 시드 문구를 오프라인으로 백업하고, 절대 사진을 찍지 말고, 웹사이트에 절대 입력하지 마세요.</p>
+      <p><strong>규제는 다양합니다.</strong> 규칙은 국가마다 다르며 시간이 지남에 따라 변경됩니다. 세금 취급, 거래소 이용 가능 여부, 심지어 합법성까지. 구매 전에 현지 규칙을 확인하고, 세금 시즌을 위해 모든 거래 기록을 보관하세요.</p>
+      <p><strong>비트코인 이름을 둘러싼 사기가 모입니다.</strong> 가짜 거래소, 가짜 지원 계좌, 가짜 경품, 그리고 피해자에게 두 번 요금을 부과하는 '회수 서비스'는 모두 비트코인의 명성을 미끼로 사용합니다. 당사 <a href="avoid-scams.html">사기 가이드</a>는 초보자가 실제로 만나는 여덟 가지 사기를 나열합니다.</p>
+      <h2>죽지 않는 신화</h2>
+      <ul>
+        <li><strong>'비트코인은 익명이다.'</strong> 가명입니다. 주소는 이름이 아니지만 모든 거래는 영원히 공개되며, 거래소는 주소를 신원과 연결합니다. 보이지 않는 것이 아니라 추적 가능한 것으로 취급하세요.</li>
+        <li><strong>'비트코인은 범죄 전용이다.'</strong> 불법 사용은 존재합니다. 현금에서처럼 말입니다. 하지만 압도적인 다수의 거래량은 규제 대상 장소에서의 거래, 보유, 합법적인 송금입니다.</li>
+        <li><strong>'비트코인은 파산할 수 있는 회사다.'</strong> 회사가 없습니다. 네트워크는 독립적인 참여자가 운영하는 소프트웨어입니다. 사람들이 운영하는 한 계속됩니다.</li>
+        <li><strong>'구매하기에 너무 늦었다.'</strong> 그것은 사실로 위장한 가격 의견입니다. 비트코인이 여러분의 재정에 맞는지 여부는 목표와 위험 허용 범위에 따라 다르지, 어느 해인지에 따라 다르지 않습니다.</li>
+        <li><strong>'비트코인은 아무것에도 뒷받침되지 않는다.'</strong> 모든 현대 법정화폐도 그렇습니다. 비트코인은 네트워크 보안, 고정된 공급 일정, 그리고 사람들이 받아들이려는 의지에 의해 뒷받침됩니다. 발행자를 뺀 동일한 종류의 사회적 뒷받침입니다.</li>
+      </ul>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+<b>Ready?</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">가입은 약 10분이 걸립니다. 한 번 인증하고, 2FA를 활성화한 뒤, 위 단계를 따르세요. 이 사이트의 가이드가 나머지를 안내합니다. B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">초보자 친화적인 앱, 깊은 유동성</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit 가입하기</a></div></div>
+<p class="note">직접 가입할 때와 동일한 수수료 — 당사 링크는 추가 비용이 들지 않습니다.</p>
+</div>
+      
+      <h3>비트코인을 통제하는 사람은 누구인가요?</h3>
+      <p>어떤 개인, 회사, 정부도 비트코인을 통제하지 않습니다. 그 규칙은 수천 명의 독립적인 참여자가 운영하는 오픈 소스 소프트웨어에 있습니다. 규칙을 변경하려면 채굴자, 노드 운영자, 사용자 전반의 광범위한 합의가 필요합니다.</p>
+      <h3>비트코인을 복사하거나 복제할 수 있나요?</h3>
+      <p>누구나 소프트웨어를 복사할 수 있지만, 복사본은 비트코인의 네트워크, 원장 역사, 보유자를 물려받지 않습니다. 가치는 코드에 의해서만이 아니라 모두가 실제로 사용하는 살아 있는 네트워크에서 옵니다.</p>
+      <h3>비트코인은 모두 몇 개나 존재하게 되나요?</h3>
+      <p>2,100만 개로, 코드에 의해 강제됩니다. 새로운 코인은 채굴 보상을 통해서만 들어오며, 이는 대략 4년마다 절반으로 줄어들어 발행이 누구나 검증할 수 있는 일정에 따라 느려집니다.</p>
+      <h3>비트코인 한 개를 통째로 구매해야 하나요?</h3>
+      <p>아닙니다. 비트코인은 코인당 1억 사토시로 나뉘므로 정확히 $10어치를 구매할 수 있습니다. 대부분의 초보자는 한 개 전체가 아니라 코인의 일부를 소유합니다.</p>
+      <h3>비트코인은 익명인가요?</h3>
+      <p>아닙니다. 가명입니다. 거래는 블록체인에 영원히 공개되며, 규제 대상 거래소는 주소를 실제 신원과 연결합니다. 온체인 활동이 추적 가능하다고 가정하세요.</p>
+      <h3>2,100만 개가 모두 채굴되면 어떻게 되나요?</h3>
+      <p>채굴 보상이 끝나고 채굴자는 거래 수수료로만 지급받게 됩니다. 그 전환은 수십 년 뒤의 일이며 이미 설계의 일부입니다. 네트워크를 중단시키지 않습니다.</p>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">입문 가이드: 여기서 시작하세요</a></li>
+        <li><a href="what-is-cryptocurrency.html">암호화폐란 무엇인가요?</a></li>
+        <li><a href="wallet-safety.html">지갑 및 시드 문구 보안</a></li>
+        <li><a href="bitcoin-vs-ethereum.html">비트코인 대 Ethereum</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

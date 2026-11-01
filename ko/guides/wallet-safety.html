@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>초보자를 위한 암호화폐 지갑: 시드 문구 가이드 — TokVS</title>
+<meta name="description" content="초보자를 위한 암호화폐 지갑: 지갑이 통제하는 것, 핫 지갑 대 콜드 지갑, 시드 문구란 무엇인가, 5가지 보관 규칙, 유출 시 조치.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/wallet-safety">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/wallet-safety">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/wallet-safety">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/wallet-safety">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/wallet-safety">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/wallet-safety">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/wallet-safety">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/wallet-safety">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/wallet-safety">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/wallet-safety">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/wallet-safety">
+<meta property="og:title" content="암호화폐 지갑과 시드 문구 보안 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="시드 문구란 무엇인가, 안전하게 보관하는 방법, 핫 지갑 대 콜드 지갑, 분실 또는 유출 시 복구 단계.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/wallet-safety">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"초보자를 위한 암호화폐 지갑: 시드 문구 가이드","item":"https://tokvs.com/ko/guides/wallet-safety"}]},{"@type":"Article","headline":"초보자를 위한 암호화폐 지갑: 시드 문구 가이드","description":"초보자를 위한 암호화폐 지갑: 지갑이 통제하는 것, 핫 지갑 대 콜드 지갑, 시드 문구란 무엇인가, 5가지 보관 규칙, 유출 시 조치.","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/wallet-safety","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / 지갑 보안</div>
+      <h1>지갑과 시드 문구 보안: 실제로 여러분의 코인을 통제하는 사람</h1>
+      <p class="sub">여러분의 시드 문구는 지갑의 마스터 키입니다. 12개 또는 24개의 단어. 그것을 가진 사람은 지갑의 모든 코인을 가져갈 수 있습니다. 지원 데스크도, 동결도, '비밀번호 찾기'도 없습니다. 이 가이드는 지갑 선택과 그 문구를 제대로 보관하는 방법을 다룹니다.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 4분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>먼저: 거래소 계좌는 여러분의 지갑이 아닙니다</h2>
+      <p>거래소에 있는 코인은 플랫폼이 통제합니다. 여러분이 보유한 것은 그것에 대한 청구권입니다. 플랫폼이 해킹당하거나, 출금을 동결하거나, 붕괴하면 여러분의 코인이 그 안에 갇힙니다. 코인을 <strong>시드 문구를 직접 통제하는 지갑</strong>으로 이동하면 진정으로 여러분의 것이 됩니다. 그리고 보안은 전적으로 여러분의 일이 됩니다. 합리적인 분할: 작고 활발히 거래되는 금액은 거래소에 두고, 크고 장기적인 보유분은 자기 수탁하세요.</p>
+
+      <h2>두 종류의 지갑</h2>
+      <ul>
+        <li><strong>핫 지갑</strong>: 휴대폰 앱이나 브라우저 확장 프로그램으로, 인터넷에 연결됩니다. 일상 송금, 에어드롭 파밍, DeFi에 편리합니다. 위험 표면은 여러분의 기기입니다. 악성 코드와 피싱 링크가 일반적인 공격 경로입니다.</li>
+        <li><strong>콜드 지갑(하드웨어 지갑)</strong>: 키를 오프라인으로 유지하고 서명할 때만 연결되는 전용 기기입니다. 큰 장기 보유분에 가장 안전한 선택입니다. 비용은 기기 가격과 더 번거로운 워크플로입니다.</li>
+      </ul>
+      <p>금액으로 선택하세요. 수천 달러 미만에서는 핫 지갑으로 괜찮습니다. 숫자가 '이것 때문에 잠을 설치겠다'에 도달하면 하드웨어 지갑이 제값을 합니다. 제조사나 공인 판매자에게서만 구매하세요. 중고 하드웨어 지갑은 절대 구매하지 마세요.</p>
+
+      <h2>시드 문구가 실제로 무엇인가</h2>
+      <p>지갑을 만들면 12개 또는 24개의 영어 단어를 생성합니다. 여러분의 시드 문구, 지갑의 모든 주소를 재생성할 수 있는 개인 키의 사람이 읽을 수 있는 형태입니다. <strong>앱은 단지 인터페이스일 뿐입니다. 문구가 자산입니다.</strong> 새 휴대폰, 재설치된 앱 — 문구를 입력하면 모든 것이 돌아옵니다. 문구를 잃으면 지구상의 어떤 것도 지갑을 복구하지 못합니다.</p>
+
+      <h2>시드 문구 보관을 위한 5가지 철칙</h2>
+      <ol>
+        <li><strong>펜과 종이, 오프라인.</strong> 손으로 적거나(또는 금속 백업 플레이트에 새기고) 오직 여러분만 아는 곳에 보관하세요.</li>
+        <li><strong>스크린샷을 찍거나, 사진을 찍거나, 클라우드 스토리지나 채팅에 넣지 마세요.</strong> 사진 라이브러리와 클라우드 계좌는 가장 흔한 유출 원인입니다. 악성 코드와 계좌 탈취가 자동으로 그것들을 훑습니다.</li>
+        <li><strong>누구와도 공유하지 마세요.</strong> 지원 담당자, 공식 기관, 에어드롭 프로젝트는 절대 그것을 묻지 않을 것입니다. 묻는 사람은 도둑입니다. 그만입니다.</li>
+        <li><strong>화재, 물, 단순한 분실에 대비해 최소 두 부를 별개의 장소에 보관하세요</strong>.</li>
+        <li><strong>보관 장소를 드러내지 마세요</strong>. 그리고 지갑 스크린샷을 게시하거나 온라인에서 자랑할 때 백업 노트가 화면에 잡히지 않도록 하세요. 이 정확한 사고가 매년 일어납니다.</li>
+      </ol>
+      <div class="callout warn"><b>The single deadliest rule, repeated:</b>시드 문구를 입력하라고 요구하는 모든 웹사이트, 앱, '지원 담당자'는 여러분의 코인을 훔치고 있는 것입니다. '에어드롭 받기', '지갑 인증', '계좌 업그레이드' — 모두 대본입니다. 문구의 유일한 합법적인 사용은 여러분이 공식 앱 안에서 자신의 지갑을 복원하는 것입니다.</div>
+
+      <h2>일상 안전 습관</h2>
+      <ul>
+        <li>지갑과 거래소에는 본인의 북마크를 통해서만 도달하고, 도메인을 문자 그대로 확인하세요. 피싱 사이트는 일상적으로 한 문자만 다릅니다.</li>
+        <li>낯선 사이트에 연결하기 전에(승인에 서명하기 전에), 승인이 무엇을 이동하게 하는지 물으세요. 불확실한가요? 먼저 버리는 지갑으로 테스트하세요.</li>
+        <li>큰 송금 전에 작은 테스트 송금을 보내고, 주소와 네트워크를 확인하세요. 잘못된 체인 송금은 보통 영원히 사라집니다.</li>
+        <li>에어드롭과 테스트넷에는 <strong>별개의 지갑</strong>을 사용하세요. 메인 지갑이 인터넷 곳곳에서 승인을 서명하게 하지 마세요. 이유: <a href="airdrop-guide.html">암호화폐 에어드롭이란 무엇인가?</a>를 참조하세요.</li>
+      </ul>
+
+      <h2>잃어버렸거나 유출된 것으로 생각되나요?</h2>
+      <ul>
+        <li><strong>문구를 잃었지만 지갑 앱이 여전히 열림:</strong> 지금 행동하세요. 완전히 새 지갑을 만들고, 문구를 제대로 백업하고, 모든 것을 이동하세요.</li>
+        <li><strong>문구를 잃었고 앱도 사라짐:</strong> 복구 불가능합니다. 그것이 자기 수탁의 엄격한 규칙입니다. '나중'이 아니라 첫날 백업하세요.</li>
+        <li><strong>유출 가능성(공유했거나 이상한 사이트에 입력했음):</strong> '무슨 일이 일어나는지 보자'며 기다리지 마세요. 새 지갑을 만들고 자산을 즉시 이동하세요. 도둑과 경주하고 있는 것입니다.</li>
+      </ul>
+      <p>거래소 측 보안(2FA, 피싱 방지 코드, 비밀번호 위생)은 <a href="../start/step3.html">입문 가이드 3단계</a>에 전체 체크리스트가 있습니다. 양쪽을 제대로 하세요.</p>
+
+      <h2>FAQ</h2>
+      <h3>시드 문구와 비밀번호의 차이는 무엇인가요?</h3>
+      <p>비밀번호는 하나의 앱에 대한 자물쇠입니다. 재설정 가능합니다. 시드 문구는 자산 그 자체입니다. 그것을 보유한 사람은 어떤 기기에서든 여러분의 지갑을 열 수 있습니다. 비밀번호를 잃는 것은 불편함입니다. 문구를 잃는 것은 사건입니다.</p>
+      <h3>모든 것을 거래소에 두는 것이 안전한가요?</h3>
+      <p>최상위 거래소는 괜찮은 보안 기록을 갖고 있지만, 사용자를 휩쓸어버리는 플랫폼 장애는 반복되는 역사적 패턴입니다. 경험칙: 거래 자금은 거래소에 남고, 장기적이고 큰 보유분은 자신의 지갑으로 이동합니다.</p>
+      <h3>누군가 내 지갑 주소를 알면 코인을 훔칠 수 있나요?</h3>
+      <p>아닙니다. 주소는 공개되어 있으며, 은행 계좌 번호와 같습니다. 아는 것은 돈을 보낼 수 있게 할 뿐입니다. 개인 키와 시드 문구를 보호하고, 승인하는 것을 주시하세요.</p>
+      <h3>하드웨어 지갑이 가치가 있나요?</h3>
+      <p>자기 수탁 잔액이 진정으로 슬퍼할 금액이 되면, 예. 오프라인 키 저장을 위한 적당한 가격의 기기는 암호화폐에서 가장 가성비가 좋은 보안 구매입니다.</p>
+
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="../start/step5.html">입문 가이드 5단계: 첫 구매 + 안전한 보관</a></li>
+        <li><a href="avoid-scams.html">암호화폐는 사기인가요? 알아야 할 8가지 수법</a></li>
+        <li><a href="airdrop-guide.html">암호화폐 에어드롭이란 무엇인가? 농부가 별개의 지갑을 사용하는 이유</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

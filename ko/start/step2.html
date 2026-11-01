@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>2단계: 거래소 선택 — 입문 가이드 | TokVS</title>
+<meta name="description" content="다섯 가지 확인 사항으로 거래소를 선택하세요: 규모, 수수료, 보안 기록, 언어 지원, 입출금 수단. 그리고 가입으로 이동하세요.">
+<link rel="canonical" href="https://tokvs.com/ko/start/step2">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/start/step2">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/start/step2">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/start/step2">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/start/step2">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/start/step2">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/start/step2">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/start/step2">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/start/step2">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/start/step2">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/start/step2">
+<meta property="og:title" content="2단계: 거래소 선택 — 입문 가이드 | TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="다섯 가지 선택 기준, 빅4 간략 비교, 피해야 할 함정.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/start/step2">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"입문 가이드","item":"https://tokvs.com/ko/start/step1"},{"@type":"ListItem","position":3,"name":"2단계: 거래소 선택 — 입문 가이드","item":"https://tokvs.com/ko/start/step2"}]}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="step1.html" class="on">입문 가이드</a><a href="../guides/index.html">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ 입문 가이드 / 2단계</div>
+      <h1>2단계: 거래소 선택</h1>
+      <p class="sub">돈은 대부분 거래소에 머무르게 됩니다. 잘못 고르면 운이 좋아도 수수료를 과다 지불하고, 운이 나쁘면 모든 것을 잃습니다. 기준을 먼저 세우고, 판정을 내리세요.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="steps">
+      <a class="step done" href="step1.html"><div class="n">1</div><div class="t">비트코인 만나기</div><div class="d">비트코인이 무엇이고 왜 가치가 있는지</div><span class="arr">›</span></a>
+      <span class="step" style="outline:2.5px solid #00C853;cursor:default;" aria-current="step"><div class="n">2</div><div class="t">거래소 선택</div><div class="d">수수료와 안전성을 먼저 비교</div></span>
+      <a class="step" href="step3.html"><div class="n">3</div><div class="t">가입하기</div><div class="d">눈에 보이는 단계, 첫 시도에 KYC 통과</div><span class="arr">›</span></a>
+      <a class="step" href="step4.html"><div class="n">4</div><div class="t">USDT 구매</div><div class="d">계좌에 자금을 넣는 올바른 방법</div><span class="arr">›</span></a>
+      <a class="step" href="step5.html"><div class="n">5</div><div class="t">첫 코인 구매</div><div class="d">현물 주문 + 안전한 보관</div></a>
+    </div>
+  </section>
+
+  <section>
+    <div class="card article prose">
+      <h2>거래소 선택을 위한 다섯 가지 기준</h2>
+      <ol>
+        <li><strong>규모와 유동성.</strong> 거래량이 많은 플랫폼은 스프레드가 좁고 대규모 주문의 슬리피지가 적으며, 사라질 가능성이 상대적으로 낮습니다. 초보자는 글로벌 최상위권만으로 충분합니다.</li>
+        <li><strong>수수료.</strong> 현물 수수료는 0.08%–0.10% 수준으로 비슷해 보이지만, 선물 테이커 수수료는 0.05%–0.06% 수준으로, 활발한 트레이더에게는 실질적인 금액으로 누적됩니다. 아래 비교표와 계산기를 실행해 보세요.</li>
+        <li><strong>보안 기록.</strong> 대규모 해킹을 당한 적이 있나요? 준비금 증명을 공개하나요? 문제가 생겼을 때 사용자가 보상받았나요? 모두 확실한 지표입니다.</li>
+        <li><strong>언어와 지원.</strong> 문제가 생겼을 때 사람에게 연락할 수 있고 인터페이스를 읽을 수 있나요? 초보자에게는 생각보다 중요합니다.</li>
+        <li><strong>입출금 수단.</strong> 사용자의 통화로 P2P 법정화폐 거래를 지원하나요? 출금은 원활한가요? 이상한 한도가 있나요?</li>
+      </ol>
+
+      <h2>빅4 한눈에 보기</h2>
+      <div class="table-wrap">
+        <table class="fee num">
+          <thead><tr><th>거래소</th><th>현물 수수료</th><th>선물 테이커</th><th>한 줄 요약</th><th>리뷰</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Binance</td><td>0.10%</td><td>0.05%</td><td>세계에서 가장 깊은 유동성, 가장 많은 상장 종목</td><td><a href="../reviews/binance.html">읽기 →</a></td></tr>
+            <tr><td class="name">OKX</td><td>0.08%부터</td><td>0.05%</td><td>가장 폭넓은 상품 라인업, 내장 Web3 지갑</td><td><a href="../reviews/okx.html">읽기 →</a></td></tr>
+            <tr><td class="name">Bybit</td><td>0.10%</td><td>0.055%</td><td>부드러운 선물 거래 경험, 잦은 캠페인</td><td><a href="../reviews/bybit.html">읽기 →</a></td></tr>
+            <tr><td class="name">초보자 강점</td><td>0.10%</td><td>0.06%</td><td>강력한 카피 트레이딩, 초보자 친화적</td><td><a href="../reviews/bitget.html">읽기 →</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>전체 수수료표, 리베이트 정책, 왕복 비용 계산기는 <a href="../exchanges.html">거래소 비교 페이지</a>에 있습니다. 초보자를 위한 솔직한 조언: <strong>주요 코인만 현물로 구매한다면 Binance나 OKX 모두 안전한 선택</strong>입니다. 선물을 고려한다면 먼저 비용을 계산하세요.</p>
+
+      <h2>반드시 피해야 할 세 가지 함정</h2>
+      <ul>
+        <li><strong>들어본 적 없는 생소한 거래소.</strong> '수수료 제로', '가입 보너스' 홍보는 미끼입니다. 사용자 자금을 유용하거나, 가격을 급등락시키거나, 자금을 들고 사라지는 소규모 플랫폼 뉴스는 매년 나옵니다.</li>
+        <li><strong>'멘토' 그룹과 위탁 계좌.</strong> '대신 거래해주겠다'며 개인이나 알 수 없는 플랫폼에 돈을 보내라고 하는 사람은 가장 오래된 수법을 쓰고 있습니다.</li>
+        <li><strong>가짜 앱과 가짜 웹사이트.</strong> 공식 사이트나 공식 앱 스토어에서만 다운로드하세요. 검색 광고의 '공식 사이트'는 종종 유사 사이트입니다. 도메인에 한 글자만 달라도 모든 것을 잃을 수 있습니다.</li>
+      </ul>
+
+      <div class="callout"><b>Good to know:</b>제휴 링크를 통한 가입은 수수료 체계를 바꾸지 않습니다. 거래소가 수수료의 일부를 사용자에게 돌려줍니다. 같은 가격, 내장된 할인입니다. 모든 링크는 공개되어 있습니다.</div>
+
+      <p>플랫폼을 정하셨나요? 다음은 가입과 본인 인증입니다. 신분증이 준비되어 있다면 약 10분이면 되며, 첫 시도에 통과하는 방법이 있습니다.</p>
+    </div>
+
+    <div class="stepnav">
+      <a href="step1.html"><span><span class="sm">이전 단계</span>1단계: 비트코인 만나기</span></a>
+      <a class="next" href="step3.html"><span><span class="sm">다음 단계</span>3단계: 가입하기</span><span>→</span></a>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="step1.html">입문 가이드</a><a href="step2.html">거래소 선택</a><a href="step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

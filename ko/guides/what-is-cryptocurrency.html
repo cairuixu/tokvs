@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>암호화폐란 무엇인가? 초보자 가이드 — TokVS</title>
+<meta name="description" content="암호화폐란 무엇인가, 완전한 초보자를 위해 설명: 코인 대 토큰, 블록체인이 작동하는 방식, 지갑 대 거래소, 암호화폐로 실제로 할 수 있는 것, 피해야 할 사기.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/what-is-cryptocurrency">
+<meta property="og:title" content="암호화폐란 무엇인가? 초보자 가이드 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="코인 대 토큰, 쉬운 말로 설명하는 블록체인, 지갑, 거래소, 모든 초보자가 알아야 할 위험 신호.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/what-is-cryptocurrency">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"암호화폐란 무엇인가요?","item":"https://tokvs.com/ko/guides/what-is-cryptocurrency"}]},{"@type":"Article","headline":"암호화폐란 무엇인가요?","description":"암호화폐란 무엇인가, 완전한 초보자를 위해 설명: 코인 대 토큰, 블록체인이 작동하는 방식, 지갑 대 거래소, 암호화폐로 실제로 할 수 있는 것, 피해야 할 사기.","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/what-is-cryptocurrency","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"암호화폐는 진짜 돈인가요?","acceptedAnswer":{"@type":"Answer","text":"사람들이 결제로 받아들이고 상품, 서비스, 법정화폐와 교환한다는 의미에서는 진짜입니다. 대부분의 국가에서 법정 통화가 아니며, 가격이 은행 돈보다 훨씬 더 변동합니다. 안정적인 급여가 아니라 변동성 자산으로 취급하세요."}},{"@type":"Question","name":"디지털 은행 돈과 어떻게 다른가요?","acceptedAnswer":{"@type":"Answer","text":"은행 돈은 은행이 운영하는 비공개 원장에 있습니다. 암호화폐는 탈중앙화 네트워크가 운영하는 공개 원장에 있습니다. 그것은 은행 영업 시간 없음, (자기 수탁 시) 단일 회사에 의한 계좌 동결 없음, 차지백 없음 — 좋은 점도 나쁜 점도 있다는 뜻입니다."}},{"@type":"Question","name":"암호화폐를 소유하려면 지갑이 필요한가요?","acceptedAnswer":{"@type":"Answer","text":"첫날에는 아닙니다. 거래소 계좌가 배우는 동안 여러분을 위해 코인을 보유합니다. 금액이 중요해지면 자신의 지갑으로 이동하세요. 시드 문구를 보유하는 곳이며, 그에 따른 완전한 책임도 함께 옵니다."}},{"@type":"Question","name":"암호화폐가 해킹당할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"블록체인 자체는 강력한 보안 기록을 갖고 있지만, 그 주변의 것들은 계속 해킹당합니다. 거래소, 앱, 브라우저, 사람. 대부분의 손실은 블록체인 자체를 깨는 것이 아니라 피싱, 가짜 앱, 유출된 키에서 옵니다."}},{"@type":"Question","name":"왜 암호화폐 가격은 그렇게 많이 움직이나요?","acceptedAnswer":{"@type":"Answer","text":"24시간 거래, 과도한 투기, 서킷 브레이커가 없는 더 작고 젊은 시장이 주식 시장보다 빠르게 움직입니다. 뉴스, 레버리지 청산, 얇은 유동성이 모두 변동을 증폭합니다. 양방향의 급격한 움직임을 예상하세요."}},{"@type":"Question","name":"암호화폐를 배우기 시작하기에 너무 늦었나요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. 기술과 시장 모두 여전히 젊으며, 기본 — 코인이 무엇인지, 수탁이 어떻게 작동하는지, 사기가 어떻게 운영되는지 — 은 만료되지 않습니다. 긴급함이 아니라 교육과 소액 테스트 금액으로 시작하세요."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / 암호화폐란 무엇인가?</div>
+      <h1>암호화폐란 무엇인가요?</h1>
+      <p class="sub">지금까지 읽은 모든 설명이 여러분이 이미 답의 절반을 알고 있다고 가정했다면, 여기서 시작하세요. 0에서 시작하는 암호화폐, 쉬운 말로.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 10분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기 →</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">초보자 친화적인 앱, 깊은 유동성</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit 가입하기</a></div></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+
+      <h2>한 단락 답변</h2>
+      <p>암호화폐는 은행 안에서가 아니라 탈중앙화 네트워크에 존재하는 디지털 돈과 디지털 자산입니다. 회사가 마스터 원장을 보관하는 대신, 수천 대의 독립적인 컴퓨터가 하나의 공개 원장 — 블록체인 — 을 공유하고 소프트웨어에 쓰인 규칙으로 그 내용에 합의합니다. 첫 암호화폐는 2009년에 출시된 Bitcoin이었습니다. 오늘날 수천 개가 있으며, 진지한 결제 네트워크와 프로그래밍 가능한 플랫폼부터 농담과 노골적인 사기까지 다양합니다. 'crypto'라는 단어가 모두를 다룹니다. 그것이 정확히 초보자가 혼란스러워하는 이유입니다. <strong>한 단어, 그 아래에는 엄청나게 다른 것들.</strong> 이 가이드는 층을 분리하여 구분할 수 있게 합니다.</p>
+      <h2>코인 대 토큰: 모든 것을 열어주는 구분</h2>
+      <p>이렇게 생각하세요. <strong>코인</strong>은 자체 집이 있습니다. <strong>토큰</strong>은 다른 사람의 집에서 방을 빌립니다. Bitcoin은 Bitcoin 블록체인에서 운영됩니다. Ether는 Ethereum 블록체인에서 운영됩니다. 그것들이 코인입니다. 반면 토큰은 기존 블록체인 위에서 만들어집니다. 가장 유명하게는 Ethereum입니다. 그 체인의 규칙을 이용합니다. USDT 같은 스테이블코인은 토큰입니다. 여러분이 듣는 대부분의 새로운 프로젝트도 그렇습니다. 처음부터 전체 블록체인을 구축하는 대신 Ethereum이나 유사한 플랫폼에 토큰을 발행합니다.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>코인</th><th>토큰</th></tr></thead>
+        <tbody>
+          <tr><td>자체 블록체인?</td><td>예</td><td>아니요 — 다른 체인에서 존재</td></tr>
+          <tr><td>예시</td><td>BTC, ETH, SOL, XRP</td><td>USDT와 대부분의 새로운 프로젝트 자산</td></tr>
+          <tr><td>용도</td><td>네트워크 수수료 지불, 가치 저장</td><td>안정적 가치, 앱 접근, 프로젝트 거버넌스</td></tr>
+          <tr><td>만든 사람</td><td>네트워크 자체(채굴/스테이킹)</td><td>컨트랙트를 발행하는 프로젝트 팀</td></tr>
+        </tbody>
+      </table></div>
+      <p>왜 이것이 초보자에게 중요한가요? 토큰의 운명은 두 가지에 연결되어 있기 때문입니다. 자체 프로젝트와 그것이 존재하는 체인. Ethereum의 토큰은 Ethereum 수수료를 지불하고 Ethereum의 보안을 물려받습니다. 코인은 자체 네트워크에 따라 서거나 무너집니다. 누군가 토큰을 홍보할 때, 두 가지 질문이 잡음을 뚫습니다. 무엇을 하는가, 그리고 기반 코인을 그냥 사용하는 대신 왜 존재해야 하는가? 어느 답도 명확하지 않다면 떠나세요.</p>
+      <h2>유행어 없는 블록체인</h2>
+      <p>블록체인은 세 가지 특이한 속성을 가진 공유 기록부입니다. 첫째, <strong>모두가 사본을 갖고 있습니다</strong>. 하나의 은행이 원장을 보관하는 대신 수천 대의 컴퓨터가 동일한 사본을 보유하고 비교합니다. 둘째, <strong>항목이 그룹화되고 연결됩니다</strong>. 거래는 블록으로 묶이고, 각 블록은 이전 블록을 참조하며, 오래된 항목을 변경하면 대부분의 사본에서 그 이후의 모든 것을 다시 써야 합니다. 그래서 사람들은 블록체인을 변조 방지(tamper-proof)가 아니라 변조 저항(tamper-resistant)이라 부릅니다. 셋째, <strong>단일 편집자가 없습니다</strong>. 새로운 블록은 관리자의 결정이 아니라 합의된 규칙(채굴 또는 스테이킹)을 따르는 참여자에 의해 추가됩니다.</p>
+      <p>블록체인이 아닌 것: 모든 것을 더 좋게 만드는 데이터베이스, 외부 세계에 대한 진실의 보장, 또는 프로젝트를 신뢰할 이유. 블록체인은 사기, 실수, 가치 없는 토큰을 포함해 말해진 모든 것을 충실히 기록합니다. 그 진짜 성과는 더 좁지만 여전히 놀랍습니다. 서로를 신뢰하지 않는 낯선 사람들이 신뢰할 수 있는 중개자를 임명하지 않고 거래 내역의 하나의 공유 역사에 합의할 수 있습니다. 암호화폐의 다른 모든 것은 그 하나의 기술 위에 구축됩니다.</p>
+      <h2>사람들이 암호화폐를 얻는 방법</h2>
+      <p>네 가지 경로가 거의 모든 사람을 다룹니다. <strong>거래소에서 구매하기</strong>는 표준 경로입니다. 법정화폐가 들어가고, 암호화폐가 나옵니다. 당사 <a href="how-to-buy-crypto-for-beginners.html">초보자 구매 가이드</a>에서 다룹니다. <strong>벌기</strong> — 일이나 상품 판매 대가로 암호화폐로 지급받는 것 — 는 성장하고 있지만 여전히 틈새입니다. <strong>채굴과 스테이킹</strong>은 네트워크 운영을 돕는 사람들에게 보상합니다. 하드웨어를 가진 채굴자, 코인을 잠근 스테이커. 둘 다 자본, 기술적 설정, 그리고 작은 규모에서 얇거나 마이너스인 수익에 대한 내성을 요구합니다. 어느 쪽도 공짜 돈이 아닙니다. <strong>에어드롭</strong>은 초기 사용이나 홍보를 위해 소량의 새로운 토큰을 나눠줍니다. 진짜 것도 존재하지만 사기 포장지로도 자주 쓰이므로, 모든 에어드롭 링크를 무죄가 증명될 때까지 유죄로 취급하세요.</p>
+      <h2>지갑과 거래소: 여러분의 코인을 누가 보유하는가?</h2>
+      <p>이것은 암호화폐에서 가장 중요한 수탁 교훈이므로 두 번 읽으세요. 코인이 <strong>거래소에</strong> 있을 때, 거래소가 개인 키를 보유합니다. 여러분은 코인 자체가 아니라 거래소에 대한 청구권을 소유합니다. 그것은 편리합니다(비밀번호 재설정이 작동하고, 거래가 즉시 이루어집니다). 그리고 플랫폼 위험을 안고 있습니다(거래소가 실패하거나 출금을 동결하면 여러분의 접근도 함께 갑니다). 코인이 <strong>자신의 지갑에</strong> 있을 때, 여러분이 키를 보유합니다. 보통 12개 또는 24개의 단어로 된 시드 문구로 백업됩니다. 아무도 그것을 동결할 수 없으며, 문구를 잃으면 아무도 복구할 수 없습니다.</p>
+      <p>표준 초보자 진행은 다음과 같습니다. 금액이 작을 때는 거래소에서 시작하고, 지갑이 어떻게 작동하는지 배우고, 그 뒤 의미 있는 보유분을 자기 수탁으로 이동하세요. 당사 <a href="wallet-safety.html">지갑 보안 가이드</a>는 시드 문구 규율을 제대로 다룹니다. 종이에 쓰고, 오프라인으로 두 곳에 보관하고, 절대 사진을 찍지 않고, 어떤 웹사이트에도 절대 입력하지 않고, 어떤 '지원' 담당자에게도 절대 말하지 않습니다. 지갑 소프트웨어에는 두 종류가 있습니다. 휴대폰이나 브라우저의 핫 지갑(편리하고 인터넷에 노출됨)과 하드웨어 지갑(물리적 기기, 오프라인 키, 큰 보유분에 가장 좋음). 어느 쪽도 단독으로 '가장 안전'하지 않습니다. 안전은 도구와 습관의 조합입니다.</p>
+      <h2>공개 키, 개인 키, 시드 문구</h2>
+      <p>모든 암호화폐 지갑은 한 쌍의 키로 운영됩니다. <strong>공개 키</strong>(그리고 그것으로부터 도출된 주소)는 공유하는 것입니다. 사람들이 여러분에게 코인을 보내는 데 사용하는 계좌 번호와 같습니다. <strong>개인 키</strong>는 절대 공유하지 않는 것입니다. 지출을 승인하는 비밀번호와 같습니다. 단 재설정 버튼도, 지원 데스크도, 다른 사람이 보유한 두 번째 사본도 없습니다. 현대 지갑은 개인 키를 직접 외우라고 요구하지 않습니다. 대신 설정 시 <strong>시드 문구</strong> — 고정된 순서의 12개 또는 24개의 일상 단어 — 를 제공합니다. 그로부터 모든 키가 도출됩니다. 그 단어를 종이에 순서대로 적어 안전한 곳에 오프라인으로 보관하세요. 문구를 얻은 사람은 지갑을 소유합니다. 문구를 잃은 사람은 여러분을 포함해 영원히 접근을 잃습니다.</p>
+      <p>그 하나의 설계 선택이 여러분이 듣게 될 대부분의 지갑 조언을 설명합니다. 시드 문구의 스크린샷은 악성 코드에 도난당합니다. 클라우드 백업은 침해됩니다. 문구를 묻는 '지원' 담당자는 도둑입니다. 그만입니다. 하드웨어 지갑은 개인 키를 컴퓨터에 절대 노출하지 않는 물리적 기기에 보관하므로, 큰 보유분에 대한 표준 권장 사항입니다. 하지만 하드웨어조차 사진을 찍어 업로드한 시드 문구를 구할 수 없습니다. 도구보다 습관이 더 중요합니다. 종이, 오프라인, 두 곳, 절대 디지털이 아니고, 절대 공유하지 않습니다.</p>
+      <h2>실제로 무엇을 할 수 있는가?</h2>
+      <p>거래 너머에, 오늘날 네 가지 용도가 현실입니다. <strong>결제</strong>: 중개 은행 없이 국경을 넘어 가치를 보내는 것 — 은행 업무가 느리거나 비싼 곳에서 가장 빠르고 저렴하지만, 변동성 때문에 일상 가격 책정에는 어색합니다. <strong>스테이블코인 저축과 송금</strong>: USDT 같은 달러 연동 토큰은 거래소 간, 국가 간 가치 이동의 주력입니다. 당사 <a href="what-is-usdt.html">USDT 가이드</a>는 페그와 그 위험을 솔직히 설명합니다. <strong>프로그래밍 가능한 체인상의 앱</strong>: Ethereum과 유사한 네트워크 위에 구축된 대출, 거래, 게임으로, 통칭 DeFi — 강력하지만 스마트 컨트랙트 버그와 사기가 흔하므로 모든 앱을 실험적인 것으로 취급하세요. <strong>수집품과 신원</strong>: NFT와 토큰화된 항목으로, 대부분의 프로젝트가 0이 되는 작고 매우 투기적인 구석입니다.</p>
+      <p>아직 안정적으로 할 수 없는 것: 은행 계좌 대체, 보장된 수익 벌기, 또는 일정에 따라 '부자가 되기'. 암호화폐에서 꾸준한 높은 수익을 약속하는 모든 상품은 공개하지 않는 위험을 감수하고 있거나 사기를 치고 있습니다. 암호화폐에 대한 솔직한 홍보는 더 좁습니다. 실제 위험이 수반되는 국경 없고, 프로그래밍 가능하고, 검열 저항적인 가치 전송. 사용 사례가 그 문장에 맞지 않는다면 회의적이 되세요.</p>
+      <h2>사기: 5가지 위험 신호</h2>
+      <p>사기는 암호화폐의 최고의 특징의 어두운 면입니다. 거래는 최종적이므로 도난당한 코인은 돌아오지 않습니다. 이 다섯 가지 신호를 외우면 대부분을 피할 수 있습니다.</p>
+      <ul>
+        <li><strong>보장된 수익.</strong> 합법적인 투자는 이익을 보장하지 않습니다. '암호화폐 두 배로 만들기'는 더 나은 마케팅을 가진 절도입니다.</li>
+        <li><strong>누군가 먼저 DM을 보냄.</strong> 진짜 지원은 절대 여러분의 메시지로 들어오지 않습니다. 진짜 투자 관리자도 마찬가지입니다.</li>
+        <li><strong>코인을 받기 위해 코인을 보냄.</strong> 경품, '인증', '잠금 해제를 위한 수수료' 요청은 모두 같은 속임수입니다. 여러분의 코인이 나가고, 아무것도 돌아오지 않습니다.</li>
+        <li><strong>긴급성 + 비밀.</strong> '지금 행동하고, 아무에게도 말하지 마세요'는 사기꾼이 즉시 알아챌 친구를 묻는 것을 막는 방법입니다.</li>
+        <li><strong>키, 문구, 코드 요청.</strong> 시드 문구와 인증 코드는 어떤 이유로든 누구와도 절대 공유하지 않습니다. 영원히.</li>
+      </ul>
+      <p>당사 <a href="avoid-scams.html">사기 가이드</a>는 초보자가 실제로 만나는 여덟 가지 사기를 안내하며, 이미 돈을 보냈다면 무엇을 해야 하는지도 다룹니다. 첫 공포 뒤가 아니라 첫 구매 전에 읽으세요.</p>
+      <h2>왜 암호화폐는 절대 문을 닫지 않는가</h2>
+      <p>주식 시장은 문을 닫습니다. 암호화폐 시장은 닫지 않습니다. Bitcoin, Ethereum, 그리고 그 위의 모든 토큰은 주말과 공휴일을 포함해 24시간 거래됩니다. 그래서 가격 차트가 신규 사용자에게 그렇게 불안정해 보이는 것입니다. 초보자에게 실용적인 교훈은 시장을 계속 지켜보는 것이 아닙니다. 자신의 일정에 따라 결정을 내리고 주문이 기다리게 하는 것입니다. 설정한 가격에서만 실행되는 지정가 주문은 정확히 새벽 3시에 화면을 응시하지 않아도 되도록 존재합니다. 시장의 항상 켜진 특성 때문에 뉴스가 터지고 여러분이 자는 동안 가격이 움직인다는 것도 의미합니다. 나쁜 밤을 견디는 데 편안한 포지션 크기가 올바른 크기이며, 밤새 청산될 수 있는 레버리지는 배우기에 잘못된 도구입니다.</p>
+      <h2>첫 단계, 순서대로</h2>
+      <ol>
+        <li><a href="what-is-bitcoin.html">Bitcoin 가이드</a>를 읽어 수천 개의 복사본 전에 원본이 이해되게 하세요.</li>
+        <li>하나의 대형 거래소를 선택하고, 인증하고, 인증 앱 2FA를 활성화하세요. 전체 순서는 당사 <a href="how-to-buy-crypto-for-beginners.html">초보자 구매 가이드</a>를 참조하세요.</li>
+        <li>한 번의 작은 테스트 구매를 하세요. 법정화폐 → USDT → 작은 현물 매수.</li>
+        <li>거래를 기록하고 사기 가이드를 읽으세요. 그런 뒤 침착하게 암호화폐가 여러분의 재정에서 더 큰 자리를 차지할 가치가 있는지 결정하세요.</li>
+      </ol>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+<b>Ready?</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">가입은 약 10분이 걸립니다. 한 번 인증하고, 2FA를 활성화한 뒤, 위 단계를 따르세요. 이 사이트의 가이드가 나머지를 안내합니다. B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">초보자 친화적인 앱, 깊은 유동성</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit 가입하기</a></div></div>
+<p class="note">직접 가입할 때와 동일한 수수료 — 당사 링크는 추가 비용이 들지 않습니다.</p>
+</div>
+      
+      <h3>암호화폐는 진짜 돈인가요?</h3>
+      <p>사람들이 결제로 받아들이고 상품, 서비스, 법정화폐와 교환한다는 의미에서는 진짜입니다. 대부분의 국가에서 법정 통화가 아니며, 가격이 은행 돈보다 훨씬 더 변동합니다. 안정적인 급여가 아니라 변동성 자산으로 취급하세요.</p>
+      <h3>디지털 은행 돈과 어떻게 다른가요?</h3>
+      <p>은행 돈은 은행이 운영하는 비공개 원장에 있습니다. 암호화폐는 탈중앙화 네트워크가 운영하는 공개 원장에 있습니다. 그것은 은행 영업 시간 없음, (자기 수탁 시) 단일 회사에 의한 계좌 동결 없음, 차지백 없음 — 좋은 점도 나쁜 점도 있다는 뜻입니다.</p>
+      <h3>암호화폐를 소유하려면 지갑이 필요한가요?</h3>
+      <p>첫날에는 아닙니다. 거래소 계좌가 배우는 동안 여러분을 위해 코인을 보유합니다. 금액이 중요해지면 자신의 지갑으로 이동하세요. 시드 문구를 보유하는 곳이며, 그에 따른 완전한 책임도 함께 옵니다.</p>
+      <h3>암호화폐가 해킹당할 수 있나요?</h3>
+      <p>블록체인 자체는 강력한 보안 기록을 갖고 있지만, 그 주변의 것들은 계속 해킹당합니다. 거래소, 앱, 브라우저, 사람. 대부분의 손실은 블록체인 자체를 깨는 것이 아니라 피싱, 가짜 앱, 유출된 키에서 옵니다.</p>
+      <h3>왜 암호화폐 가격은 그렇게 많이 움직이나요?</h3>
+      <p>24시간 거래, 과도한 투기, 서킷 브레이커가 없는 더 작고 젊은 시장이 주식 시장보다 빠르게 움직입니다. 뉴스, 레버리지 청산, 얇은 유동성이 모두 변동을 증폭합니다. 양방향의 급격한 움직임을 예상하세요.</p>
+      <h3>암호화폐를 배우기 시작하기에 너무 늦었나요?</h3>
+      <p>아닙니다. 기술과 시장 모두 여전히 젊으며, 기본 — 코인이 무엇인지, 수탁이 어떻게 작동하는지, 사기가 어떻게 운영되는지 — 은 만료되지 않습니다. 긴급함이 아니라 교육과 소액 테스트 금액으로 시작하세요.</p>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="what-is-bitcoin.html">비트코인이란 무엇인가요?</a></li>
+        <li><a href="how-to-buy-crypto-for-beginners.html">초보자를 위한 암호화폐 구매 방법</a></li>
+        <li><a href="avoid-scams.html">암호화폐는 사기인가요? 알아야 할 8가지 사기</a></li>
+        <li><a href="wallet-safety.html">지갑 및 시드 문구 보안</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>거래소 평가 방법: TokVS 방법론 — TokVS</title>
+<meta name="description" content="TokVS의 암호화폐 거래소 평가 방법: 평가 차원과 가중치, 출처, 확인 날짜, 돈을 받고 절대 하지 않는 일.">
+<link rel="canonical" href="https://tokvs.com/ko/methodology">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/methodology">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/methodology">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/methodology">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/methodology">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/methodology">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/methodology">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/methodology">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/methodology">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/methodology">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/methodology">
+<meta property="og:title" content="인도에서 USDT 구매: UPI 및 P2P 가이드 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="인도를 위한 UPI와 은행 송금 P2P 안내, 세금 안내, 안전 체크리스트.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/methodology">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"인도에서 USDT 구매","item":"https://tokvs.com/ko/methodology"}]},{"@type":"Article","headline":"당사의 방법론: UPI, 은행, P2P","description":"UPI나 은행 송금을 통한 P2P로 인도에서 USDT 구매하기: 단계별 안내, 판매자 안전, 수수료, 세금 안내. 소액 테스트 금액으로 시작하세요.","datePublished":"2026-10-16","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/methodology"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"거래소가 순위를 높이기 위해 돈을 지불하나요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. 어떤 거래소도 더 높은 순위, 더 좋은 점수, 부정적인 평가 삭제를 위해 돈을 지불할 수 없습니다. 수수료는 순위나 점수에 영향을 주지 않습니다."}},{"@type":"Question","name":"수수료와 이용 가능 여부를 얼마나 자주 재확인하나요?","acceptedAnswer":{"@type":"Answer","text":"비교 페이지에는 수치를 집계한 월이 표시되고, 이용 가능 여부 표에는 정확한 확인 날짜가 표시됩니다. 페이지를 업데이트할 때 재확인하며, 날짜를 표시하므로 사용자가 직접 최신성을 판단할 수 있습니다."}},{"@type":"Question","name":"왜 다른 사이트와 선택이 다른가요?","acceptedAnswer":{"@type":"Answer","text":"가중치가 다르기 때문입니다. 당사는 이용 가능 여부를 가장 먼저 가중합니다. 합법적으로 이용할 수 없는 거래소는 아무리 저렴해도 당사 기준으로는 낮은 점수를 받습니다. 다른 사이트는 수수료나 코인 수를 먼저 가중하므로 순서가 다르게 나오는 것이 정당한 차이입니다."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / 인도에서 USDT 구매</div>
+      <h1>당사의 방법론</h1>
+      <p class="sub">거래소를 비교하는 방법, 확인하는 내용, 수익의 출처.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS</p>
+      <h2>거래소 평가 방법</h2>
+      <p>거래소를 다섯 가지 차원으로 평가합니다. 아래 가중치는 당사의 편집 프레임워크입니다. 실험실 측정값이 아니라 평가 방식을 설명합니다. 규제와 이용 가능 여부 30%, 수수료 25%, 안전성 20%, 초보자 경험 15%, 코인과 기능 10%. 이용 가능 여부를 의도적으로 가장 먼저 가중합니다. 합법적으로 이용할 수 없는 가장 저렴한 거래소는 사용자에게 무용지물이기 때문입니다.</p>
+      <p>각 차원은 가능하면 1차 출처를 기준으로 판단합니다. 거래소의 공식 수수료 페이지, 규제 기관 등록부, 거래소의 준비금 증명 페이지, 공개된 보안 기능입니다. 2차 출처에 의존하는 경우 페이지에 명시합니다.</p>
+      <h2>확인하는 내용과 시기</h2>
+      <p>수수료: 표준(VIP0) 등급의 기본 현물·선물 메이커/테이커 수수료와 출금 네트워크 수수료. 이용 가능 여부: 공식 약관과 제한 국가 페이지 기준 각 거래소가 서비스하는 국가와 주. 안전성: 준비금 증명, 긴급 자금, 계정 보안 기능, 단속 기록 — 부정적인 부분 포함.</p>
+      <p>모든 비교 페이지에는 수치를 집계한 월이 표시되고, 이용 가능 여부 표에는 정확한 확인 날짜가 표시됩니다. 수수료와 이용 가능 여부는 자주 바뀝니다. 확인 날짜를 표시하지 않는 페이지는 신뢰해서는 안 되며, 날짜가 오래되었다면 당사 페이지도 마찬가지입니다.</p>
+      <h2>절대 하지 않는 일</h2>
+      <p>어떤 거래소도 더 높은 순위, 더 좋은 점수, 부정적인 평가 삭제를 위해 돈을 지불할 수 없습니다. 수수료는 순위나 점수에 영향을 주지 않습니다. 거래소의 이용 가능 여부나 수수료가 악화되면, 지불 여부와 관계없이 당사 페이지에서의 위치도 악화됩니다.</p>
+      <p>출처로 추적할 수 없는 수치는 게시하지 않습니다. 수치가 대략적인 경우 — 예를 들어 혼잡도에 따라 변동하는 네트워크 수수료 — 대략적이라고 표시하고 정확한 수치가 나타나는 곳(보통 출금 화면)을 알려줍니다.</p>
+      <h2>이 사이트의 수익 구조</h2>
+      <p>Binance, OKX, Bybit 제휴 링크를 통합니다. 해당 링크를 통해 가입하면 거래소가 사용자가 발생시키는 수수료의 일부를 당사에 지급합니다. 추가 비용은 들지 않습니다. Bitget 버튼은 공식 사이트로 연결되는 일반 링크입니다. 현재 Bitget과는 리베이트 계약이 없습니다. 전체 <a href="disclosure.html">제휴 공개</a>를 참조하세요.</p>
+      <h2>FAQ</h2>
+      <h3>거래소가 순위를 높이기 위해 돈을 지불하나요?</h3>
+      <p>아닙니다. 어떤 거래소도 더 높은 순위, 더 좋은 점수, 부정적인 평가 삭제를 위해 돈을 지불할 수 없습니다. 수수료는 순위나 점수에 영향을 주지 않습니다.</p>
+      <h3>수수료와 이용 가능 여부를 얼마나 자주 재확인하나요?</h3>
+      <p>비교 페이지에는 수치를 집계한 월이 표시되고, 이용 가능 여부 표에는 정확한 확인 날짜가 표시됩니다. 페이지를 업데이트할 때 재확인하며, 날짜를 표시하므로 사용자가 직접 최신성을 판단할 수 있습니다.</p>
+      <h3>왜 다른 사이트와 선택이 다른가요?</h3>
+      <p>가중치가 다르기 때문입니다. 당사는 이용 가능 여부를 가장 먼저 가중합니다. 합법적으로 이용할 수 없는 거래소는 아무리 저렴해도 당사 기준으로는 낮은 점수를 받습니다. 다른 사이트는 수수료나 코인 수를 먼저 가중하므로 순서가 다르게 나오는 것이 정당한 차이입니다.</p>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="exchanges.html">거래소 수수료 및 리베이트 비교</a></li>
+        <li><a href="disclosure.html">제휴 공개</a></li>
+        <li><a href="guides/is-binance-safe.html">Binance는 안전한가요?</a></li>
+      </ul>
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

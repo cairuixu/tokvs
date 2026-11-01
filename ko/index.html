@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>초보자를 위한 비트코인 구매 — 암호화폐 거래 시작하기 | TokVS</title>
+<meta name="description" content="암호화폐 구매 초보자를 위한 첫걸음: 5단계로 첫 비트코인을 구매하세요. 실시간 가격, ETF 자금 흐름, 밈 열기, 에어드롭, 수수료 비교를 제공합니다.">
+<link rel="canonical" href="https://tokvs.com/ko/">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/">
+<meta property="og:title" content="초보자를 위한 비트코인 구매 — 암호화폐 거래 시작하기 | TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="5단계로 첫 비트코인을 구매하세요: 입문 가이드, 거래소 비교, 일일 에어드롭, 유용한 도구.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tokvs.com/ko/">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../styles.css?v=20261031a">
+<script>window.TOKVS_DATA_BASE = '../data/';</script>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"TokVS · 币VS — 초보자를 위한 암호화폐 구매 첫걸음","item":"https://tokvs.com/ko/"}]}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="start/step1.html">입문 가이드</a><a href="guides/index.html">가이드</a><a href="exchanges.html">거래소</a><a href="airdrops.html">에어드롭</a><a href="tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-card">
+      <div>
+        <span class="hero-tag">초보자를 위한 첫걸음</span>
+        <h1>처음 암호화폐를 구매하시나요?<br>첫 비트코인을 <span class="hl">5단계</span>로 소유하세요</h1>
+        <p class="hero-sub">블록체인을 먼저 이해할 필요는 없습니다. 경로를 따라가세요. 무엇인지 배우고, 적합한 거래소를 고르고, 가입하고, USDT를 구매하고, 첫 주문을 실행하세요. 모든 단계마다 쉬운 설명과 주의해야 할 함정이 표시되어 있습니다.</p>
+        <div class="hero-btns">
+          <a class="btn-p" href="start/step1.html">1단계 시작하기 →</a>
+          <a class="btn-s" href="exchanges.html">먼저 거래소 비교하기</a>
+        </div>
+      </div>
+      <div class="mkt">
+        <h3>오늘의 시장</h3>
+        <div class="row"><span class="k">공포·탐욕 지수</span><span class="v num" id="ms-fng">--</span></div>
+        <div class="row"><span class="k">전체 시가총액</span><span class="v num" id="ms-mcap">--</span></div>
+        <div class="row"><span class="k">BTC 점유율</span><span class="v num" id="ms-dom">--</span></div>
+        <div class="row"><span class="k">시가총액 24시간 변동</span><span class="v num" id="ms-chg" style="font-size:21px;">--</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Beginner path -->
+  <section>
+    <div class="sec-head"><h2>입문 가이드</h2><span class="desc">따라가기만 하면 됩니다. 우회 없음</span><a class="more" href="start/step1.html">전체 경로 →</a></div>
+    <div class="steps">
+      <a class="step" href="start/step1.html"><div class="n">1</div><div class="t">비트코인 만나기</div><div class="d">비트코인이 무엇이고 왜 가치가 있는지</div><span class="arr">›</span></a>
+      <a class="step" href="start/step2.html"><div class="n">2</div><div class="t">거래소 선택</div><div class="d">수수료와 안전성을 먼저 비교</div><span class="arr">›</span></a>
+      <a class="step" href="start/step3.html"><div class="n">3</div><div class="t">가입하기</div><div class="d">눈에 보이는 단계, 첫 시도에 KYC 통과</div><span class="arr">›</span></a>
+      <a class="step" href="start/step4.html"><div class="n">4</div><div class="t">USDT 구매</div><div class="d">계좌에 자금을 넣는 올바른 방법</div><span class="arr">›</span></a>
+      <a class="step" href="start/step5.html"><div class="n">5</div><div class="t">첫 코인 구매</div><div class="d">현물 주문 + 안전한 보관</div></a>
+    </div>
+  </section>
+
+  <!-- Market today -->
+  <section>
+    <div class="sec-head"><h2>오늘의 시장</h2><span class="desc">시가총액 상위 5개 · 데이터: CoinGecko</span></div>
+    <div class="market-grid">
+      <div class="card price-card num mg-price" id="price-rows"><div class="loading">가격 불러오는 중…</div></div>
+      <div class="card etf-card mg-etf">
+        <h3>ETF 자금 흐름</h3><div class="sub">미국 현물 ETF 일일 순유입 ($M) · Farside <span id="etf-updated"></span></div>
+        <div id="etf-rows"><div class="loading">불러오는 중…</div></div>
+        <div class="verdict" id="etf-verdict">기관 자금 흐름은 심리를 가늠하는 지표 중 하나일 뿐, 투자 조언이 아닙니다.</div>
+      </div>
+      <div class="mkt-col mg-left">
+        <div class="card pad-card movers-card">
+          <h3>오늘의 급등락 종목</h3><div class="sub">시가총액 상위 100개 · 24시간 최대 상승/하락 종목 · CoinGecko</div>
+          <div id="movers-rows"><div class="loading">불러오는 중…</div></div>
+        </div>
+        <div class="card pad-card quick-card">
+          <h3>초보자를 위한 빠른 시작</h3><div class="sub">흔한 실수를 피하게 해주는 세 페이지</div>
+          <div class="qlinks">
+            <a class="qlink" href="guides/avoid-scams.html"><div><div class="tt">사기 방지 가이드</div><div class="dd">첫 입금을 잃기 전에 흔한 사기를 알아보세요</div></div><span class="arr">›</span></a>
+            <a class="qlink" href="exchanges.html#calculator"><div><div class="tt">수수료 계산기</div><div class="dd">한 번의 거래에 드는 수수료를 정확히 확인하세요</div></div><span class="arr">›</span></a>
+            <a class="qlink" href="tools.html#calendar"><div><div class="tt">에어드롭 캘린더</div><div class="dd">에어드롭, 언락, 연준 일정 — 미리 파악하세요</div></div><span class="arr">›</span></a>
+          </div>
+        </div>
+      </div>
+      <div class="card meme-card mg-meme">
+        <h3>밈 인기</h3><div class="sub">24시간 신규 + 급등 종목 · DexScreener / CoinGecko</div>
+        <div id="meme-chips"><div class="loading">불러오는 중…</div></div>
+        <div class="verdict">밈은 매우 빠르게 움직입니다. 열기를 살피되 쫓아가지 마세요.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured airdrops: rendered by JS from js/airdrops-data.js (top 3, logic in js/home.js) -->
+  <section>
+    <div class="sec-head"><h2>주요 에어드롭</h2><span class="desc">검증 가능한 출처가 있는 프로젝트만</span><a class="more" href="airdrops.html">모든 에어드롭 →</a></div>
+    <div class="air-grid" id="home-airdrops"></div>
+  </section>
+
+  <!-- Headlines + tools -->
+  <section id="tools">
+    <div class="bottom-grid">
+      <div>
+        <div class="sec-head"><h2>헤드라인</h2><span class="desc">일일 헤드라인 스트림</span></div>
+        <div class="card news-card" id="news-rows"><div class="loading">헤드라인 불러오는 중…</div></div>
+      </div>
+      <div>
+        <div class="sec-head"><h2>유용한 도구</h2></div>
+        <div class="tools">
+          <a class="card tool" href="tools.html#watchlist"><div class="ic" style="background:#00C853;">W</div><div><div class="tt">관심 종목 알림</div><div class="dd">가격 알림 — 차트를 계속 쳐다보지 마세요</div></div><span class="arr">›</span></a>
+          <a class="card tool" href="tools.html#calendar"><div class="ic" style="background:#3861FB;">C</div><div><div class="tt">이벤트 캘린더</div><div class="dd">언락, 에어드롭, 연준 일정 미리 확인</div></div><span class="arr">›</span></a>
+          <a class="card tool" href="exchanges.html#calculator"><div class="ic" style="background:#F48020;">F</div><div><div class="tt">수수료 계산기</div><div class="dd">한 번의 거래에 실제로 드는 비용</div></div><span class="arr">›</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="start/step1.html" style="margin-top:10px;">이 사이트에 대해</a><a href="exchanges.html">거래소 비교</a><a href="airdrops.html">일일 에어드롭</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="start/step1.html">입문 가이드</a><a href="start/step2.html">거래소 선택</a><a href="start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="reviews/binance.html">Binance</a><a href="reviews/okx.html">OKX</a><a href="reviews/bybit.html">Bybit</a><a href="reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="tools.html#watchlist">관심 종목 알림</a><a href="tools.html#calendar">이벤트 캘린더</a><a href="exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<script src="../js/airdrops-data.js?v=20261017b"></script>
+<script src="../js/home.js?v=20261017b"></script>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
