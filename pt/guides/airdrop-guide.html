@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>O que é um Airdrop de Cripto? Como Fazer Farming com Segurança — TokVS</title>
+<meta name="description" content="O que é um airdrop de cripto? Por que projetos distribuem tokens, os três tipos que valem seu tempo, além de expectativas realistas e as linhas vermelhas contra golpes.">
+<link rel="canonical" href="https://tokvs.com/pt/guides/airdrop-guide">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/airdrop-guide">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/airdrop-guide">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/airdrop-guide">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/airdrop-guide">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/airdrop-guide">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/airdrop-guide">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/airdrop-guide">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/airdrop-guide">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/airdrop-guide">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/airdrop-guide">
+<meta property="og:title" content="O que é um Airdrop de Cripto? — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Por que projetos distribuem tokens em airdrop, os três tipos que valem o farming, expectativas e as linhas vermelhas contra golpes.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/pt/guides/airdrop-guide">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/pt/"},{"@type":"ListItem","position":2,"name":"Guias","item":"https://tokvs.com/pt/guides/"},{"@type":"ListItem","position":3,"name":"O que é um Airdrop de Cripto? Como Fazer Farming com Segurança","item":"https://tokvs.com/pt/guides/airdrop-guide"}]},{"@type":"Article","headline":"O que é um Airdrop de Cripto? Como Fazer Farming com Segurança","description":"O que é um airdrop de cripto? Por que projetos distribuem tokens, os três tipos que valem seu tempo, além de expectativas realistas e as linhas vermelhas contra golpes.","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/pt/guides/airdrop-guide", "dateModified": "2026-10-30"},"inLanguage":"pt"}]}
+</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Trilha do Iniciante</a><a href="index.html" class="on">Guias</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Ferramentas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt" selected>Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Início</a> / <a href="index.html">Guias</a> / Airdrops 101</div>
+      <h1>O que é um Airdrop de Cripto? A Lógica e o Caminho Seguro</h1>
+      <p class="sub">Um airdrop é um projeto distribuindo seus tokens gratuitamente para usuários iniciais. Parece dinheiro grátis; o que você realmente paga é tempo e atenção. Este guia cobre por que projetos fazem isso, os três tipos que valem a participação, o jeito correto de participar e as linhas vermelhas que mantêm você seguro.</p>
+      <p class="updated">Atualizado em out. de 2026 · Por TokVS · 4 min de leitura</p>
+      <p class="note">Fontes e método: <a href="../methodology.html">como verificamos</a> · <a href="../exchanges.html#availability">tabela de disponibilidade por país</a> · os números mudam, verifique na página oficial antes de agir.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">A maior do mundo, com a maior liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se na Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Linha de produtos completa, bom suporte a idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Criar conta na OKX</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Por que projetos distribuem tokens</h2>
+      <ul>
+        <li><strong>Crescimento a frio:</strong> um produto novo não tem usuários. Recompensar os primeiros de verdade é mais barato e mais bem direcionado que propaganda.</li>
+        <li><strong>Distribuição:</strong> tokens espalhados entre muitos detentores parecem — e são — mais descentralizados, o que ajuda em listagens e credibilidade.</li>
+        <li><strong>Recompensar os primeiros contribuidores:</strong> usuários de testnet que reportaram bugs e provedores iniciais de liquidez são pagos em tokens futuros e se tornam os defensores mais barulhentos do projeto.</li>
+      </ul>
+      <p>Portanto, um airdrop é marketing, não caridade: você fornece atividade e atenção iniciais; o projeto paga você com uma opção sobre seu token futuro. Manter esse enquadramento evita expectativas irreais.</p>
+
+      <h2>Três tipos dos quais pessoas comuns podem participar</h2>
+      <h3>1. Tarefas de testnet (capital zero)</h3>
+      <p>Antes do lançamento da mainnet, projetos distribuem tokens de teste gratuitos para concluir tarefas — resgate na faucet, transfira, faça stake, envie feedback. O único custo é tempo, o que faz deste o melhor ponto de entrada para iniciantes. Itens marcados como "testnet tasks" em nossa <a href="../airdrops.html">página diária de airdrops</a> são exatamente isso, cada um com seu prazo.</p>
+      <h3>2. Programas de pontos (mainnet, custos pequenos)</h3>
+      <p>Use um produto ativo, acumule pontos, converta pontos em tokens depois. Cuidado: atividade em mainnet queima taxas reais de gas. Verifique a credibilidade do projeto primeiro e nunca gaste $50 em taxas perseguindo $5 em pontos.</p>
+      <h3>3. Eventos de exchanges (precisam de capital)</h3>
+      <p>Binance Launchpool, OKX Jumpstart e similares: faça stake de ativos especificados ou complete tarefas de negociação para compartilhar uma nova alocação de tokens. A categoria mais transparente e previsível — mas exige fundos e KYC, e os pagamentos variam conforme o que você coloca.</p>
+      <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Eventos frequentes de Launchpool</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Jumpstart + hub de tarefas da carteira Web3</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Cadastre-se</a></div>
+      </div>
+
+      <h2>Como a participação geralmente funciona</h2>
+      <ol>
+        <li><strong>Prepare uma carteira dedicada.</strong> Faça farming com uma carteira "descartável" separada, nunca com a que guarda suas economias — veja <a href="wallet-safety.html">Segurança de Carteira e Seed Phrase</a>.</li>
+        <li><strong>Entre somente por canais oficiais:</strong> o site do projeto, a conta oficial no X ou a documentação. Confira qualquer link encaminhado em um chat em grupo.</li>
+        <li><strong>Complete a lista de tarefas e anote tudo:</strong> muitos drops pagam por snapshot. Registre o que você fez e quando.</li>
+        <li><strong>Aguarde o snapshot e a janela de resgate:</strong> resgates expiram. Resgate somente na página oficial.</li>
+      </ol>
+
+      <h2>Gestão de expectativas: três baldes de água fria</h2>
+      <ul>
+        <li><strong>A maioria dos projetos nunca paga, ou paga poeira.</strong> Retornos de airdrop são de cauda longa: algumas grandes vitórias cobrem muitos poços secos.</li>
+        <li><strong>Verificações anti-Sybil são reais.</strong> Criação em massa de contas e bots são filtrados e desqualificados — às vezes arrastando contas de aparência honesta junto. Faça farming em ritmo humano normal; não otimize para trapacear.</li>
+        <li><strong>Tempo é dinheiro de verdade.</strong> Trinta minutos por dia são 180 horas por ano. Trate o farming como uma atividade paralela de baixo custo e um aprendizado de habilidades on-chain — nunca como substituto de salário.</li>
+      </ul>
+
+      <div class="callout warn"><b>Linhas vermelhas contra golpes (memorize estas):</b> 1. Qualquer airdrop que peça sua chave privada ou seed phrase é golpe, 100%, sem exceções. 2. Pedirem para enviar dinheiro primeiro para "ativar" seu resgate é quase sempre golpe. 3. "Links de airdrop" que existem somente dentro de chats em grupo — não clique. 4. Uma página de resgate cujo domínio não corresponde ao site oficial — feche imediatamente. Guia de campo completo sobre golpes: <a href="avoid-scams.html">Golpes Comuns de Cripto</a>.</div>
+
+      <p>Nossa <a href="../airdrops.html">página de airdrops</a> é atualizada diariamente e lista somente fontes verificáveis, rotulando claramente quais itens exigem conectar uma carteira e quais exigem depositar fundos — o mesmo princípio deste guia: resgates com conexão de carteira e pequenos requisitos de gas/depósito são mecânicas normais; <strong>pedir sua chave privada ou seed phrase é o único desqualificador</strong>.</p>
+
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">Pronto para caçar airdrops? Deixe sua conta na exchange pronta primeiro: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se na Binance</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Criar conta na OKX</a></p>
+      <h2>Perguntas frequentes</h2>
+      <h3>Fazer farming de airdrops custa dinheiro?</h3>
+      <p>Testnets custam somente tempo. Programas de pontos em mainnet custam gas. Eventos de exchanges precisam de capital em stake ou volume de negociação. Antes de começar qualquer coisa, deixe claro se ele quer seu tempo ou seu dinheiro.</p>
+      <h3>Posso usar várias contas para resgatar mais?</h3>
+      <p>Projetos rodam detecção anti-Sybil exatamente para isso: IPs compartilhados, fontes de financiamento compartilhadas e padrões de comportamento idênticos são sinalizados como um cluster falso e muitas vezes não rendem nada. Uma conta honesta vence dez falsas.</p>
+      <h3>Quanto os tokens vão valer?</h3>
+      <p>De zero a milhares de dólares, impossível saber de antemão. Julgue os fundamentos do projeto e a tokenomics, não palpites de preço em chats — e, após resgatar, leia o cronograma de desbloqueio antes de segurar ou comprar mais.</p>
+      <h3>O site de resgate pede minha seed phrase. E agora?</h3>
+      <p>Feche a aba. É um site de phishing. Resgates de verdade só pedem para conectar uma carteira e assinar — nunca para digitar uma seed phrase. Já digitou? Siga a <a href="wallet-safety.html">resposta a vazamento</a> e mova seus ativos imediatamente.</p>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Pronto?</b> Cadastrar-se leva cerca de 10 minutos: verifique uma vez, ative o 2FA e compre seu primeiro USDT via P2P. Siga os guias deste site e vai dar tudo certo.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">A maior do mundo, com a maior liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se na Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Linha de produtos completa, bom suporte a idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Criar conta na OKX</a></div>
+        </div>
+        <p class="note">As mesmas taxas de se cadastrar diretamente — nosso link não custa nada a mais para você.</p>
+      </div>
+      <h2>Continue lendo</h2>
+      <ul>
+        <li><a href="../airdrops.html">Lista de airdrops de hoje, triada diariamente</a></li>
+        <li><a href="wallet-safety.html">Segurança de carteira e seed phrase</a></li>
+        <li><a href="avoid-scams.html">Cripto é golpe? 8 esquemas para conhecer</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Início</a><a href="../airdrops.html">Airdrops diários</a><a href="../exchanges.html">Comparação de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Iniciantes</b><a href="../start/step1.html">Trilha do iniciante</a><a href="index.html">Guias</a><a href="../start/step5.html">Compre sua primeira moeda</a></div>
+      <div class="col" style="flex:1;"><b>Análises</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Ferramentas</b><a href="../tools.html#watchlist">Alertas de lista de acompanhamento</a><a href="../tools.html#calendar">Calendário de eventos</a><a href="../exchanges.html#calculator">Calculadora de taxas</a></div>
+    </div>
+    <div class="disclosure">Este site contém links de afiliados. Cadastrar-se pelos nossos links não custa nada a mais para você. Os preços das criptomoedas são altamente voláteis; nada aqui é conselho de investimento — avalie os riscos por conta própria.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Ainda sem conta? Cadastre-se em 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se</a><button class="sx" aria-label="Fechar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
