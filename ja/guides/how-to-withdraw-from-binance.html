@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Binanceから出金する方法：銀行、P2P、ウォレット—手数料、時間、修正— TokVS</title>
+<meta name="description" content="Binanceから出金する3つの方法：銀行への出金、P2Pでの販売、または自分のウォレットへの出金。ネットワークの選択、手数料、到着時間、出金が行き詰まる理由。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-withdraw-from-binance">
+<meta property="og:title" content="Binanceから引き出す方法— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Binanceからの銀行、P2P、またはウォレットの引き出し：ステップ、ネットワークの選択、手数料、時間、および出金停止の修正。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/how-to-withdraw-from-binance">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"Binanceからの引き出し","item":"https://tokvs.com/ja/guides/how-to-withdraw-from-binance"}]},{"@type":"Article","headline":"Binanceから出金する方法","description":"Binanceから出金する3つの方法：銀行へ、P2Pでの販売、または自分のウォレットへ。 ネットワークの選択、手数料、到着時間、引き落としの修正。","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/how-to-withdraw-from-binance","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Binanceの引き出しにはどのくらいの時間がかかりますか？","acceptedAnswer":{"@type":"Answer","text":"ルートによって異なります。暗号通貨の引き出しは、通常、ネットワークが確認すると数分から1時間で到着しますが、輻輳したネットワークには時間がかかります。銀行引き出しはお住まいの国の支払い方法によって異なり、数分から数営業日かかる場合があります。P2P販売は、購入者が支払うのと同じくらい早く決済されます。多くの場合、数分以内に決済されます。"}},{"@type":"Question","name":"Binanceの引き出しが処理に進まないのはなぜですか？","acceptedAnswer":{"@type":"Answer","text":"よくある原因は、パスワードや2FA変更後のセキュリティロック、まだ待機期間内の新しい出金アドレス、ネットワークの混雑、そのコインのウォレットメンテナンス、または未完了の認証ステップだ。サポートに連絡する前に、まず出金ステータスページを確認し、次にセキュリティ通知のメールを確認すること。"}},{"@type":"Question","name":"出金で間違ったネットワークを選んだらどうなる？","acceptedAnswer":{"@type":"Answer","text":"受信ウォレットがサポートしていないネットワーク上で暗号を送信すると、資金が失われたり、回復が非常に困難になったりする可能性があります。常に両側のネットワークと一致してください。ウォレットにTRONアドレスが表示されている場合は、イーサリアムではなくTRONで引き出します。疑問がある場合は、最初に少量のテスト金額を送信してください。"}},{"@type":"Question","name":"出金時にメモやタグは必要ですか？","acceptedAnswer":{"@type":"Answer","text":"XRPやXLMなどの一部のコインでは、取引所に送信する際にアドレスに加えてメモや宛先タグが必要です。受取側にメモフィールドが表示されている場合は、正確に記入する必要があります。必要なメモなしで送信された引き出しは、数週間遅延したり、紛失したりする可能性があります。これらのコインのウォレット間送金には通常、メモは必要ありません。"}},{"@type":"Question","name":"Binanceに最低出金額はあるか？","acceptedAnswer":{"@type":"Answer","text":"はい。すべてのコインとネットワークには、それぞれ最低出金額があり、確定前に出金ページに表示される。残高が選んだネットワークの最低額を下回る場合は、最低額の低いネットワークに切り替えるか、P2Pのような別のルートを使うこと。"}},{"@type":"Question","name":"Binanceから銀行口座にUSDTを引き出すことはできますか？","acceptedAnswer":{"@type":"Answer","text":"直接ではありません—銀行はUSDTを受け付けていません。 USDTを現地通貨に変換するには、まず現物市場で売却して法定通貨を引き出すか、銀行振込で支払いを行うP2Pバイヤーに売却します。 どちらのルートも、銀行口座への通常の入金で終了します。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/Binanceから撤退</div>
+      <h1>Binanceから出金する方法</h1>
+      <p class="sub">3つの出口——銀行、P2P、自分のウォレット——に加え、初心者が間違えがちなネットワーク選択、予想される手数料と所要時間、そして出金が詰まったときの対処法。</p>
+      <p class="updated">更新日： 2026年10月・作成者： TokVS・所要時間： 11分</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ→</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>まず、Binanceでの「引き出し」の意味</h2>
+      <p>初心者は1つの区別につまずくことが多いので、まずはそれをはっきりさせましょう。Binanceでは、「引き出し」は2つの異なることをカバーしています。<strong>法定引き出し</strong>は、通常のお金(ドル、ユーロ、または現地通貨)を銀行口座に送金します。<strong>暗号引き出し</strong>は、コインまたはトークンをブロックチェーン上のウォレットアドレスに送信します。どちらが必要かは、最終的に何を望むかによって異なります。銀行で使えるお金か、自分でコントロールできる暗号通貨かです。境界線を曖昧にする3番目のルートもあります。P2Pでの販売では、バイヤーが銀行振込で直接支払います。多くの国では、現金化する最も実用的な方法です。このガイドでは、3つすべてをカバーしています。次に、出金が最も行き詰まった原因となる間違いについて説明します。</p>
+      <p>引き出しの前に、1つのハウスキーピングノート：あなたの資金はBinance内のさまざまなウォレット(現物、資金調達、獲得、先物)に保管されており、正しいウォレットからのみ引き出すことができます。 引き出しボタンがグレー表示されている場合、または残高がゼロになっている場合は、まず資金調達から現物へなど、内部で資金を移動する必要があります。 内部送金は無料で即座に行われ、ほぼすべての初心者を一度だけ混乱させます。</p>
+      <h2>ルート1：法定通貨を銀行口座へ出金する</h2>
+      <p>お住まいの国で利用できる場合、これが最もクリーンなルートだ。手順は次の通り。現物市場で暗号資産を現地通貨に売却し（例えばUSDTをUSDやEURに売却し）、ウォレットへ行き、出金を選び、法定通貨を選び、通貨と紐付けた銀行口座を選び、金額を入力して確定する。銀行口座は認証済みのBinanceアカウントと同じ名義でなければならない。さもなければ出金は拒否されるか、審査のため凍結される。</p>
+      <p>所要時間は、お住まいの国の決済レールに完全に依存する。即時銀行システムなら数分で決済されることがある。従来の送金は1日から数営業日かかることがあり、週末や祝日は遅延を加える。手数料も通貨とレールによって異なる——Binanceは確定前に出金画面に正確な手数料を表示し、その画面こそが信頼できる情報源だ。手数料表は変わるため、覚えた数字に決して頼らないこと。お住まいの通貨で法定通貨出金がまったく提供されていない場合は、ルート2へ進むこと——それこそがP2Pが存在する理由の状況だ。</p>
+      <p class="in-cta">まだアカウントがない？<a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a><a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></p>
+      <h2>ルート2 ： P2Pで販売し、銀行振込で支払いを受ける</h2>
+      <p>P2Pは世界のほとんどの地域での現金化ルートであり、購入フローと逆の動きをする。P2Pへ行き、売却を選び、コイン（通常はUSDT）と通貨を選び、買い手を閲覧する。長い履歴、数百件の完了取引、高い完了率を持つ買い手を選ぶこと——購入時と同じチェックリストだ。同じ詐欺師が両側で活動しているからだ。金額を入力し、注文を出し、暗号資産が取引所のエスクローでロックされる。</p>
+      <p>その後、購入者は合意された金額の銀行振込(またはモバイルマネー支払い)を送信します。バイヤーが送信するスクリーンショットからではなく、自分の銀行アプリで確認された口座に入金すると、エスクローから暗号を解放します。その順序が重要です。実際に口座に入金される前に、決して送金しないでください。2つの安全規則が全体像を完成させています。まず、支払いは購入者自身の名前のアカウントから行われ、P2P IDと一致する必要があります。サードパーティの支払いは典型的な詐欺パターンであり、異議申し立ての理由です。次に、P2Pチャット内ですべてのコミュニケーションを維持します。購入者がWhatsAppまたはTelegramへの移行を要求した場合、プラットフォーム外のチャットは異議申し立てが必要な場合に証拠を削除するため、これは危険信号です。</p>
+      <p>P2P価格設定には、1つの正直なメモが必要です。バイヤーの見積もりは市場レートをわずかに下回っており、そのギャップはマージンです。流動性のある通貨ではギャップは小さく、一般的ではない通貨ではギャップは広がります。受け入れる前に3〜4人のバイヤーを比較し、市場をはるかに上回るオファーを幸運ではなく餌として扱います。当社の<a href="how-to-sell-crypto.html">暗号化ガイド</a>を販売する方法は、販売マインドセットをより詳細にカバーしています。</p>
+      <h2>ルート3 ：自分のウォレットに暗号通貨を引き出す</h2>
+      <p>このルートは、現金化のためではなく、暗号を自己保管に移すためのものであり、高価なミスが発生する場所です。手順は次のとおりです。ウォレットアプリで、コインの受取アドレスをコピーします。Binanceで、出金に移動し、暗号を選択し、コインを選択し、アドレスを貼り付け、ネットワークを選択し、金額を入力し、2 FAで確認します。それから、初心者が急いでいる部分があります。ネットワークです。</p>
+      <h2>ネットワークの選択：Binanceで最も高価なドロップダウン</h2>
+      <p>多くのコインが一度に複数のブロックチェーンに存在します。 たとえば、USDTはイーサリアム( ERC 20 )、TRON ( TRC 20 )、BNBチェーン( BEP 20 )などで動作します。 これらは交換できません。 ウォレットにTRONアドレスが表示され、イーサリアムでUSDTを引き出すと、資金はそのチェーン上でウォレットが制御できないアドレスに送られ、回復は痛みを伴うものから不可能なものまでさまざまです。</p>
+      <p>ルールは絶対的です： <strong>Binanceで選択するネットワークは、そのコインの受信ウォレットまたは交換サポートのネットワークと一致する必要があります。</strong>確認する前に両側を確認してください。 ウォレットが複数のネットワークをサポートしている場合は、Binanceの出金画面に表示されている最も低い手数料を選択してください。手数料はネットワークによって大きく異なり、出金画面にはネットワークごとの正確な手数料が表示されます。 新しい住所への最初の引き出しの場合は、少額のテスト金額を送信し、到着を確認してから、残りの金額を送信してください。 テストには1つの追加料金がかかります。スキップすると、初心者の出金全体がかかります。</p>
+      <div class="callout warn"><b>2つのアドレスの罠：</b>1.アドレスを手入力しないこと——コピー＆ペーストし、最初と最後の4文字が一致することを確認すること。クリップボードのアドレスをすり替えるマルウェアが存在する。2.一部のコイン（XRP、XLM、その他いくつか）は、取引所へ送る際にアドレスに加えてメモや送金タグも必要だ——受け取り側にメモ欄が表示されたら、正確に入力すること。さもなければ入金が数週間遅れることがある。</div>
+      <h2>料金と時間が一目でわかる</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>経路</th><th>目安の手数料</th><th>典型的な時間</th><th>気をつけてください</th></tr></thead>
+        <tbody>
+          <tr><td>フィアットから銀行へ</td><td>出金画面に表示される。通貨とレールによって異なる。</td><td>数営業日まで数分</td><td>銀行名はKYC名と一致する必要があります</td></tr>
+          <tr><td>P2P販売</td><td>プラットフォーム手数料なし。市場を下回るバイヤーの見積もり</td><td>購入者が支払った分</td><td>お金が銀行に入金された後にのみリリースする</td></tr>
+          <tr><td>暗号資産をウォレットへ</td><td>ネットワーク手数料。確定前にネットワークごとに表示される</td><td>通常は数分から1時間</td><td>ネットワークが正しくない、またはメモがありません</td></tr>
+        </tbody>
+      </table></div>
+      <p>初心者が過小評価するコストの1つは、わずかな金額を引き出すことです。すべての暗号通貨の引き出しには、サイズに関係なく定額のネットワーク手数料がかかります。そのため、5ドルのネットワーク手数料で10ドルのコインを引き出すと、50%のヘアカットになります。金額が少ない場合は、利用可能な最も安いネットワークを選択するか、引き出す前により多くの金額を蓄積するか、代わりにP2Pを使用してください。出金を確定する前に、手数料と最低金額が出金ページに表示されます。ネットワークと手数料スケジュールが変更されるため、そのページを最後の言葉として扱います。</p>
+      <h2>出金が行き詰まる理由(および対処方法)</h2>
+      <ul>
+        <li><strong>アカウント変更後のセキュリティロック。</strong>パスワードの変更、2 FAのリセット、または新しい引き出しアドレスの追加は、通常24時間の引き出し保留となります。 これは保護であり、バグではありません。時計を再起動できるように、より多くの設定を変更して「修正」しようとしないでください。</li>
+        <li><strong>ネットワークの混雑またはウォレットメンテナンス。</strong>ブロックチェーンが混雑しているか、Binanceがそのコインのメンテナンスのため出金を一時停止している場合、出金はキューに入る。慌てる前に、出金ステータスページとメンテナンス通知を確認すること。</li>
+        <li><strong>間違ったネットワークまたはメモの欠落。</strong>サポート対象外のネットワークで送ったか、必要なメモを忘れた場合は、トランザクションIDを持って直ちにサポートに連絡すること——回復は時に可能だが遅く、決して保証されない。だからこそテスト金額が存在する。</li>
+        <li><strong>未完了の認証または上限。</strong>未認証または一部認証のアカウントには出金上限がある。上限を超える出金は、認証が完了するまでブロックされる。アカウント設定で認証レベルを確認すること。</li>
+        <li><strong>確認メールが保留中です。</strong>一部の出金では、メールに送信された確認リンクをクリックする必要があります。受信トレイ(および迷惑メールフォルダ)を確認し、<a href="how-to-keep-your-binance-account-safe.html">アカウントの安全性チェックリスト</a>に記載されているフィッシング対策コードがメールに記載されていることを確認してからクリックしてください。</li>
+      </ul>
+      <p>出金が本当に予想される時間を超えている場合は、サポートに連絡する前に、出金レコード(コイン、金額、ネットワーク、時間)、トランザクションID (生成された場合)、および受信アドレスの3つを収集します。サポートは、あなたが彼らに見せることができるものだけを追跡することができます。また、出金の「ブロック解除」を約束する第三者には決して支払わないでください。これは、すでに資金の行き詰まりを心配している人々を対象としたフォローアップ詐欺です。</p>
+      <h2>もう1つのルート：取引所から取引所への送金</h2>
+      <p>目的地が銀行やウォレットではなく、別の取引所である場合があります。たとえば、BinanceがないコインをリストするプラットフォームにUSDTを移動したり、資金を統合したりします。仕組みはルート3と同じです。受取取引所から入金アドレスをコピーし、ネットワークを正確に照合し、コインが必要な場合はメモに注意して、最初にテスト金額を送信します。ここでの余分な罠は、2つの取引所がコインの同じネットワークをサポートしていると仮定しています。それらはしばしばサポートしておらず、受信取引所の入金ページ(あなたのメモリではありません)は、ネットワークが受け入れる権限です。為替デポジットをウォレットの引き出しとまったく同じように扱います。同じチェックリスト、同じテスト金額、ネットワークを間違えた場合の同じ不可逆性。<a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener"> Bybit </a>などの他の主要な取引所も同じように機能し、同じルールがあなたを保護します。</p>
+      <h2>撤回安全チェックリスト</h2>
+      <ol>
+        <li>資金は適切な内部ウォレットに移動されました(必要に応じて現物または資金調達)。</li>
+        <li>受取住所がコピーされ、入力されていません。最初と最後の4文字がチェックされています。</li>
+        <li>両側のネットワークが一致しました。必要に応じてメモまたはタグを記入してください。</li>
+        <li>新しいアドレスやネットワークには、まずテスト金額を送ること。</li>
+        <li>確定前に、出金画面で手数料と最低額を確認すること。</li>
+        <li>P2Pの場合：エスクローを解除する前に、自分の銀行アプリで確認されたお金。</li>
+        <li>銀行の場合：口座名が認証済みのBinance名と一致すること。</li>
+        <li>出金ホワイトリストを有効にし、侵害されたアカウントが資金を転送できないようにすること。</li>
+      </ol>
+      <p>出金は初めてのときはストレスを感じる。なぜなら不可逆だからだ——ブロックチェーン送金に「元に戻す」ボタンはない。だからこそチェックリストが存在する。機械的に従えば、プロセスは退屈になる。退屈こそが目標だ。ほとんど考えずに済んだ出金は、正しく行われた出金だ。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        </div>
+        <p class="note">直接サインアップするのと同じ手数料です。リンクに追加料金はかかりません。Bitget (<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener"> bitget.com </a>)もご利用いただけます。現在、Bitgetとのリベート契約はありませんのでご注意ください。</p>
+      </div>
+
+      <h3>Binanceの引き出しにはどのくらいの時間がかかりますか？</h3>
+      <p>ルートによって異なります。暗号通貨の引き出しは、通常、ネットワークが確認すると数分から1時間で到着しますが、輻輳したネットワークには時間がかかります。銀行引き出しはお住まいの国の支払い方法によって異なり、数分から数営業日かかる場合があります。P2P販売は、購入者が支払うのと同じくらい早く決済されます。多くの場合、数分以内に決済されます。</p>
+      <h3>Binanceの引き出しが処理に進まないのはなぜですか？</h3>
+      <p>よくある原因は、パスワードや2FA変更後のセキュリティロック、まだ待機期間内の新しい出金アドレス、ネットワークの混雑、そのコインのウォレットメンテナンス、または未完了の認証ステップだ。サポートに連絡する前に、まず出金ステータスページを確認し、次にセキュリティ通知のメールを確認すること。</p>
+      <h3>出金で間違ったネットワークを選んだらどうなる？</h3>
+      <p>受信ウォレットがサポートしていないネットワーク上で暗号を送信すると、資金が失われたり、回復が非常に困難になったりする可能性があります。常に両側のネットワークと一致してください。ウォレットにTRONアドレスが表示されている場合は、イーサリアムではなくTRONで引き出します。疑問がある場合は、最初に少量のテスト金額を送信してください。</p>
+      <h3>出金時にメモやタグは必要ですか？</h3>
+      <p>XRPやXLMなどの一部のコインでは、取引所に送信する際にアドレスに加えてメモや宛先タグが必要です。受取側にメモフィールドが表示されている場合は、正確に記入する必要があります。必要なメモなしで送信された引き出しは、数週間遅延したり、紛失したりする可能性があります。これらのコインのウォレット間送金には通常、メモは必要ありません。</p>
+      <h3>Binanceに最低出金額はあるか？</h3>
+      <p>はい。すべてのコインとネットワークには、それぞれ最低出金額があり、確定前に出金ページに表示される。残高が選んだネットワークの最低額を下回る場合は、最低額の低いネットワークに切り替えるか、P2Pのような別のルートを使うこと。</p>
+      <h3>Binanceから銀行口座にUSDTを引き出すことはできますか？</h3>
+      <p>直接ではありません—銀行はUSDTを受け付けていません。 USDTを現地通貨に変換するには、まず現物市場で売却して法定通貨を引き出すか、銀行振込で支払いを行うP2Pバイヤーに売却します。 どちらのルートも、銀行口座への通常の入金で終了します。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="how-to-sell-crypto.html">仮想通貨の売却方法</a></li>
+        <li><a href="how-to-keep-your-binance-account-safe.html">Binanceアカウントを安全に保つ方法</a></li>
+        <li><a href="buy-usdt.html"> USDTの購入方法：すべての方法を比較</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">初心者に最適な暗号ウォレット</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

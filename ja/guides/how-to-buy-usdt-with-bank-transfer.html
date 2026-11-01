@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>銀行振込でUSDTを買う方法：P2Pと直接入金 — TokVS</title>
+<meta name="description" content="銀行振込でUSDTを購入： P2Pとの直接為替入金、鉄道によるタイミング、手数料、支払い参照ルール、回避すべき落とし穴。テスト転送から始めます。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/how-to-buy-usdt-with-bank-transfer">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-usdt-with-bank-transfer">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-usdt-with-bank-transfer">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-usdt-with-bank-transfer">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-usdt-with-bank-transfer">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-usdt-with-bank-transfer">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-usdt-with-bank-transfer">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-usdt-with-bank-transfer">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-usdt-with-bank-transfer">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-usdt-with-bank-transfer">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-usdt-with-bank-transfer">
+<meta property="og:title" content="銀行振込でUSDTを買う方法：P2Pと直接入金 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="USDTへの銀行振込ルート：直接入金とP2P、タイミング、手数料、および送金を遅らせたり失ったりする間違い。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/how-to-buy-usdt-with-bank-transfer">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"銀行振込でUSDTを購入する","item":"https://tokvs.com/ja/guides/how-to-buy-usdt-with-bank-transfer"}]},{"@type":"Article","headline":"銀行振込でUSDTを購入する方法： P2Pと直接入金","description":"直接両替預金またはP2Pによる銀行振込でUSDTを購入：ステップバイステップ、鉄道によるタイミング、手数料、および送金を遅らせる落とし穴。 テスト転送から始めます。","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/how-to-buy-usdt-with-bank-transfer","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"USDTを購入するには銀行振込にどのくらいの時間がかかりますか？","acceptedAnswer":{"@type":"Answer","text":"これは鉄道によって異なります。即時決済システムは数分で決済され、国内送金には通常1〜3営業日かかり、国際送金には数営業日かかる場合があります。週末、カットオフタイム、仲介銀行はすべて遅延を加える可能性があります。"}},{"@type":"Question","name":"支払い参照番号を忘れた場合はどうなりますか？","acceptedAnswer":{"@type":"Answer","text":"サポートが手動でマッチしている間、または銀行に返金される間、入金が遅れる可能性があります。 紹介文を忘れた場合は、すぐにExchangeサポートに支払い証明(金額、日付、アカウントの詳細)を提出し、返信するまで2回目の送金を行わないでください。"}},{"@type":"Question","name":"他の人の銀行口座を使用できますか？","acceptedAnswer":{"@type":"Answer","text":"いいえ。両替では、認証された口座と同じ名前の銀行口座からの入金が必要です。第三者の入金は拒否または凍結され、繰り返し試行するとアカウントが制限される可能性があります。"}},{"@type":"Question","name":"銀行振込はカードよりも安いですか？","acceptedAnswer":{"@type":"Answer","text":"通常、はい。銀行預金にはほとんどまたはまったく両替手数料がかかりませんが、カード購入には一般的な方法の最も高い手数料がかかります。 銀行が電信送金を請求する場合もありますので、選択する前に両側を確認し、取引所の公式手数料ページで現在の手数料を確認してください。"}},{"@type":"Question","name":"週末に銀行振込でUSDTを買えるか？","acceptedAnswer":{"@type":"Answer","text":"P2P注文はいつでも行うことができますが、お住まいの国にインスタント決済システムがない限り、送金自体は銀行の営業時間に従います。金曜日の夕方にスローレールで送られた送金は、月曜日または火曜日まで到着しない場合があります。"}},{"@type":"Question","name":"数日経ってもお金が届かない場合はどうすればよいですか？","acceptedAnswer":{"@type":"Answer","text":"まず、振込先が銀行であり、詳細が正しいことを確認します。 次に、取引所の入金ステータスページを確認し、支払い証明を添えてサポートに連絡してください。 同じ金額を再度送金しないでください。重複送金は、サポート案件が混乱する一般的な原因です。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/銀行振込でUSDTを購入</div>
+      <h1>銀行振込でUSDTを買う方法</h1>
+      <p class="sub">2つの道、1つの銀行口座：取引所に直接入金するか、P2Pマーチャントに支払います。タイミング、手数料、およびお金が到着するかどうかを決定する参照ルールが記載されています。</p>
+      <p class="updated">更新日： 2026年10月・作成者： TokVS・所要時間： 11分</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ→</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>2つの道：直接振込とP2P</h2>
+      <p>銀行振込でUSDTへ入るルートは、2つの道のいずれかだ。道の1つは直接入金。自分の銀行口座から取引所の銀行口座へ送金し、取引所がアカウントに入金して、現物市場でUSDTを買う。道の2つはピアツーピア。別の人物へ送金し、取引所がその人物のUSDTをエスクローからあなたへ解放する。どちらの道も自分の銀行口座を使い、どちらも最終的にウォレットにUSDTが入るが、速度、コスト、そして取引の相手が誰かが異なる。このガイドでは両方を解説する。どちらが正しいかは、取引所が何に対応しているかと、どれだけ急いでUSDTが必要かによるからだ。</p>
+      <p>両方の道を支配する1つの原則：お金はあなたの確認された為替口座と同じ名前の銀行口座から来なければなりません。 取引所は、不正防止とマネーロンダリング防止の主な対策であるため、これを厳格に実施しています。 確認済みの名前と一致しない配偶者、友人、またはビジネス用アカウントからの入金は拒否または凍結され、繰り返し試みるとアカウントが制限される可能性があります。 あなたが誰かと財務を共有する場合、口座名義人は、期間を購入します。</p>
+      <h2>始める前に必要なもの</h2>
+      <ul>
+        <li><strong>確認済みの為替口座。</strong>入金または取引の前に本人確認が必要です。 写真付きの身分証明書をご用意の上、実際に顔を確認してください。</li>
+        <li><strong>オンラインバンキングにアクセスできる自分の名前の銀行口座</strong>なので、自分で送金して領収書を保管することができます。</li>
+        <li><strong>認証アプリを介した2要素認証</strong>と、最初の入金前に設定されたフィッシング対策コード。</li>
+        <li><strong>すべてをスクリーンショットする習慣。</strong>すべての送金領収書は、預金が不足している場合の証拠となります。</li>
+      </ul>
+      <p class="in-cta">最初にアカウントを準備してください： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成</a></p>
+      <h2>道路1 ：取引所への直接入金、ステップバイステップ</h2>
+      <ol>
+        <li>認証を完了し、2 FAを有効にします。 次に「入金」に移動し、現地通貨を選択し、銀行振込を選択します。</li>
+        <li>取引所には、口座名義、口座番号またはIBAN、銀行ID、および(重要な)口座固有の支払い参照番号またはメモなど、通貨の銀行詳細が表示されます。</li>
+        <li>銀行アプリを開き、正確にこれらの詳細を使用して送金を作成します。文字の参照文字をコピーします。それに余分な単語を追加しないでください。</li>
+        <li>送金を送信し、金額、日付、参照番号を含む確認画面のスクリーンショットを撮ります。</li>
+        <li>入金が入金されるのを待ち、通貨のUSDTペアの現物マーケットを開き、購入注文を行います。 成行注文はすぐに満たされます。指値注文を使用すると、価格を設定して待つことができます。</li>
+        <li>現物ウォレットでUSDTを確認し、取引を記録します：日付、送金額、受け取ったUSDT、注文ID。</li>
+      </ol>
+      <p>この参照は、預金の遅延の第1の原因であるため、強調する価値があります。 エクスチェンジでは、毎日何千もの送金が共有アカウントに送金されます。リファレンスは、送金をアカウントに結びつける唯一のものです。 メモに暗号通貨やUSDTなどの単語を追加するなど、見当たらない、入力ミス、または装飾されたリファレンスは、何日もあなたのお金を匹敵しないままにする可能性があります。 銀行のメモ欄が短い場合は、指定されたとおりに参照を使用し、それ以外は使用しないでください。</p>
+      <h2>ロード2 ： P2P銀行振込、ステップバイステップ</h2>
+      <p>P2Pは、取引所があなたの通貨での直接入金を提供していない場合、銀行が取引所への送金に気まずい場合、または加盟店が受け入れる特定の地域の鉄道で支払いたい場合に適しています。取引所はあなたのお金に直接触れることはありません。あなたが売り手に支払う間、売り手のUSDTをエスクローで保持します。</p>
+      <ol>
+        <li>アプリでP2Pを開き、購入、USDT、通貨を選択し、銀行振込またはお住まいの地域のインスタントレールでフィルタリングします。</li>
+        <li>完了した注文が多く、完了率が高く、古いアカウントがあるという実績で販売業者を選択します。 利用規約をお読みください。一部の販売業者は、時間帯、最低金額を明記しているか、特定の銀行からの支払いを必要としています。</li>
+        <li>金額を入力し、注文を出すこと。売り手のUSDTがエスクローでロックされ、支払いタイマーが始まる。</li>
+        <li>注文番号のみを支払い参照番号として使用して、指示どおりに販売業者の銀行口座に支払います。銀行のメモに暗号関連の単語を書いてはいけません。銀行がそれらにフラグを立てると、商人も同じことを教えてくれます。</li>
+        <li>アプリを閉じる前に、支払い済みであることをタップし、リリースを待ち、ウォレット内のUSDTを確認します。</li>
+      </ol>
+      <p>お支払い後に販売者がリリースしない場合は、パニックにならず、再度お支払いしないでください。お支払いのスクリーンショットを使用して異議申し立てを行い、取引所に解決させてください。お支払いが完了する前にタイマーが切れると、注文は自動的にキャンセルされ、お金が移動することはありません。また、プラットフォーム外で取引を完了することに同意しないでください。エスクローはP2Pのすべてのポイントであり、スキップを求める人は詐欺を実行しています。</p>
+      <h2>タイミング：鉄道で何を期待するか</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>レール</th><th>典型的なタイミング</th><th>気をつけてください</th></tr></thead>
+        <tbody>
+          <tr><td>即時決済システム(高速決済、SEPA Instant、UPIなど)</td><td>分、多くの場合24時間年中無休</td><td>臨時の銀行側チェック</td></tr>
+          <tr><td>標準的な国内送金（ACH、SEPA、NEFTなど）</td><td>1 ～ 3営業日</td><td>週末と締め切り時間</td></tr>
+          <tr><td>国際電信送金/SWIFT</td><td>数営業日</td><td>中継銀行（それぞれ時間を加える）</td></tr>
+          <tr><td>銀行振込</td><td>マッチング後の分数</td><td>販売業者の可用性、支払いタイマー</td></tr>
+        </tbody>
+      </table></div>
+      <p>タイミングの数値は方向性があり、国、銀行、鉄道によって異なります。金曜日の夕方にスローレールで送られた送金は、月曜日または火曜日まで到着しない場合があり、国際電信送金は仲介銀行を通過し、それぞれが独自の処理時間を追加します。自分のスケジュールではなく、銀行の営業時間に合わせて計画してください。締め切りまでにUSDTが必要な場合は、必要と思われる少なくとも1営業日前に送金を開始してください。</p>
+      <h2>費用について</h2>
+      <p>銀行入金はたいてい取引所側の手数料がほとんどかからないため、このルートは通常、コストでカードに勝つ——ただし全体像には2つの側面がある。取引所側では、公式の手数料ページで入金手数料と現物取引手数料を確認すること。銀行側では、国内送金はたいてい無料だが、国際電信送金やプレミアムなレールには定額の銀行手数料がかかる場合があり、SWIFTルートの中継銀行が送金途中の金額から独自の手数料を差し引くこともある。送った額より少なく届いた電信送金は、たいてい取引所の手数料ではなく中継銀行の差し引きだ——大きな電信送金を送る前に、銀行に手数料の完全な内訳を尋ねること。</p>
+      <p>P2Pコストは異なります。これは、市場価格に対する加盟店の見積もりです。 市場を上回る見積もりをしている販売業者は、利便性とスピードのためにプレミアムを請求しています。市場を下回る見積もりは、在庫を清算したり、数量を競ったりする可能性があります。 注文前に3つの販売業者を比較し、広告されたレートではなく、受け取った最終的なUSDTを直接入金と現物購入と比較します。 直接ルートが勝つこともあれば、競争力のあるP2Pマーチャントが勝つこともあります。</p>
+      <h2>送金を遅らせる、または失う落とし穴</h2>
+      <ul>
+        <li><strong>参照が間違っているか、欠落しています。</strong>最も一般的な遅延。 交換参照番号またはP2P注文番号を正確にコピーし、メモ欄に他のものを入れないでください。</li>
+        <li><strong>第三者名義の口座。</strong>入金は自分の口座からでなければならない。許可があっても、家族名義の口座は認められない。</li>
+        <li><strong>メモ内の暗号語。</strong>銀行振込メモにUSDT、BTC、または暗号を書くと、銀行のコンプライアンス保留が引き起こされる可能性があります。 参照のみを使用してください。</li>
+        <li><strong>不足しているデポジットを再送します。</strong>送金が届いていない場合は、まず証明書を提出してサポートに連絡してください。 重複した転送は、スピードではなく、混乱を倍増させます。</li>
+        <li><strong> P2Pでのエスクロー前の支払い。</strong>注文が行われ、USDTがエスクローにロックされる前に、決して送金しないでください。 注文外での前払いは保護されません。</li>
+        <li><strong>週末の仮定。</strong>スローレールは週末には動かない。金曜日の夜の送迎は、月曜日または火曜日の到着です。</li>
+      </ul>
+      <div class="callout warn"><b>送金の安全ルール：</b>プラットフォーム外でより良い価格を提供する人は、それが証明されるまで詐欺です。2.パスワード、2 FAコード、またはワンタイムコードを共有しないでください。正当なサポートエージェントが尋ねることはありません。3.銀行アプリを閉じる前に、すべての送金確認のスクリーンショットを撮ります。</div>
+      <h2>多量：試験移転習慣</h2>
+      <p>見落としがちな金額を超える送金については、テスト送金の習慣は交渉できません。最初に少額を送金し、正しく入金されていることを確認し、USDT購入が機能していることを確認してから、残りを送金してください。このテストでは、ほとんどのレールで余分な費用はかかりません。実際の資金が流れる前に、正確な詳細、正確な参照、予想されるタイミングなど、あらゆる不確実性に答えることができます。金額が非常に多い場合は、2回の送金または2日間に分けて、両方の領収書を保管してください。集中力は清潔な居住地の敵です。</p>
+      <h2>記録保持： 30秒テンプレート</h2>
+      <p>すべての送金と取引について、5つのフィールド(日付、プラットフォーム、送金額、USDT受領、注文または取引ID )を記録します。 それだけです。課税時には、これがコストベースと監査証跡になり、保証金が不足している場合は、サポートが最初に要求するものです。 メモアプリは機能しますが、スプレッドシートの方が優れています。 ファイリングシーズンに火傷を負ったトレーダーは、決して最も取引されたトレーダーではありません。最も書かれていないトレーダーです。</p>
+      <h2>購入後： USDTをどこに保管するか</h2>
+      <p>どこでも同じ3つのオプション： <strong>取引所</strong>(取引に便利、プラットフォームリスクを伴う)、<strong>あなた自身の財布</strong>(あなたは回復フレーズを保持しています—より大きな長期保有に最適)、または<strong>利回り商品</strong>(余分なリターン、余分なリスク—それらに触れる前に条件を読んでください)。最初の購入では、学習しながら交換に残しておいても問題ありません。金額が重要になったら、セルフカストディに移行してください。当社の<a href="best-crypto-wallet-for-beginners.html">初心者ウォレットガイド</a>は、回復フレーズを適切に説明しています。</p>
+      <h2>銀行振込初心者のよくある間違い</h2>
+      <ul>
+        <li><strong>テスト転送をスキップします。</strong> 1回の小さな確認実行で、最も高価なクラスの初心者エラーを防ぐことができます。</li>
+        <li><strong> P2Pマーチャントを銀行のように扱います。</strong>マーチャントとは、スケジュールを持つ人々のことです。利用規約を読み、時間枠を尊重し、午前3時に即時返信を期待しないでください</li>
+        <li><strong>見出し料金のみを比較しています。</strong>実際の比較は、最終的に受け取ったUSDT —入金手数料+取引手数料+スプレッド+銀行または仲介業者の控除です。</li>
+        <li><strong>すべてを1回の交換で永久に保持します。</strong>ぜひ始めてみてください。持ち株が増えたら、セルフカストディを学びましょう。</li>
+      </ul>
+      <h2>卒業： USDTからポートフォリオへ</h2>
+      <p>USDTはオンランプであり、目的地ではありません。 快適になったら、USDTペアでBTCまたはETHを購入し、メカニックのための<a href="how-to-buy-crypto-for-beginners.html">初心者購入ガイド</a>をお読みください。 次に何を購入しても、銀行振込の習慣(参照、領収書、記録、テスト振込)を維持します。</p>
+      <h2>完全な最初の転送チェックリスト</h2>
+      <ol>
+        <li>アカウントが認証され、2 FAとフィッシング対策コードが有効になり、自分の名前で銀行口座が開設されました。</li>
+        <li>道路を選択してください：取引所が通貨をサポートしている場合は直接入金、そうでない場合はP2P、または特定の鉄道が必要な場合はP2P。</li>
+        <li>アカウントの詳細をコピーし、正確に照会します。 送信する前にスクリーンショットを撮ってください。</li>
+        <li>少量のテスト転送を送信します。 クレジットされていることを確認し、少量のUSDTを購入し、それが着陸することを確認します。</li>
+        <li>取引を記録する：日付、送金額、USDT受領、注文ID。</li>
+        <li>フローが退屈に感じたら、実際のサイズで繰り返します。 退屈とは、あなたがそれを学んだことを意味します。</li>
+      </ol>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">Y</div><div><div class="tt">Bybit</div><div class="dd">デリバティブと現物取引</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitアカウントを作成</a></div>
+        </div>
+        <p class="note">直接サインアップと同じ手数料。リンクに追加料金はかかりません。 Bitgetは紹介手配なしでここにリンクされています(<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener"> bitget.com </a>) —そのリンクを介してリベートは適用されません。</p>
+      </div>
+
+      <h3>USDTを購入するには銀行振込にどのくらいの時間がかかりますか？</h3>
+      <p>これは鉄道によって異なります。即時決済システムは数分で決済され、国内送金には通常1〜3営業日かかり、国際送金には数営業日かかる場合があります。週末、カットオフタイム、仲介銀行はすべて遅延を加える可能性があります。</p>
+      <h3>支払い参照番号を忘れた場合はどうなりますか？</h3>
+      <p>サポートが手動でマッチしている間、または銀行に返金される間、入金が遅れる可能性があります。 紹介文を忘れた場合は、すぐにExchangeサポートに支払い証明(金額、日付、アカウントの詳細)を提出し、返信するまで2回目の送金を行わないでください。</p>
+      <h3>他の人の銀行口座を使用できますか？</h3>
+      <p>いいえ。両替では、認証された口座と同じ名前の銀行口座からの入金が必要です。第三者の入金は拒否または凍結され、繰り返し試行するとアカウントが制限される可能性があります。</p>
+
+      <h3>銀行振込はカードよりも安いですか？</h3>
+      <p>通常、はい。銀行預金にはほとんどまたはまったく両替手数料がかかりませんが、カード購入には一般的な方法の最も高い手数料がかかります。 銀行が電信送金を請求する場合もありますので、選択する前に両側を確認し、取引所の公式手数料ページで現在の手数料を確認してください。</p>
+      <h3>週末に銀行振込でUSDTを買えるか？</h3>
+      <p>P2P注文はいつでも行うことができますが、お住まいの国にインスタント決済システムがない限り、送金自体は銀行の営業時間に従います。金曜日の夕方にスローレールで送られた送金は、月曜日または火曜日まで到着しない場合があります。</p>
+
+      <h3>数日経ってもお金が届かない場合はどうすればよいですか？</h3>
+      <p>まず、振込先が銀行であり、詳細が正しいことを確認します。 次に、取引所の入金ステータスページを確認し、支払い証明を添えてサポートに連絡してください。 同じ金額を再度送金しないでください。重複送金は、サポート案件が混乱する一般的な原因です。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">初心者のための暗号通貨の購入方法：完全なウォークスルー</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">初心者に最適な暗号ウォレット</a></li>
+        <li><a href="buy-usdt.html"> USDTの購入方法：すべての方法を比較</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

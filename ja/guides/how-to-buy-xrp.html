@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>XRPの購入方法：初心者向けステップバイステップガイド— TokVS</title>
+<meta name="description" content="初心者向けXRPの買い方：取引所を選び、身分証を認証し、アカウントに入金し、初めてのXRP現物注文を出し、送金タグを正しく扱うこと——さらに、最初に確認すべき規制のまだら模様も。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-xrp">
+<meta property="og:title" content="初心者向けXRPの買い方 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="交換、サインアップ、資金調達、最初のXRP注文、宛先タグ、安全な保管— 5つのステップで完全な初心者プロセス。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/how-to-buy-xrp">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"XRPの購入方法：初心者向けステップバイステップガイド","item":"https://tokvs.com/ja/guides/how-to-buy-xrp"}]},{"@type":"Article","headline":"XRPの購入方法：初心者向けステップバイステップガイド","description":"初心者向けXRPの買い方：取引所を選び、身分証を認証し、アカウントに入金し、初めてのXRP現物注文を出し、送金タグを正しく扱うこと——さらに、最初に確認すべき規制のまだら模様も。","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/how-to-buy-xrp","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"送金タグとは何か、そしていつも必要なのか？","acceptedAnswer":{"@type":"Answer","text":"デスティネーションタグ(メモとも呼ばれます)は、多くのユーザーが1つの入金アドレスを共有しているため、クレジットする顧客アカウントを取引所に通知します。取引所のXRP入金にはほとんど常にそれが必要ですが、ウォレット間の送金は通常必要ありません。タグを忘れて、サポートが手動で回復するまでデポジットがクレジットされないことがあります。時間がかかり、手数料がかかることもあります。"}},{"@type":"Question","name":"XRPはRippleと同じですか？","acceptedAnswer":{"@type":"Answer","text":"いいえ。Rippleは決済ソフトウェアを作る民間企業であり、XRPはXRP Ledgerの独立したデジタル資産だ。XRPを買うことはRippleの株式を買うことではなく、Rippleが台帳を管理しているわけでもない。"}},{"@type":"Question","name":"1つ未満のXRPを購入することはできますか？","acceptedAnswer":{"@type":"Answer","text":"はい。XRPは小数点以下6桁(最小単位はドロップと呼ばれます)に分割されるため、$50でXRPを十分に購入できます。コイン1枚あたりの価格は関係ありません。ムーブの割合だけが重要です。"}},{"@type":"Question","name":"取引所リストにXRPがないのはなぜですか？","acceptedAnswer":{"@type":"Answer","text":"XRPの利用可能性は、規制履歴のため、取引所や地域によって異なります。取引所に掲載されていない場合は、不明瞭なプラットフォームではなく別の主要な取引所を使用し、購入する前に地域のルールを確認してください。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/ <a href="index.html">ガイド</a> / XRPを買う</div>
+      <h1>XRPの買い方：完全な初心者プロセス</h1>
+      <p class="sub">XRPは高速で安価な国境を越えた決済のために作られ、すべての大手取引所で取引されている——初めてのXRP購入は約30分でできる。トップ層の取引所を選び、身分証を認証し、アカウントに入金し、現物注文を出し、保管することだ。初心者がつまずく2つの点は、送金時の送金タグと、対応状況が地域によって異なることだ。両方とも以下で解説する。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+      </div>
+      <p class="updated">2026年10月更新· By TokVS · 8分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <div class="callout good"><b>5ステップを一目で：</b>1.交換を選択する→2.登録して確認する→3.アカウントに資金を入金する→4. XRPを注文する→5.安全に保管してください。各ステップは以下に展開されています。フォローすると、すべてがスマートフォンから動作します。</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>始める前に：準備する3つのこと</h2>
+      <ul>
+        <li><strong>政府発行の身分証明書。</strong>すべての正当な交換には、例外なく身元確認(KYC)が必要です。 「IDなし購入」を提供するチャネルはすべて罠です。</li>
+        <li><strong>あなたが管理する電話とメールアドレス</strong> —サインアップ、コード、認証アプリ用。</li>
+        <li><strong>失う余裕のあるお金。</strong>小さなことから始めましょう。プロセスを学ぶのに十分で、傷つけるのに十分ではありません。</li>
+      </ul>
+      <p>買うものについて一言で言えば、XRPはXRP Ledgerのネイティブ資産であり、取引が数秒で決済され、台帳上の手数料がごくわずかな決済重視のネットワークだ。そしてすぐに解消すべき混乱が1つある。XRPはRippleではない。Rippleは決済ソフトウェアを作る民間企業であり、XRPは台帳の独立した資産だ。XRPを買うことはRippleの株式を買うことではない。</p>
+
+      <h2>ステップ1 ：交換を選択する</h2>
+      <p>取引所とは、購入するマーケットプレイスのことだ。初心者は、規模が大きく、長く運営され、手数料が透明なグローバルなトップ層からのみ選ぶべきだ。Binance、OKX、Bybitはいずれも深いXRP現物市場をそろえている。通常ユーザーの現物手数料は近いため、アプリの使い心地とお住まいの国で使える入金手段で選ぶこと。XRP特有の注意点として、XRPの規制の経緯により、対応状況は取引所や地域によって異なるため、第一希望の取引所で扱っていなければ、無名の取引所へ流れるのではなく、別の大手を確認すること。当社の<a href="choose-exchange.html">取引所選択ガイド</a>で判断方法を確認するか、<a href="../exchanges.html">計算機付きの手数料比較</a>へ直接進むこともできる。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>取引所</th><th>現物メイカー</th><th>現物テイカー</th><th>XRPメモ</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10%</td><td>0.10%</td><td>最も深いXRP流動性、ほとんどのXRPペア</td></tr>
+          <tr><td>OKX</td><td>0.08%</td><td>0.10%</td><td>3つのうち最も低い現物メイカー手数料</td></tr>
+          <tr><td>Bybit</td><td>0.10%</td><td>0.10%</td><td>完全なXRP現物市場。<a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">当社のBybitリンク</a>から登録する</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">手数料スケジュールが変更されます。取引する前に、必ず取引所の公式手数料ページを確認してください。</p>
+      <p><strong>直接的な判断：</strong>ほとんどの初心者は、Binance(最大の選択、最も深い流動性)またはOKX ( 0.08%の現物メイカー手数料をわずかに下回る)で問題ありません。 最初に1つの口座を開設してください。口座が増えても利益が増えるわけではありません。</p>
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">決めましたか？アカウントの開設には約10分かかります： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成</a></p>
+      <h2>ステップ2 ：登録して確認する</h2>
+      <ol>
+        <li>公式ウェブサイトまたは携帯電話のアプリストアからのみアプリをダウンロードしてください。 <strong>誰かがあなたに送ったリンクからアプリをインストールしないでください</strong> —偽のアプリはナンバーワンの初心者詐欺です。</li>
+        <li>メールアドレスまたは電話番号、および固有の強力なパスワードで登録します。</li>
+        <li>本人確認を完了してください。身分証明書をアップロードし、顔認証に合格してください。 承認には通常数分から数時間かかります。</li>
+        <li>2要素認証( 2 FA )とフィッシング対策コードをすぐに有効にします。 これはアカウントの基本的な鎧です。</li>
+      </ol>
+      <p>詳細なウォークスルーは、<a href="../start/step3.html">初心者パスのステップ3 ：サインアップ</a>にあります。</p>
+
+      <h2>ステップ3 ：アカウントに資金を入金する</h2>
+      <p>ルートは2つあります。標準的なもの：最初にUSDTを購入し、XRP/USDTペアでXRPと取引します。USDTペアは最も流動性が高く、最も価格が厳しいです。よりシンプルなもの：一部の取引所では、直接の法定通貨ペアまたはインスタントカード購入を提供しています。これにより、USDTのステップはスキップされますが、より多くの費用がかかる可能性があります。いずれにしても、少量のテストから始めて、それがより多くのことを行う前に着陸することを確認してください。USDTルートは<a href="buy-usdt.html"> USDTの購入方法</a>でカバーされています。</p>
+
+      <h2>ステップ4 ： XRPを注文する</h2>
+      <ol>
+        <li>現物取引では、<strong> XRP/USDT </strong>ペアを開きます。</li>
+        <li>初心者は<strong>指値注文</strong>を使用する必要があります：支払う意思のある価格と金額(たとえば、$100相当)を設定します。 市場があなたの価格に達すると満たされ、メイカー手数料が低くなります。 急いでいますか？現在の本の価格が何であれ、市場注文は機能します。</li>
+        <li>確認する前に、料金、金額、手数料の3つの数字を確認してください。0.10%の現物手数料で、$100の購入は約0.$10の費用がかかります。手数料の計算は<a href="crypto-fees.html">暗号手数料の説明</a>でカバーされています。</li>
+        <li>約定すると、XRPは資産／現物の下に表示される。おめでとう——初めての購入が完了だ。</li>
+      </ol>
+
+      <h2>ステップ5 ：保管場所を決める</h2>
+      <ul>
+        <li><strong>少額でも取引可能：</strong>取引所に残しておいても問題ありません。2 FAがオンになっているため、アカウントが共有されることはありません。</li>
+        <li><strong>金額が大きく、長期保有する場合：</strong>シークレットキーを紙にバックアップして、自分で管理するウォレットへ移すこと。XRP Ledger対応のウォレット（Xamanやハードウェアウォレットなど）を使うこと——一般的なマルチコインウォレットはXRP対応がまちまちなので、送る前に確認すること。新しいXRP Ledgerウォレットの有効化には、アカウントにロックされたままになる少額の最低リザーブが必要なので、最初の送金の前に現在のリザーブを確認すること。パスの<a href="../start/step5.html">ステップ5</a>と<a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a>を参照。</li>
+      </ul>
+
+      <h2>送金タグと規制：XRP特有の部分</h2>
+      <p><strong>宛先タグは、ナンバーワンのXRP初心者の罠です。</strong>取引所にXRPを入金すると、取引所は入金先住所と宛先タグ(メモと呼ばれることもあります)の2つのものを表示します。多くのユーザーが同じ預金アドレスを共有しているため、タグは取引所が預金があなたのものであることを知る方法です。タグを忘れて、XRPが取引所に到着しますが、信用されていません。回復すると、トランザクションハッシュでサポートに連絡し、数週間待つことがあります。一部のプラットフォームでは回復手数料が請求されます。ルールは簡単です。表示されているとおりにタグをコピーし、別のデポジットから古いタグを再利用しないでください。新しい取引所への最初のデポジットは少額のテストです。ウォレットからウォレットへの送金には通常、タグは必要ありません。タグが必要なのは、為替入金画面です。</p>
+      <p><strong>規制は、買う前に確認すべき2つ目のことだ。</strong>XRPは米国で長く続いた規制上の紛争の対象となり、その紛争の展開に伴って、取引所や地域による対応状況は変化してきた。ルールは国によっても異なり、変わり続けるため、これを1回きりのチェックではなく、常に行う宿題として扱うこと。資金を投入する前に、取引所がお住まいの地域でXRPを扱っているか、現地のルールを確認すること。変わらないことが1つある。資産そのものは、それを扱うすべての取引所で同じだ。したがって、扱っているという理由だけで無名のプラットフォームで買う正当な理由は決してない。</p>
+      <div class="callout warn"><b>XRP送金のルール：</b>1.取引所への入金＝アドレス＋送金タグの両方を正確にコピーすること。2.新しい取引所への最初の入金は必ず少額のテスト金額にすること。3.入金が表示されない場合、再送しないこと——トランザクションハッシュを探し、それを持ってサポートに連絡すること。4.「Ripple株」を決して買わないこと——そのような小売向け商品は存在せず、販売する者は詐欺を行っている。</div>
+      <p>すべてのコインに効果がある最後の習慣は、日付、プラットフォーム、金額、価格など、各購入の簡単な記録を残すことです。後で規制や税制が変わった場合、記録を残したトレーダーは、記憶から1年を再構築するのではなく、午後に適応するトレーダーです。</p>
+
+      <h2>初回はいくらで買いますか？</h2>
+      <p>正直な答え：<strong>睡眠を失わない量</strong>。 小規模(例えば、$50 -100 )から始めて、入金、購入、必要に応じて出金など、フロー全体をミスなしでエンドツーエンドで実行します。 長期滞在の場合は、エントリー料金の平均を毎月一定額に設定することをおすすめします。 最初の購入は利益を目的としたものではありません。 それは<strong>完璧にプロセスを完了することです</strong>。</p>
+
+      <h2>初心者が作り続けている5つの購入ミス</h2>
+      <ol>
+        <li><strong>デスティネーションタグを忘れる</strong> —典型的なXRP入金の間違いであり、テスト金額の習慣で完全に回避できます。</li>
+        <li><strong>リップル株だと思ってXRPを購入する</strong> —リップルは会社です。XRPは元帳資産です。それらは同じものではありません。</li>
+        <li><strong>借りたお金やクレジットで購入する</strong> —最初の購入時のレバレッジは、通常のボラティリティを危機に変える。</li>
+        <li><strong>すべてを1つのプラットフォームに保管する</strong> —取引所は銀行ではありません。 より大きな長期保有物を自分の財布に移動します。</li>
+        <li><strong>「グル」とシグナルグループ</strong>に従ってください—あなたの手数料と出口の流動性から何を買うべきかを誰かが教えてくれます。</li>
+      </ol>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        </div>
+        <p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+      </div>
+      <h2>よくある質問</h2>
+      <h3>送金タグとは何か、そしていつも必要なのか？</h3>
+      <p>デスティネーションタグ(メモとも呼ばれます)は、多くのユーザーが1つの入金アドレスを共有しているため、クレジットする顧客アカウントを取引所に通知します。取引所のXRP入金にはほとんど常にそれが必要ですが、ウォレット間の送金は通常必要ありません。タグを忘れて、サポートが手動で回復するまでデポジットがクレジットされないことがあります。時間がかかり、手数料がかかることもあります。</p>
+      <h3>XRPはRippleと同じですか？</h3>
+      <p>いいえ。Rippleは決済ソフトウェアを作る民間企業であり、XRPはXRP Ledgerの独立したデジタル資産だ。XRPを買うことはRippleの株式を買うことではなく、Rippleが台帳を管理しているわけでもない。</p>
+      <h3>1つ未満のXRPを購入することはできますか？</h3>
+      <p>はい。XRPは小数点以下6桁(最小単位はドロップと呼ばれます)に分割されるため、$50でXRPを十分に購入できます。コイン1枚あたりの価格は関係ありません。ムーブの割合だけが重要です。</p>
+      <h3>取引所リストにXRPがないのはなぜですか？</h3>
+      <p>XRPの利用可能性は、規制履歴のため、取引所や地域によって異なります。取引所に掲載されていない場合は、不明瞭なプラットフォームではなく別の主要な取引所を使用し、購入する前に地域のルールを確認してください。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="buy-usdt.html"> USDTの購入方法：比較された3つの方法</a></li>
+        <li><a href="how-to-buy-bitcoin.html">ビットコインの購入方法：完全なウォークスルー</a></li>
+        <li><a href="how-to-buy-ethereum.html">イーサリアムの購入方法：完全なウォークスルー</a></li>
+        <li><a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

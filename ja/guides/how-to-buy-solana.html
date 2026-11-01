@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Solana (SOL)の購入方法：初心者向けステップバイステップガイド— TokVS</title>
+<meta name="description" content="初心者向けにSolanaを購入する方法：取引所を選び、身分証明書を認証し、アカウントに資金を入金し、最初のSOL現物注文を行い、適切なウォレットに保存します。さらに、Solanaのネットワーク履歴について知っておくべきこともあります。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/how-to-buy-solana">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-solana">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-solana">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-solana">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-solana">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-solana">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-solana">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-solana">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-solana">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-solana">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-solana">
+<meta property="og:title" content="初心者向けソラナ(SOL)の購入方法— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="交換、サインアップ、資金調達、最初のSOL注文、ウォレットの選択と停止のノウハウ— 5つのステップで完全な初心者プロセス。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/how-to-buy-solana">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"ソラナ(SOL)の購入方法：初心者向けステップバイステップガイド","item":"https://tokvs.com/ja/guides/how-to-buy-solana"}]},{"@type":"Article","headline":"ソラナ(SOL)の購入方法：初心者向けステップバイステップガイド","description":"初心者向けにSolanaを購入する方法：取引所を選び、身分証明書を認証し、アカウントに資金を入金し、最初のSOL現物注文を行い、適切なウォレットに保存します。さらに、Solanaのネットワーク履歴について知っておくべきこともあります。","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/how-to-buy-solana","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"ソラナは初心者のための良い最初のコインですか？","acceptedAnswer":{"@type":"Answer","text":"ソラナは、すべてのトップ取引所に深い流動性を持つ主要なコインなので、売買は簡単です。 それがあなたに合うかどうかは、あなたのリスク許容度に依存します。すべての暗号と同様に、それは不安定です。 小さく始めて、ウォレットの流れを学び、それがより大きな場所を稼ぐかどうかを判断するだけです。"}},{"@type":"Question","name":"SOLに特別な財布は必要ですか？","acceptedAnswer":{"@type":"Answer","text":"はい。PhantomやSolflareなどのSolanaネイティブウォレットを使用してください。 他のネットワーク用に構築されたウォレットはSolanaをサポートしていない可能性があるため、何かを送信する前に互換性を確認してください。互換性のないウォレットにSOLを送信すると、コインが座礁する可能性があります。"}},{"@type":"Question","name":"ネットワーク停止中、自分のSOLはどうなる？","acceptedAnswer":{"@type":"Answer","text":"コインはそのままにしておきます。アウテージはオンチェーンアクティビティを凍結し、残高を消去しません。 過去の停止は、ネットワークを再起動する検証者によって解決されました。 交換は、停止中にSOLの入出金を一時停止することが多いため、ネットワークインシデントに関連して時間的に重要な転送を計画することは避けてください。"}},{"@type":"Question","name":"1ソル未満で購入できますか？","acceptedAnswer":{"@type":"Answer","text":"はい。SOLは小数点以下9桁に分割されるため、$50は1 SOLの端数を購入します。 コイン1枚あたりの価格は関係ありません。ムーブの割合だけが重要です。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/ソラナ購入</div>
+      <h1>Solanaの購入方法：完全なビギナープロセス</h1>
+      <p class="sub">Solanaは高速で安価な取引と大きなアプリエコシステムで知られています。最初のSOLを購入するのは30分の仕事です。トップクラスの取引所を選び、IDを認証し、アカウントに資金を提供し、現物注文を行い、Solana互換のウォレットに保存します。 初心者が間違っている部分は財布なので、このガイドではそれを説明しています。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+      </div>
+      <p class="updated">2026年10月更新· By TokVS · 8分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <div class="callout good"><b>5ステップを一目で：</b>1.交換品を選ぶ→2. 登録して確認する→3. アカウントに資金を入金する→4. SOLのご注文を確定します→5. 安全に保管してください。各ステップは以下に展開されています。フォローすると、すべてがスマートフォンから動作します。</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>始める前に：準備する3つのこと</h2>
+      <ul>
+        <li><strong>政府発行の身分証明書。</strong>すべての正当な交換には、例外なく身元確認(KYC)が必要です。 「IDなし購入」を提供するチャネルはすべて罠です。</li>
+        <li><strong>あなたが管理する電話とメールアドレス</strong> —サインアップ、コード、認証アプリ用。</li>
+        <li><strong>失う余裕のあるお金。</strong>小さなことから始めましょう。プロセスを学ぶのに十分で、傷つけるのに十分ではありません。</li>
+      </ul>
+      <p>あなたが購入しているものの1つのライン： SOLはSolanaネットワークのネイティブコインです。 ネットワークの取引手数料を支払い、ネットワークの安全を確保するために賭けることができます。 Solanaの売り込みはスピードです。トランザクションは数秒で確認され、オンチェーン料金は通常1セントの端数です。そのため、そのアプリエコシステムは非常に速く成長しました。 そのスピードは本物ですが、ネットワークの歴史には、購入する前に知る価値のあるしわがあります。</p>
+
+      <h2>ステップ1 ：交換を選択する</h2>
+      <p>取引所とは、購入するマーケットプレイスのことだ。初心者は、規模が大きく、長く運営され、手数料が透明なグローバルなトップ層からのみ選ぶべきだ。Binance、OKX、Bybitはいずれも深いSOL現物市場をそろえている。通常ユーザーの現物手数料は近いため、アプリの使い心地とお住まいの国で使える入金手段で選ぶこと。当社の<a href="choose-exchange.html">取引所選択ガイド</a>で判断方法を確認するか、<a href="../exchanges.html">計算機付きの手数料比較</a>へ直接進むこともできる。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>取引所</th><th>現物メイカー</th><th>現物テイカー</th><th>ソルノート</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10%</td><td>0.10%</td><td>最も深いソル流動性、ほとんどのソルペア</td></tr>
+          <tr><td>OKX</td><td>0.08%</td><td>0.10%</td><td>3つのうち最も低い現物メイカー手数料</td></tr>
+          <tr><td>Bybit</td><td>0.10%</td><td>0.10%</td><td>フルソル現物マーケット。<a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">当社のBybitリンク</a>からサインアップ</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">手数料スケジュールが変更されます。取引する前に、必ず取引所の公式手数料ページを確認してください。</p>
+      <p><strong>直接的な判断：</strong>ほとんどの初心者は、Binance(最大の選択、最も深い流動性)またはOKX ( 0.08%の現物メイカー手数料をわずかに下回る)で問題ありません。 最初に1つの口座を開設してください。口座が増えても利益が増えるわけではありません。</p>
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">決めましたか？アカウントの開設には約10分かかります： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成</a></p>
+      <h2>ステップ2 ：登録して確認する</h2>
+      <ol>
+        <li>公式ウェブサイトまたは携帯電話のアプリストアからのみアプリをダウンロードしてください。 <strong>誰かがあなたに送ったリンクからアプリをインストールしないでください</strong> —偽のアプリはナンバーワンの初心者詐欺です。</li>
+        <li>メールアドレスまたは電話番号、および固有の強力なパスワードで登録します。</li>
+        <li>本人確認を完了してください。身分証明書をアップロードし、顔認証に合格してください。 承認には通常数分から数時間かかります。</li>
+        <li>2要素認証( 2 FA )とフィッシング対策コードをすぐに有効にします。 これはアカウントの基本的な鎧です。</li>
+      </ol>
+      <p>詳細なウォークスルーは、<a href="../start/step3.html">初心者パスのステップ3 ：サインアップ</a>にあります。</p>
+
+      <h2>ステップ3 ：アカウントに資金を入金する</h2>
+      <p>ルートが2つあります。 標準的なもの：最初にUSDTを購入し、SOL/USDTペアでSOLと取引します。USDTペアは最も流動性が高く、最も価格が厳しいです。 よりシンプルなもの：一部の取引所では、直接の法定通貨ペアまたはインスタントカード購入を提供しています。これにより、USDTのステップはスキップされますが、より多くの費用がかかる可能性があります。 いずれにしても、少量のテストから始めて、それがより多くのことを行う前に着陸することを確認してください。 USDTルートは<a href="buy-usdt.html"> USDTの購入方法</a>でカバーされています。</p>
+
+      <h2>ステップ4 ： SOLを注文する</h2>
+      <ol>
+        <li>現物取引では、<strong> SOL/USDT </strong>ペアを開きます。</li>
+        <li>初心者は<strong>指値注文</strong>を使用する必要があります：支払う意思のある価格と金額(たとえば、$100相当)を設定します。 市場があなたの価格に達すると満たされ、メイカー手数料が低くなります。 急いでいますか？現在の本の価格が何であれ、市場注文は機能します。</li>
+        <li>確認する前に、料金、金額、手数料の3つの数字を確認してください。0.10%の現物手数料で、$100の購入は約0.$10の費用がかかります。手数料の計算は<a href="crypto-fees.html">暗号手数料の説明</a>でカバーされています。</li>
+        <li>一度満たされると、ソルはアセット/現物の下に表示されます。 おめでとうございます。最初の購入が完了しました。</li>
+      </ol>
+
+      <h2>ステップ5 ：保管場所を決める</h2>
+      <ul>
+        <li><strong>少額でも取引可能：</strong>取引所に残しておいても問題ありません。2 FAがオンになっているため、アカウントが共有されることはありません。</li>
+        <li><strong>金額が大きく、長期保有する場合：</strong>自分で管理するウォレットへ移し、シードフレーズを紙にバックアップすること。パスの<a href="../start/step5.html">ステップ5</a>と<a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a>を参照。</li>
+      </ul>
+
+      <h2>ネットワークの停止とウォレットの選択：ソラナ固有の部分</h2>
+      <p>ソラナについての2つのことは、ビットコインやイーサリアムとは異なり、どちらもバイヤーとしてのあなたに影響を与えます。</p>
+      <p><strong>停電が発生しました—そしてそれらが実際に何を意味するのか。</strong> 2021年から2024年の間に、ソラナネットワークはいくつかの停電を経験し、検証者がネットワークを再起動するまでオンチェーンアクティビティが凍結しました。これらのインシデントでユーザーの資金が失われることはありませんでした。コインはウォレットや取引口座に残っていますが、停止が続く間はSOLをチェーン上で移動することはできず、取引所はネットワークが再び健全になるまでSOLの入出金を一時停止することがよくあります。実践的なレッスンは退屈ですが、価値があります。ネットワークトラブルの周りに時間的に重要なSOL転送を計画したり、停電の見出しをパニックに陥れたりしないでください。停電ニュースは価格を急速に動かし、それでお金を失うトレーダーは最初の1時間で反応するものです。</p>
+      <p><strong>ウォレットの選択はオプションの詳細ではありません。</strong> Solanaは独自のアドレス形式と独自のウォレットエコシステムを使用しています。標準的な選択肢は、PhantomやSolflareなどのSolanaネイティブウォレットです。公式サイトやアプリストアのリストからインストールし、チャットのリンクからインストールすることはできません。他のネットワーク用に構築されたウォレットは、Solanaをまったくサポートしていない可能性があるため、何かを送信する前に互換性を確認してください。互換性のないウォレットへの転送は、コインを束ねる可能性があります。1つのSolanaの利便性：ウォレットからウォレットへのSOL転送には、メモや宛先タグは必要ありません。アプリがSOLのためにメモや宛先タグを要求した場合は、停止して適切なアセットを処理していることを再確認してください。</p>
+      <div class="callout warn"><b>SOL送金のルール：</b>1.新しいウォレットへの最初の転送は常に少額のテスト金額です。残りは到着後にのみ移動してください。 2.フルウォレットアドレスを確認します—ソラナアドレスは長いbase 58文字列であり、1人の間違ったキャラクターが見知らぬ人にコインを送信します。 3.シードフレーズを紙に書き留め、スクリーンショット、クラウドノート、チャットでは絶対に使用しないでください。</div>
+      <p>早期に構築する価値のあるもう1つの習慣：ソルを長期間保持する予定がある場合は、見知らぬ人のリンクからではなく、財布自体からステーキングを学びます。 ウォレットネイティブステーキングは簡単です。サードパーティの「ステーキング」は、有望な大規模なリターンを提供し、暗号で最も古い詐欺の1つです。</p>
+      <p>タイミングに関する最後のメモ：ソラナは動きが速いため、初心者は急なラリー中に買いに急いだり、停電の見出しの中で売ったりすることがあります。 どちらの緊急性も本物ではありません。 ネットワークは明日もそこにあり、オーダーブックは明日もそこにあり、ステップを落ち着いて再読した後に得られる価格は、ほとんどの場合、急いで得られる価格よりも優れています。 スピードはソラナの機能です。取引スタイルである必要はありません。</p>
+
+      <h2>初回はいくらで買いますか？</h2>
+      <p>正直な答え：<strong>睡眠を失わない量</strong>。 小規模(例えば、$50 -100 )から始めて、入金、購入、必要に応じて自分の財布に出金するなど、流れ全体をエンドツーエンドで実行します。間違いはありません。 長期滞在の場合は、エントリー料金の平均を毎月一定額に設定することをおすすめします。 最初の購入は利益を目的としたものではありません。 それは<strong>完璧にプロセスを完了することです</strong>。</p>
+
+      <h2>初心者が作り続けている5つの購入ミス</h2>
+      <ol>
+        <li><strong>借りたお金やクレジットで購入する</strong> —最初の購入時のレバレッジは、通常のボラティリティを危機に変える。</li>
+        <li><strong>互換性のないウォレットにSOLを送信しています</strong> —最初の転送の前ではなく、Solanaのウォレットサポートを確認してください。</li>
+        <li><strong>アウテージニュースでのパニックセリング</strong> —アウテージは転送を凍結します。残高を消去しません。 最初の1時間で反応することは、初心者が損失をロックする方法です。</li>
+        <li><strong>すべてを1つのプラットフォームに保管する</strong> —取引所は銀行ではありません。 より大きな長期保有物を自分の財布に移動します。</li>
+        <li><strong>「グル」とシグナルグループ</strong>に従ってください—あなたの手数料と出口の流動性から何を買うべきかを誰かが教えてくれます。</li>
+      </ol>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        </div>
+        <p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+      </div>
+      <h2>よくある質問</h2>
+      <h3>ソラナは初心者のための良い最初のコインですか？</h3>
+      <p>ソラナは、すべてのトップ取引所に深い流動性を持つ主要なコインなので、売買は簡単です。 それがあなたに合うかどうかは、あなたのリスク許容度に依存します。すべての暗号と同様に、それは不安定です。 小さく始めて、ウォレットの流れを学び、それがより大きな場所を稼ぐかどうかを判断するだけです。</p>
+      <h3>SOLに特別な財布は必要ですか？</h3>
+      <p>はい。PhantomやSolflareなどのSolanaネイティブウォレットを使用してください。 他のネットワーク用に構築されたウォレットはSolanaをサポートしていない可能性があるため、何かを送信する前に互換性を確認してください。互換性のないウォレットにSOLを送信すると、コインが座礁する可能性があります。</p>
+      <h3>ネットワーク停止中、自分のSOLはどうなる？</h3>
+      <p>コインはそのままにしておきます。アウテージはオンチェーンアクティビティを凍結し、残高を消去しません。 過去の停止は、ネットワークを再起動する検証者によって解決されました。 交換は、停止中にSOLの入出金を一時停止することが多いため、ネットワークインシデントに関連して時間的に重要な転送を計画することは避けてください。</p>
+      <h3>1ソル未満で購入できますか？</h3>
+      <p>はい。SOLは小数点以下9桁に分割されるため、$50は1 SOLの端数を購入します。 コイン1枚あたりの価格は関係ありません。ムーブの割合だけが重要です。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="buy-usdt.html"> USDTの購入方法：比較された3つの方法</a></li>
+        <li><a href="how-to-buy-bitcoin.html">ビットコインの購入方法：完全なウォークスルー</a></li>
+        <li><a href="how-to-buy-ethereum.html">イーサリアムの購入方法：完全なウォークスルー</a></li>
+        <li><a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>フィリピンでUSDTを購入する方法： GCash、Maya、P2Pガイド— TokVS</title>
+<meta name="description" content="PHPを使用してフィリピンでUSDTを購入する方法： GCashとMaya P2Pのウォークスルー、BinanceとOKXとBybitの料金、TRC 20とERC 20のネットワーク選択、すべてのフィリピンの初心者が必要とする安全性チェック。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/how-to-buy-usdt-in-philippines">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-usdt-in-philippines">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-philippines">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-usdt-in-philippines">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-usdt-in-philippines">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-usdt-in-philippines">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-usdt-in-philippines">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-usdt-in-philippines">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-usdt-in-philippines">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-usdt-in-philippines">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-philippines">
+<meta property="og:title" content="フィリピンでUSDTを購入する方法： GCash、Maya、P2Pガイド— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="フィリピンのPHP P2Pウォークスルー、為替手数料の比較、ネットワークの選択、詐欺チェックリスト。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/how-to-buy-usdt-in-philippines">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"フィリピンでUSDTを買う","item":"https://tokvs.com/ja/guides/how-to-buy-usdt-in-philippines"}]},{"@type":"Article","headline":"フィリピンでUSDTを購入する方法： GCash、Maya、P2P","description":"フィリピンでGCashまたはMaya P2P経由でPHPでUSDTを購入：ステップバイステップ、為替手数料の比較、ネットワークの選択、安全性チェックリスト。","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/how-to-buy-usdt-in-philippines","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"フィリピンでUSDTを購入する最も安い方法は何ですか？","acceptedAnswer":{"@type":"Answer","text":"GCashまたはMayaを使用したP2Pは通常最も安価です。プラットフォームの手数料はなく、市場レートに対するマーチャントの見積もりのみです。銀行振込P2Pは、金額が大きい場合には良い選択肢ですが、カードベースのインスタント購入のコストが最も高くなります。"}},{"@type":"Question","name":"GCashでUSDTを購入できますか？","acceptedAnswer":{"@type":"Answer","text":"はい、GCashはフィリピンで最も広く受け入れられているP2P支払い方法です。 GCashでP2Pオファーを絞り込み、販売業者の完了率と注文履歴を確認します。GCashアプリ内でのみ、注文に表示されているアカウントの詳細にお支払いください。"}},{"@type":"Question","name":"USDTにはTRC 20またはERC 20を選択する必要がありますか？","acceptedAnswer":{"@type":"Answer","text":"ほとんどの初心者にとって、TRC 20 (TRON)は実用的な選択肢です。出金手数料は通常、ERC 20 (イーサリアム)のほんの一部であり、送金は迅速に確認されます。 受信プラットフォームまたはウォレットが必要な場合にのみERC 20を使用し、常に両側のネットワークと一致させます。"}},{"@type":"Question","name":"フィリピンの暗号通貨に税金を支払う必要がありますか？","acceptedAnswer":{"@type":"Answer","text":"フィリピンでは暗号資産関連の所得は一般的な税務ルールの下で課税され、個人向けのガイダンスは進化し続けている——これを助言ではなく注意喚起として受け取ってほしい。すべての取引の記録（日付、PHP、USDT、注文ID）を残し、内国歳入局の最新ガイダンスを確認するか、税務専門家に相談すること。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/フィリピンでUSDTを購入</div>
+      <h1>フィリピンでUSDTを購入する方法</h1>
+      <p class="sub">GCashとMayaは、フィリピンをUSDT — P2P、エスクロー保護、通常は数分で購入できる最も簡単な場所の1つにしています。 フィリピンの初心者向けの正確な手順は次のとおりです。</p>
+      <p class="updated">2026年10月更新· By TokVS · 8分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大かつ最も深いP2P市場</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>景観：フィリピンが実際にUSDTを購入する方法</h2>
+      <p>フィリピンは、東南アジアで最も暗号化が活発な国の1つです。ゲーム、送金、フリーランスのすべてが、USDTを日常的に使用するようになりました。ほとんどのフィリピンのバイヤーにとって、ルートはP2Pです。取引所アプリ内で認証されたマーチャントと直接取引し、GCash、Maya、または銀行振込でフィリピンペソ(PHP)で支払い、マーチャントのUSDTはエスクローからあなたのアカウントに解放されます。フィリピンにも現地でライセンスされた暗号プラットフォームがありますが、特にUSDTの場合、国際取引所のP2P市場は最も深い流動性と最も厳しい見積もりを提供します。以下のすべては、あなたがゼロから始まっていることを前提としています。</p>
+      <h2>始める前に必要なもの</h2>
+      <ul>
+        <li><strong>検証済みの交換口座</strong>( Binance、OKX、またはBybit —これら3つはすべて、PHP P2P市場を持つフィリピンのユーザーにサービスを提供します)。 政府発行のKYCの身分証明書。</li>
+        <li><strong> GCashまたはMaya </strong>は、あなた自身の名前で認証されたウォレットを備えています。これらは、ほぼすべてのP2Pマーチャントが受け入れる2つのeウォレットです。</li>
+        <li><strong>取引所のKYC名と一致する支払いアカウント。</strong>名前の不一致は、P2P注文がキャンセルされる最大の理由です。</li>
+      </ul>
+      <p class="in-cta">最初にアカウントを準備してください： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成</a></p>
+      <h2>方法1 ： GCashを使用したP2P (標準ルート)</h2>
+      <ol>
+        <li>アプリでP2Pを開きます→USDTを→購入→PHP→フィルター支払い方法：<strong> GCash </strong>。</li>
+        <li>販売業者の選択：数百件の完了した注文、95%を超える完了率、新規ではないアカウント。 利用規約を読む—ほとんどのGCash販売業者は、転送制限と応答時間を述べています。</li>
+        <li>PHPの金額を入力し、注文します。 販売業者のUSDTがエスクローにロックされ、支払いタイマーが開始されます。</li>
+        <li>注文に記載されているとおりに、GCashアプリ内で販売業者のGCash番号にお支払いください。 <strong>支払いに関する注意：注文番号のみ</strong> —「crypto」、「USDT」、または「BTC」とは書かないでください。</li>
+        <li>[送金済み]をタップし、リリースを待ち、USDTがFundingウォレットに入金されたことを確認します。</li>
+      </ol>
+      <p>GCashの送金は即座に決済されるため、取引全体が10分以内に完了することがよくあります。 少量のテスト(約500 ～ 1,000円)から始めて、サイズを取引する前の流れを学びましょう。</p>
+      <h2>方法2 ： Mayaまたは銀行振込でP2P</h2>
+      <p>MayaはGCashとまったく同じように機能します。MayaによるP2Pオファーのフィルタリング、Mayaアプリ内での支払い、同じエスクローメカニズム。 一部のマーチャントは、比較する価値のあるバイヤーが少ないため、Mayaでわずかに良い見積もりを提供しています。 銀行振込( InstaPayまたはPESONet )は、明細をきれいにしたい場合に適しています。InstaPayはほぼ即時ですが、PESONetバッチには数時間かかることがあります。 その他のすべて(販売業者の小切手、エスクロー、異議申し立てプロセス)は、方法1と同じです。</p>
+      <h2>方法3 ：カードで直接購入(最速、最も高価)</h2>
+      <p>一部の取引所では、VisaまたはMastercardでUSDTを直接購入できます。 それは即座に簡単であるため、最初の購入が魅力的ですが、カード購入には最高の手数料がかかり、フィリピンの銀行は暗号取引を拒否することがあり、制限は低くなる可能性があります。 通常のルートではなく、小さな最初のテストのフォールバックとして扱います。 P2Pはほとんどの場合、価格で勝ちます。</p>
+      <h2>フィリピンのバイヤーのためのBinance対OKX対Bybit</h2>
+      <p>3つすべてがPHP P2P市場を運営していますが、深さと感触が異なります。BinanceはPHPマーチャントの数が最も多く、通常、任意の時間でより厳しい見積もりとより速い記入を意味します。OKXはクリーンなアプリとしっかりしたマーチャントベースを備えており、多くの初心者はP2P画面が読みやすいと感じています。BybitのP2P市場は小規模ですが成長しており、現物手数料は競争力があります。最初の購入では、深さが何よりも重要です。多くの販売業者が注文を競い合うことを望んでいます。参照のための現物取引手数料(手数料は変更される場合があります。常に取引所の公式手数料ページを確認してください) ：</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>取引所</th><th>現物メイカー</th><th>現物テイカー</th><th>PHP P2Pの深さ</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10%</td><td>0.10%</td><td>最も深い</td></tr>
+          <tr><td>OKX</td><td>0.08%</td><td>0.10%</td><td>強い</td></tr>
+          <tr><td>Bybit</td><td>0.10%</td><td>0.10%</td><td>成長</td></tr>
+        </tbody>
+      </table></div>
+      <p>P2P取引自体には通常、プラットフォームの手数料はかかりません。あなたのコストは、市場レートに対する加盟店の見積もりです。 見積もりのギャップは、現物手数料表ではなく、注目すべき数字です。</p>
+      <h2>ステップバイステップ：最初のUSDT購入</h2>
+      <ol>
+        <li>選択した取引所に登録し、フィリピンの身分証明書でKYCを完了してください。</li>
+        <li>2要素認証( SMSではなく認証アプリ)を有効にし、フィッシング対策コードを設定してから入金してください。</li>
+        <li>P2P → Buy → USDT → PHPに移動し、GCashまたはMayaでフィルタリングします。</li>
+        <li>完了率と見積もりに関する3つの販売業者を比較します。最も安い価格ではなく、チェックリストで選択します。</li>
+        <li>少額のテスト注文を出し、指示通りに正確に支払い、「送金済み」をタップし、FundingウォレットでUSDTを確認すること。</li>
+        <li>他のコインと交換したい場合は、USDTを資金調達から現物(無料、即時)に移動します。</li>
+      </ol>
+      <h2>TRC 20とERC 20 ：お金を節約するネットワークの選択</h2>
+      <p>USDTはいくつかのブロックチェーンに存在し、選択したネットワークが出金手数料を決定します。 <strong> TRC 20 (TRON)</strong>は、ほとんどのフィリピン人ユーザーにとってデフォルトの選択肢です。引き出しは通常、わずか1ドルの費用がかかり、数分で確認されます。 <strong> ERC 20 (イーサリアム)</strong>は、繁忙期には何倍ものコストがかかる可能性があり、受信プラットフォームまたはウォレットがそれを必要とする場合にのみ価値があります。 アイアンルール：出金するネットワークは、宛先がサポートするネットワークと一致する必要があります。 TRC 20 USDTをERC 20専用アドレスに送信すると、資金が失われます。常に2回確認し、新しいアドレスに移動するときにはまず小さなテスト転送を送信してください。</p>
+      <div class="callout warn"><b>フィリピン特有の罠：</b>1.より良いレートで「プラットフォーム外の取引」—エスクローを離れると、ゼロの保護が受けられます。2.ログインまたはシードフレーズを求めるFacebookやTelegramの偽の「交換サポート」アカウント。3.注文のキャンセルとアプリ外での再支払いを要求するマーチャントは、常に拒否します。4.投資「メンター」は、USDTで保証された毎日のリターンを約束します。これは詐欺の典型的な兆候です。</div>
+      <h2>費用は、オールイン</h2>
+      <p>P2P購入の実際のコストは、3つのことです。加盟店の相場ギャップと市場レート(通常、流動性のあるPHPペアでは小さい)、GCash、Maya、またはあなたの側の銀行振込手数料(通常、個人間送金の場合はゼロまたは少額)、後でUSDTを移動したときの引き出し手数料(ネットワーク依存—上記のTRC 20とERC 20を参照)。 P2Pには別途のプラットフォームコミッションはありません。 取引が他のすべての販売業者よりも劇的に安く見える場合は、取引ではなく警告サインとして扱ってください。</p>
+      <h2>購入後： USDTをどこに保管するか</h2>
+      <p>3つのオプション： <strong>取引所</strong>(取引に便利、プラットフォームリスクを伴う)、<strong>自分の財布</strong>(シードフレーズを保持する—より大きな長期保有に最適)、または<strong>利回り商品</strong>(余分なリターン、余分なリスク—最初に条件を読んでください)。 最初の購入では、USDTを取引所に残しながら学習することは完全に問題ありません。 金額が重要になったら、セルフカストディを学びましょう。当社の<a href="wallet-safety.html">ウォレットセーフティガイド</a>は、シードフレーズを適切にカバーしています。 フィリピン固有の注意事項：フリーランスやリモートワークの支払いとしてUSDTを受け取った場合も、同じストレージルールが適用され、それらの取引記録も保持されます。</p>
+      <h2>フィリピンの初心者が犯すよくある間違い</h2>
+      <ul>
+        <li><strong>最も安い商人を追いかける。</strong>完了度の低い販売業者からのわずかに優れた見積もりは、これまでで最も高価な「節約」です。</li>
+        <li><strong>チャットから別のGCash番号に支払います。</strong>有効な支払いの詳細は、注文自体に表示されているものだけです。それ以外はすべて詐欺の仕組みです。</li>
+        <li><strong>注文外でのお支払い。</strong>資金がP2P注文を通過しない場合、エスクローはあなたを保護することはできません。 どんなに説得力のあるストーリーであっても、例外はありません。</li>
+        <li><strong>すべてを1回の交換で保管します。</strong>ぜひ始めてみてください。持ち株が増えたら、セルフカストディを学びましょう。</li>
+      </ul>
+      <h2>完全な最初の購入チェックリスト(フィリピン版)</h2>
+      <ol>
+        <li>アカウントが認証され、2 FAとフィッシング対策コードが有効になりました。</li>
+        <li>GCashまたはMaya対応、取引所のKYC名と一致するウォレット名。</li>
+        <li>P2P → USDT → PHP→フィルターGCashまたはMaya→を購入します。 販売業者の3つの見積もりのスクリーンショット。価格だけでなく、チェックリストでも選択できます。</li>
+        <li>少量のテストオーダーを行います。 支払い、転送をタップし、資金調達ウォレットでUSDTを確認します。</li>
+        <li>取引を記録します：日付、支払われたPHP、受け取ったUSDT、注文ID。</li>
+        <li>フローが退屈に感じたら、実際のサイズで繰り返します。 退屈とは、あなたがそれを学んだことを意味します。</li>
+      </ol>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Binance</div><div class="dd">世界最大かつ最も深いP2P市場</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#0EA5E9;">B</div><div><div class="tt">Bybit</div><div class="dd">競争力のある現物手数料、P2Pの成長</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitに登録する</a></div>
+        </div>
+        <p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+      </div>
+
+      <h3>フィリピンでUSDTを購入する最も安い方法は何ですか？</h3>
+      <p>GCashまたはMayaを使用したP2Pは通常最も安価です。プラットフォームの手数料はなく、市場レートに対するマーチャントの見積もりのみです。銀行振込P2Pは、金額が大きい場合には良い選択肢ですが、カードベースのインスタント購入のコストが最も高くなります。</p>
+      <h3>GCashでUSDTを購入できますか？</h3>
+      <p>はい、GCashはフィリピンで最も広く受け入れられているP2P支払い方法です。 GCashでP2Pオファーを絞り込み、販売業者の完了率と注文履歴を確認します。GCashアプリ内でのみ、注文に表示されているアカウントの詳細にお支払いください。</p>
+      <h3>USDTにはTRC 20またはERC 20を選択する必要がありますか？</h3>
+      <p>ほとんどの初心者にとって、TRC 20 (TRON)は実用的な選択肢です。出金手数料は通常、ERC 20 (イーサリアム)のほんの一部であり、送金は迅速に確認されます。 受信プラットフォームまたはウォレットが必要な場合にのみERC 20を使用し、常に両側のネットワークと一致させます。</p>
+      <h3>フィリピンの暗号通貨に税金を支払う必要がありますか？</h3>
+      <p>フィリピンでは暗号資産関連の所得は一般的な税務ルールの下で課税され、個人向けのガイダンスは進化し続けている——これを助言ではなく注意喚起として受け取ってほしい。すべての取引の記録（日付、PHP、USDT、注文ID）を残し、内国歳入局の最新ガイダンスを確認するか、税務専門家に相談すること。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="buy-usdt.html"> USDTの購入方法：すべての方法を比較</a></li>
+        <li><a href="how-to-buy-bitcoin.html">ビットコインの購入方法：完全なウォークスルー</a></li>
+        <li><a href="avoid-scams.html">暗号通貨は詐欺ですか？知っておくべき8つの詐欺</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

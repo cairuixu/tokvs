@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>暗号通貨とキャッシュアウトの販売方法：現物、P2P、銀行— TokVS</title>
+<meta name="description" content="暗号通貨を売却して現金化する方法： USDTへの現物売却、銀行へのP2P売却、Binance引き出しのウォークスルー、手数料、税務記録の習慣。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-sell-crypto">
+<meta property="og:title" content="暗号通貨とキャッシュアウトの販売方法：現物、P2P、銀行— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="手数料と安全規則を備えた暗号を販売し、銀行に法定通貨を取得する3つの方法。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/how-to-sell-crypto">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"暗号資産を売って現金化する方法","item":"https://tokvs.com/ja/guides/how-to-sell-crypto"}]},{"@type":"Article","headline":"暗号通貨とキャッシュアウトの販売方法：現物、P2P、銀行","description":"現物売却でUSDTへ、P2P売却で銀行へ、直接の法定通貨出金、Binanceの手順、手数料、初心者向け納税記録の付け方。","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/how-to-sell-crypto","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Binanceで暗号を販売するにはどうすればよいですか？","acceptedAnswer":{"@type":"Answer","text":"現物市場でコインをUSDTで売却し、USDTを資金調達ウォレットに移動してから、P2Pで検証済みのバイヤーに販売するか、通貨で利用可能な場合はBinanceの法定通貨引き出しチャネルを使用します。"}},{"@type":"Question","name":"暗号通貨を販売する際に支払う手数料はいくらですか？","acceptedAnswer":{"@type":"Answer","text":"現物取引は、メイカーまたはテイカーの手数料を支払います(Binance0.10%/ 0.10%、OKX 0.08%/ 0.10%、Bybit 0.10%/ 0.10%現物—公式手数料ページで確認してください)。 P2P販売には通常、プラットフォームのコミッションはありません。コストはバイヤーのスプレッドです。 引き出しはネットワークを追加し、場合によっては銀行手数料を追加します。"}},{"@type":"Question","name":"現金化にはどのくらいの時間がかかりますか？","acceptedAnswer":{"@type":"Answer","text":"現物販売は即時です。 P2P販売には、購入者によって数分から数時間かかります。 銀行引き出しは、鉄道や地域に応じて数分から数営業日の範囲で行われます。"}},{"@type":"Question","name":"P2P販売は安全ですか？","acceptedAnswer":{"@type":"Answer","text":"ルールに従っている場合は可能です。エスクローはUSDTを保有し、リリース前に自分の銀行アプリで支払いを確認し、プラットフォーム外で決済することはありません。 支払いが到着する前にリリースすることは、人々がお金を失う主な方法です。"}},{"@type":"Question","name":"暗号通貨を販売するときに税金を払いますか？","acceptedAnswer":{"@type":"Answer","text":"それはあなたの国によって異なります—ルール、料金、および報告義務は異なり、変更されます。 このページは税務アドバイスではありません。すべての売上の記録を保管し、地域の規則を確認するか、税務専門家に相談してください。"}},{"@type":"Question","name":"暗号通貨を銀行口座に直接引き出すことはできますか？","acceptedAnswer":{"@type":"Answer","text":"銀行は暗号資産を直接受け取らない。まず法定通貨に売却する——P2Pか取引所の法定通貨出金チャネル経由で——そして法定通貨が銀行へ入る。直接の暗号資産から銀行への送金を約束するサービスは、念のため確認する価値がある。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/ <a href="index.html">ガイド</a> / 暗号資産の売却と現金化の方法</div>
+      <h1>暗号資産を売って現金化する方法</h1>
+      <p class="sub">USDTへの現物、銀行へのP2P、または直接のフィアット引き出し— 3つの出口、それらの手数料、およびすべてのP2P販売を保護するリリースルール。</p>
+      <p class="updated">2026年10月更新· By TokVS · 10分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">クリーンなアプリで現物と先物を探そう</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitアカウントを作成</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>3つの方法：必要になる前に出口を選ぶ</h2>
+      <p>すべての現金化は3つの動きのいずれかだ。<strong>現物売却</strong>は、取引所内でコインをUSDTに交換する——速く、正確で、トレーダーのデフォルトだ。<strong>P2P売却</strong>は、USDTを別の人物と直接取引し、銀行口座や電子ウォレットで法定通貨を受け取る。<strong>出金チャネル</strong>は、取引所内で法定通貨に交換し、取引所が対応している場合は銀行やカードへ送る。ほとんどの初心者はまず現物を使い、次にP2Pを使う——そして両方を事前に知っていることは、プレッシャーの下でどちらかを学ぶより優れている。</p>
+      <p>1つの習慣が3つすべてをカバーしています。テストされていない1つのステップでフルスタックを動かさないでください。最初に少量を売却し、期待どおりの金額を確認してから、残りを行います。テスト取引の手数料はわずかです。住所が間違っていたり、販売業者が不適切であったりしても、費用はかかりません。</p>
+      <h2>ステップ1 ： USDTで現地販売</h2>
+      <p>取引所では、資金調達ウォレットから現物ウォレット(ほとんどの取引所では無料で即座に)にコインを移動し、BTC/USDT、ETH/USDTなどのコイン/USDTペアを開き、売り注文を行います。<strong>成行注文</strong>は、利用可能な最良の価格ですぐに販売されます。<strong>指値注文</strong>は、選択した価格以上でのみ販売されます。市場はよりシンプルです。限界は突然の下落に売り込むのを避けます。適度な量を販売するほとんどの初心者にとって、市場は問題ありません。確認する前に価格を確認してください。</p>
+      <p>費用：現物取引は、市場で販売するときに受取手数料を支払うか、限度注文が待機して後で満たされるときにメイカー手数料を支払う。主要取引所の標準現物レートは次のとおりです。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>取引所</th><th>現物メイカー/テイカー</th><th>注</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10% / 0.10%</td><td>ほとんどのペアで最も深い流動性</td></tr>
+          <tr><td>OKX</td><td>0.08% / 0.10%</td><td>フル製品ライン</td></tr>
+          <tr><td>Bybit</td><td>0.10% / 0.10%</td><td>現物と先物を1つのアプリで</td></tr>
+          <tr><td>Bitget</td><td>公式料金ページを参照</td><td>ここでは<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener"> Bitgetホームページ</a>のみにリンクされています— TokVS経由のリベートはありません</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">以下の料金数値は、ほとんどの初心者が見る標準的な現物メイカー/テイカー料金です。 取引所は手数料スケジュールを変更し、プロモーションを実施するため、取引前に必ず取引所の公式手数料ページで確認してください。</p>
+      <p>販売後、USDTは現物ウォレットに入ります。 ここから、それを保持、取引、またはP2P販売のための資金調達に移動することができます。 このステップについてあなたの銀行に触れることはありません—それは次に来るものです。</p>
+      <h2>ステップ2 ：フィアットのP2PでUSDTを販売する</h2>
+      <p>P2P売却はP2P購入の鏡像だ。USDTをFundingウォレットへ移し、P2Pを開き、売却に切り替え、USDTと通貨を選び、支払い方法——銀行振込、または対応している場合は現地の電子ウォレット——で絞り込むこと。買い手の提示が価格、上限、完了統計とともに表示される。買うときに加盟店を選ぶのと同じように選ぶこと。完了率が高く、完了注文が多く、アカウントが古いこと。</p>
+      <ol>
+        <li>USDTの金額を入力し、売り注文を行います。あなたのUSDTはエスクローでロックされます。</li>
+        <li>購入者は選択した方法で支払いを行い、支払いが完了したことをマークします。</li>
+        <li><strong>何かをする前に、お金が実際にあなたのアカウントにあることを確認してください。</strong>バイヤーが送信するスクリーンショットではなく、銀行アプリまたはeウォレットの残高を確認してください。</li>
+        <li>そのとき初めて「解放」をタップすること。資金が届く前に解放することは、P2P売却で最も多い損失の1つであり、回復できない。</li>
+      </ol>
+      <p>2つの規律ルール。買い手の認証済み名と一致しない名義のアカウントからの支払いを決して受け入れないこと、そしてプラットフォーム外で連絡したり決済したりしないことだ。「WhatsAppで仕上げよう、速いから」は、エスクロー保護が消える瞬間だ。</p>
+      <h2>ステップ3 ：銀行またはカードに法定通貨を引き出す</h2>
+      <p>取引所が法定通貨の引き出しをサポートしている場合、プラットフォーム内で変換して直接引き出すことができます。取引所の変換または法定通貨市場を介してUSDTを現地通貨に変換し、リンクされた銀行口座またはカードに引き出すことができます。 利用可能状況、レール、制限は、国と通貨によって大きく異なります。ヨーロッパのSEPA銀行振込、他の地域の現地銀行レール、一部の地域のカード引き出しなどです。そのため、通貨を計画する前に、取引所で提供されている通貨を確認してください。</p>
+      <p>ここでは2種類のコストが予想されます。 取引所は法定引き出し手数料(確認前に表示される定額または割合)を請求する場合があり、銀行は独自の受取手数料を適用する場合があります。 処理範囲は、一部のレールでは数分から、その他のレールでは数営業日です。 いつものように、確認画面に表示される番号は重要な番号です。確認をタップする前に読んでください。</p>
+      <h2>Binanceからの出金方法、段階を追って</h2>
+      <p>Binanceは、ほとんどの初心者が現金化について尋ねる場所であるため、ここに標準的なパスがあります。 これは、あなたがすでにBinanceに暗号を保有していることを前提としています。あなたのコインがあなた自身のウォレットにある場合は、まずBinanceに入金し、確認を待ちます。</p>
+      <ol>
+        <li><strong>現物でUSDTへ売却すること</strong>（上記のステップ1）——ほかのものを保有している場合。USDTはP2P買い手が求める通貨だ。</li>
+        <li><strong> USDTを資金調達に移動：</strong>ウォレットトランスファー現物を資金→調達→に移動し、金額を入力します。</li>
+        <li><strong> P2Pを開いて→USDTを→販売し</strong>、法定通貨と支払い方法を選択し、最高価格だけでなく、完了率と注文数でバイヤーを選択します。</li>
+        <li><strong>注文し、支払いを待ち、自分の銀行アプリで入金を確認して</strong>から、エスクローからUSDTを解放すること。</li>
+        <li>Binanceがお住まいの通貨の直接の法定通貨出金チャネルを提供している場合、それがP2Pの代替手段だ。プラットフォーム内で交換して出金すること。ウォレット → 出金 → 法定通貨で、自分に何が利用可能かを確認すること——提供内容は地域によって異なり、時間とともに変わるため、アプリこそが信頼できる情報源だ。</li>
+      </ol>
+      <p>1つのBinance固有の注意事項：アカウントの支払い方法は自分の名前で保管してください。 第三者の支払いにフラグが立てられたり、凍結されたり、取り消されたりします。また、他者の支払いに対する異議申し立ては敗北を意味します。</p>
+      <h2>ネットワーク出金手数料：人々が忘れるコスト</h2>
+      <p>コインをプラットフォーム<em>間</em>で、または自分のウォレットへ移すことは、取引手数料とは別のコストだ。各ブロックチェーンは混雑に応じて上下するネットワーク手数料を課し、取引所はその上に独自の出金手数料を加える——確定前に表示される。混雑したネットワークで少額を出金すると、痛い割合のコストになることがある。静かな時間帯を待つこと、または受け取り側が実際にサポートする安いネットワークを選ぶことで、大幅に削減できる。安いという理由だけでネットワークを選んではいけない——受け取るウォレットや取引所がその正確なネットワークをサポートしていなければ、コインが届かないことがある。</p>
+      <h2>販売のタイミング：実用的であり、予測的ではありません</h2>
+      <p>このガイドでは、いつ販売するかについては誰も教えてくれません。価格コールは私たちのビジネスではありません。 私たちのビジネスは実行です。リミットオーダーは、売り上げがフラッシュディップになるのを防ぎます。大規模な売り上げを2つまたは3つのトランチェスに分割することで、薄いペアで価格を自分自身に対して動かすことを回避します。そして、一日の最悪の瞬間にパニックに陥った単一の成行注文よりも、段階的に強く売り込むことができます。 落ち着いたときに計画を決め、それを書き留めて、赤いキャンドルではなく計画を押しましょう。</p>
+      <h2>税金：記録を残し、現地の助言を得ること</h2>
+      <div class="callout warn"><b>税務助言ではありません：</b>暗号税の規則は国によって異なり、頻繁に変更されます。キャピタルゲインの取り扱い、報告のしきい値、および記録保管義務はすべて現地で行われます。 このページには税金に関するアドバイスは記載されていません。 すべての販売(日付、コイン、金額、価格、手数料、注文ID )を記録し、申告シーズン中ではなく、申告シーズン前に自国の現在の規則を確認するか、税務専門家に相談してください。</div>
+      <p>レコードの習慣がゲーム全体です。 取引所では取引履歴をエクスポートできますが、アカウントが閉じられフォーマットが変更されるとエクスポートは消えます。 同じ日に更新された、セールごとに1行のシンプルなスプレッドシートは、年末のスクランブルよりも価値があります。</p>
+      <h2>現金化のよくある間違い</h2>
+      <ul>
+        <li><strong>支払いが清算される前にP2Pの暗号資産を解放すること。</strong>スクリーンショットは嘘をつく。銀行残高は嘘をつかない。まず確認し、次に解放すること。</li>
+        <li><strong>間違ったネットワークで引き出します。</strong>宛先がサポートしていない場合、最も安価なネットワークは価値がありません。</li>
+        <li><strong> 1つの巨大な市場は薄いペアで売られています。</strong>スリッページは、あなたが持っていたと思っていた「最高価格」を食べます。 分割するか、制限を使用してください。</li>
+        <li><strong>第三者の支払いを受け入れる。</strong>名前の不一致により、取引が凍結され、異議申し立てが却下されます。</li>
+        <li><strong>手数料の積み重ねを忘れること。</strong>現物手数料＋P2Pスプレッド＋出金手数料＋銀行手数料。ルートを「安い」と判断する前に4つすべてを足すこと。</li>
+      </ul>
+      <h2>現物対P2P対直接引き出し：どのルートが</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>経路</th><th>速度</th><th>主な費用</th><th>おすすめの人</th></tr></thead>
+        <tbody>
+          <tr><td>USDTへの現物販売</td><td>即時</td><td>テイカー手数料（上記の表を参照）</td><td>トレーダー、出口の最初のステップ</td></tr>
+          <tr><td>P2PでUSDTを売る</td><td>分 時間</td><td>バイヤースプレッド、通常はプラットフォーム手数料なし</td><td>ほとんどのキャッシュアウト、ほとんどの国</td></tr>
+          <tr><td>直接フィアット引き出し</td><td>数分～数日</td><td>取引所+銀行手数料</td><td>ご利用の通貨でサポートされている地域</td></tr>
+        </tbody>
+      </table></div>
+      <p>ほとんどの初心者のための実用的なデフォルト：現物をUSDTに、次にP2Pを銀行に。 これはほとんどの国で機能し、費用は前もって表示され、すべてのステップにエスクローまたはオーダーブック保護があります。 直接引き出しは、あなたの通貨に存在する場合に勝ちます。最初に確認してから選択してください。</p>
+      <h2>強みへの売り込み：実践例</h2>
+      <p>さまざまな価格で購入された0.5 BTCを保有していて、半分を終了したいと想像してください。 ずさんなバージョンは、急激な急落の間に0.25 BTCの1つの市場売りです。あなたはテイカーフィーを支払い、薄いオーダーブックが手にするスリッページを食べます。 規律あるバージョン：穏やかな状態で選択した価格で2つの制限販売、各0.125 BTCを設定し、市場があなたに来るにつれてそれらを満たすことができます。 注文の受付手数料の代わりにメイカー手数料を支払い、その日の最悪の1分を回避しても、同じ合計額を終了します。 この違いは1つの取引で劇的なものになることはめったにありませんが、何十もの出口で繰り返されます。それは計画と反応の間のギャップです。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">クリーンなアプリで現物と先物を探そう</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitアカウントを作成</a></div>
+        </div>
+        <p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+      </div>
+
+      <h3>Binanceで暗号を販売するにはどうすればよいですか？</h3>
+      <p>現物市場でコインをUSDTで売却し、USDTを資金調達ウォレットに移動してから、P2Pで検証済みのバイヤーに販売するか、通貨で利用可能な場合はBinanceの法定通貨引き出しチャネルを使用します。</p>
+      <h3>暗号通貨を販売する際に支払う手数料はいくらですか？</h3>
+      <p>現物取引は、メイカーまたはテイカーの手数料を支払います(Binance0.10%/ 0.10%、OKX 0.08%/ 0.10%、Bybit 0.10%/ 0.10%現物—公式手数料ページで確認してください)。 P2P販売には通常、プラットフォームのコミッションはありません。コストはバイヤーのスプレッドです。 引き出しはネットワークを追加し、場合によっては銀行手数料を追加します。</p>
+      <h3>現金化にはどのくらいの時間がかかりますか？</h3>
+      <p>現物販売は即時です。 P2P販売には、購入者によって数分から数時間かかります。 銀行引き出しは、鉄道や地域に応じて数分から数営業日の範囲で行われます。</p>
+      <h3>P2P販売は安全ですか？</h3>
+      <p>ルールに従っている場合は可能です。エスクローはUSDTを保有し、リリース前に自分の銀行アプリで支払いを確認し、プラットフォーム外で決済することはありません。 支払いが到着する前にリリースすることは、人々がお金を失う主な方法です。</p>
+      <h3>暗号通貨を販売するときに税金を払いますか？</h3>
+      <p>それはあなたの国によって異なります—ルール、料金、および報告義務は異なり、変更されます。 このページは税務アドバイスではありません。すべての売上の記録を保管し、地域の規則を確認するか、税務専門家に相談してください。</p>
+      <h3>暗号通貨を銀行口座に直接引き出すことはできますか？</h3>
+      <p>銀行は暗号資産を直接受け取らない。まず法定通貨に売却する——P2Pか取引所の法定通貨出金チャネル経由で——そして法定通貨が銀行へ入る。直接の暗号資産から銀行への送金を約束するサービスは、念のため確認する価値がある。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="buy-usdt.html"> USDTの購入方法：すべての方法を比較</a></li>
+        <li><a href="how-to-buy-bitcoin.html">ビットコインの購入方法：完全なウォークスルー</a></li>
+        <li><a href="how-to-buy-usdt-on-binance-p2p.html">Binance P2PでUSDTを買う</a></li>
+        <li><a href="avoid-scams.html">暗号通貨は詐欺ですか？知っておくべき8つの詐欺</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>最も安い暗号資産取引所：比較 — TokVS</title>
+<meta name="description" content="手数料が最も低い暗号通貨取引所はどれですか？ Binance、OKX、Bybit、Bitgetの実際のメイカー/テイカー番号に加えて、実際に支払う金額を減らす5つの方法。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/lowest-fee-crypto-exchange">
+<meta property="og:title" content="最も安い暗号資産取引所：実際の数字 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="メイカー/テイカーの手数料は、ビッグ4全体で比較され、手数料を20〜50%削減する習慣があります。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/lowest-fee-crypto-exchange">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"最も安い取引所","item":"https://tokvs.com/ja/guides/lowest-fee-crypto-exchange"}]},{"@type":"Article","headline":"最低手数料の暗号交換：比較","description":"手数料が最も低い暗号通貨取引所はどれですか？ Binance、OKX、Bybit、Bitgetの実際のメイカー/テイカー番号に加えて、実際に支払う金額を減らす5つの方法。","datePublished":"2026-10-16","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/lowest-fee-crypto-exchange","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"$100分のビットコインを買う最も安い方法は？","acceptedAnswer":{"@type":"Answer","text":"大手いずれかの現物市場でのリミット注文なら、手数料は約$0.08～0.10だ。考えすぎないこと——次の1時間の価格変動が手数料を圧倒する。"}},{"@type":"Question","name":"VIPランクは通常のユーザーにとって重要ですか？","acceptedAnswer":{"@type":"Answer","text":"30日間のボリュームが数万に達するまで、そうではありません。 以下は、すべての場所で標準ランクになっていることを示しています。これはまさに私たちの表に示されています。"}},{"@type":"Question","name":"分散型取引所は安いですか？","acceptedAnswer":{"@type":"Answer","text":"机上では時にそうだが、トータルでは決してそうではない。ガス代、MEV／スリッページ、ブリッジコストは、通常の規模ではたいていCEXの手数料を上回る。DEXが勝つのはコストではなく、カストディとアクセスだ。"}},{"@type":"Question","name":"手数料が安いだけで両替すべきでしょうか？","acceptedAnswer":{"@type":"Answer","text":"最初に計算を行います。実際の年間手数料ギャップ(計算機)を計算し、再検証、アプリの再学習、流動性の分割の価値があるかどうかを尋ねます。 $50 k/年未満のほとんどの人にとって、答えは「いいえ」です。"}},{"@type":"Question","name":"ただ保有しているだけでも手数料はかかるか？","acceptedAnswer":{"@type":"Answer","text":"いいえ。保有にコストはかからない。大手取引所ではどこでもそうだ。手数料は取引、交換、出金で発生する——ただ置いておくだけでは発生しない。"}},{"@type":"Question","name":"アプリとウェブサイトの料金は異なりますか？","acceptedAnswer":{"@type":"Answer","text":"いいえ。アプリ、ウェブ、APIで同じアカウント、同じ手数料レベル、同じ料金が適用されます。 取引に最適なインターフェースを選択してください。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/最低料金の交換</div>
+      <h1>最も手数料の安い暗号資産取引所</h1>
+      <p class="sub">劇的に安いものはありませんが、詳細は重要です。ビッグ4の実際の手数料数値と、実際に支払う金額を減らす5つの習慣。</p>
+      <p class="updated">2026年10月更新· By TokVS · 9分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>手数料表：4つの取引所、マーケティングなし</h2>
+      <p>レギュラーティア( VIP 0 )ベースライン—新しいアカウントが実際に得るレート：</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>取引所</th><th>現物メイカー</th><th>現物テイカー</th><th>先物メイカー</th><th>先物テイカー</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10%</td><td>0.10%</td><td>0.02%</td><td>0.05%</td></tr>
+          <tr><td>OKX</td><td>0.08%</td><td>0.10%</td><td>0.02%</td><td>0.05%</td></tr>
+          <tr><td>Bybit</td><td>0.10%</td><td>0.10%</td><td>0.02%</td><td>0.055%</td></tr>
+          <tr><td>Bitget</td><td>0.10%</td><td>0.10%</td><td>0.02%</td><td>0.06%</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">料金スケジュールが変更されます—公式サイトを確認してください。 リベートとの完全な比較：<a href="../exchanges.html">手数料とリベート表</a>。</p>
+      <p>見出し：<strong> OKXは最低の現物メイカー手数料( 0.08% )</strong>を持っています。先物メイカーはどこでも0.02%です。先物受注者は0.05%-0.06%の範囲です。劇的に安いものはありません。実際の節約は、<em>場所</em>だけでなく、<em>取引方法</em>から得られます。</p>
+      <h2>30秒で分かるメイカー対テイカー</h2>
+      <p><strong>メイカー</strong>の注文が待機しています(即座に満たされない指値注文)。流動性を追加するため、支払う金額が少なくなります。 <strong>受注者</strong>の注文は、直ちに帳簿に対して満たされます(成行注文、または積極的な制限)。流動性を取り除くので、より多くを支払うことになります。 暗号取引で最も安価な習慣：<strong>デフォルトでは指値注文を使用します</strong>。 上記のすべての取引所で、その1つの習慣は、すべてを市場で注文する場合と比較して、手数料を20〜50%削減します。</p>
+      <p class="in-cta">4つのうち最低の現物メイカー手数料： <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成する</a></p>
+      <h2>手数料が実際に痛いところ：現物対先物</h2>
+      <p>現物手数料が小さく見えるのは、実際に小さいからだ——$1,000の購入で0.10%なら$1だ。先物は逆だ。レバレッジが取引名目を倍増させ、手数料もそれと一緒に倍増する。10倍レバレッジの$1,000ポジションは、$10,000の名目に対して手数料を支払う。だから先物トレーダーは0.005%の1つ1つを気にすべきであり、現物の買い持ち投資家はこの話題全体をほぼ無視してよい。</p>
+      <h2>隠された4番目の手数料：引き出し</h2>
+      <p>出金手数料は手数料ティアでは決まらない——<strong>ブロックチェーンネットワーク</strong>で決まる。TRC20でのUSDT出金は通常$1程度だが、ERC20ではイーサリアムが混雑していると$10以上かかることがある。同じ取引所、同じコインで10倍の差——すべて選んだネットワーク次第だ。確定前に必ず出金手数料のプレビューを確認し、少額の出金は決してしないこと。</p>
+      <h2>実際にお支払いを減らす5つの方法</h2>
+      <ol>
+        <li><strong>常にリミット注文。</strong>メイカー手数料は、すべてのプラットフォームでテイカー手数料に勝る。（上記参照。）</li>
+        <li><strong>紹介リンクを使用します。</strong>リベートは、エクスチェンジの公式プログラムに基づく手数料の一部を返金します。直接登録と同じ手数料にキャッシュバックが加算されます。 <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成</a></li>
+        <li><strong>VIPティアは自然に上がること。</strong>30日間の取引量が増えれば、低い手数料は自動的に解放される——無理に追い求めるな。ただしティアが存在することは知っておくこと。</li>
+        <li><strong>引き出しのための安価なネットワークを選択してください。</strong>具体的な理由がない限り、USDTの場合はERC 20よりもTRC 20を使用してください。</li>
+        <li><strong>大量に「変換」しないでください。</strong>ワンタップコンバート機能はスプレッドを引用します。サイズに関しては、現物限度注文の方がはるかに安いです。</li>
+      </ol>
+      <h2>自分の数字で計算する</h2>
+      <p>表は抽象的だが、あなたの取引はそうではない。月間取引量を<a href="../exchanges.html#calculator">先物手数料計算機</a>に入力し、各取引所が<em>あなた</em>に年間いくらかかるかを見てから、リベート層を加えること。ほとんどの人は、自分の数字が入れば「最も安い取引所」という問いが自ずと答えを出すことに気づく。</p>
+      <h2>3巻の手数料：実例</h2>
+      <p><strong>カジュアル——月$2,000の現物、メイカー／テイカー混合（ブレンド約0.09%）：</strong>どこでも月約$1.80だ。「最も安い取引所」という議論は、あなたにとって月$0.20の価値しかない。飛ばして、使い心地で選ぶこと。</p>
+      <p><strong>アクティブ— $50,000/月現物、主にメイカー： </strong> OKX 0.08% = $40、その他0.10% = $50。月に10ドル、年に$120 —本物ですが、人生を変えるものではありません。</p>
+      <p><strong>深刻な先物—月額$500,000 ： </strong> Binance/OKX 0.05% = $250、Bybit 0.055% = $275、Bitget 0.06% = $300。さて、$300 -600/年のギャップについて話しています。<em>リベート</em>の前に。このレベルでは、料金表が最も読まれているページです。</p>
+      <h2>ほとんどの人が無視するリベートレイヤー</h2>
+      <p>表示手数料は定価であり、リベートは正しい入口から入ることで得られる割引だ。公式の紹介プログラムの下では、支払う手数料の一部が戻ってくる——直接登録するのと同じ手数料率に、さらにキャッシュバックが上乗せされる。上記の「本格的な先物」の取引量では、30～50%のリベートが年間$900～1,500を返す。これはクーポンではなく、給与アップだ。リベートの計算はスプレッドシートに独自の行を持つに値する。</p>
+      <h2>入金と出金：忘れられたコスト</h2>
+      <ul>
+        <li><strong>入金：</strong>暗号預金は4つのメジャーすべてで無料です。 法定預金はさまざまです： SEPA/銀行振込は通常両替側で無料です。カード預金には手数料がかかります。</li>
+        <li><strong>引き出し：</strong>手数料階層ではなく、ブロックチェーンネットワークによって設定されます。 USDT - TRC 20 ≈ $1; USDT - ERC 20は渋滞で$10 +に達する可能性があります。 同じコイン、10倍のギャップ—ネットワークドロップダウンは取引所のロゴよりも重要です。</li>
+        <li><strong>内部送金：</strong>1つの取引所内でサブアカウント間や現物／先物ウォレット間で資金を移動することは無料で即時だ。オンチェーン移動の代わりに使うこと。</li>
+      </ul>
+      <h2>「手数料ゼロ」についての神話</h2>
+      <ul>
+        <li><strong>「ゼロ手数料取引週」。</strong>通常はメイカー限定、上限付き、または新規リスティングのマーケティングです。アスタリスクを読んでください。</li>
+        <li><strong>「永久に手数料0%。」</strong>不明な取引所がこれを約束した場合は、どのように収益を上げるかを尋ねてください。 答えは通常、あなたの預金です。</li>
+        <li><strong>「手数料トークンはいつも25%節約できる。」</strong>BNB／OKB型のトークンで手数料を支払うと、一部のプラットフォームでは確かに割引になる——しかしティアが変わると割引は縮み、トークンを保有すること自体がポジションになる。計算すること。想定しないこと。</li>
+      </ul>
+      <h2>手数料追及の心理（最適化する前に読むこと）</h2>
+      <p>文書化された初心者の罠がある。0.01%の手数料差を比較するのに6時間を使い、その後、5%の日中変動の中へ成行で買ってしまうことだ。手数料は<strong>確実で、小さく、管理可能</strong>だ。相場の動きは<strong>不確実で、大きく、管理不能</strong>だ。正しい順序で最適化すること。1.すべてを成行注文するのをやめること（即座に手数料の20～50%を節約）、2.紹介リンクを使うこと（無料のお金）、3.<em>その後で</em>プラットフォームを比較すること。ステップ1の前にステップ3を行う者は、間違ったつまみを磨いている。</p>
+      <h2>取引前手数料チェックリスト( 30秒)</h2>
+      <ol>
+        <li>リミットまたはマーケット？ (リミット=メイカー=安い。)</li>
+        <li>現物か先物か？（先物の名目こそが本当の手数料の基礎だ。）</li>
+        <li>引き出しのためのネットワークはどれですか？ (<em>は購入後ではなく、</em>の前に設定してください。)</li>
+        <li>リベートが添付されていますか？ (紹介を介して登録=はい。)</li>
+      </ol>
+      <p>このチェックリストを1か月実行すれば、低手数料は研究プロジェクトではなく習慣になる。</p>
+      <h2>手数料がプラットフォームを本当に決定する場合</h2>
+      <p>手数料表が決定全体である3つのプロファイル： <strong>高頻度先物トレーダー</strong>(ベースポイントは給与に複合)、<strong>マーケットメイカー</strong>(マイナスのメイカー手数料はボリュームで存在します—取引所は<em>あなた</em>を支払います)、<strong>裁定取引業者</strong>(彼らのエッジ<em>は</em>手数料ギャップです)。 あなたがこれらのいずれでもない場合、そして読者の95%がそうでない場合、手数料はメインイベントではなく、それ以外の場合は同等のプラットフォーム間のタイブレーカーとして扱われます。</p>
+      <h2>リベート数学：実践例</h2>
+      <p>「本格的な先物」トレーダーを例に取ろう。Binanceでの月$500kのテイカー取引量で、0.05%なら月$250の手数料、年$3,000だ。公式の紹介プログラムを通じた40%のリベートなら、<strong>年$1,200が戻ってくる</strong>。同じ取引、同じプラットフォーム、同じ手数料率——違うのは、どのリンクから登録したかだけだ。それが紹介リンクの全体の売り文句だ。手数料が低くなるのではなく、もともと支払っていた手数料の返金だ。費用はかからず、取引所自身のプログラムであり、唯一のミスは、紹介リンクなしで登録することだ。</p>
+      <h2>完全に避けるべき手数料構造</h2>
+      <ul>
+        <li><strong>スプレッドのみの「手数料なし」ブローカー</strong>は、1〜2%のスプレッドを見積もっています。これは、コスチュームを着て1〜2%の<em>手数料</em>です。</li>
+        <li><strong>出金手数料がネットワークコストを5倍+</strong>上回る—一部の小規模プラットフォームは出口を収益化します。 入金前に確認してください。入金後ではありません。</li>
+        <li><strong>月額で支払う「プレミアム」ティア</strong>は、決して到達しない取引量の上でしか意味を持たない。まず損益分岐点の計算をすること。</li>
+      </ul>
+      <h2>最終ランキング（流し読みする人向け）</h2>
+      <p><strong>最も安い現物メイカー：</strong>OKX（0.08%）。<strong>最も安い先物テイカー：</strong>Binance／OKX（0.05%）。<strong>ほとんどの人にとって全体的に最も良い体験：</strong>リベートリンクで登録し、リミット注文で取引するビッグ4のいずれか——なぜなら行動がベーシスポイントに勝るからだ。手数料表がもたらすのは最後の10%であり、習慣が最初の90%をもたらす。</p>
+      <h2>クイック要約：手数料の階層</h2>
+      <p>ほかに何も覚えていなくても、次のことだけは覚えてほしい。<strong>リミット注文は成行注文に勝る</strong>——すべての取引所で。<strong>先物の名目</strong>こそが、実際に支払っている対象だ。<strong>出金ネットワーク</strong>は出金取引所より重要であり、<strong>リベートリンク</strong>はすべての一部を返金する。4つの習慣で、決して「最適化」することなく、トレーダーの95%より安く支払うことができる。</p>
+      <h2>手数料を自分で確認する場所</h2>
+      <p>記事の言葉を信じないでください。料金表は各取引所の公式サイトに掲載されており、通常はフッターの「料金」または「料金表」に記載されています。 コミットする前に、<strong>現物手数料表</strong>( VIPティアごとのメイカー/テイカー)、<strong>先物手数料表</strong>(同じ分割、異なる数字)、<strong>引き出し手数料ページ</strong>(コインごと、ネットワークごと)の3ページを確認してください。 10分間の読書は、1年の想定を上回ります。 また、プロモーションが数字を変更するたびに、公式ページが最初に更新され、ブックマークされます。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#12150F;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">登録する →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        </div>
+        <p class="note">TokVSリンクを介してサインアップすると、各取引所の紹介料のリベートが自動的に適用されます—同じアカウント、より低い手数料。リンクを介して登録すると、追加の費用はかかりません。リベートは取引所によって補助されます。</p>
+      </div>
+      
+      <h3>$100分のビットコインを買う最も安い方法は？</h3>
+      <p>大手いずれかの現物市場でのリミット注文なら、手数料は約$0.08～0.10だ。考えすぎないこと——次の1時間の価格変動が手数料を圧倒する。</p>
+      <h3>VIPランクは通常のユーザーにとって重要ですか？</h3>
+      <p>30日間のボリュームが数万に達するまで、そうではありません。 以下は、すべての場所で標準ランクになっていることを示しています。これはまさに私たちの表に示されています。</p>
+      <h3>分散型取引所は安いですか？</h3>
+      <p>机上では時にそうだが、トータルでは決してそうではない。ガス代、MEV／スリッページ、ブリッジコストは、通常の規模ではたいていCEXの手数料を上回る。DEXが勝つのはコストではなく、カストディとアクセスだ。</p>
+      
+      <h3>手数料が安いだけで両替すべきでしょうか？</h3>
+      <p>最初に計算を行います。実際の年間手数料ギャップ(計算機)を計算し、再検証、アプリの再学習、流動性の分割の価値があるかどうかを尋ねます。 $50 k/年未満のほとんどの人にとって、答えは「いいえ」です。</p>
+      <h3>ただ保有しているだけでも手数料はかかるか？</h3>
+      <p>いいえ。保有にコストはかからない。大手取引所ではどこでもそうだ。手数料は取引、交換、出金で発生する——ただ置いておくだけでは発生しない。</p>
+      
+      <h3>アプリとウェブサイトの料金は異なりますか？</h3>
+      <p>いいえ。アプリ、ウェブ、APIで同じアカウント、同じ手数料レベル、同じ料金が適用されます。 取引に最適なインターフェースを選択してください。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="crypto-fees.html">暗号手数料の説明</a></li>
+        <li><a href="../exchanges.html">手数料とリベートの比較表</a></li>
+        <li><a href="choose-exchange.html">取引所の選び方： 6チェック</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

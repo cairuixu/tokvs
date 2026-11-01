@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>米国でUSDTを購入する方法： ACH、電信送金、カード、P2P — TokVS</title>
+<meta name="description" content="ACH、電信送金、デビットカード、またはP2Pで米国でUSDTを購入：スピード、コスト、KYC、および州の可用性を簡単な英語で比較します。 少量のテストから始めます。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-usa">
+<meta property="og:title" content="米国でUSDTを購入する方法： ACH、電信送金、カード、P2P — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="米国でUSDTを購入するためのACH、電信送金、デビットカード、P2Pルート、およびKYCと州の可用性に関するメモ。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/how-to-buy-usdt-in-usa">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"米国でUSDTを購入する","item":"https://tokvs.com/ja/guides/how-to-buy-usdt-in-usa"}]},{"@type":"Article","headline":"米国でUSDTを購入する方法： ACH、電信送金、カード、P2P","description":"ACH、電信送金、デビットカード、またはP2Pで米国でUSDTを購入：ステップバイステップ、コスト、KYC、および州の可用性。 少量のテストから始めます。","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/how-to-buy-usdt-in-usa","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"銀行口座からUSDでUSDTを直接購入できますか？","acceptedAnswer":{"@type":"Answer","text":"はい、USD預金をサポートする取引所では可能です。 ACHまたは電信送金でドルを入金し、USD/USDT現物ペアでUSDTを購入します。 取引所がUSD入金を提供していない場合は、P2Pが通常の代替手段です。"}},{"@type":"Question","name":"ACHの入金にはどのくらいの時間がかかりますか？","acceptedAnswer":{"@type":"Answer","text":"ACH送金は通常、完全に清算されるまで1〜3営業日かかりますが、一部の取引所では保留中の預金との取引をより早く行うことができます。 送信する前に入金画面を確認してください。アカウントの利用可能状況が表示されます。"}},{"@type":"Question","name":"デビットカードが拒否されたのはなぜですか？","acceptedAnswer":{"@type":"Answer","text":"銀行は、詐欺システムが取引にフラグを立てた場合、請求先住所が一致しない場合、またはカードがオンライン購入に有効になっていない場合、暗号通貨の購入を拒否します。 詳細を確認し、もう一度やり直してください。それでも失敗する場合は、銀行に電話するか、ACHまたはP2Pに切り替えてください。"}},{"@type":"Question","name":"米国でUSDTを購入することは合法ですか？","acceptedAnswer":{"@type":"Answer","text":"米国でUSDTを買うことは合法だが、州のライセンス規則のため、取引所の対応状況は州によって異なる。認証前に、選んだ取引所がお住まいの州に対応しているかを確認し、すべての購入の記録を残すこと。"}},{"@type":"Question","name":"まず本人確認を行う必要がありますか？","acceptedAnswer":{"@type":"Answer","text":"はい。米国の取引所では、入金または取引を行う前に身元確認が必要です。 政府発行の写真付き身分証明書と実際の顔確認が必要です。また、銀行口座が認証済み口座と同じ名前であることを確認してください。"}},{"@type":"Question","name":"最初の購入で最も安い方法はどれですか？","acceptedAnswer":{"@type":"Answer","text":"ACH入金は無料であることが多く、現物取引手数料はインスタントバイカード手数料よりも低いため、ACH入金に続いて現物購入が通常最低コストのルートです。 コミットする前に、取引所の公式手数料ページで現在の手数料を確認してください。手数料は変更されます。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/米国でUSDTを購入</div>
+      <h1>米国でUSDTを買う方法</h1>
+      <p class="sub">ACH、電信送金、デビットカード、またはP2P —アメリカ人がUSDTを購入する4つの方法。スピード、コスト、州ごとの細かい印刷について正直なメモが付いています。</p>
+      <p class="updated">2026年10月更新· By TokVS · 13分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ→</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>景観：アメリカ人が実際にどのようにUSDTを購入するか</h2>
+      <p>米国でUSDTを買うための単一の公式な方法は存在しない。USDTは民間企業が発行するステーブルコインで取引所で取引されるものであり、政府の窓口で販売されているわけではないからだ。実際には、アメリカ人は4つのルートのいずれかで買っている。ACHで取引所にドルを入金して現物市場で買う方法、より大きな金額のための電信送金、デビットカードでの即時支払い、取引所アプリ内で別の人物と行うピアツーピア取引だ。どのルートが使えるかは、取引所、お住まいの州、そしてどれだけ待てるかによる。このガイドでは4つすべてを解説するので、途中で制限に気づくのではなく、初めての購入に合うものを選ぶことができる。</p>
+      <p>最初に決済することが1つあります。USDTは米ドルを追跡するように設計されています。1トークンは約1ドルですが、特定の日に支払う価格は、固定カウンターではなく、その取引所の市場によって設定されます。 ちょうど1ドルからのわずかな差は正常です。 あなたの仕事は魔法のような価格を見つけることではありません。手数料やスプレッドの過剰な支払いを避け、どんな手数料よりもはるかに高価な初心者の罠を避けることです。</p>
+      <h2>始める前に必要なもの</h2>
+      <ul>
+        <li><strong>確認済みの為替口座。</strong>米国の取引所は、入金または取引の前に身元確認を必要とします。 政府発行の写真付き身分証明書をご用意ください。顔のリアルタイム確認が行われます。</li>
+        <li><strong>自分の名前の銀行口座またはデビットカード。</strong>名前は確認済みの為替口座と一致している必要があります。 第三者の支払いは拒否され、取引を凍結する可能性があります。</li>
+        <li><strong>二要素認証が有効です。</strong>入金する前に、SMSではなく認証アプリを使用し、フィッシング対策コードを設定してください。</li>
+        <li><strong>少量のテスト量を念頭に置いています。</strong>最初の購入は、ミスが損失ではなくレッスンになるほど小さくなければなりません。</li>
+      </ul>
+      <p class="in-cta">最初にアカウントを準備してください： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成</a></p>
+      <h2>方法1 ： ACHデポジット、次に現物購入(通常最も安い)</h2>
+      <p>ACHは米国の銀行間送金システムであり、米国の暗号バイヤーの主力ルートです。 流れは簡単です。銀行口座を取引所にリンクし、ドルを入金し、入金が清算されるのを待ち、USD/USDT現物ペアでUSDTを購入します。 通常、リンクには、オンラインバンキングログインを介した即時認証、または1日か2日かかる少額のテストデポジットのいずれかが含まれます。</p>
+      <ol>
+        <li>本人確認を完了し、取引所アカウントで2 FAを有効にします。</li>
+        <li>入金に移動し、米ドルを選択し、方法としてACHを選択します。 当座預金口座をリンクしてください。</li>
+        <li>金額を入力して確認します。 入金画面には予想される予約可能状況が表示されます。送信する前にお読みください。</li>
+        <li>ドルが着陸したら、現物市場に行き、USDT/USDペアを開き、購入注文を行います。 成行注文は現在の価格ですぐに満たされます。指値注文を使用すると、価格を設定して待つことができます。</li>
+        <li>USDTが現物ウォレットに表示されていることを確認し、取引を記録します：日付、支払われたドル、受け取ったUSDT、注文ID。</li>
+      </ol>
+      <p>ACH送金は通常、完全に清算されるまで1〜3営業日かかりますが、一部の取引所では保留中の預金との取引をより早く行うことができ、清算が完了するまで引き出しは保留されます。ACHデポジットは取引所側で無料になることが多いため、このルートは通常コストで勝ちますが、手数料スケジュールが変更されるため、コミットする前に取引所の公式手数料ページで現在の手数料を確認してください。トレードオフはスピードです。今日USDTが必要な場合、ACHは間違ったツールです。</p>
+      <h2>方法2 ：電信送金(多額の場合に最適)</h2>
+      <p>電信送金は、銀行から取引所の銀行口座にドルを移動します。通常、銀行のカットオフ時間前に送金する場合は、同じ日に送金されます。 取引所は、銀行の詳細に加えて、電信送金を口座に結びつける参照またはメモコードを提供します。その参照は、送金全体で最も重要なフィールドです。 間違っていると、デポジットが手動で一致している間、デポジットは数日間不安定になる可能性があります。</p>
+      <p>平らな銀行電信送金手数料が総額のわずかな割合になるほど金額が大きい場合、電信送金は理にかなっています。銀行から電信送金が請求される場合がありますので、まず銀行に確認してください。交換側は通常、公式の料金ページに従って、電信送金を受け取るためにほとんどまたはまったく料金を請求しません。電信送金は、テスト転送がそれ自体で支払われる経路でもあります。最初に少額を送信し、到着して正しくクレジットされていることを確認してから、残りを送信します。数千ドルを超えるものについては、2つの送信に転送を分割することは、妄想ではなく、賢明な注意です。</p>
+      <h2>方法3 ：デビットカードの即時購入(最速、最も高価)</h2>
+      <p>デビットカードでの即時購入が最速のルートです。カードの詳細を入力し、購入を確認すると、通常数分以内にUSDTが表示されます。 そのスピードには代償が伴います。カードの購入には、一般的な方法の中で最も高い手数料がかかります。これは、カード処理には銀行振込や取引所よりもコストがかかるためです。 最初の小さなテスト購入では、手数料はほとんど重要ではありません。定期的または大規模な購入では、それはすぐに加算されるので、カードをあなたのスタータールートとして扱い、フローが慣れたらACHに卒業します。</p>
+      <p>2枚のカードの現実初心者はすぐにヒットします。まず、拒否は一般的です。銀行は暗号通貨の購入にフラグを立て、請求先住所は正確に一致する必要があり、一部のカードはオンライン購入がまったく有効になっていません。詳細を確認し、もう一度お試しください。それでも失敗する場合は、同じカードを叩くのではなく、銀行に電話するか、方法を切り替えてください。次に、クレジットカードではなくデビットカードを使用します。多くの銀行は、クレジットカードで暗号をブロックしたり、追加料金を伴うキャッシュアドバンスとして扱ったりします。また、他の人のカードは絶対に使用しないでください。カードは認証済みアカウントと同じ名前である必要があります。</p>
+      <h2>方法4 ： P2P (入金が制限されている場合のフォールバック)</h2>
+      <p>ピアツーピア取引とは、取引所アプリ内で別の人物から直接USDTを買うことであり、支払いが済むまで取引所が売り手のUSDTをエスクローで預かる。米国では、ドル建てのP2Pは、それが主要な入金手段である国々より薄いため、加盟店が少なく、提示価格の幅も広いと見込んでほしい——ただし、直接入金が使えない場合や、加盟店が受け入れる特定の支払い方法を使いたい場合の有用な代替手段であり続ける。</p>
+      <ol>
+        <li>アプリでP2Pを開き、[購入]、[USDT ]、[USD]を選択し、お支払い方法で絞り込みます。</li>
+        <li>完了した注文が多く、完了率が高く、古いアカウントがあるという実績で販売業者を選択します。 注文する前に利用規約をお読みください。</li>
+        <li>注文します。 売り手のUSDTはエスクローにロックされ、支払いタイマーが開始されます。</li>
+        <li>注文番号のみを支払い参照として使用して、指示どおりに正確に支払います。銀行メモに暗号関連の単語を決して書かないでください。</li>
+        <li>アプリを閉じる前に、支払い済みであることをタップし、リリースを待ち、ウォレット内のUSDTを確認します。</li>
+      </ol>
+      <p>問題が発生した場合は、支払いを早期に解除せず、プラットフォーム外で支払いを行わず、支払い証明のスクリーンショットとともに異議申し立てプロセスを使用してください。 プラットフォーム外でより良い価格を提供している人は、凍結されたアカウントまたはそれ以上のものを販売しています。</p>
+      <h2>4つの方法を比較</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>方法</th><th>速度</th><th>典型的なコスト</th><th>おすすめの人</th></tr></thead>
+        <tbody>
+          <tr><td>ACH +現物購入</td><td>1 ～ 3営業日</td><td>多くの場合、無料デポジット+現物手数料</td><td>購入が最も多く、コストが最も低い</td></tr>
+          <tr><td>電信送金</td><td>カットオフ前の場合は当日</td><td>銀行送金手数料の可能性</td><td>金額が大きい</td></tr>
+          <tr><td>デビットカードインスタントバイ</td><td>議事録</td><td>4つの中で最も高い手数料</td><td>最初の小規模なテスト、緊急購入</td></tr>
+          <tr><td>P2P</td><td>マッチング後の分数</td><td>販売業者の見積もりと市場</td><td>預金が限られている場合</td></tr>
+        </tbody>
+      </table></div>
+      <p>上記の料金数値は方向性のみです。 購入する前に、必ず取引所の公式手数料ページで現在の手数料を確認してください。手数料スケジュールは変更され、現在読んでいるページではそれらを追跡できません。</p>
+      <h2>KYCと州の可用性：米国の細かい印刷物</h2>
+      <p>米国の取引所は、連邦および州の規則のパッチワークの下で運営されており、そのパッチワークは登録画面に届きます。実用的な効果は3つあります。まず、本人確認は必須であり、交渉の余地はありません。適切に終了する匿名ルートはありません。第二に、州の送金ライセンスが異なるため、一部の取引所はすべての州にサービスを提供しているわけではありません。テキサス州の友人のために機能するプラットフォームは、ニューヨークのあなたに搭載されていないか、または製品セットが縮小される可能性があります。認証に時間を費やす前に、お住まいの州の予約可能状況を確認してください。第三に、銀行口座、カード、および為替口座にはすべて同じ正式名称を使用する必要があります。ミスマッチは、預金が保持される最も一般的な理由です。</p>
+      <p>認証自体は通常、政府発行の写真付き身分証明書、実際の顔の確認、住所の証明などの迅速なものです。 ストールが発生した場合は、ほとんどの場合、写真がぼやけていることが原因です。書類が平らで完全に見える状態で、明るい場所で画像を撮り直してください。 承認されたら、デポジットの前に2 FAとフィッシング対策コードをすぐに有効にします。 これらの2つの設定には3分かかり、最も一般的なアカウント乗っ取りのストーリーを防ぎます。</p>
+      <h2>実際にかかる費用</h2>
+      <p>見出しの手数料ではなく、オールインコストを考慮してください。購入には最大3つのコストレイヤーがあります。入金コスト( ACHの場合はゼロ、電信送金の場合は銀行手数料、カードの場合は最高)、現物ペアの取引手数料または即時購入マークアップ、スプレッド(支払う価格と市場価格のギャップ)です。即時購入は取引手数料をバンドルし、1つの見積価格に広げます。これは便利で、通常は自分で現物注文するよりも高価です。P2Pコストは、市場価格に対する加盟店の見積もりです。これらの数字はいずれも固定されていません。購入時に取引所の公式手数料ページで確認し、広告された手数料ではなく、受け取った最終的なUSDTを比較してください。</p>
+      <div class="callout warn"><b>米国特有の罠：</b>1.プラットフォーム外でUSDTを割引価格で販売することは、そうでないことが証明されるまでは詐欺です。2.パスワード、2 FAコード、またはSMSコードを共有しないでください。正当なサポートエージェントが尋ねることはありません。3.ソーシャルメディアやメッセージングアプリ上の偽の交換サポートアカウントに注意してください。</div>
+      <h2>購入後： USDTをどこに保管するか</h2>
+      <p>どこでも同じ3つのオプション： <strong>取引所</strong>(取引に便利、プラットフォームリスクを伴う)、<strong>あなた自身の財布</strong>(あなたは回復フレーズを保持しています—より大きな長期保有に最適)、または<strong>利回り商品</strong>(余分なリターン、余分なリスク—それらに触れる前に条件を読んでください)。最初の購入では、学習しながら交換に残しておいても問題ありません。金額が重要になったら、セルフカストディに移行してください。当社の<a href="best-crypto-wallet-for-beginners.html">初心者ウォレットガイド</a>は、回復フレーズを適切に説明しています。</p>
+      <h2>アメリカの初心者がよくする間違い</h2>
+      <ul>
+        <li><strong>他人の銀行口座またはカードを使用する。</strong>名前の不一致により入金が拒否され、セキュリティレビューがトリガーされる可能性があります。 あなたのアカウント、あなたの名前、いつでも。</li>
+        <li><strong>ACHの保留期間を無視すること。</strong>入金が保留中の状態で買って、すぐに引き出そうとするのが、初心者が保留に気づくきっかけになる。送る前に利用可能時期の通知を読むこと。</li>
+        <li><strong>拒否されたカードを叩く。</strong>繰り返しの拒否は、銀行にとって不正行為のように見えます。 1回再試行してから、銀行またはスイッチメソッドを呼び出します。</li>
+        <li><strong>レコードをスキップします。</strong>暗号廃棄は、米国で課税対象となる可能性があります。すべての取引(日付、ドル、USDT、注文ID )を記録し、シーズン中ではなく申告前に税務専門家に相談してください。</li>
+        <li><strong>すべてを1回の交換で永久に保持します。</strong>ぜひ始めてみてください。持ち株が増えたら、セルフカストディを学びましょう。</li>
+      </ul>
+      <h2>税金：初日から記録を残す</h2>
+      <p>これは注意事項であり、税務上のアドバイスではありません。 米国では、暗号を販売または使用すると課税対象イベントが作成される可能性があり、申告を可能にする記録は、取引時に保持するものです。日付、ドルでの金額、USDTの受領、注文ID。 メモアプリは機能しますが、スプレッドシートの方が優れています。 税務規則は変更され、個人的な状況は異なります。サイズを取引する前に、現在の規則を確認するか、税務の専門家に相談してください。 ファイリングシーズンに火傷を負ったトレーダーは、決して最も取引されたトレーダーではありません。最も書かれていないトレーダーです。</p>
+      <h2>卒業： USDTからポートフォリオへ</h2>
+      <p>USDTは入口であり、目的地ではない。慣れてきたら、必要に応じてFundingウォレットから現物へUSDTを移し、USDTペアでBTCやETHを買い、仕組みについては<a href="how-to-buy-crypto-for-beginners.html">初心者向け購入ガイド</a>を読むこと。記録、名義一致のアカウント、2FAといったアメリカ流の習慣は、次に何を買うにしても続けること。</p>
+      <h2>完全な最初の購入チェックリスト(米国版)</h2>
+      <ol>
+        <li>取引所がお住まいの州に対応していることを確認し、写真付き身分証明書、顔確認、二要素認証、フィッシング対策コードを確認します。</li>
+        <li>自分の名前で銀行口座またはカードをリンクします。 最初の購入では、デビットカードが最速です。最低コストでは、ACHをリンクします。</li>
+        <li>少量のテストオーダーを行います。ACHの場合は、最初に入金して清算を待ちます。カードの場合は、直接購入してUSDTランドを確認します。</li>
+        <li>取引を記録する：日付、支払われたドル、受け取ったUSDT、注文ID。</li>
+        <li>フローが退屈に感じたら、実際のサイズで繰り返します。 退屈とは、あなたがそれを学んだことを意味します。</li>
+        <li>金額が重要になったら、長期保有物を自分の財布に移動します。</li>
+      </ol>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">Y</div><div><div class="tt">Bybit</div><div class="dd">デリバティブと現物取引</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitアカウントを作成</a></div>
+        </div>
+        <p class="note">直接サインアップと同じ手数料。リンクに追加料金はかかりません。 Bitgetは紹介手配なしでここにリンクされています(<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener"> bitget.com </a>) —そのリンクを介してリベートは適用されません。</p>
+      </div>
+
+      <h3>銀行口座からUSDでUSDTを直接購入できますか？</h3>
+      <p>はい、USD預金をサポートする取引所では可能です。 ACHまたは電信送金でドルを入金し、USD/USDT現物ペアでUSDTを購入します。 取引所がUSD入金を提供していない場合は、P2Pが通常の代替手段です。</p>
+      <h3>ACHの入金にはどのくらいの時間がかかりますか？</h3>
+      <p>ACH送金は通常、完全に清算されるまで1〜3営業日かかりますが、一部の取引所では保留中の預金との取引をより早く行うことができます。 送信する前に入金画面を確認してください。アカウントの利用可能状況が表示されます。</p>
+      <h3>デビットカードが拒否されたのはなぜですか？</h3>
+      <p>銀行は、詐欺システムが取引にフラグを立てた場合、請求先住所が一致しない場合、またはカードがオンライン購入に有効になっていない場合、暗号通貨の購入を拒否します。 詳細を確認し、もう一度やり直してください。それでも失敗する場合は、銀行に電話するか、ACHまたはP2Pに切り替えてください。</p>
+
+      <h3>米国でUSDTを購入することは合法ですか？</h3>
+      <p>米国でUSDTを買うことは合法だが、州のライセンス規則のため、取引所の対応状況は州によって異なる。認証前に、選んだ取引所がお住まいの州に対応しているかを確認し、すべての購入の記録を残すこと。</p>
+      <h3>まず本人確認を行う必要がありますか？</h3>
+      <p>はい。米国の取引所では、入金または取引を行う前に身元確認が必要です。 政府発行の写真付き身分証明書と実際の顔確認が必要です。また、銀行口座が認証済み口座と同じ名前であることを確認してください。</p>
+
+      <h3>最初の購入で最も安い方法はどれですか？</h3>
+      <p>ACH入金は無料であることが多く、現物取引手数料はインスタントバイカード手数料よりも低いため、ACH入金に続いて現物購入が通常最低コストのルートです。 コミットする前に、取引所の公式手数料ページで現在の手数料を確認してください。手数料は変更されます。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">初心者のための暗号通貨の購入方法：完全なウォークスルー</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">初心者に最適な暗号ウォレット</a></li>
+        <li><a href="buy-usdt.html"> USDTの購入方法：すべての方法を比較</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>EEAでUSDTを購入： MiCAルール、SEPA ＆カードルート(2026) — TokVS</title>
+<meta name="description" content="EEA居住者は、MiCA後に異なるUSDT市場に直面しています。Binanceは引き出しのみ、OKXヨーロッパはUSDT取引を提供できず、Bybit EUはEEAにサービスを提供しています。 SEPAとカードのルート、USDCの代替案、および提供を停止した取引所の資金をどうするか。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-eea">
+<meta property="og:title" content="EEAでUSDTを購入： MiCAルールとルート— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="MiCAはEEA USDT市場を変えました：誰がまだあなたにサービスを提供しているのか、SEPAとカードルート、TRC 20とERC 20、USDCの代替案。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/how-to-buy-usdt-in-eea">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"EEAでUSDTを購入する","item":"https://tokvs.com/ja/guides/how-to-buy-usdt-in-eea"}]},{"@type":"Article","headline":"EEAでUSDTを購入する方法： MiCAルール、SEPA ＆カードルート","description":"EEA居住者は、MiCA後に異なるUSDT市場に直面しています。誰がまだあなたにサービスを提供しているのか、SEPAとカードルート、TRC 20とERC 20、USDCの代替案。","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/how-to-buy-usdt-in-eea","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"EEAに住んでいる場合でもUSDTを購入できますか？","acceptedAnswer":{"@type":"Answer","text":"プラットフォームによって異なります。MiCAライセンスのEEAプラットフォームはステーブルコインルールに従わなければならず、一部のプラットフォームはUSDT取引ペアを完全に削除しているため、入金する前にプラットフォームのEUサイトでライブペアリストを必ず確認してください。Bybit EUはオーストリアのMiCA認可を受けてEEA居住者にサービスを提供しており、OKX EuropeはEEAにサービスを提供していますが、USDT取引は提供していません。そのドルのステーブルコインオプションはUSDCです。USDTが記載されていない場合、USDCはBTCやETHの購入など、ほとんどの目的で同じように機能します。"}},{"@type":"Question","name":"OKX EuropeでUSDTを取引できないのはなぜですか？","acceptedAnswer":{"@type":"Answer","text":"USDTの発行者であるTetherはEUでMiCAの認可を受けておらず、OKX EuropeはMiCAの認可を受けた取引所であるためです。MiCAの下では、認可された取引所は、発行者が必要なEUの承認を保持しているステーブルコインのみを提供することができます。これはまた、OKX EuropeがEEAユーザーにEUの認可を受けているCircleが発行したUSDCを指し示す理由でもあります。取引を期待してOKX EuropeにUSDTを入金しないでください。最初にOKX Europeの公式ページを確認してください。"}},{"@type":"Question","name":"BinanceはまだEEAで利用できますか？","acceptedAnswer":{"@type":"Answer","text":"Binanceは、EEA居住者からの新しい活動を受け付けなくなりました。2026年6月24日にギリシャのMiCA申請を撤回し、2026年7月1日から引き出しを提供しています。すでに資金を保有している場合は、ライセンスされたプラットフォームまたは管理しているウォレットに資金を引き出し、締め切りがないか公式のBinance通知を確認してください。取引を期待して新しい資金を入金しないでください。"}},{"@type":"Question","name":"MiCAとは、わかりやすい言葉では何ですか？","acceptedAnswer":{"@type":"Answer","text":"MiCAはEUの暗号ルールブックです。2026年7月1日以降、MiCAの下で認可された取引所のみがEEA居住者に搭乗することができ、1つのEEA規制当局からのライセンスは、27のEU加盟国とアイスランド、ノルウェー、リヒテンシュタインのすべてのEEA加盟国に渡すことができます。初心者にとって、それは2つのことを意味します。認可されたステーブルコインのみが提供される可能性があるため、あなたにサービスを提供する取引所がMiCAライセンスを受けていることを確認し( ESMA登録にはライセンスを受けた企業が記載されています)、ステーブルコインの選択肢が狭くなることを期待してください。"}},{"@type":"Question","name":"EEAでUSDTまたはUSDCを購入する必要がありますか？","acceptedAnswer":{"@type":"Answer","text":"あなたがEEAに住んでいる場合、USDCは認可されたプラットフォームではより簡単な選択肢です。MiCA認可を受けており、OKX Europeやその他の認可された会場での入出金、取引を完全にサポートしており、他の暗号通貨を購入するためのドルペッグコインであるUSDTと同じ目的を果たしています。USDTはまだ存在し、あなた自身のウォレットに保持することができますが、認可されたEEA取引所は取引のためにそれを提供しない可能性があるので、それを計画する前にペアリストを確認してください。"}},{"@type":"Question","name":"私はすでに、EEA居住者へのサービス提供を停止した取引所で暗号を保有しています。どうすればよいですか？","acceptedAnswer":{"@type":"Answer","text":"パニックにならず、さらに入金しないでください。 まず、プラットフォームの公式通知を読んで、撤回期限を確認してください。 次に、MiCAライセンスのプラットフォームまたはあなたが管理するウォレットに出金し、最初に少量のテスト金額を送信し、両端のネットワークを照合します。たとえば、TRC 20をTRC 20アドレスに、ERC 20アドレスには決して送信しないでください。 すべての引き出しの記録を保持し、移行中にサポートされていると主張する連絡先を無視してください。実際のサポートでは、パスワードやシードフレーズを尋ねることはありません。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/ EEAでUSDTを購入</div>
+      <h1>EEAでUSDTを買う方法</h1>
+      <p class="sub">MiCAの後、EEAは別の市場になります。Binanceは引き出しのみ、OKXヨーロッパはUSDTを取引できず、Bybit EUはライセンスルートです。 ここでは、まだあなたにサービスを提供している人、SEPAとカードの購入方法、そしてあなたにサービスを提供しなくなった取引所の資金をどうするかについて説明します。</p>
+      <p class="updated">2026年10月更新· TokVSによる· 16分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">B</div><div><div class="tt">Bybit EU</div><div class="dd">EEA居住者向けのMiCA認可EU法人</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitにサインアップ→</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKXヨーロッパ</div><div class="dd">EEAでMiCAライセンスを取得— USDTではなくUSDC</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>最初にこれを読んでください：誰が実際にEEA居住者にサービスを提供しているか</h2>
+      <p>EEA内から「USDT購入」を検索しても、ほとんどのガイドは依然として世界市場を説明しています。 その市場は、MiCAの移行期間が終了した2026年7月1日に変化しました。 その日以降、MiCAのライセンスを受けた企業のみがEEA居住者に搭乗することができ、ステーブルコインルールはライセンスを受けたプラットフォームが提供できるドルコインを再形成しました。 以下の表は、2026年10月30日付けのTokVSの国の可用性チェックです。 どこでもサインアップする前にお読みください。間違ったエンティティにサインアップすることは、EEA初心者の最も一般的な間違いです。 完全な表は、<a href="../exchanges.html#availability">取引所比較ページ</a>にもあります。MiCA全体のものではなく、一般的なヨーロッパの状況を知りたい場合は、<a href="how-to-buy-usdt-in-europe.html">ヨーロッパでUSDTを購入する方法</a>を参照してください。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>取引所</th><th>EEA居住者にサービスを提供していますか？</th><th>EEA小売用のUSDT ？</th><th>それがあなたにとって何を意味するか</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>2026年7月1日以降、新しい活動はありません</td><td>いいえ</td><td>出金のみ。ギリシャのMiCA申請は2026年6月24日に撤回されました。 そこに資金を保有している場合は、引き出します。取引を期待して新しい資金を入金しないでください。</td></tr>
+          <tr><td><a href="https://www.bitget.com" target="_blank" rel="nofollow noopener"> Bitget </a> ( TokVSとのリベート手配なし)</td><td>EEAでは提供されていない</td><td>いいえ</td><td>オーストリアのMiCA申請はまだ保留中です。 ステータスが変わるまで計画を立てないでください。公式ページを確認してください。</td></tr>
+          <tr><td>OKX</td><td>はい— OKXヨーロッパ、マルタのMiCAライセンス、2025年1月</td><td>いいえ— USDTはOKX Europeで取引できません</td><td>TetherはMiCA認証を保持していないため、OKX Europeは代わりにEEAユーザーをUSDCに誘導します。 取引を期待してそこにUSDTを入金しないでください。</td></tr>
+          <tr><td>Bybit</td><td>はい— Bybit EU、オーストリアからのMiCA承認、2025年5月</td><td>入金前の確認</td><td>Bybit EUは、認可されたEEAルートです。Stablecoinのリスティングは2026年にEEA全体で変更されたため、登録日にbybit.euでお住まいの国のUSDTが登録されていることを確認してください。そうでない場合は、USDCが代替手段です。</td></tr>
+        </tbody>
+      </table></div>
+      <p>1つのルールがこの表の大部分を説明しています。取引所とそのEUエンティティは異なる製品です。 国際ガイドで読んだグローバルプラットフォームは、あなたに役立つプラットフォームではありません。 EEA居住者は、独自の製品リスト、料金表、サポートを備えた、グローバルなBybitサイトではなく、EUエンティティであるbybit.eu、グローバルなOKXではなくOKX Europeによってサービスを提供しています。 ガイドから登録を指示された場合は、実際に登録しているエンティティを確認してください。</p>
+      <h2>平易な言語でのMiCA</h2>
+      <p>MiCAは、EUの仮想通貨ルールブックであるMarkets in Crypto - Assets Regulationの略です。初心者には2つの部分が重要です。まず、取引所(法的には暗号資産サービスプロバイダーと呼ばれる)は、EEAの規制当局からの承認を必要とします。1つのEEA州で付与されたライセンスは、27のEU加盟国とアイスランド、ノルウェー、リヒテンシュタインのすべての30のEEA州で「パスポート」を取得できます。そのため、オーストリアのBybit EUやマルタのOKX Europeなどの1つのエンティティが、EEA全体のユーザーにサービスを提供しています。第二に、ステーブルコイン：フィアットペッグトークンは、その発行者が必要なEU認可(電子マネー機関ライセンスまたは資産参照トークン認可)を保持している場合にのみ、EEAの小売ユーザーに提供することができます。USDTの発行者であるTetherは、EUではどちらも保有していません。そのため、認可されたEEA会場は、USDTが世界最大のステーブルコインであるにもかかわらず、取引のためにUSDTを提供することができません。</p>
+      <p>2026年7月1日に変更されたのは、移行期間の終了でした。 以前の国の規則の下で事業を行っていた企業は、MiCAライセンスを保持するか、EEAビジネスを縮小する必要がありました。 これは、上の表のBinanceとBitgetの行の背後にある日付であり、EUエンティティの製品範囲がグローバルプラットフォームよりも狭い理由です。グローバルに存在する製品は、EUエンティティでは提供されない可能性があります。 グローバルカタログがあなたに適用されると仮定するのではなく、常にEU法人独自の製品リストを確認してください。</p>
+      <p>ライセンスクレームを確認するにはどうすればよいですか？ 2回のチェックには約1分かかります。 まず、取引所の独自の法人または法人ページには、あなたとその規制当局にサービスを提供する法人の名前を記載する必要があります。どちらも記載されていない場合は、警告サインとして扱います。 第二に、欧州証券市場庁(ESMA)は、認可された暗号資産サービスプロバイダーの登録簿を保管しています。そこでエンティティ名を検索します。 どちらの場所でも見つからない免許証の請求は、あなたのお金を信頼する価値のある請求ではありません。</p>
+      <h2>での2つのルート： SEPAとカード</h2>
+      <p>EEA居住者の場合、オンランプは銀行口座またはカードであり、他の地域向けに書かれたガイドを支配するP2P市場ではありません。 グローバルプラットフォーム上のP2Pは、お客様にサービスを提供するEU法人とは別の製品であるため、EU法人独自のアプリまたはサイト内の入金オプションを使用してください。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>経路</th><th>速度</th><th>典型的なコスト</th><th>気をつけてください</th></tr></thead>
+        <tbody>
+          <tr><td>SEPA銀行振込</td><td>分( SEPAインスタント、サポートされている場合)から1営業日</td><td>通常、低コストのルート</td><td>銀行口座名は、確認済みの取引所名と一致している必要があります。一致しない場合、入金を拒否することができます</td></tr>
+          <tr><td>デビットカードまたはクレジットカード</td><td>即時</td><td>SEPAよりも高い手数料</td><td>一部の銀行は暗号通貨の購入を拒否します。拒否されたカードは銀行のポリシーであり、為替エラーではありません</td></tr>
+        </tbody>
+      </table></div>
+      <p>どちらのルートを選んでも、少しずつ始めましょう。 20〜50 €の初回入金は、高価なミスを伴わずに、入金、購入、残高の確認などのフロー全体を学習するのに十分です。 実際に支払う手数料は、確認する前にプレビュー画面に表示される手数料であり、広告の見出しレートではありません。必ずプレビューを読んでください。プレビューには、受け取るUSDTまたはUSDCの正確な金額が記載されています。</p>
+      <p class="in-cta">最初にアカウントを準備してください： <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener"> Bybitにサインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成</a></p>
+      <h2>ステップバイステップ：最初の購入</h2>
+      <p>以下の手順は、上記の表の認可されたEEAルートであるBybit EUを想定しています。 代わりにOKX Europeを選択した場合は、同じ手順に従いますが、USDTではなくUSDCを購入してください。OKX EuropeはUSDT取引を提供していません。 どちらの会場でもデフォルトでUSDCに設定されています。MiCA認可の会場では、EEAリテールではUSDT現物ペアが上場解除されています。したがって、USDTはプランではなく、確認する必要がある例外として扱ってください。</p>
+      <ol>
+        <li><strong>グローバルサイトではなく、bybit.euに移動します。</strong> EEA居住者は、EUエンティティによってサービスを提供されます。 グローバルプラットフォーム上のアカウントは同じものではなく、あなたが望むアカウントではありません。</li>
+        <li><strong>メールアドレスと強力で固有のパスワードでサインアップします。</strong>管理しているメールアドレスと、他の場所で再利用しないパスワードを使用してください。</li>
+        <li><strong>本人確認(KYC)を完了します。</strong>政府発行の写真付き身分証明書と住所証明書が必要です。 通常、承認には数分から数時間かかります。書類の写真がぼやけているとほとんどが却下されるため、写真が失速した場合は明るい場所で撮り直してください。</li>
+        <li><strong>入金前にセキュリティをオンにします。</strong>認証アプリ( SMSではなく)で2要素認証を有効にし、プラットフォームが提供している場合はフィッシング対策コードを設定します。 お金が移動する前にこれを行います。</li>
+        <li><strong>お住まいの国でUSDTが登録されているかどうかを確認してください。登録されていないことを期待してください。</strong> bybit.euでUSDTを検索します。 MiCAの認可を受けた会場では、2026年にEEA小売用のUSDTペアが除外されているため、USDTは取引のために提供されていないことが予想されます。 記載されていない場合は、代わりに同じ手順でUSDCを購入してください。 表示されることを期待して入金しないでください。</li>
+        <li><strong> SEPA経由でユーロを入金します。</strong>取引所の入金の詳細を、独自の入金ページから正確にコピーします。チャットメッセージや誰かから送信されたスクリーンショットからはコピーしないでください。 最初に20 ～ 50 €の少額のテスト金額を送信し、到着を待ちます。</li>
+        <li><strong>購入します。</strong>現物に移動し、入金通貨に表示されているUSDCペア(または、ステップ5でお住まいの国に記載されていることが確認された場合にのみUSDTペア)を開き、成行注文を行います。プレビュー画面をよくお読みください。金額、手数料、受け取る金額が記載されています。それまでに確認してください。</li>
+        <li><strong>確認して記録します。</strong>アカウントの残高を確認し、日付、支払われたユーロ、受け取ったコイン、注文IDを書き留めます。このレコードは、販売した場合のコストベースであり、後で何時間も再構築するのではなく、現在10秒かかります。</li>
+      </ol>
+      <p>テスト購入がつまらないと感じたら、その流れを学びました。 実際のサイズで繰り返します。退屈は目標です。退屈はサプライズを意味しないからです。</p>
+      <h2>USDTネットワーク： TRC 20対ERC 20</h2>
+      <p>USDTはいくつかのブロックチェーンに存在し、入出金するたびにネットワークが重要です。 最も頻繁に会うのは、TRC 20とERC 20の2つです。 TRC 20は、TRONネットワーク上のUSDTを意味します。送金は通常高速で、手数料は通常1 USDT前後です。出金プレビューに表示されている手数料は変更される可能性があるため、必ず確認してください。 ERC 20はイーサリアムネットワーク上のUSDTを意味します。ほぼどこでもサポートされていますが、ガス料金はネットワーク輻輳によって異なり、TRC 20よりもはるかに高くなる可能性があります。</p>
+      <p>損失を防ぐルールは簡単です。<strong>ネットワークは両端で一致する必要があります。</strong> TRC 20 USDTをERC 20アドレスに送信するか、ERC 20 USDTをTRC 20アドレスに送信すると、資金が失われる可能性があります。送金の前に、受信プラットフォームの入金ページを開き、USDTでどのネットワークを受け入れるかを確認してから、送信側で同じネットワークを選択します。ソラナ、BNBチェーンなどの他のネットワークも存在しますが、双方がサポートしている場合にのみ1つを使用します。入金と同様に、USDTを新しい住所に移動するときには、まず少額のテスト金額を送信してください。</p>
+      <h2>サービスを停止した取引所ですでに資金を保有している場合</h2>
+      <p>引き出しのみは資金がなくなったのと同じではないので、パニックにならないでください。ただし、ドリフトもしないでください。 これを順番に進めてください。</p>
+      <ol>
+        <li><strong>プラットフォームの公式通知を読んでください。</strong>撤回期限と猶予期間は、ソーシャルメディアスレッドではなく、ここに記載されています。 締め切りが存在する場合、それが最初に必要な1つの事実です。</li>
+        <li><strong>移動する前に目的地を選択してください。</strong>あなたの国にサービスを提供するMiCAライセンスのプラットフォーム、またはあなたが管理するウォレット(自己管理)のいずれか。 目的地なしで移動すると、資金はあなたにも役立たない2つ目のプラットフォームに駐車されます。</li>
+        <li><strong>少量のテスト量を最初に引き出します。</strong>両端のネットワーク( TRC 20とTRC 20アドレスを一致させ、ERC 20アドレスは一致させない)を照合し、残りを送信する前にテストが到着したことを確認します。</li>
+        <li><strong>縮小中の口座に新しい資金を入金しないでください。</strong>出金のみの口座に入金すると、最初の口座に加えて2番目の問題が発生します。</li>
+        <li><strong>移行シーズンの詐欺師を無視します。</strong>ウィンドダウンは、資金移動を「助ける」ために提供する偽のサポートアカウントを引き付けます。実際のサポートでは、パスワード、2要素コード、シードフレーズを要求することはありません。また、正規のヘルパーがアカウントにリモートアクセスする必要はありません。</li>
+        <li><strong>資金がUSDTの場合は、プラットフォームの公式移行パスを確認してください。</strong>一部の認可施設では、EEAユーザー向けにUSDTからUSDCへの片道変換を提供しています。利用規約と可用性は変更されるため、何かを送信する前に公式ページで現在のオプションを確認し、締め切り近くではなく早期に行動してください。</li>
+      </ol>
+      <h2>USDC ： MiCA認定の代替案</h2>
+      <p>USDCはCircleが発行するドルペッグのステーブルコインであり、USDTとは異なり、EUの認可を受けています。そのため、認可されたEEA会場での入金、取引、出金が完全にサポートされています。ほとんどの初心者の目的のために、それはまさにUSDTがする仕事をします： BTCまたはETHを購入するための、または取引間の駐車価値のためのドル固定コイン。価格の振る舞いは同じ考えであり、1つのコインが1米ドルを追跡し、ライセンスされたEEAプラットフォーム上の取引ペアはUSDTではなくUSDCに対して引用されます。</p>
+      <p>OKX Europeは最も明確な例です。USDT取引を提供できないため、代わりにEEAユーザーにUSDC (およびUSDG )をポイントします。 他の場所でUSDTを保有していて、認可されたEEA会場に価値をもたらしたい場合は、何かを移動する前にその会場の公式ページでコンバージョンオプションを確認してください。一部の会場では片道USDTからUSDCへのコンバージョンが提供されており、プラットフォームによって条件が異なります。 換算が存在すると仮定しないでください。それを確認してから、他の転送と同様にテスト量を最初に移動します。</p>
+      <h2>費用について</h2>
+      <p>単一の広告手数料を信頼しないでください。購入のコストは4つの場所から積み上げられます：入金手数料( SEPAは通常カードよりも少ない費用)、取引手数料( EUエンティティ自身の公式手数料スケジュールを確認してください— EUエンティティはグローバルプラットフォームとは価格が異なるため、グローバル手数料表は適用されない場合があります)、スプレッド(売買価格の小さなギャップ)、および引き出しまたはネットワーク手数料(引き出しプレビューに示されています)。確認前のプレビュー画面は実際の価格です。受け取るUSDTまたはUSDCの正確な金額が表示されます。その数字に驚いた場合は、確認する前にルートを停止して比較してください。プレビューはクリックして読むのではなく、そこにあります。</p>
+      <h2>コインを安全に保つ</h2>
+      <p>3つのオプションは、どこでも同じです。<strong>取引所で</strong>(取引に便利、プラットフォームリスクを伴います)、<strong>自分の財布で</strong>(金額が重要になると、シードフレーズ—賢明な動きを保持します)、または<strong>利回り商品で</strong>(余分なリターン、余分なリスク—それらに触れる前に条件を読んでください)。最初の購入では、学習しながら交換に残しておくことは完全に問題ありません。金額が増えたら、セルフカストディを学びましょう。初心者向けの当社の<a href="best-crypto-wallet-for-beginners.html">暗号ウォレットガイド</a>は、シードフレーズを適切にカバーしています。何を選択しても、交渉の余地のないものは、認証アプリ、固有のパスワード、オフラインで保存されたシードフレーズによる二要素認証であり、写真を撮ったり、ウェブサイトに入力したり、誰とも共有したりすることはありません。</p>
+      <h2>EEA初心者が犯す間違い</h2>
+      <ul>
+        <li><strong> EUエンティティではなく、グローバルサイトにサインアップします。</strong>アカウント、製品リスト、および保護は同じではありません。 EUエンティティから始めます。</li>
+        <li><strong>それを取引することを期待して、USDTをOKXヨーロッパに入金します。</strong> USDTはそこでは取引できません。 何かを送信する前に、ペアリストを確認してください。</li>
+        <li><strong>間違ったネットワークでUSDTを送信しています。</strong> ERC 20アドレスへのTRC 20、またはその逆は、資金を失う可能性があります。 両端のネットワークを一致させ、最初に小規模なものをテストします。</li>
+        <li><strong> SEPAのために他人の銀行口座を使用する。</strong>名前の不一致により入金が拒否されます。 あなたのアカウント、あなたの名前、いつでも。</li>
+        <li><strong>テスト量をスキップします。</strong>問題を明らかにする20 €のテスト購入は安価です。同じ問題を明らかにするフルサイズの転送は安価ではありません。</li>
+        <li><strong>移行中に「サポート」メッセージを信頼します。</strong>ウインドダウン期間は主要な詐欺の季節です。 サポートがパスワードやシードフレーズを要求することはありません。</li>
+        <li><strong>グローバル手数料がEUエンティティに適用されると仮定します。</strong> EUの事業体は独自の料金表を設定しています。 EU法人の公式手数料ページをご覧ください。</li>
+      </ul>
+      <h2>完全な最初の購入チェックリスト( EEA版)</h2>
+      <ol>
+        <li>あなたにサービスを提供している取引所がMiCAライセンスを取得していることを確認してください。法人名と規制当局はその法人ページで、ESMA登録簿で検索可能な法人名を確認してください。</li>
+        <li>EU法人( Bybitの場合はbybit.eu )にサインアップし、KYCを完了し、2要素認証とフィッシング対策コードを有効にします。</li>
+        <li>EU法人にお住まいの国のUSDTが記載されていることを確認してください。 そうでない場合は、何かを入金する前にプランをUSDCに切り替えてください。</li>
+        <li>ご自身の名前の銀行口座からSEPA経由で20〜50 €のテスト金額を入金します。</li>
+        <li>Spotで少額の市場買いを行います。 プレビュー(金額、手数料、受け取ったコイン)を読み、確認します。</li>
+        <li>残高を確認し、取引(日付、ユーロ、コイン、注文ID )を記録してから、実際のサイズで繰り返します。</li>
+        <li>EEAでのサービスを停止したプラットフォームで資金を保有している場合は、早期に孤立した資金を処理し、それ以上の資金を入金しないでください。</li>
+      </ol>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#12150F;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Bybit EU</div><div class="dd">EEA居住者向けのMiCA認可EU法人</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKXヨーロッパ</div><div class="dd">EEAでMiCAライセンスを取得— USDTではなくUSDC</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        </div>
+        <p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+      </div>
+
+      <h3>EEAに住んでいる場合でもUSDTを購入できますか？</h3>
+      <p>プラットフォームによって異なります。MiCAライセンスのEEAプラットフォームはステーブルコインルールに従わなければならず、一部のプラットフォームはUSDT取引ペアを完全に削除しているため、入金する前にプラットフォームのEUサイトでライブペアリストを必ず確認してください。Bybit EUはオーストリアのMiCA認可を受けてEEA居住者にサービスを提供しており、OKX EuropeはEEAにサービスを提供していますが、USDT取引は提供していません。そのドルのステーブルコインオプションはUSDCです。USDTが記載されていない場合、USDCはBTCやETHの購入など、ほとんどの目的で同じように機能します。</p>
+      <h3>OKX EuropeでUSDTを取引できないのはなぜですか？</h3>
+      <p>USDTの発行者であるTetherはEUでMiCAの認可を受けておらず、OKX EuropeはMiCAの認可を受けた取引所であるためです。MiCAの下では、認可された取引所は、発行者が必要なEUの承認を保持しているステーブルコインのみを提供することができます。これはまた、OKX EuropeがEEAユーザーにEUの認可を受けているCircleが発行したUSDCを指し示す理由でもあります。取引を期待してOKX EuropeにUSDTを入金しないでください。最初にOKX Europeの公式ページを確認してください。</p>
+      <h3>BinanceはまだEEAで利用できますか？</h3>
+      <p>Binanceは、EEA居住者からの新しい活動を受け付けなくなりました。2026年6月24日にギリシャのMiCA申請を撤回し、2026年7月1日から引き出しを提供しています。すでに資金を保有している場合は、ライセンスされたプラットフォームまたは管理しているウォレットに資金を引き出し、締め切りがないか公式のBinance通知を確認してください。取引を期待して新しい資金を入金しないでください。</p>
+      <h3>MiCAとは、わかりやすい言葉では何ですか？</h3>
+      <p>MiCAはEUの暗号ルールブックです。2026年7月1日以降、MiCAの下で認可された取引所のみがEEA居住者に搭乗することができ、1つのEEA規制当局からのライセンスは、27のEU加盟国とアイスランド、ノルウェー、リヒテンシュタインのすべてのEEA加盟国に渡すことができます。初心者にとって、それは2つのことを意味します。認可されたステーブルコインのみが提供される可能性があるため、あなたにサービスを提供する取引所がMiCAライセンスを受けていることを確認し( ESMA登録にはライセンスを受けた企業が記載されています)、ステーブルコインの選択肢が狭くなることを期待してください。</p>
+      <h3>EEAでUSDTまたはUSDCを購入する必要がありますか？</h3>
+      <p>あなたがEEAに住んでいる場合、USDCは認可されたプラットフォームではより簡単な選択肢です。MiCA認可を受けており、OKX Europeやその他の認可された会場での入出金、取引を完全にサポートしており、他の暗号通貨を購入するためのドルペッグコインであるUSDTと同じ目的を果たしています。USDTはまだ存在し、あなた自身のウォレットに保持することができますが、認可されたEEA取引所は取引のためにそれを提供しない可能性があるので、それを計画する前にペアリストを確認してください。</p>
+      <h3>私はすでに、EEA居住者へのサービス提供を停止した取引所で暗号を保有しています。どうすればよいですか？</h3>
+      <p>パニックにならず、さらに入金しないでください。 まず、プラットフォームの公式通知を読んで、撤回期限を確認してください。 次に、MiCAライセンスのプラットフォームまたはあなたが管理するウォレットに出金し、最初に少量のテスト金額を送信し、両端のネットワークを照合します。たとえば、TRC 20をTRC 20アドレスに、ERC 20アドレスには決して送信しないでください。 すべての引き出しの記録を保持し、移行中にサポートされていると主張する連絡先を無視してください。実際のサポートでは、パスワードやシードフレーズを尋ねることはありません。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="how-to-buy-usdt-in-europe.html">ヨーロッパでUSDTを購入する方法：一般ガイド</a></li>
+        <li><a href="how-to-sell-crypto.html">仮想通貨の売り方：コインを現金に戻す</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">初心者のための暗号財布： 1つを選択する方法</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだEEAアカウントがありませんか？ Bybit EU →</span>から開始<a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
