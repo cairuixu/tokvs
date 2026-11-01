@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>什么是加密货币？新手指南 — TokVS</title>
+<meta name="description" content="为纯新手讲什么是加密货币：币 vs 代币、区块链怎么运作、钱包 vs 交易所、加密资产实际能用来做什么，以及要避开的骗局。">
+<link rel="canonical" href="https://tokvs.com/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/what-is-cryptocurrency">
+<meta property="og:title" content="什么是加密货币？新手指南 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="币 vs 代币、大白话区块链、钱包、交易所，以及每个新手都该知道的危险信号。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/what-is-cryptocurrency">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org","@graph": [{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "TokVS","item": "https://tokvs.com/"},{"@type": "ListItem","position": 2,"name": "教程","item": "https://tokvs.com/guides/"},{"@type": "ListItem","position": 3,"name": "什么是加密货币？","item": "https://tokvs.com/guides/what-is-cryptocurrency"}]},{"@type": "Article","headline": "什么是加密货币？","description": "为纯新手讲什么是加密货币：币 vs 代币、区块链怎么运作、钱包 vs 交易所、加密资产实际能用来做什么，以及要避开的骗局。","datePublished": "2026-10-28","author": {"@type": "Organization","name": "TokVS","url": "https://tokvs.com/"},"publisher": {"@type": "Organization","name": "TokVS","url": "https://tokvs.com/"},"mainEntityOfPage": {"@type": "WebPage","@id": "https://tokvs.com/guides/what-is-cryptocurrency", "dateModified": "2026-10-30"},"inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org","@type": "FAQPage","mainEntity": [{"@type": "Question","name": "加密货币是真钱吗？","acceptedAnswer": {"@type": "Answer","text": "从人们接受它作为支付并用它交换商品、服务和法币这个意义上说，它是真实的。它在大多数国家不是法定货币，价格波动远大于银行里的钱——请把它当作波动性资产，而不是稳定的工资。"}},{"@type": "Question","name": "它和数字银行货币有什么不同？","acceptedAnswer": {"@type": "Answer","text": "银行里的钱存在银行运行的私有账本里；加密货币存在去中心化网络运行的公开账本上。这意味着没有银行营业时间、没有哪家公司能单独冻结账户（当你自托管时），也没有拒付——无论好坏都是如此。"}},{"@type": "Question","name": "拥有加密货币需要钱包吗？","acceptedAnswer": {"@type": "Answer","text": "第一天不用：学习期间交易所账户替你保管币。金额重要起来后，再转到你自己的钱包，你持有助记词——以及随之而来的全部责任。"}},{"@type": "Question","name": "加密货币能被黑吗？","acceptedAnswer": {"@type": "Answer","text": "区块链本身的安全记录很强，但周围的东西经常被黑：交易所、应用、浏览器，还有人。大多数损失来自钓鱼、假应用和泄露的私钥——而不是攻破区块链本身。"}},{"@type": "Question","name": "为什么加密资产价格波动这么大？","acceptedAnswer": {"@type": "Answer","text": "更小、更年轻的市场，7×24 小时交易、投机气氛浓、没有熔断机制，比股市动得更快。新闻、杠杆清算和流动性单薄都会放大波动。两个方向的剧烈波动都要有预期。"}},{"@type": "Question","name": "现在开始学加密货币太晚了吗？","acceptedAnswer": {"@type": "Answer","text": "不。技术和市场都还年轻，基础知识——什么是币、托管怎么运作、骗局怎么运作——不会过时。从学习和小额试单开始，不要带着紧迫感。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 什么是加密货币？</div>
+      <h1>什么是加密货币？</h1>
+      <p class="sub">如果你到目前为止读过的每个解释都默认你已经知道了一半答案，那就从这里开始：从零讲加密货币，用大白话。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 10 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册 →</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">App 对新手友好、流动性深</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">去 Bybit 注册</a></div></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+
+      <h2>一段话讲清</h2>
+      <p>加密货币是生活在去中心化网络里而不是银行里的数字货币和数字资产。不是由一家公司保管总账，而是数千台独立电脑共享一条公开账本——区块链——并按写进软件的规则对其内容达成一致。第一种加密货币是比特币，2009 年上线；今天已有成千上万种，从严肃的支付网络、可编程平台，到笑话和彻头彻尾的骗局。“加密”这个词把它们全都囊括在内，而这正是新手困惑的原因： <strong>一个词，下面却是天差地别的东西。</strong> 本指南把各层分开讲，让你能分清它们。</p>
+      <h2>币 vs 代币：理解一切的关键区别</h2>
+      <p>这样想：一个 <strong>币</strong> 有自己的房子；一个 <strong>代币</strong> 是在别人的房子里租了个房间。比特币运行在比特币区块链上，以太币运行在以太坊区块链上。这些都是币。相比之下，代币是在现有区块链之上创建的——最著名的是以太坊——使用那条链的规则。像 USDT 这样的稳定币就是代币。你听说的多数新项目也是如此：它们在以太坊或类似平台上发行代币，而不是从头建一条区块链。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>币</th><th>代币</th></tr></thead>
+        <tbody>
+          <tr><td>有自己的区块链吗？</td><td>是</td><td>不是——生活在另一条链上</td></tr>
+          <tr><td>例子</td><td>BTC, ETH, SOL, XRP</td><td>USDT，以及大多数新项目资产</td></tr>
+          <tr><td>用来做什么</td><td>支付网络手续费、储存价值</td><td>稳定价值、应用准入、项目治理</td></tr>
+          <tr><td>由谁创建</td><td>网络本身（挖矿/质押）</td><td>项目团队发行合约</td></tr>
+        </tbody>
+      </table></div>
+      <p>为什么这对新手重要？因为一个代币的命运系于两件事：它自己的项目和它所生活的链。在以太坊上的代币要付以太坊手续费、继承以太坊的安全性；一枚币则靠自己的网络成败。当有人向你推销代币时，两个问题能穿透噪音：它是用来做什么的，以及为什么它非要存在，而不是直接用底层币？如果两个答案都不清楚，走开。</p>
+      <h2>区块链，不讲 buzzword</h2>
+      <p>区块链是一本共享的账本，有三个不寻常的特性。第一， <strong>人人都有副本</strong>：不是由一家银行持有账本，而是数千台电脑持有相同的副本并相互比对。第二， <strong>条目成组上链</strong>：交易打包成区块，每个区块引用前一个区块，改动一条旧记录意味着要在大多数副本上重写它之后的所有内容——这就是人们说区块链“抗篡改”而非“防篡改”的原因。第三， <strong>没有单一编辑者</strong>：新区块由参与者按约定规则（挖矿或质押）添加，而不是由某个管理者决定。</p>
+      <p>区块链不是什么：不是让一切变好的数据库，不是对外部世界真实性的保证，也不是信任某个项目的理由。区块链忠实地记录它被告知的一切——包括骗局、错误和一文不值的代币。它真正的成就更窄，但依然了不起：互不信任的陌生人可以在不指定可信中间人的情况下，就一笔交易共享历史达成一致。加密资产的其他一切都建立在这一个把戏之上。</p>
+      <h2>人们怎么获得加密货币</h2>
+      <p>四条路径几乎涵盖了所有人。 <strong>在交易所购买</strong> 是标准路径：法币进、加密资产出，正如我们的 <a href="how-to-buy-crypto-for-beginners.html">新手购买指南</a>。 <strong>赚取它</strong> ——因工作或卖货而获得加密资产支付——正在增长，但仍然小众。 <strong>挖矿与质押</strong> 奖励帮助运行网络的人：用硬件的矿工、用锁定币的质押者。两者都需要资金、技术配置，并能忍受小规模下微薄甚至为负的回报；没有一个是免费的钱。 <strong>空投</strong> 送出少量新代币以奖励早期使用或推广——真实的空投确实存在，但它们也是骗子最爱用的包装，所以请把每个空投链接都先当作有罪，直到被证明无辜。</p>
+      <h2>钱包与交易所：谁持有你的币？</h2>
+      <p>这是加密资产里最重要的一课关于托管，请读两遍。当你的币放在 <strong>在交易所里</strong>,交易所持有私钥——你拥有的只是对交易所的债权，而不是币本身。这很方便（密码可以重置、交易即时成交），但也带有平台风险（如果交易所倒闭或冻结提现，你的访问权也随之而去）。当币放在 <strong>在你自己的钱包里</strong>,密钥在你手里——通常由十二或二十四个词的助记词备份。没人能冻结它们，但如果你丢了助记词，也没人能帮你找回来。</p>
+      <p>标准的新手进阶路线是：金额小时先放在交易所，学会钱包怎么运作，再把有意义的持仓转去自托管。我们的 <a href="wallet-safety.html">钱包安全指南</a> 讲了正确的助记词纪律：写在纸上、离线存放在两个地方、绝不拍照、绝不在任何网站上输入、绝不告诉任何“客服”。钱包软件有两种——手机或浏览器上的热钱包（方便，但联网暴露）和硬件钱包（物理设备、离线密钥，最适合较大持仓）。单看工具，没有一个是“最安全”的；安全是工具加习惯的组合。</p>
+      <h2>公钥、私钥与助记词</h2>
+      <p>每个加密钱包都运行在一对密钥上。 <strong>公钥</strong> （以及由此派生的地址）是你分享出去的：它就像别人给你打币用的账号。 <strong>私钥</strong> 是你绝不分享的：它就像授权花钱的密码，只不过没有重置按钮、没有客服台，也没有任何其他人持有第二份。现代钱包不会直接让你记住私钥。设置时会给你一个 <strong>助记词</strong> ——十二或二十四个按固定顺序排列的普通单词——你的所有密钥都由此派生。把这些词按顺序写在纸上，存放在安全离线的地方。任何拿到这组词的人就拥有了钱包；任何丢了它的人，包括你自己，都会永久失去访问权。</p>
+      <p>这一个设计选择解释了你听过的绝大多数钱包建议。助记词截图会被恶意软件偷走。云备份会被攻破。索要助记词的“客服”就是贼，没什么好说的。硬件钱包把私钥保存在从不向你的电脑暴露的物理设备上，这就是它成为较大持仓标准推荐的原因——但即便是硬件，也救不回一张你拍过照又上传过的助记词。工具不如习惯重要：纸、离线、两个地点、绝不数字化、绝不分享。</p>
+      <h2>它实际能用来做什么？</h2>
+      <p>除了交易，今天有四种真实用途。 <strong>支付</strong>：不经过代理行跨境转移价值——在银行缓慢或昂贵的地方最快最便宜，不过波动性让它不适合日常定价。 <strong>稳定币储蓄与转账</strong>：像 USDT 这样的美元锚定代币，是在交易所之间和跨国转移价值的主力；我们的 <a href="what-is-usdt.html">USDT 指南</a> 诚实地讲了锚定机制及其风险。 <strong>可编程链上的应用</strong>：在以太坊及类似网络上构建的借贷、交易和游戏，统称为 DeFi——功能强大，但智能合约漏洞和骗局很常见，所以请把每个应用都当作实验品。 <strong>收藏品与身份</strong>：NFT 和代币化物品，一个很小且高度投机的角落，大多数项目最终归零。</p>
+      <p>你目前还不能可靠地做到的事：取代你的银行账户、获得保证收益，或者“按计划致富”。任何承诺加密资产稳定高收益的产品，要么在承担没有披露的风险，要么就是在行骗。关于加密资产的诚实说法更窄：无国界、可编程、抗审查的价值转移，并附带真实风险。如果某个用例套不进这句话，请保持怀疑。</p>
+      <h2>骗局：5 个危险信号</h2>
+      <p>骗局是加密资产最大优点的阴暗面：交易不可撤销，所以被盗的币回不来。记住这五个信号，你就能躲开大多数骗局。</p>
+      <ul>
+        <li><strong>保证收益。</strong> 没有任何合法投资能保证盈利。“让你的加密资产翻倍”就是包装得更好听的盗窃。</li>
+        <li><strong>有人先私信你。</strong> 真正的客服永远不会私信你。真正的投资经理也不会。</li>
+        <li><strong>先发币才能收币。</strong> 赠送、“验证”和“解锁费”要求都是同一个把戏：你的币出去了，什么都回不来。</li>
+        <li><strong>紧迫感加保密。</strong> “马上行动，别告诉任何人”是骗子阻止你去问那个一眼就能识破的朋友的手段。</li>
+        <li><strong>索要私钥、助记词或验证码。</strong> 助记词和验证码永远不要分享给任何人，无论出于任何理由，永远如此。</li>
+      </ul>
+      <p>我们的 <a href="avoid-scams.html">防骗指南</a> 讲了新手实际会遇到的八种骗局，以及如果你已经转了钱该怎么办。在你第一次购买之前读它，而不是第一次受惊之后。</p>
+      <h2>为什么加密市场永不打烊</h2>
+      <p>股市会收盘。加密市场不会。比特币、以太坊和它们上面的每个代币都全天候交易，包括周末和节假日，这就是价格走势图在新手看来如此躁动的原因之一。对新手来说，实际的教训不是一直盯盘——而是按自己的节奏做决定，让订单替你等待。限价单只在你设定的价格成交，它的存在正是为了让你不必凌晨 3 点盯着屏幕。市场永不眠还意味着，你睡觉时新闻会爆出、价格会动；能让你安然度过一个糟糕夜晚的仓位规模就是合适的规模，而可能一夜之间被清算的杠杆则是学习的错误工具。</p>
+      <h2>你的第一步，按顺序</h2>
+      <ol>
+        <li>读 <a href="what-is-bitcoin.html">比特币指南</a> ，先理解原创，再看成千上万的仿品。</li>
+        <li>选一家大型交易所、完成验证、开启验证器 2FA——看我们的 <a href="how-to-buy-crypto-for-beginners.html">新手购买指南</a> 了解完整流程。</li>
+        <li>做一笔小额试单：法币 → USDT → 一笔小额现货买入。</li>
+        <li>记录这笔交易，读读防骗指南。然后冷静地决定，加密资产是否值得在你的财务中占更大的位置。</li>
+      </ol>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+<b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+<div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">App 对新手友好、流动性深</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">去 Bybit 注册</a></div></div>
+<p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。</p>
+</div>
+      
+      <h3>加密货币是真钱吗？</h3>
+      <p>从人们接受它作为支付并用它交换商品、服务和法币这个意义上说，它是真实的。它在大多数国家不是法定货币，价格波动远大于银行里的钱——请把它当作波动性资产，而不是稳定的工资。</p>
+      <h3>它和数字银行货币有什么不同？</h3>
+      <p>银行里的钱存在银行运行的私有账本里；加密货币存在去中心化网络运行的公开账本上。这意味着没有银行营业时间、没有哪家公司能单独冻结账户（当你自托管时），也没有拒付——无论好坏都是如此。</p>
+      <h3>拥有加密货币需要钱包吗？</h3>
+      <p>第一天不用：学习期间交易所账户替你保管币。金额重要起来后，再转到你自己的钱包，你持有助记词——以及随之而来的全部责任。</p>
+      <h3>加密货币能被黑吗？</h3>
+      <p>区块链本身的安全记录很强，但周围的东西经常被黑：交易所、应用、浏览器，还有人。大多数损失来自钓鱼、假应用和泄露的私钥——而不是攻破区块链本身。</p>
+      <h3>为什么加密资产价格波动这么大？</h3>
+      <p>更小、更年轻的市场，7×24 小时交易、投机气氛浓、没有熔断机制，比股市动得更快。新闻、杠杆清算和流动性单薄都会放大波动。两个方向的剧烈波动都要有预期。</p>
+      <h3>现在开始学加密货币太晚了吗？</h3>
+      <p>不。技术和市场都还年轻，基础知识——什么是币、托管怎么运作、骗局怎么运作——不会过时。从学习和小额试单开始，不要带着紧迫感。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="what-is-bitcoin.html">什么是比特币？</a></li>
+        <li><a href="how-to-buy-crypto-for-beginners.html">新手如何购买加密货币</a></li>
+        <li><a href="avoid-scams.html">加密货币是骗局吗？8 种骗局要认清</a></li>
+        <li><a href="wallet-safety.html">钱包与助记词安全</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

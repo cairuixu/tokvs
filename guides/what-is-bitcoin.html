@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>什么是比特币？新手大白话指南 — TokVS</title>
+<meta name="description" content="用大白话讲什么是比特币：它 2009 年从哪里来、区块链和挖矿怎么运作、为什么总量永远只有 2100 万枚、怎么买，以及诚实讲出的风险。不做价格预测。">
+<link rel="canonical" href="https://tokvs.com/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/what-is-bitcoin">
+<meta property="og:title" content="什么是比特币？大白话指南 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="不讲行话讲比特币：起源、区块链、挖矿、2100 万上限、怎么买，以及诚实的风险。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/what-is-bitcoin">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org","@graph": [{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "TokVS","item": "https://tokvs.com/"},{"@type": "ListItem","position": 2,"name": "教程","item": "https://tokvs.com/guides/"},{"@type": "ListItem","position": 3,"name": "什么是比特币？","item": "https://tokvs.com/guides/what-is-bitcoin"}]},{"@type": "Article","headline": "什么是比特币？","description": "用大白话讲什么是比特币：它 2009 年从哪里来、区块链和挖矿怎么运作、为什么总量永远只有 2100 万枚、怎么买，以及诚实讲出的风险。不做价格预测。","datePublished": "2026-10-28","author": {"@type": "Organization","name": "TokVS","url": "https://tokvs.com/"},"publisher": {"@type": "Organization","name": "TokVS","url": "https://tokvs.com/"},"mainEntityOfPage": {"@type": "WebPage","@id": "https://tokvs.com/guides/what-is-bitcoin", "dateModified": "2026-10-30"},"inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org","@type": "FAQPage","mainEntity": [{"@type": "Question","name": "谁控制比特币？","acceptedAnswer": {"@type": "Answer","text": "没有任何个人、公司或政府控制比特币。它的规则存在于由数千名独立参与者运行的开源软件里；改规则需要矿工、节点运营者和用户之间广泛达成一致。"}},{"@type": "Question","name": "比特币能被复制吗？","acceptedAnswer": {"@type": "Answer","text": "任何人都可以复制软件，但复制品继承不了比特币的网络、账本历史或持有者。价值来自大家实际在用的真实网络，而不只是代码本身。"}},{"@type": "Question","name": "比特币总量到底有多少？","acceptedAnswer": {"@type": "Answer","text": "2100 万枚，由代码强制执行。新币只通过挖矿奖励进入流通，奖励大约每四年减半，所以发行速度按任何人都能验证的时间表放缓。"}},{"@type": "Question","name": "我必须买一整个比特币吗？","acceptedAnswer": {"@type": "Answer","text": "不用。1 个比特币可以分成 1 亿个聪，所以你可以不多不少正好买 10 美元的量。大多数新手持有的都是一枚币的零头，而不是一整枚。"}},{"@type": "Question","name": "比特币是匿名的吗？","acceptedAnswer": {"@type": "Answer","text": "不是——它是假名的。交易永远公开记录在区块链上，合规交易所会把地址与真实身份关联。请默认你的链上活动是可追踪的。"}},{"@type": "Question","name": "2100 万枚全挖完后会怎样？","acceptedAnswer": {"@type": "Answer","text": "挖矿奖励结束，矿工将只从交易手续费中获得报酬。这个转变还要几十年，而且本来就是设计的一部分；它不会让网络停摆。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 什么是比特币？</div>
+      <h1>什么是比特币？</h1>
+      <p class="sub">没有公司、没有总部、没有价格预测：只有比特币是什么、它怎么运作、以及买之前你应该知道什么。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 10 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册 →</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">App 对新手友好、流动性深</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">去 Bybit 注册</a></div></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+
+      <h2>简短答案</h2>
+      <p>比特币是一种去中心化的数字货币：钱通过互联网流动，不经过银行、支付公司，也没有任何一家公司说了算。它于 2009 年上线，运行在一条叫区块链的公开账本上，总量上限为 2100 万枚——这个上限写进了代码，没有任何人能单方面更改。人们用它储存价值、跨境汇款，并且越来越多地把它作为进入整个加密市场的入口。如果你只记住一句话，记住这句： <strong>比特币是没有发行方的钱，靠网络而不是机构来保证诚实。</strong></p>
+      <h2>比特币从哪里来</h2>
+      <p>2008 年 10 月，正值全球金融危机，一位或一群使用“中本聪”这个化名的人发表了一篇短论文，题为《比特币：一种点对点的电子现金系统》。论文描述了一种方法：人们可以在网上直接相互转移价值，而不必信任银行或支付机构来居中撮合。2009 年 1 月，网络随着第一个区块上线，想法不再只是一篇论文。没人知道中本聪是谁，而这正是设计的一部分，不是待解的谜：比特币没有创始人可抓、没有 CEO 可施压，也没有公司能为自身利益改规则。开发是开放的——任何人都可以读代码、提改进、运行软件。</p>
+      <p>这个起源故事很重要，因为它解释了比特币不寻常的特性。传统货币能运转，是因为你信任发行方：央行管理供应，银行体系负责流转。比特币能运转，是因为你不必信任任何单一一方：规则公开、账本公开，数千名独立参与者执行同一套规则。如果这听起来抽象，下一节会把它讲具体。</p>
+      <h2>比特币实际是怎么运作的</h2>
+      <p>三样东西完成了全部工作。第一， <strong>区块链</strong>：一条公开账本，被复制到全球数千台电脑上，记录了有史以来每一笔比特币交易。交易被打包成“区块”，每个区块链接到前一个区块，形成一条链。一旦一个区块被足够多的后续区块压在下面，改动它就需要在大多数副本上重写它之后的所有内容——实际上不可能，这就是账本被视为最终确定的原因。</p>
+      <p>第二， <strong>挖矿</strong>：增加新区块并发行新币的过程。矿工是相互竞争解算难题的电脑；胜出者获得添加下一个区块的权利，并得到新产生的比特币作为奖励。挖矿同时干两件事：诚实地给交易排序（作弊需要算力超过诚实的大多数，这要花真金白银的电费和硬件），并按固定时间表控制新币的释放。第三， <strong>私钥</strong>：你的比特币由私钥控制——一串很长的秘密数字——你的公开地址就是从它派生出来的。拥有私钥的人就能花这些币，没有私钥的人就不能。这一个事实同时解释了比特币的安全性和它最著名的风险：丢了私钥，币就丢了，没有密码重置。</p>
+      <h2>为什么 2100 万很重要</h2>
+      <p>比特币的代码把总量上限定为 2100 万枚，新币通过不断缩水的挖矿奖励进入流通。大约每四年，一次叫 <strong>减半</strong> 把挖矿奖励砍半，按任何人都能提前验证的时间表放缓新供应。这与法币的运作方式正好相反——央行可以随意扩大供应。稀缺本身并不能让东西有价值——很多稀缺的东西一文不值——但可预测、不可更改的供应，正是人们把比特币称为“数字黄金”的原因：一种未来发行量没人能悄悄注水的资产。</p>
+      <p>有两个实际推论。第一，比特币可分割：你永远不需要买一整枚。1 个比特币可以分成 1 亿个叫“聪”的更小单位，所以你可以像持有 10 美元的金粉一样，不多不少持有 10 美元的比特币。第二，丢了的币永远没了——私钥丢失的币仍然计入 2100 万总量，这意味着实际可花的供应比公布的总量数字更小。这两个事实都不需要你相信任何价格预测；它们是机制，而决策应该建立在机制上。</p>
+      <h2>比特币 vs 你银行里的钱</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>项目</th><th>Bitcoin</th><th>银行里的钱</th></tr></thead>
+        <tbody>
+          <tr><td>发行方</td><td>没有发行方——网络规则说了算</td><td>央行 + 银行</td></tr>
+          <tr><td>总量</td><td>上限 2100 万枚</td><td>可按政策扩发</td></tr>
+          <tr><td>交易时间</td><td>全天候，包括节假日</td><td>营业时间 + 结算延迟</td></tr>
+          <tr><td>跨境转账</td><td>在任何地方流程都一样</td><td>代理行中转、耗时数天、有手续费</td></tr>
+          <tr><td>可撤销性</td><td>交易不可撤销</td><td>可以 chargeback（拒付）</td></tr>
+          <tr><td>账户冻结风险</td><td>自己保管私钥就不会被冻</td><td>银行或法院可以冻结</td></tr>
+          <tr><td>价格稳定性</td><td>波动剧烈</td><td>以本币计价时稳定</td></tr>
+        </tbody>
+      </table></div>
+      <p>这张表也是诚实的权衡：比特币在抗审查、无国界和可预测的供应上胜出，在价格稳定性和消费者保护上惨败。被骗时银行转账可以撤销，比特币转账不行。银行账户里的货币是你房东接受的货币；比特币的价格一周内可能剧烈波动。这本账的两边，单独看都不是买或不买比特币的理由——它是你决定“如果配置，该配多少”的背景。</p>
+      <h2>人们怎么买比特币</h2>
+      <p>标准的新手路径是走交易所：注册、验证身份、用法币买 USDT，再用 USDT 在现货交易对里买 BTC。我们的 <a href="how-to-buy-bitcoin.html">比特币全流程</a> 一步步讲了这个流程，我们的 <a href="how-to-buy-crypto-for-beginners.html">新手购买指南</a> 讲了加密资产通用的同样内容。买完之后，你要选存放方式：金额小、还在学习时就放在交易所；金额重要起来后，就转到你自己的钱包——只有你持有私钥。我们的 <a href="wallet-safety.html">钱包安全指南</a> 讲了助记词，也就是备份自托管钱包的那十二或二十四个词，以及它们要求的纪律。</p>
+      <p>第一天不该做的事：加杠杆买、因为网上有人承诺收益就追某个币，或者出于任何理由——“赠送”“客服”“投资翻倍”，一律不论——把比特币发给陌生人给的地址。比特币的不可撤销对诚实转账是优点，对骗子是武器；防御方法枯燥但绝对：自己核对地址、绝不分享私钥或验证码、默认每个主动找上门的机会都是陷阱，直到被证明不是。</p>
+      <h2>一笔比特币支付是怎么结算的</h2>
+      <p>当你发送比特币时，你的钱包会把一笔签名过的交易广播到网络，它会在一个叫内存池（mempool）的暂存区等待。矿工从内存池里挑交易——空间紧张时通常优先挑手续费高的——胜出的矿工大约十分钟后把你的交易放进下一个区块。第一个区块就是你的第一次确认。大多数收款方在几次确认后才认为一笔支付结算完成，因为每多埋一个区块，逆转交易的难度就指数级上升。日常小额支付，一次确认通常就够了；大额支付，等六次是常见做法。这一切都不需要信任收款方或中间人——网络的共享规则负责验证，你的钱包会显示确认数不断增长。</p>
+      <p>从这堂机制课可以得出两个实际习惯。第一，手续费是一个市场，不是一张菜单：内存池拥挤时手续费上涨，付钱包建议的手续费对新手来说通常是对的。第二，永远不要把未确认的交易当作已经到手的钱。如果卖家在确认前就发货，而交易后来失败或被替换，你无处申诉。耐心是协议的一部分：一个区块十分钟，几个区块才够有把握，两者都不能跳过。</p>
+      <h2>风险，直说</h2>
+      <p><strong>波动性。</strong> 比特币的价格曾多次从高点腰斩甚至更多，并花数月乃至数年才恢复。无法眼睁睁看着持仓大跌而不恐慌抛售的人，应该相应控制仓位，或者干脆不参与。</p>
+      <p><strong>不可撤销性。</strong> 发错地址或发到骗子的地址，币就没了。没有客服台、没有拒付、也没有为用户失误准备的保险基金。</p>
+      <p><strong>自托管责任。</strong> 自己保管私钥消除了交易所风险，换来的是个人责任：离线备份助记词，绝不拍照，绝不在任何网站上输入。</p>
+      <p><strong>监管因地而异。</strong> 规则因国家而异且会随时间变化——税务处理、交易所可用性，甚至合法性。购买前先查本地规则，并为报税保存每一笔交易的记录。</p>
+      <p><strong>骗局都围着比特币的名字转。</strong> 假交易所、假客服账号、假赠送，以及向受害者收两次钱的“资产追回服务”，都是拿比特币的名气当诱饵。我们的 <a href="avoid-scams.html">防骗指南</a> 列出了新手实际会遇到的八种骗局。</p>
+      <h2>死不了的谣言</h2>
+      <ul>
+        <li><strong>“比特币是匿名的。”</strong> 它是假名的：地址不是姓名，但每笔交易永远公开，交易所会把地址与身份关联。把它当作可追踪的，而不是不可见的。</li>
+        <li><strong>“比特币只用于犯罪。”</strong> 非法用途确实存在，就像现金一样，但绝大多数交易量是交易、持有和在合规场所的合法转账。</li>
+        <li><strong>“比特币是一家可能破产的公司。”</strong> 没有公司。网络是由独立参与者运行的软件；只要有人运行它，它就继续存在。</li>
+        <li><strong>“现在买已经太晚了。”</strong> 那是伪装成事实的价格观点。比特币是否适合你的财务状况，取决于你的目标和风险承受能力，而不是现在是哪一年。</li>
+        <li><strong>“比特币没有任何支撑。”</strong> 所有现代法币也一样。比特币的支撑来自网络安全、固定的供应时间表，以及人们愿意接受它的共识——同样是社会共识，只是没有发行方。</li>
+      </ul>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+<b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+<div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">App 对新手友好、流动性深</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">去 Bybit 注册</a></div></div>
+<p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。</p>
+</div>
+      
+      <h3>谁控制比特币？</h3>
+      <p>没有任何个人、公司或政府控制比特币。它的规则存在于由数千名独立参与者运行的开源软件里；改规则需要矿工、节点运营者和用户之间广泛达成一致。</p>
+      <h3>比特币能被复制吗？</h3>
+      <p>任何人都可以复制软件，但复制品继承不了比特币的网络、账本历史或持有者。价值来自大家实际在用的真实网络，而不只是代码本身。</p>
+      <h3>比特币总量到底有多少？</h3>
+      <p>2100 万枚，由代码强制执行。新币只通过挖矿奖励进入流通，奖励大约每四年减半，所以发行速度按任何人都能验证的时间表放缓。</p>
+      <h3>我必须买一整个比特币吗？</h3>
+      <p>不用。1 个比特币可以分成 1 亿个聪，所以你可以不多不少正好买 10 美元的量。大多数新手持有的都是一枚币的零头，而不是一整枚。</p>
+      <h3>比特币是匿名的吗？</h3>
+      <p>不是——它是假名的。交易永远公开记录在区块链上，合规交易所会把地址与真实身份关联。请默认你的链上活动是可追踪的。</p>
+      <h3>2100 万枚全挖完后会怎样？</h3>
+      <p>挖矿奖励结束，矿工将只从交易手续费中获得报酬。这个转变还要几十年，而且本来就是设计的一部分；它不会让网络停摆。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">如何购买比特币：全流程详解</a></li>
+        <li><a href="what-is-cryptocurrency.html">什么是加密货币？</a></li>
+        <li><a href="wallet-safety.html">钱包与助记词安全</a></li>
+        <li><a href="bitcoin-vs-ethereum.html">比特币对比以太坊</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

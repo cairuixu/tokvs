@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>什么是 USDT？稳定币详解 — TokVS</title>
+<meta name="description" content="什么是 USDT（Tether）？美元锚定怎么运作、储备与风险——买第一笔 USDT 之前的大白话指南。">
+<link rel="canonical" href="https://tokvs.com/guides/what-is-usdt">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/what-is-usdt">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/what-is-usdt">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/what-is-usdt">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/what-is-usdt">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/what-is-usdt">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/what-is-usdt">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/what-is-usdt">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/what-is-usdt">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/what-is-usdt">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/what-is-usdt">
+<meta property="og:title" content="什么是 USDT？大白话指南 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="美元锚定稳定币详解：它怎么维持 1 美元、什么在支撑它，以及诚实的风险。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/what-is-usdt">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "什么是 USDT？", "item": "https://tokvs.com/guides/what-is-usdt"}]}, {"@type": "Article", "headline": "什么是 USDT？稳定币详解", "description": "什么是 USDT（Tether）？美元锚定怎么运作、储备与风险——买第一笔 USDT 之前的大白话指南。", "datePublished": "2026-10-16", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/what-is-usdt", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "USDT 和美元是一回事吗？", "acceptedAnswer": {"@type": "Answer", "text": "不是。USDT 是由一家私营公司发行的加密代币，目标是与美元 1:1 挂钩。它不是银行存款，没有政府保险，其价值取决于发行方的储备和市场信心。"}}, {"@type": "Question", "name": "持有 USDT 安全吗？", "acceptedAnswer": {"@type": "Answer", "text": "它是最久经考验的稳定币，十多年来经历市场崩盘仍保持锚定——但“安全”是相对的。它带有发行方风险、监管风险，以及脱锚事件虽小但真实存在的可能性。不要把它当作储蓄账户。"}}, {"@type": "Question", "name": "什么支撑着 USDT 的价值？", "acceptedAnswer": {"@type": "Answer", "text": "Tether 称 USDT 由包括现金、现金等价物和其他资产在内的储备支撑，并公布由会计师事务所 BDO 出具的季度鉴证。批评者指出鉴证不是全面审计——在决定持有多少之前，请两边都读一读。"}}, {"@type": "Question", "name": "USDT vs USDC——哪个更好？", "acceptedAnswer": {"@type": "Answer", "text": "USDT 更老、更大，在更多交易所和 P2P 市场上架。USDC 的发行方 Circle 位于美国，以监管透明著称。交易和 P2P 方面，USDT 的普及度通常胜出；持有方面，则取决于你更信任哪家发行方，这是个判断问题。"}}, {"@type": "Question", "name": "USDT 会失去美元锚定吗？", "acceptedAnswer": {"@type": "Answer", "text": "简单说，是的——它在过去的市场恐慌中曾波动过几美分，每次都恢复了。持续、大幅的脱锚从未发生过，但机制依赖于市场信心，而信心永远得不到保证。"}}, {"@type": "Question", "name": "USDT 该用哪个网络？", "acceptedAnswer": {"@type": "Answer", "text": "便宜转账选波场（TRC20）是热门选择——手续费通常在 1 美元左右。以太坊（ERC20）在网络繁忙时可能贵好几倍。转账时两端网络务必一致。"}}, {"@type": "Question", "name": "只是持有 USDT 也需要身份验证吗？", "acceptedAnswer": {"@type": "Answer", "text": "把 USDT 放在自己的钱包里完全不需要身份证件。在中心化交易所购买则需要——交易所要求你在存入法币或交易前完成身份验证。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 什么是 USDT？</div>
+      <h1>什么是 USDT？</h1>
+      <p class="sub">加密交易半壁江山背后的美元锚定代币——它怎么维持 1 美元、什么在支撑它，以及没人应该跳过的风险。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 7 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>简短答案</h2>
+      <p><strong>USDT（Tether）是一种设计上保持价值 1 美元的加密货币。</strong> 比特币一天能波动 5%，而 USDT 始终在 1 美元附近徘徊——这让它成了停车场、衡量标尺和加密市场交易最多的资产。它由一家私营公司（Tether）发行，而不是政府，这个区别很重要。本指南讲锚定怎么运作、什么在支撑它，以及诚实的风险。</p>
+      <h2>“稳定币”是什么意思</h2>
+      <p>稳定币是一种加密代币，其价值 <strong>锚定</strong> 于某种稳定的东西——几乎总是美元。重点不是增值，而是 <strong>稳定性加上加密轨道</strong>：你得到的是像美元一样的价值，以区块链速度、7×24 小时、跨境流动，不经过银行。USDT 是最初的稳定币，而且至今仍以巨大优势保持最大——当交易员说“我持有稳定币”时，他们通常指的就是 USDT。</p>
+      <h2>$1 锚定实际是怎么运作的</h2>
+      <p>锚定不是魔法；它是 <strong>铸造、销毁与套利</strong>。当需求上升时，Tether 收到美元后发行（铸造）新的 USDT，扩大供应以满足需求。当需求下降时，USDT 被赎回（销毁），供应收缩。与此同时，交易员对任何偏离进行套利：如果 USDT 交易价格为 0.99 美元，买家会抢购，预期它回到 1.00 美元；如果价格为 1.01 美元，卖家就会出现。这种持续的双向压力正是让锚定保持紧密的原因—— <strong>它是市场机制，不是保证。</strong> 这个系统能运转的前提，是所有人都相信赎回会被兑现。</p>
+      <h2>谁发行 USDT</h2>
+      <p>USDT 由以下机构发行 <strong>Tether</strong>，一家私营公司。这是本页最重要的一条事实：与银行存款不同，没有政府保险、没有央行兜底，也没有监管机构保证你的 1 美元。你的信任寄托在一家公司的储备和运营上。Tether 自 2014 年以来一直在运营，并挺过了此后的每一次加密恐慌——这是有意义的证据，但只是证据，不是保险。</p>
+      <h2>储备与鉴证：什么在支撑它</h2>
+      <p>Tether 称每一枚 USDT 都有储备支撑——现金、现金等价物和其他资产——并公布 <strong>季度鉴证报告</strong> 由会计师事务所 BDO 出具。这些都是公开的，值得粗读。诚实的提醒：鉴证只是某个时点的快照，不是全面审计，而且储备的具体构成多年来一直有争议。我们的看法：自己去读最新一期的鉴证（它是公开的），理解“有支撑”是有附带条件的，并据此控制持仓规模。不要把一辈子的积蓄放在任何一种稳定币里——包括这一种。</p>
+      <h2>USDT vs USDC：诚实对比</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>USDT（Tether）</th><th>USDC (Circle)</th></tr></thead>
+        <tbody>
+          <tr><td>上线时间</td><td>2014</td><td>2018</td></tr>
+          <tr><td>发行方</td><td>Tether（私营）</td><td>Circle（美国）</td></tr>
+          <tr><td>规模</td><td>最大的稳定币</td><td>第二大</td></tr>
+          <tr><td>交易所/P2P 覆盖</td><td>最广</td><td>广</td></tr>
+          <tr><td>监管姿态</td><td>有争议的历史</td><td>美国合规声誉</td></tr>
+        </tbody>
+      </table></div>
+      <p>实用建议： <strong>交易和 P2P 方面，USDT 的普及度通常胜出</strong> ——更多交易对、更多商家、更深的流动性。如果只是持有美元价值，那就是你更信任哪家发行方的问题。许多人两种都持有，这是对发行方风险的合理分散。</p>
+      <h2>人们实际拿 USDT 做什么</h2>
+      <ul>
+        <li><strong>交易对。</strong> 大多数山寨币是兑 USDT 交易，而不是兑美元。它是加密市场的计价货币。</li>
+        <li><strong>在交易所之间转移资金。</strong> 比银行电汇更快更便宜，尤其是在跨境时。</li>
+        <li><strong>波动期的停靠。</strong> 行情转向时把 BTC 换成 USDT，不必离开加密轨道。</li>
+        <li><strong>P2P 与汇款。</strong> 在许多国家，USDT 就是比美元更容易获得和转移。</li>
+      </ul>
+      <p class="in-cta">准备买一点了？我们的分步全流程涵盖了每种方法： <a class="btn-ref" href="buy-usdt.html">如何购买 USDT →</a></p>
+      <h2>不同网络上的 USDT（提币前必读）</h2>
+      <p>USDT 存在于多条区块链上，而且 <strong>你选的网络决定了手续费</strong>。你最常遇到的两种：</p>
+      <ul>
+        <li><strong>波场（TRC20）：</strong> 转账的热门选择——手续费通常在 1 美元左右，确认速度快。</li>
+        <li><strong>以太坊（ERC20）：</strong> USDT 的最初家园，但网络拥堵时手续费会飙升，可能贵好几倍。</li>
+      </ul>
+      <p>铁律： <strong>发送端和接收端必须用同一网络。</strong> 把 TRC20 的 USDT 发到 ERC20 地址可能永久丢币。交易所会在提币界面清楚地显示网络——请核对两遍。</p>
+      <h2>风险，诚实讲</h2>
+      <ul>
+        <li><strong>脱锚风险。</strong> USDT 在过去的恐慌中曾波动过几美分，每次都恢复了。从未发生过持续的大幅脱锚——但锚定靠信心运转，而信心永远得不到保证。</li>
+        <li><strong>发行方风险。</strong> Tether 是一家私营公司。监管行动、银行问题或储备质疑会首先冲击 USDT。</li>
+        <li><strong>不是储蓄账户。</strong> USDT 本身不付利息、没有保险，“稳定”描述的是价格目标，不是安全性。</li>
+      </ul>
+      <p>这些都不意味着“不要用 USDT”——意思是 <strong>把它用在它擅长的地方</strong> （交易、转账、短期停靠），不要把它和银行账户混为一谈。</p>
+      <h2>怎么获得 USDT</h2>
+      <p>三条常见路径： <strong>刷卡或银行转账购买</strong> 在交易所（对新手最快——许多地区支持 Apple Pay 和借记卡）， <strong>P2P 交易</strong> （通常最便宜，尤其是在银行渠道有限的地方），或者 <strong>接收一笔转账</strong> 从已经持有它的人那里。我们的 <a href="buy-usdt.html">如何购买 USDT 指南</a> 一步步讲了每种方法，包括各自的成本和耗时。</p>
+      <h2>USDT 的数字</h2>
+      <p>几个公开事实可以帮你理解 USDT 的规模。它是 <strong>按市值最大的稳定币</strong>，通常比第二名大好几倍，并且经常是 <strong>按日交易量交易最多的加密资产</strong> ——很多日子里 USDT 的易手量甚至超过比特币本身。它自 2014 年以来一直在运行，是持续运行时间最长的加密资产之一，并且在过去十年每一次重大市场崩盘中都维持了美元锚定，包括 2022 年摧毁了好几个竞争对手的那轮暴跌。这份记录正是交易员默认使用它的原因——也正是上面风险部分仍然适用的原因：长寿是证据，不是保证。当如此核心的资产哪怕只波动几美分，整个市场几分钟内就会注意到。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>理解了？那就去买一点。</b> 开一个交易所账户、验证一次，然后跟着我们的买 USDT 全流程走——刷卡、P2P 或银行转账，任你选。
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        </div>
+        <p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。</p>
+      </div>
+
+      <h3>USDT 和美元是一回事吗？</h3>
+      <p>不是。USDT 是由一家私营公司发行的加密代币，目标是与美元 1:1 挂钩。它不是银行存款，没有政府保险，其价值取决于发行方的储备和市场信心。</p>
+      <h3>持有 USDT 安全吗？</h3>
+      <p>它是最久经考验的稳定币，十多年来经历市场崩盘仍保持锚定——但“安全”是相对的。它带有发行方风险、监管风险，以及脱锚事件虽小但真实存在的可能性。不要把它当作储蓄账户。</p>
+      <h3>什么支撑着 USDT 的价值？</h3>
+      <p>Tether 称 USDT 由包括现金、现金等价物和其他资产在内的储备支撑，并公布由会计师事务所 BDO 出具的季度鉴证。批评者指出鉴证不是全面审计——在决定持有多少之前，请两边都读一读。</p>
+      <h3>USDT vs USDC——哪个更好？</h3>
+      <p>USDT 更老、更大，在更多交易所和 P2P 市场上架。USDC 的发行方 Circle 位于美国，以监管透明著称。交易和 P2P 方面，USDT 的普及度通常胜出；持有方面，则取决于你更信任哪家发行方，这是个判断问题。</p>
+      <h3>USDT 会失去美元锚定吗？</h3>
+      <p>简单说，是的——它在过去的市场恐慌中曾波动过几美分，每次都恢复了。持续、大幅的脱锚从未发生过，但机制依赖于市场信心，而信心永远得不到保证。</p>
+      <h3>USDT 该用哪个网络？</h3>
+      <p>便宜转账选波场（TRC20）是热门选择——手续费通常在 1 美元左右。以太坊（ERC20）在网络繁忙时可能贵好几倍。转账时两端网络务必一致。</p>
+      <h3>只是持有 USDT 也需要身份验证吗？</h3>
+      <p>把 USDT 放在自己的钱包里完全不需要身份证件。在中心化交易所购买则需要——交易所要求你在存入法币或交易前完成身份验证。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="buy-usdt.html">如何购买 USDT：每种方法</a></li>
+        <li><a href="stablecoins.html">USDT vs USDC 深度解析</a></li>
+        <li><a href="wallet-safety.html">钱包与助记词安全</a></li>
+        <li><a href="how-to-buy-usdt-on-binance-p2p.html">在 Binance P2P 上买 USDT</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

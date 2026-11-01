@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>我该用哪家加密货币交易所？3 问测试 — TokVS</title>
+<meta name="description" content="回答 3 个关于付款方式、经验和最在意点的问题——直接得到 Binance、OKX 与 Bybit 之间的一个推荐，并附真实费率数字。">
+<link rel="canonical" href="https://tokvs.com/tools/quiz">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/tools/quiz">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/tools/quiz">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/tools/quiz">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/tools/quiz">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/tools/quiz">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/tools/quiz">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/tools/quiz">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/tools/quiz">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/tools/quiz">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/tools/quiz">
+<meta property="og:title" content="我该用哪家加密货币交易所？3 问测试 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="3 个问题，一个推荐：Binance、OKX 或 Bybit——按你的付款方式和在意点匹配。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/tools/quiz">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/"},{"@type":"ListItem","position":2,"name":"工具","item":"https://tokvs.com/tools"},{"@type":"ListItem","position":3,"name":"我该用哪家加密货币交易所？","item":"https://tokvs.com/tools/quiz"}]},{"@type":"Article","headline":"我该用哪家加密货币交易所？3 问测试","description":"回答 3 个关于付款方式、经验和最在意点的问题——直接得到 Binance、OKX 与 Bybit 之间的一个推荐，并附真实费率数字。","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/tools/quiz"},"inLanguage":"zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "这个测试是在建议我把钱放哪吗？", "acceptedAnswer": {"@type": "Answer", "text": "不是。它只是根据公开费率表和产品事实，把你的答案匹配到三家主流交易所。这不是投资建议，而且可用性因国家而异——注册前务必确认交易所是否服务你所在的地区。"}}, {"@type": "Question", "name": "为什么只有 Binance、OKX 和 Bybit？", "acceptedAnswer": {"@type": "Answer", "text": "它们是本站深度对比的三家大型全球交易所，费率表公开可核查。如果你身在美国，注意 Binance.com 不服务美国客户——美国新手通常从 Coinbase 或 Kraken 起步。"}}, {"@type": "Question", "name": "结果里的费率会变吗？", "acceptedAnswer": {"@type": "Answer", "text": "会变——交易所会调整费率表，VIP 等级也会改变实际费率。请把这里的数字看作 2026 年 10 月核查的快照，交易前以交易所官方费率页的最新费率为准。"}}, {"@type": "Question", "name": "如果匹配结果不服务我的国家怎么办？", "acceptedAnswer": {"@type": "Answer", "text": "试试结果下方显示的第二名，或者在交易所页对比三家。绝不要用 VPN 绕过地区禁令——被查到的账号会被冻结，资金也取不出来。"}}]}
+</script>
+<style>
+.quiz{max-width:640px;margin:0 auto}
+.qstep{display:none}
+.qstep.on{display:block}
+.qopt{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid #E5E7E0;border-radius:14px;padding:14px 18px;margin:10px 0;font-size:16px;font-weight:600;color:#2A2E27;cursor:pointer}
+.qopt:hover{border-color:#7CB342}
+.qopt small{display:block;font-weight:400;color:#666;font-size:13.5px;margin-top:3px}
+.qbar{height:8px;background:#EDEFE9;border-radius:99px;overflow:hidden;margin:6px 0 18px}
+.qbar i{display:block;height:100%;background:#7CB342;border-radius:99px;transition:width .3s}
+.qback{background:none;border:none;color:#666;font-size:14px;cursor:pointer;padding:6px 0}
+.result-card{border:2px solid #7CB342;border-radius:18px;padding:22px}
+.result-card .pick{font-size:13px;font-weight:800;letter-spacing:.08em;color:#558B2F;text-transform:uppercase}
+.result-card h2{margin:6px 0 4px}
+.fee-line{font-size:14px;color:#555;background:#F4F6F1;border-radius:10px;padding:10px 14px;margin:12px 0}
+.runner{border:1.5px solid #E5E7E0;border-radius:14px;padding:14px 18px;margin-top:10px}
+.runner b{font-size:15.5px}
+.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}
+</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="../guides/index.html">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html" class="on">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="../tools.html">工具</a> / 交易所测试</div>
+      <h1>我该用哪家加密货币交易所？</h1>
+      <p class="sub">三个问题，一个直接答案。没有“看情况”的长篇大论——选你的实际情况，得到 Binance、OKX 与 Bybit 之间的一个推荐，并附背后的真实费率数字。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="card quiz">
+      <noscript><p>这个测试需要 JavaScript。如果没有，请直接看 <a href="../exchanges.html">四家交易所对比</a> 。</p></noscript>
+      <div class="qbar"><i id="qbarFill" style="width:33%"></i></div>
+
+      <div class="qstep on" id="step1">
+        <h2>1. 你想怎么付款？</h2>
+        <p>付款方式决定了哪家交易所对你来说根本能用。</p>
+        <button class="qopt" data-q="1" data-a="bank">银行转账<small>成本最低，1–2 天到账</small></button>
+        <button class="qopt" data-q="1" data-a="card">借记卡或信用卡<small>即时到账，但费率更高</small></button>
+        <button class="qopt" data-q="1" data-a="p2p">P2P / 本地支付方式<small>现金、电子钱包、本地银行 App</small></button>
+        <button class="qopt" data-q="1" data-a="unsure">还没想好<small>只想要最简单的起步</small></button>
+      </div>
+
+      <div class="qstep" id="step2">
+        <h2>2. 你有多少经验？</h2>
+        <p>实话实说——纯新手适合的第一家交易所，和交易者适合的并不一样。</p>
+        <button class="qopt" data-q="2" data-a="never">从没买过加密货币<small>第一次买，想要手把手带</small></button>
+        <button class="qopt" data-q="2" data-a="once">买过一两次<small>懂基础知识</small></button>
+        <button class="qopt" data-q="2" data-a="regular">我经常交易<small>在意费率和深度</small></button>
+        <button class="qback" onclick="quizBack(2)">← 返回</button>
+      </div>
+
+      <div class="qstep" id="step3">
+        <h2>3. 什么对你最重要？</h2>
+        <p>选那个选错了你会后悔的。</p>
+        <button class="qopt" data-q="3" data-a="fees">最低费率<small>每 0.01% 日积月累都不少</small></button>
+        <button class="qopt" data-q="3" data-a="easy">最简单的起步<small>App 简单、教程多</small></button>
+        <button class="qopt" data-q="3" data-a="coins">最全的币种选择<small>能上更多币种</small></button>
+        <button class="qopt" data-q="3" data-a="p2p">最优 P2P 价格<small>和本地人买卖</small></button>
+        <button class="qback" onclick="quizBack(3)">← 返回</button>
+      </div>
+
+      <div class="qstep" id="result">
+        <div class="result-card">
+          <div class="pick">你的匹配结果</div>
+          <h2 id="resName"></h2>
+          <p id="resWhy"></p>
+          <div class="fee-line" id="resFees"></div>
+          <div class="ref-btns">
+            <a class="btn-p" id="resCta" href="#" target="_blank" rel="nofollow noopener"></a>
+          </div>
+          <p style="font-size:13.5px;color:#666;margin-top:10px;">可用性因国家而异。如果匹配结果不服务你所在的地区，试试下方的第二名——绝不要用 VPN 绕过地区禁令；被查到的账号会被冻结，资金也取不出来。</p>
+        </div>
+        <h3 style="margin-top:22px;">也可以考虑</h3>
+        <div id="resRunners"></div>
+        <div class="callout good" style="margin-top:18px;"><b>这是怎么算的：</b> 每个答案都会给最契合的交易所加分；得分最高者胜出，平局归规模最大的平台。下面的费率是各家官方费率表中的现货挂单/吃单费率，核查于 2026 年 10 月——交易前请以官方费率页的最新费率为准。</div>
+        <p style="margin-top:16px;"><button class="qopt" style="text-align:center;" onclick="quizReset()">↺ 重新测试</button></p>
+        <p style="font-size:13.5px;color:#666;">不想要测试、想要完整数字？看 <a href="../exchanges.html">四家手续费与返佣对比</a> 或 <a href="../guides/choose-exchange.html">6 条标准选交易所指南</a>。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card article prose">
+      <h2>常见问题</h2>
+      <h3>这个测试是在建议我把钱放哪吗？</h3>
+      <p>不是。它只是根据公开费率表和产品事实，把你的答案匹配到三家主流交易所。这不是投资建议，而且可用性因国家而异——注册前务必确认交易所是否服务你所在的地区。</p>
+      <h3>为什么只有 Binance、OKX 和 Bybit？</h3>
+      <p>它们是本站深度对比的三家大型全球交易所，费率表公开可核查。如果你身在美国，注意 Binance.com 不服务美国客户——美国新手通常从 Coinbase 或 Kraken 起步。</p>
+      <h3>结果里的费率会变吗？</h3>
+      <p>会变——交易所会调整费率表，VIP 等级也会改变实际费率。请把这里的数字看作 2026 年 10 月核查的快照，交易前以交易所官方费率页的最新费率为准。</p>
+      <h3>如果匹配结果不服务我的国家怎么办？</h3>
+      <p>试试结果下方显示的第二名，或者在交易所页对比三家。绝不要用 VPN 绕过地区禁令——被查到的账号会被冻结，资金也取不出来。</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../start/step1.html" style="margin-top:10px;">关于</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手</b><a href="../start/step1.html">新手路径</a><a href="../start/step2.html">选交易所</a><a href="../start/step5.html">第一次买币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选</a><a href="../tools.html#calendar">日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var EX = {
+    binance: { name: 'Binance', tagline: "全球最大的交易所——流动性最深、上币最多", fees: '现货手续费：挂单 0.10% / 吃单 0.10%（VIP 折扣前）。', cta: '去 Binance 注册', url: 'https://account.binance.com/register?ref=76257270&?registerChannel=user_center' },
+    okx: { name: 'OKX', tagline: '产品线齐全，三家里面现货挂单标价最低', fees: '现货手续费：挂单 0.08% / 吃单 0.10%（VIP 折扣前）。', cta: '注册 OKX 账号', url: 'https://www.okx.com/join/AZTPA7SQ' },
+    bybit: { name: 'Bybit', tagline: 'P2P 市场强劲，App 界面干净，适合常交易的用户', fees: '现货手续费：挂单 0.10% / 吃单 0.10%（VIP 折扣前）。', cta: '去 Bybit 注册', url: 'https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link' }
+  };
+  // points: [binance, okx, bybit]
+  var PTS = {
+    1: { bank: [1, 1, 0], card: [1, 1, 0], p2p: [0, 1, 2], unsure: [1, 0, 0] },
+    2: { never: [2, 0, 0], once: [1, 1, 0], regular: [0, 1, 1] },
+    3: { fees: [0, 2, 1], easy: [2, 0, 0], coins: [2, 1, 0], p2p: [0, 1, 2] }
+  };
+  var ORDER = ['binance', 'okx', 'bybit'];
+  var answers = {};
+  function show(id) {
+    document.querySelectorAll('.qstep').forEach(function (s) { s.classList.remove('on'); });
+    document.getElementById(id).classList.add('on');
+  }
+  function bar(pct) { document.getElementById('qbarFill').style.width = pct + '%'; }
+  document.querySelectorAll('.qopt[data-q]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var q = btn.getAttribute('data-q'), a = btn.getAttribute('data-a');
+      answers[q] = a;
+      if (q === '1') { show('step2'); bar(66); }
+      else if (q === '2') { show('step3'); bar(100); }
+      else { finish(); }
+    });
+  });
+  window.quizBack = function (step) {
+    if (step === 2) { show('step1'); bar(33); }
+    if (step === 3) { show('step2'); bar(66); }
+  };
+  window.quizReset = function () {
+    answers = {};
+    show('step1'); bar(33);
+  };
+  function finish() {
+    var score = { binance: 0, okx: 0, bybit: 0 };
+    ['1', '2', '3'].forEach(function (q) {
+      var p = PTS[q][answers[q]];
+      if (p) { score.binance += p[0]; score.okx += p[1]; score.bybit += p[2]; }
+    });
+    var win = ORDER[0];
+    ORDER.forEach(function (k) { if (score[k] > score[win]) win = k; });
+    var w = EX[win];
+    var whyParts = [];
+    if (answers['1'] === 'p2p') whyParts.push('你想用 P2P 或本地支付方式');
+    if (answers['1'] === 'bank') whyParts.push('你更喜欢银行转账');
+    if (answers['1'] === 'card') whyParts.push('你更喜欢刷卡支付');
+    if (answers['2'] === '永远不会') whyParts.push("你是从零开始");
+    if (answers['2'] === 'regular') whyParts.push('你经常交易');
+    if (answers['3'] === 'fees') whyParts.push('费率对你最重要');
+    if (answers['3'] === 'easy') whyParts.push('你想要最简单的起步');
+    if (answers['3'] === 'coins') whyParts.push('你想要最全的币种选择');
+    if (answers['3'] === 'p2p') whyParts.push('P2P 价格对你最重要');
+    document.getElementById('resName').textContent = w.name;
+    document.getElementById('resWhy').textContent = w.tagline + (whyParts.length ? '——契合你的原因是' + whyParts.join('、') + '.' : '.');
+    document.getElementById('resFees').textContent = w.fees + '费率会随时间变化——交易前请以官方费率页为准。';
+    var cta = document.getElementById('resCta');
+    cta.textContent = w.cta + ' →';
+    cta.href = w.url;
+    var runners = ORDER.filter(function (k) { return k !== win; }).map(function (k) {
+      var e = EX[k];
+      return '<div class="runner"><b>' + e.name + '</b> — ' + e.tagline + '<br><a href="' + e.url + '" target="_blank" rel="nofollow noopener">' + e.name + ' 注册 →</a></div>';
+    }).join('');
+    document.getElementById('resRunners').innerHTML = runners;
+    show('result');
+  }
+})();
+</script>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

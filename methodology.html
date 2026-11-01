@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>我们如何给交易所评分：TokVS 评测方法 — TokVS</title>
+<meta name="description" content="TokVS 如何给加密货币交易所评分：评分维度与权重、来源、核查日期，以及我们绝不会为钱做的事。">
+<link rel="canonical" href="https://tokvs.com/methodology">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/methodology">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/methodology">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/methodology">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/methodology">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/methodology">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/methodology">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/methodology">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/methodology">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/methodology">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/methodology">
+<meta property="og:title" content="在印度买 USDT：UPI 与 P2P 指南 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="印度 UPI 与银行转账 P2P 全流程，附税务说明与安全清单。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/methodology">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "在印度买 USDT", "item": "https://tokvs.com/methodology"}]}, {"@type": "Article", "headline": "我们的评测方法：UPI、银行与 P2P", "description": "用 UPI 或银行转账通过 P2P 在印度买 USDT：一步步操作、商家安全、手续费与税务提醒。先从小额试单开始。", "datePublished": "2026-10-16", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/methodology"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "交易所有没有花钱让你们把它排高？", "acceptedAnswer": {"@type": "Answer", "text": "不会。没有任何交易所能花钱买到更高的排名、更好的评分，或删掉负面结论。佣金不影响排名或评分。"}}, {"@type": "Question", "name": "你们多久复核一次费率和可用性？", "acceptedAnswer": {"@type": "Answer", "text": "对比页会标注数据的编制月份，可用性表会标注确切的核查日期。我们在更新页面时复核，并把日期展示出来，让你自己判断数据的新鲜度。"}}, {"@type": "Question", "name": "为什么你们的推荐和其他网站不一样？", "acceptedAnswer": {"@type": "Answer", "text": "因为权重不同。我们把可用性放在第一位：一家你无法合法使用的交易所，在我们这里得分就是低，不管它多便宜。其他网站先看费率或币种数量，所以顺序不同是合理的。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 在印度买 USDT</div>
+      <h1>我们的评测方法</h1>
+      <p class="sub">我们怎么对比交易所、核查什么，以及我们的钱从哪里来。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS</p>
+      <h2>我们怎么给交易所打分</h2>
+      <p>我们从五个维度给交易所打分。下面的权重是我们的编辑框架——它说明我们怎么评判，不是实验室测量：监管与可用性 30%、费率 25%、安全性 20%、新手体验 15%、币种与功能 10%。可用性被有意放在第一位：一个你无法合法使用的最便宜交易所，对你毫无价值。</p>
+      <p>每个维度尽可能依据一手来源评判：交易所官方费率页、监管机构的注册名录、交易所的储备金证明页，以及它公布的安全功能。如果某处依赖二手来源，我们会在页面上说明。</p>
+      <h2>我们核查什么，什么时候核查</h2>
+      <p>费率：标准档（VIP0）的现货与合约挂单/吃单基准费率，外加提币网络费。可用性：每家交易所服务哪些国家和地区，依据其官方条款和受限国家页面。安全性：储备金证明、应急基金、账户安全功能，以及执法记录——包括负面部分。</p>
+      <p>每个对比页都会标注数据的编制月份，可用性表会标注确切的核查日期。费率和可用性经常变化；不标注核查日期的页面不值得信赖——包括我们自己的页面，如果日期已经过时的话。</p>
+      <h2>我们绝不做的事</h2>
+      <p>没有任何交易所能花钱买到更高的排名、更好的评分，或删掉负面结论。佣金不影响排名或评分。如果某家交易所的可用性或费率变差了，它在我们页面上的位置就会下降，不管它付给我们多少钱。</p>
+      <p>无法追溯到来源的数字，我们不发布。如果某个数字是约数——比如随网络拥堵变化的网络费——我们会标注为约数，并告诉你确切数字出现在哪里（通常是提币界面）。</p>
+      <h2>本站怎么赚钱</h2>
+      <p>通过 Binance、OKX 和 Bybit 的返佣链接。如果你通过这些链接注册，交易所会把你产生的手续费的一部分付给我们；这不会让你多花钱。我们的 Bitget 按钮只是通往官网的普通链接——我们目前与 Bitget 没有返佣合作。查看完整 <a href="disclosure.html">返佣披露</a>。</p>
+      <h2>常见问题</h2>
+      <h3>交易所有没有花钱让你们把它排高？</h3>
+      <p>不会。没有任何交易所能花钱买到更高的排名、更好的评分，或删掉负面结论。佣金不影响排名或评分。</p>
+      <h3>你们多久复核一次费率和可用性？</h3>
+      <p>对比页会标注数据的编制月份，可用性表会标注确切的核查日期。我们在更新页面时复核，并把日期展示出来，让你自己判断数据的新鲜度。</p>
+      <h3>为什么你们的推荐和其他网站不一样？</h3>
+      <p>因为权重不同。我们把可用性放在第一位：一家你无法合法使用的交易所，在我们这里得分就是低，不管它多便宜。其他网站先看费率或币种数量，所以顺序不同是合理的。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="exchanges.html">交易所手续费与返佣对比</a></li>
+        <li><a href="disclosure.html">返佣披露</a></li>
+        <li><a href="guides/is-binance-safe.html">Binance 安全吗？</a></li>
+      </ul>
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
