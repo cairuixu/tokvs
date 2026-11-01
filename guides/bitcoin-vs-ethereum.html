@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>比特币 vs 以太坊：有什么区别？— TokVS</title>
+<meta name="description" content="比特币 vs 以太坊诚实对比：用途、共识、供应、手续费和生态——以及哪一种适合哪类用户，没有绝对结论，没有价格预测。">
+<link rel="canonical" href="https://tokvs.com/guides/bitcoin-vs-ethereum">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/bitcoin-vs-ethereum">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/bitcoin-vs-ethereum">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/bitcoin-vs-ethereum">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/bitcoin-vs-ethereum">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/bitcoin-vs-ethereum">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/bitcoin-vs-ethereum">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/bitcoin-vs-ethereum">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/bitcoin-vs-ethereum">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/bitcoin-vs-ethereum">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/bitcoin-vs-ethereum">
+<meta property="og:title" content="比特币 vs 以太坊：有什么区别？— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="两个最大的网络，按用途、共识、供应、手续费和生态对比——以及各自适合谁。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/bitcoin-vs-ethereum">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org","@graph": [{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "TokVS","item": "https://tokvs.com/"},{"@type": "ListItem","position": 2,"name": "教程","item": "https://tokvs.com/guides/"},{"@type": "ListItem","position": 3,"name": "比特币对比以太坊","item": "https://tokvs.com/guides/bitcoin-vs-ethereum"}]},{"@type": "Article","headline": "比特币对比以太坊","description": "比特币 vs 以太坊诚实对比：用途、共识、供应、手续费和生态——以及哪一种适合哪类用户，没有绝对结论，没有价格预测。","datePublished": "2026-10-28","author": {"@type": "Organization","name": "TokVS","url": "https://tokvs.com/"},"publisher": {"@type": "Organization","name": "TokVS","url": "https://tokvs.com/"},"mainEntityOfPage": {"@type": "WebPage","@id": "https://tokvs.com/guides/bitcoin-vs-ethereum", "dateModified": "2026-10-30"},"inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org","@type": "FAQPage","mainEntity": [{"@type": "Question","name": "以太坊比比特币更好吗？","acceptedAnswer": {"@type": "Answer","text": "总体上没有谁更好——它们干不同的活。比特币被优化成固定供应的货币；以太坊被优化成应用和代币的平台。按你想用它来做什么去评判每一个，而不是拿它们互相比。"}},{"@type": "Question","name": "比特币和以太坊哪个更安全？","acceptedAnswer": {"@type": "Answer","text": "比特币拥有更长、更简单的记录和最保守的设计。以太坊因为运行复杂应用而攻击面更大，但功能也多得多。安全性既取决于网络，也取决于你的托管习惯。"}},{"@type": "Question","name": "以太坊会超过比特币吗？","acceptedAnswer": {"@type": "Answer","text": "没人能知道，本站也不做预测。加密市场的龙头以前换过，未来也可能再换；不要基于“翻转”下注来做购买决定。"}},{"@type": "Question","name": "我需要两种都持有吗？","acceptedAnswer": {"@type": "Answer","text": "不是。许多持有者两种都持有，因为角色不同，但从一种开始——通常为了简单选比特币——并把它学透，胜过匆忙两种都上。"}},{"@type": "Question","name": "转移哪个更便宜？","acceptedAnswer": {"@type": "Answer","text": "取决于你发送那一刻的网络拥堵程度，以及你在做什么：简单转账通常比与复杂应用交互便宜。发送两者之前都先查实时手续费估算器。"}},{"@type": "Question","name": "我能轻松把比特币换成以太坊吗？","acceptedAnswer": {"@type": "Answer","text": "可以——在任何大型交易所，卖出 BTC 换成 USDT 再买 ETH，或者在提供直接 BTC/ETH 交易对的地方直接兑换。兑换本身就是一笔普通现货交易，按标准费率收费。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 比特币对比以太坊</div>
+      <h1>比特币对比以太坊</h1>
+      <p class="sub">加密市场最大的两个名字干不同的活。这是一份诚实对比——以及为什么“哪个更好”是个错误的问题。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 9 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册 →</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">App 对新手友好、流动性深</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">去 Bybit 注册</a></div></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+
+      <h2>一句话的区别</h2>
+      <p>如果别的都记不住，记住这句： <strong>比特币是数字货币；以太坊是一个恰好有货币的可编程平台。</strong> 比特币被设计用来在没有任何可信中间人的情况下转移和储存价值。以太坊被设计用来在去中心化网络上运行应用——借贷、交易、游戏、代币——它的货币以太币（ETH）为计算付费。这一个区别解释了本页上几乎所有其他区别：它们的设计、手续费、生态，以及各自吸引的人群。</p>
+      <h2>并排对比</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>维度</th><th>Bitcoin (BTC)</th><th>Ethereum (ETH)</th></tr></thead>
+        <tbody>
+          <tr><td>核心用途</td><td>去中心化货币与价值储存</td><td>去中心化应用与代币的平台</td></tr>
+          <tr><td>上线时间</td><td>2009</td><td>2015</td></tr>
+          <tr><td>共识机制</td><td>工作量证明（挖矿）</td><td>权益证明（验证者，2022 年起）</td></tr>
+          <tr><td>供应</td><td>上限 2100 万枚</td><td>没有固定上限；发行量由协议规则决定</td></tr>
+          <tr><td>交易手续费</td><td>按笔支付；随拥堵上涨</td><td>按计算量定价的“Gas”；随需求上涨</td></tr>
+          <tr><td>结算速度</td><td>大约每 10 分钟一个区块</td><td>大约每 12 秒一个区块</td></tr>
+          <tr><td>生态</td><td>支付、持有、简单转账</td><td>代币、DeFi 应用、NFT、稳定币</td></tr>
+          <tr><td>可分割性</td><td>最小到 0.00000001 BTC（1 聪）</td><td>最小到 0.000000000000000001 ETH（1 wei）</td></tr>
+        </tbody>
+      </table></div>
+      <p>把那张表当作故事读，而不是记分卡。比特币为简单和不可变而优化：只做一件事——当货币——并抵制变化。以太坊为灵活性而优化：当一个别人可以在上面建造的平台，并随着建造者的需求演进。抽象地讲，两种优化没有谁“更好”；它们服务不同的用户，这就是靠近结尾那一节的主题。</p>
+      <h2>比特币，大白话讲</h2>
+      <p>比特币的卖点是刻意收窄的。它不运行应用、不大规模托管代币，脚本功能也被有意限制。它做的是让地球上任意两个人之间无需许可地转移价值，按没人能注水的时间表：2100 万枚、挖矿奖励大约每四年减半、每十分钟一个区块。它的安全模型是工作量证明——矿工花真金白银的电费竞争添加区块，这让重写历史贵得离谱。批评者说这是浪费；支持者说这是无需信任的代价，是让网络在没有任何权威的情况下存活的东西。要了解全貌，读我们的 <a href="what-is-bitcoin.html">什么是比特币？</a> 指南。</p>
+      <p>比特币的生态反映了这种窄：钱包、交易所、支付工具和持有类产品占主导，实验大多发生在它之上的层，而不是基础链本身。这种保守对想要十年后货币表现与今天一样的人来说是优点，对想让链本身做更多事的人来说是局限。两种解读都对，只是描述了不同的优先级。</p>
+      <h2>以太坊，大白话讲</h2>
+      <p>以太坊的卖点是广度。它的核心发明是 <strong>智能合约</strong>：在网络上按编写内容精确执行的代码，中途没有运营者能更改。在智能合约之上是代币（包括 USDT 和成千上万其他代币）、借贷与交易应用、稳定币、游戏和数字收藏品——一个统称为 DeFi 和 Web3 的生态。以太币（ETH）是燃料：网络上的每次计算都要消耗 gas，用 ETH 支付，这就是为什么 ETH 的需求既跟着应用使用量走，也跟着投机走。</p>
+      <p>以太坊在 2022 年把共识机制从工作量证明改成了 <strong>权益证明</strong>：不再是矿工用硬件竞争，而是验证者锁定（质押）ETH 并被选中提议区块，作恶会被罚没部分质押。支持者说这大幅降低了能耗，让网络更容易升级；批评者说这让影响力集中到大质押者手中，并以仍在检验的方式改变了安全模型。无论如何，对用户的实际结果是更快的区块（约十二秒）和一个不断演进的网络——升级定期到来，随之而来的既有改进，也有新风险。我们的 <a href="how-to-buy-ethereum.html">以太坊购买指南</a> 讲了购买的一面；这里的重点是你买入的是什么：一个平台，而不只是一枚币。</p>
+      <h2>手续费：转移每一种你实际要付多少</h2>
+      <p>两个网络都对交易收费，繁忙时都会变贵——但机制不同。 <strong>比特币手续费</strong> 主要取决于交易字节大小和网络拥堵程度；简单转账比复杂转账便宜，等网络空闲时通常更便宜。 <strong>以太坊 Gas</strong> 取决于你的交易需要多少计算量，以及对区块空间的需求有多大；简单的 ETH 转账在 gas 方面很便宜，而与复杂应用交互则更贵，在热门活动期间 gas 可能急剧飙升。两个网络都不公布固定手续费——任何人把某个确切的“比特币手续费”或“以太坊手续费”当作常量告诉你，都是在误导你。发送前先查实时手续费估算器，大额转账先发一笔小额测试，绝不要因为手续费出乎意料就匆忙操作。</p>
+      <p>另外，交易手续费与币种无关：标准现货费率是 <strong>Binance 挂单 0.10% / 吃单 0.10%，OKX 挂单 0.08% / 吃单 0.10%，Bybit 现货挂单 0.10% / 吃单 0.10%</strong>，实际费率取决于交易量和持仓——务必以交易所官方费率页为准，官方费率胜过任何指南。不要混淆两种手续费：交易所手续费是平台为撮合你的交易收取的，网络手续费是矿工或验证者为把你的转账放进区块而获得的。在交易所买入产生前者；把币转到自己的钱包产生后者。新手每天都会遇到交易所手续费，只有提币时才遇到网络手续费，这就是为什么在转移大额资金前值得先查一下提币费。</p>
+      <h2>哪一种适合哪类人</h2>
+      <p>没有总赢家，所以这里按你的实际需求诚实对应：</p>
+      <ul>
+        <li><strong>你想要最简单的价值储存和最长的记录。</strong> 比特币更适合你：最窄的设计、最硬的供应上限、最久经考验的网络，以及在你脚下变化最少的东西。</li>
+        <li><strong>你想用加密应用——交易、借贷、稳定币、收藏品。</strong> 以太坊更适合你：应用在那里、代币在那里，ETH 是驱动它们的 gas。</li>
+        <li><strong>你是正在决定从哪里开始学的新手。</strong> 先从比特币开始，理解没有中间人的货币，再学以太坊，理解可编程网络。按这个顺序，每一个都会让另一个更清晰。</li>
+        <li><strong>你想要尽可能少的变动因素。</strong> 还是比特币：升级更少、应用风险更少、每笔交易的决策更少。</li>
+        <li><strong>你想要收益、空投或早期应用。</strong> 以太坊的生态在这三方面都提供得更多——相应地，智能合约漏洞、骗局和失败项目也成比例地更多。可能性更高，功课也更多。</li>
+      </ul>
+      <p>注意那张清单里缺了什么：任何关于谁的价格表现会超过谁的主张。没人知道这一点，本站也不会假装知道。按功能选，而不是按预测选。</p>
+      <h2>社区也不一样</h2>
+      <p>抛开技术不谈，两个网络吸引了不同的文化，而文化塑造了被建造的东西。比特币社区推崇保守：改动要辩论数年、升级很少见，“别搞坏能用的东西”是一种骄傲。以太坊社区推崇实验：升级定期发布，每个周期都会出现新的应用类别，昨天的新奇就是今天的基础设施。两种文化都不适合所有人。如果你想要一种规则几乎不动的资产，比特币的谨慎会让你安心。如果你想跟随——或者建造——最新的应用，以太坊的节奏会让你兴奋。投入资金前，先花点时间看看两个社区的讨论，注意哪种变化风格让你更舒服而不是更焦虑。</p>
+      <h2>你必须二选一吗？</h2>
+      <p>不是——大多数有经验的持有者也不会。两个网络干不同的活，所以同时持有两者是合理的，这和持有两个相同的东西不一样：比特币承担价值储存的角色，以太坊承担平台的角色。新手常常从每种少量开始，体会持有和转移两者的感觉，再随着理解加深调整。一个有用的习惯是每年复盘一次配置比例，而不是每次市场波动后都复盘：按日历再平衡能把情绪排除在那些本该枯燥的决策之外。比配置比例更重要的是围绕它的纪律：先小额测试、每个交易所账户都开验证器 2FA、自托管的话助记词离线备份、为报税保存每笔交易记录。我们的 <a href="how-to-buy-crypto-for-beginners.html">新手购买指南</a> 讲了整套设置，我们的 <a href="what-is-cryptocurrency.html">加密货币指南</a> 讲了这两个网络所处的更广阔图景。</p>
+      <h2>它们共同的风险</h2>
+      <p>设计不同，风险同源。 <strong>波动性</strong> 两者都会遇到：暴跌是常态，不是异常。 <strong>不可撤销性</strong> 对两者都适用：发错地址或发到骗子地址，资金就没了。 <strong>监管</strong> 两者都涉及，且因国家而异。 <strong>骗局</strong> 两者都会被冒充——假赠送、假客服、假应用——所以我们的 <a href="avoid-scams.html">防骗指南</a> 无论你持有哪种币都适用。而且 <strong>托管</strong> 在结构上是相同的：交易所账户方便但有平台风险；自托管消除了平台风险，换来的是对私钥的个人责任。如果你理解了这些共同风险，上面表格里的差异就成了它们本该是的样子：一个关于功能的选择，而不是对赢家的赌博。</p>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+<b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+<div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">App 对新手友好、流动性深</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">去 Bybit 注册</a></div></div>
+<p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。</p>
+</div>
+      
+      <h3>以太坊比比特币更好吗？</h3>
+      <p>总体上没有谁更好——它们干不同的活。比特币被优化成固定供应的货币；以太坊被优化成应用和代币的平台。按你想用它来做什么去评判每一个，而不是拿它们互相比。</p>
+      <h3>比特币和以太坊哪个更安全？</h3>
+      <p>比特币拥有更长、更简单的记录和最保守的设计。以太坊因为运行复杂应用而攻击面更大，但功能也多得多。安全性既取决于网络，也取决于你的托管习惯。</p>
+      <h3>以太坊会超过比特币吗？</h3>
+      <p>没人能知道，本站也不做预测。加密市场的龙头以前换过，未来也可能再换；不要基于“翻转”下注来做购买决定。</p>
+      <h3>我需要两种都持有吗？</h3>
+      <p>不是。许多持有者两种都持有，因为角色不同，但从一种开始——通常为了简单选比特币——并把它学透，胜过匆忙两种都上。</p>
+      <h3>转移哪个更便宜？</h3>
+      <p>取决于你发送那一刻的网络拥堵程度，以及你在做什么：简单转账通常比与复杂应用交互便宜。发送两者之前都先查实时手续费估算器。</p>
+      <h3>我能轻松把比特币换成以太坊吗？</h3>
+      <p>可以——在任何大型交易所，卖出 BTC 换成 USDT 再买 ETH，或者在提供直接 BTC/ETH 交易对的地方直接兑换。兑换本身就是一笔普通现货交易，按标准费率收费。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="what-is-bitcoin.html">什么是比特币？</a></li>
+        <li><a href="what-is-cryptocurrency.html">什么是加密货币？</a></li>
+        <li><a href="how-to-buy-ethereum.html">如何购买以太坊（ETH）</a></li>
+        <li><a href="how-to-buy-bitcoin.html">如何购买比特币：全流程详解</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>新手最佳加密货币交易所（2026）— TokVS</title>
+<meta name="description" content="新手最佳加密货币交易所：OKX、Binance 与 Bitget 在开户、客服和费率上的对比——附按天的第一周计划。">
+<link rel="canonical" href="https://tokvs.com/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/best-crypto-exchange-for-beginners">
+<meta property="og:title" content="新手最佳交易所（2026）— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="三个新手选择对比，附你的第一周计划。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/best-crypto-exchange-for-beginners">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "新手最佳交易所", "item": "https://tokvs.com/guides/best-crypto-exchange-for-beginners"}]}, {"@type": "Article", "headline": "新手最佳加密货币交易所（2026）", "description": "新手最佳加密货币交易所：OKX、Binance 与 Bitget 在开户、客服和费率上的对比——附按天的第一周计划。", "datePublished": "2026-10-16", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/best-crypto-exchange-for-beginners", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "1. OKX——最容易进的门", "acceptedAnswer": {"@type": "Answer", "text": "从“从没交易过”到“第一次买入完成”的最短路径：干净的开户、显眼的简单购买流程，以及真正有帮助的语言支持。现货挂单费率 0.08% 也是主流里最低的——等你交易变多后是个不错的加分项。如果你只想要一个账户、零功课，从这里开始。"}}, {"@type": "Question", "name": "2. Binance——应有尽有的商店", "acceptedAnswer": {"@type": "Answer", "text": "以巨大优势领先的最大交易所：最多的币种、最深的流动性，以及关于任何平台写过的最多的第三方教程——这意味着你谷歌的每个问题都已经有答案。界面稍显繁忙，但用一周就习惯了。如果你想要最大的选择空间，这是默认选择。"}}, {"@type": "Question", "name": "3. Bitget——边看边学", "acceptedAnswer": {"@type": "Answer", "text": "Bitget 的招牌是跟单交易：自动跟随有经验交易者的持仓，同时学习市场怎么动。对新手来说，看真实决策（用真钱、小仓位）比任何指南学得都快。直说一句提醒：过去表现预测不了任何事——小额跟单，把它当作学费，而不是收入。"}}, {"@type": "Question", "name": "开始需要验证身份吗？", "acceptedAnswer": {"@type": "Answer", "text": "是——每家合法交易所都要求在法币入金或有意义的交易前完成 KYC。这是反洗钱法律，不是可选项。任何“不用身份证”的平台都应该避开。"}}, {"@type": "Question", "name": "作为新手，储存加密资产最安全的方式是什么？", "acceptedAnswer": {"@type": "Answer", "text": "金额小、还在学习时先放在交易所。持仓对你重要起来后，转到自己的钱包，像守护家门钥匙一样守护助记词——因为它就是。"}}, {"@type": "Question", "name": "我怎么知道自己准备好开第二家交易所了？", "acceptedAnswer": {"@type": "Answer", "text": "当你能说出第二家具体给你的东西（一个上币、一个功能、一个费率档）——而不是“分散化”的感觉。一个安全到位的账户胜过三个马虎的账户。"}}, {"@type": "Question", "name": "对新手来说，加密资产是太晚还是太早？", "acceptedAnswer": {"@type": "Answer", "text": "都不是——那些是伪装成时机问题的价格问题。正确的新手问题是：“我能不能用小钱、零杠杆来学习？”如果可以，任何市场都适合开始学习。"}}, {"@type": "Question", "name": "我应该告诉银行我在买加密资产吗？", "acceptedAnswer": {"@type": "Answer", "text": "你不需要许可，但请为加密资金流动用一个专用账户/卡——记录更干净，而且如果银行问起某笔交易，回答只要一句话。"}}, {"@type": "Question", "name": "多久之后我不再是新手？", "acceptedAnswer": {"@type": "Answer", "text": "大约 3–6 个月的积极学习，或者一轮完整的市场周期带来的情绪教育——以先到者为准。没有证书；上面的毕业标准就是诚实的版本。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 新手最佳交易所</div>
+      <h1>新手最佳加密货币交易所</h1>
+      <p class="sub">第一个月先忘了“最低费率”——新手需要顺畅的开户、能联系到的客服和合理的默认设置。三个选择，诚实对比。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 8 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>新手实际需要什么（不是最低费率）</h2>
+      <p>新手纠结费率；有经验的交易者会告诉你，第一个月的优先级不同：</p>
+      <ul>
+        <li><strong>无摩擦开户</strong> ——一次通过的验证、不需要说明书的购买流程。</li>
+        <li><strong>能回复的客服</strong> ——你的第一次入金问题总会发生；重要的是能联系到真人。</li>
+        <li><strong>内置教育内容</strong> ——指南、演示，以及一个会自我解释而不是默认你懂的界面。</li>
+        <li><strong>合理的默认设置</strong> ——没有预先开启的杠杆，没有把令人困惑的订单类型硬推给你。</li>
+      </ul>
+      <p>费率从第二个月起才重要。第一个月，优化 <em>不犯昂贵的错误</em>.</p>
+      <h2>三个选择</h2>
+      <h3>1. OKX——最容易进的门</h3>
+      <p>从“从没交易过”到“第一次买入完成”的最短路径：干净的开户、显眼的简单购买流程，以及真正有帮助的语言支持。现货挂单费率 0.08% 也是主流里最低的——等你交易变多后是个不错的加分项。如果你只想要一个账户、零功课，从这里开始。</p>
+      <p class="in-cta">最简单的起步： <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></p>
+      <h3>2. Binance——应有尽有的商店</h3>
+      <p>以巨大优势领先的最大交易所：最多的币种、最深的流动性，以及关于任何平台写过的最多的第三方教程——这意味着你谷歌的每个问题都已经有答案。界面稍显繁忙，但用一周就习惯了。如果你想要最大的选择空间，这是默认选择。</p>
+      <p class="in-cta">最大的选择空间： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></p>
+      <h3>3. Bitget——边看边学</h3>
+      <p>Bitget 的招牌是 <strong>跟单交易</strong>：自动跟随有经验交易者的持仓，同时学习市场怎么动。对新手来说，看真实决策（用真钱、小仓位）比任何指南学得都快。直说一句提醒：过去表现预测不了任何事——小额跟单，把它当作学费，而不是收入。</p>
+      <h2>并排对比</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>OKX</th><th>Binance</th><th>Bitget</th></tr></thead>
+        <tbody>
+          <tr><td>新手优势</td><td>最容易开户</td><td>最多的指南与币种</td><td>跟单交易</td></tr>
+          <tr><td>现货挂单 / 吃单</td><td>0.08% / 0.10%</td><td>0.10% / 0.10%</td><td>0.10% / 0.10%</td></tr>
+          <tr><td>简单购买流程</td><td>优秀</td><td>好</td><td>好</td></tr>
+          <tr><td>客服</td><td>语言支持好</td><td>交易量巨大，情况各异</td><td>语言支持好</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">常规档费率；费率表会变——以官网为准。</p>
+      <h2>你的第一周，按天安排</h2>
+      <ol>
+        <li><strong>第 1 天：</strong> 注册、验证、开启 2FA + 防钓鱼码。十分钟，最重要的十分钟。</li>
+        <li><strong>第 2 天：</strong> 小额入金（50–100 美元），买一点 USDT，四处看看。先不要交易。</li>
+        <li><strong>第 3–4 天：</strong> 用限价单做第一笔极小额 BTC 买入。看着它成交。感受其中的机制。</li>
+        <li><strong>第 5–7 天：</strong> 试着向自己的钱包提一小笔，并备份助记词。你现在的理解已经超过大多数“加密投资者”了。</li>
+      </ol>
+      <div class="callout warn"><b>第一周不要做的事：</b> 不加杠杆、不碰合约、不进“大师”群、暂不开第二个账户。无聊就是策略。</div>
+      <h2>新手实际付的手续费（附真实算账）</h2>
+      <p>先把费率表军备竞赛放一边。一个新手买 500 美元的 BTC：</p>
+      <ul>
+        <li>OKX 限价单（挂单 0.08%）： <strong>$0.40</strong></li>
+        <li>Binance/Bitget 限价单（0.10%）： <strong>$0.50</strong></li>
+        <li>任何地方的市价单：约 0.50 美元 + 可能的滑点</li>
+      </ul>
+      <p>这里“最好”和“最差”之间的差异是 <strong>十美分。</strong>。你第一个月的真实成本是：快速购买的价差（改用限价单）、练习自托管时的一次提币网络费（TRC20 约 1 美元），以及你因为没耐心而亏掉的钱。优化行为，而不是平台。</p>
+      <h2>危险信号：新手应该远离的交易所</h2>
+      <ul>
+        <li><strong>背后没有可核查的公司。</strong> 真实地址、真实牌照、真实的储备金证明页——否则走开。</li>
+        <li><strong>“保证”收益。</strong> 保证收益要么是谎言，要么是庞氏算术。每次都是。</li>
+        <li><strong>通过私信发来的下载链接。</strong> App 只能来自官网或应用商店。就这样。</li>
+        <li><strong>施压话术。</strong> “一小时内存款有奖金”是赌场的话，不是交易所的话。</li>
+      </ul>
+      <h2>怎么自己评估任何一家交易所（5 分钟版）</h2>
+      <ol>
+        <li>它公布储备金证明吗？（不公布 → 结束，下一个。）</li>
+        <li>费率表公开且能在 1 分钟内读懂吗？（藏起来或没有 → 结束。）</li>
+        <li>它有没有能用的 P2P/银行/刷卡选项 <em>（在你所在的国家）</em>？（去核查，不要想当然。）</li>
+        <li>你现在能在 5 分钟内联系到客服吗？（测试一下——这以后就是你的生命线。）</li>
+        <li>搜索“[交易所名] + hack + 2024/2025”——发生了什么，他们是怎么处理的？</li>
+      </ol>
+      <p>通过全部五项的任何一家交易所对新手来说都可以。四大都通过。</p>
+      <h2>第 2–3 个月：合理进阶</h2>
+      <ul>
+        <li><strong>真正学会限价单</strong> ——然后就永远不用再想订单类型了。</li>
+        <li><strong>完成一次完整的自托管循环</strong> ——交易所 → 你的钱包 → 再回来。小额。这个技能比任何交易技巧都重要。</li>
+        <li><strong>从头到尾读一遍费率表。</strong> 十分钟，从此“挂单/吃单/资金费率”再也不会让你困惑。</li>
+        <li><strong>考虑第二家交易所</strong> 只有当你有具体理由（一个币、一个功能）时才开——不是因为无聊。</li>
+      </ul>
+      <p>注意清单里没有的东西：杠杆、合约、meme 币、“交易策略”。最早也要到第六个月——而且只能用你烧得起的钱。</p>
+      <h2>第一个月的十条戒律</h2>
+      <ol>
+        <li>一家交易所。不是三家。</li>
+        <li>第一天就开 2FA。用验证器 App，不用短信。</li>
+        <li>从 50–100 美元开始。这是学费。</li>
+        <li>只用限价单。市价单是对没耐心的征税。</li>
+        <li>记下每一笔交易。日期、金额、价格。</li>
+        <li>永远不要向“客服”共享你的屏幕。</li>
+        <li>只从官方来源下载 App。</li>
+        <li>不加杠杆。不碰合约。没有例外。</li>
+        <li>第一个月忽略价格提醒。认真的。</li>
+        <li>在“优化”任何东西之前，先完成 30 天计划。</li>
+      </ol>
+      <h2>什么时候忽略噪音</h2>
+      <p>你的第一个月会恰逢 <em>有一些</em> 市场大戏——崩盘、暴涨、“一生一次的机会”。总是有什么。噪音就是为了让你交易；而你作为新手的优势是 <strong>不交易</strong> ，在你学习这套机制的时候。关掉通知，按每日计划走，让市场为别人表演。币在第二个月还在，你会带着实打实的知识而不是 FOMO 去见它们。</p>
+      <h2>让新手花真金白银的错误（按严重程度排）</h2>
+      <ol>
+        <li><strong>提币选错网络</strong> ——新手第一大不可逆损失。检查三遍、小额测试。</li>
+        <li><strong>假 App / 钓鱼</strong> ——新手第一大“早发现可挽回”的损失。只用官方来源。</li>
+        <li><strong>“就试试”加杠杆</strong> ——清算可不管这是不是你的第一次。</li>
+        <li><strong>把所有资产放在一家交易所且不开 2FA</strong> ——账号被盗的新手套餐。</li>
+        <li><strong>因为陌生人很兴奋就买</strong> ——兴奋不是尽职调查。</li>
+      </ol>
+      <h2>“新手友好”实际是什么样子（测试）</h2>
+      <p>营销话术说每家交易所都对新手友好。这里有个 5 分钟测试：打开 App，不用搜索找到购买按钮，在演示模式下完成一次购买流程，找到提币页，打开客服聊天。如果五项都在五分钟内完成，它就是真正的新手友好。OKX 通过这项测试最干净；Binance 通过时稍显杂乱；Bitget 通过时绕了跟单交易的弯。自己跑一遍测试——你的拇指才是唯一重要的评测者。</p>
+      <h2>毕业标准：什么时候你不再是新手</h2>
+      <ul>
+        <li>你已经毫无焦虑地完成了一次完整的自托管循环（交易所 → 钱包 → 回来）。</li>
+        <li>你能用一句话向朋友解释挂单 vs 吃单。</li>
+        <li>你已经在没有恐慌抛售的情况下挺过了一次 20% 的回撤。（市场会为你安排这场考试。）</li>
+        <li>你有成文的仓位规模规则——哪怕很简单。</li>
+      </ul>
+      <p>在此之前：一家交易所、只做现货、小钱、无聊的流程。“进阶”不过是“新手”加上伤疤和一张电子表格。</p>
+      <h2>今天开始，从小开始</h2>
+      <p>完美的交易所不存在，但完美的 <em>起步</em> 是这样的：一个靠谱平台、一个已验证账户、一笔小额入金、一个限价单。本指南的一切都从这第一笔枯燥而谨慎的交易复利而来。在上面选你的交易所，给自己完整的第一周，欢迎来到加密资产真正有趣的部分——理解自己在做什么。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        </div>
+        <p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。</p>
+      </div>
+      
+      <h3>开始需要验证身份吗？</h3>
+      <p>是——每家合法交易所都要求在法币入金或有意义的交易前完成 KYC。这是反洗钱法律，不是可选项。任何“不用身份证”的平台都应该避开。</p>
+      <h3>作为新手，储存加密资产最安全的方式是什么？</h3>
+      <p>金额小、还在学习时先放在交易所。持仓对你重要起来后，转到自己的钱包，像守护家门钥匙一样守护助记词——因为它就是。</p>
+      <h3>我怎么知道自己准备好开第二家交易所了？</h3>
+      <p>当你能说出第二家具体给你的东西（一个上币、一个功能、一个费率档）——而不是“分散化”的感觉。一个安全到位的账户胜过三个马虎的账户。</p>
+      
+      <h3>对新手来说，加密资产是太晚还是太早？</h3>
+      <p>都不是——那些是伪装成时机问题的价格问题。正确的新手问题是：“我能不能用小钱、零杠杆来学习？”如果可以，任何市场都适合开始学习。</p>
+      <h3>我应该告诉银行我在买加密资产吗？</h3>
+      <p>你不需要许可，但请为加密资金流动用一个专用账户/卡——记录更干净，而且如果银行问起某笔交易，回答只要一句话。</p>
+      
+      <h3>多久之后我不再是新手？</h3>
+      <p>大约 3–6 个月的积极学习，或者一轮完整的市场周期带来的情绪教育——以先到者为准。没有证书；上面的毕业标准就是诚实的版本。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">如何购买比特币：全流程详解</a></li>
+        <li><a href="choose-exchange.html">如何选交易所：6 条检查标准</a></li>
+        <li><a href="../start/step1.html">新手路径：从这里开始</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

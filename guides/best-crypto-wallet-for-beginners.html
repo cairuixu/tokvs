@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>新手最佳加密钱包：热钱包、冷钱包与怎么选 — TokVS</title>
+<meta name="description" content="新手最佳加密钱包：热钱包 vs 冷钱包，MetaMask、Trust Wallet、Ledger 与 Trezor 按功能对比——附助记词安全与"not your keys" rule.">
+<link rel="canonical" href="https://tokvs.com/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/best-crypto-wallet-for-beginners">
+<meta property="og:title" content="新手最佳加密钱包：热钱包、冷钱包与怎么选 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="为新手对比热钱包 vs 冷钱包，附设置步骤与助记词安全。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/best-crypto-wallet-for-beginners">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "新手最佳加密钱包", "item": "https://tokvs.com/guides/best-crypto-wallet-for-beginners"}]}, {"@type": "Article", "headline": "新手最佳加密钱包：热钱包、冷钱包与怎么选", "description": "热钱包 vs 冷钱包、MetaMask、Trust Wallet、Ledger 与 Trezor 按功能对比，外加助记词安全与新手简单决策路径。", "datePublished": "2026-10-28", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/best-crypto-wallet-for-beginners", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "热钱包和冷钱包有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "热钱包连接互联网（手机 App 或浏览器扩展），日常使用方便。冷钱包把私钥离线保存在硬件设备上，更适合你很少动用的长期持仓。"}}, {"@type": "Question", "name": "MetaMask 对新手安全吗？", "acceptedAnswer": {"@type": "Answer", "text": "MetaMask 用得很广，只要你养成好习惯，对 EVM 链来说没问题：只从官方来源下载、绝不分享助记词、批准前检查每个连接和签名请求。"}}, {"@type": "Question", "name": "如果我只持有小额，还需要硬件钱包吗？", "acceptedAnswer": {"@type": "Answer", "text": "不一定。学习期间持有几百美元的话，一个口碑好的热钱包是合理的。等金额增长到你输不起的程度时，再考虑硬件钱包。"}}, {"@type": "Question", "name": "如果我丢了助记词会怎样？", "acceptedAnswer": {"@type": "Answer", "text": "没有助记词就无法恢复钱包——币实际上就丢了。这就是为什么放在安全地方的纸质备份比你选的 App 或设备更重要。"}}, {"@type": "Question", "name": "我能在 MetaMask 里存比特币吗？", "acceptedAnswer": {"@type": "Answer", "text": "不能——MetaMask 是为 EVM 兼容链构建的，原生不支持比特币。BTC 请用支持比特币的钱包，比如 Trust Wallet 或硬件钱包。"}}, {"@type": "Question", "name": "如果钱包公司倒闭了会怎样？", "acceptedAnswer": {"@type": "Answer", "text": "你的币生活在区块链上，不在公司里。只要你有助记词，就可以在另一个兼容的 App 或设备里恢复同一个钱包。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 新手最佳加密钱包</div>
+      <h1>新手最佳加密钱包</h1>
+      <p class="sub">热钱包 vs 冷钱包、MetaMask vs 硬件，以及比品牌更重要的助记词规则。按你持有多少和交易多频繁来选。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 12 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">现货与合约，App 界面干净</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">注册 Bybit 账号</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>首先，加密钱包到底是什么</h2>
+      <p>加密钱包装币的方式和皮夹装钞票不一样。你的币生活在区块链上；钱包持有的是 <strong>私钥</strong> ，证明你拥有它们并让你能转移它们。谁控制私钥，谁就控制币。这一个事实解释了你将做出的几乎每一个钱包决定：问题永远不是“哪个 App 最好看”，而是“谁持有我的私钥，以及它们有多难被偷？”</p>
+      <p>如果交易所持有你的私钥，你信任的是那家交易所的安全性、偿付能力和诚实度。如果你自己持有私钥，你信任的是你自己——你的设备、你的备份习惯、你识别骗局的能力。抽象地讲，两个选项都不“安全”。正确的选择取决于你持有多少、交易多频繁，以及你愿意多小心。本指南会带你看两边，让你睁着眼睛做决定。</p>
+      <h2>热钱包 vs 冷钱包：唯一重要的区别</h2>
+      <p>钱包分两个家族。 <strong>热钱包</strong> 联网的：手机 App 和浏览器扩展。它们免费、快速、方便——同时也暴露在与任何联网事物相同的风险之下，从恶意软件到钓鱼网站。 <strong>冷钱包</strong> 把私钥离线保存在专用硬件设备上。它们要花钱，每笔交易都多一步麻烦，但能让你的私钥完全脱离远程攻击者的触及范围。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>热钱包</th><th>冷钱包</th></tr></thead>
+        <tbody>
+          <tr><td>连接互联网</td><td>是，总是</td><td>不——私钥保持离线</td></tr>
+          <tr><td>典型成本</td><td>免费</td><td>设备价格（以官方商店为准）</td></tr>
+          <tr><td>适合</td><td>日常使用、小额、DeFi 和 NFT</td><td>很少动用的长期持仓</td></tr>
+          <tr><td>主要风险</td><td>恶意软件、钓鱼、恶意网站</td><td>丢失设备 <em>和</em> 备份；买到被动过手脚的设备</td></tr>
+          <tr><td>设备丢失后如何恢复</td><td>重新安装并用助记词恢复</td><td>买一台新设备并用助记词恢复</td></tr>
+        </tbody>
+      </table></div>
+      <p>有经验的用户最终采用的标准配置是混合的：热钱包放零花钱，冷钱包放储蓄。你不需要从那里起步。从热钱包和小额开始，学习机制，等持有金额对你开始重要时再加一台硬件设备。</p>
+      <h2>新手实际用的热钱包</h2>
+      <h3>MetaMask：浏览器钱包</h3>
+      <p>MetaMask 是一个浏览器扩展（另有手机 App），是以太坊和其他 EVM 兼容链的默认钱包——以太坊、BNB Chain、Polygon、Arbitrum 及类似网络。如果你打算用 DeFi 应用、NFT 市场或链上工具，你迟早会遇到 MetaMask：大多数网页应用都有一个直接与它对话的“连接钱包”按钮。</p>
+      <p>安装之前要知道两件事。第一，MetaMask <strong>并不</strong> 原生支持比特币——它是为 EVM 链构建的，所以 BTC 需要另一个钱包。第二，因为它生活在你的浏览器里，它的安全性只取决于你的浏览习惯：如果你批准连接，它会很乐意连到恶意网站。把每个连接请求都当作一个决定，而不是一种反射。</p>
+      <h3>Trust Wallet：多链手机钱包</h3>
+      <p>Trust Wallet 是一款手机 App，在一个地方支持多种链，包括比特币、以太坊、BNB Chain、Solana 和狗狗币。对想要一个 App 管多种币的新手来说，这种广度就是吸引力：一个助记词、多个网络，外加内置兑换和 dApp 浏览器，可做基础链上操作。</p>
+      <p>权衡和任何热钱包一样：私钥生活在一部整天联网的手机上。一部干净的手机、官方应用商店下载、备份好的助记词，比选哪个品牌重要得多。永远不要从消息或广告里的链接安装钱包 App——自己去官方应用商店搜索，并核对开发者名称。</p>
+      <h2>冷钱包：Ledger 与 Trezor</h2>
+      <p>硬件钱包是一台小型专用设备，在设备本身离线生成并储存私钥、在设备本身签署交易。即使你把它插进一台已被攻破的电脑，私钥也永远不会离开设备——电脑永远只能看到签名结果。这就是整个安全模型，而且它很强。</p>
+      <h3>Ledger</h3>
+      <p>Ledger 的设备（如 Nano 系列和更新的 Stax 系列）搭配 Ledger Live App 使用，用于管理币种和按链安装应用。Ledger 支持的币种范围非常广，而且很容易买到。对 Ledger 或任何硬件钱包，一条铁律是购买时 <strong>只从官方商店购买</strong> ——从市场买的打折设备可能被动过手脚，那样就完全违背了初衷。</p>
+      <h3>Trezor</h3>
+      <p>Trezor 的设备（如 Model One、Model T 和 Safe 系列）搭配 Trezor Suite 使用，以开源固件著称，独立研究者可以审计代码。和 Ledger 一样，Trezor 覆盖主流币种，并使用相同的助记词备份模式：你那 12 或 24 个词的恢复短语才是真正的钱包，设备是可以替换的。</p>
+      <p>两个品牌在绝对意义上都不是“最好”，本站也不给它们排名。按你持有的币种、你更喜欢的配套 App，以及你所在地的官方可售情况来选。比品牌重要得多的是：买正品、自己设置、守护好助记词。</p>
+      <h2>怎么选：一条简单的决策路径</h2>
+      <ol>
+        <li><strong>几百美元以下，还在摸索：</strong> 一个口碑好的热钱包就够了。风险金额小，而且你需要练习。</li>
+        <li><strong>经常交易或用 DeFi/NFT：</strong> 热钱包是实用的工具——EVM 链用 MetaMask，多链手机用 Trust Wallet。</li>
+        <li><strong>持有你输不起的金额，且很少交易：</strong> 买个硬件钱包。麻烦本身就是优点。</li>
+        <li><strong>两者混合：</strong> 零花钱放热钱包，储蓄放冷钱包。按计划把利润转去冷储存，不要凭冲动。</li>
+      </ol>
+      <p>还有一个考虑：链支持。在选定钱包之前，检查它是否支持你持有的具体币种。不支持你的币的钱包收不到币，而向不支持的钱包发币是最常见的新手损失之一——而且通常不可逆。</p>
+      <div id="tokvs-wallet-picker">
+  <style>
+    #tokvs-wallet-picker .tokvs-opt { background:#fff; border:1.5px solid #D8DCD2; font:inherit; font-weight:700; padding:9px 16px; border-radius:999px; cursor:pointer; margin:0 8px 8px 0; }
+    #tokvs-wallet-picker .tokvs-opt.tokvs-picked { background:#12150F; color:#fff; border-color:#12150F; }
+    #tokvs-picker-result { background:#F4F6F1; border-radius:12px; padding:12px 14px; margin-top:12px; }
+    #tokvs-picker-result:empty { display:none; }
+  </style>
+  <h2>3 个问题选钱包类型</h2>
+  <p><strong>你会持有多少？</strong></p>
+  <p>
+    <button type="button" class="tokvs-opt" data-q="amount" data-v="small" aria-pressed="false">小额起步金额</button>
+    <button type="button" class="tokvs-opt" data-q="amount" data-v="serious" aria-pressed="false">一笔不小的金额</button>
+  </p>
+  <p><strong>你多久交易一次？</strong></p>
+  <p>
+    <button type="button" class="tokvs-opt" data-q="freq" data-v="daily" aria-pressed="false">每天</button>
+    <button type="button" class="tokvs-opt" data-q="freq" data-v="rarely" aria-pressed="false">很少</button>
+  </p>
+  <p><strong>你对助记词有多适应？</strong></p>
+  <p>
+    <button type="button" class="tokvs-opt" data-q="seed" data-v="fine" aria-pressed="false">没问题</button>
+    <button type="button" class="tokvs-opt" data-q="seed" data-v="nervous" aria-pressed="false">有点紧张</button>
+  </p>
+  <p id="tokvs-picker-hint">回答全部 3 个问题查看推荐。</p>
+  <div id="tokvs-picker-result" aria-live="polite"></div>
+  <p class="note">这指向的是一种钱包类型，而不是某个具体产品。下面提到的品牌只是例子，不是背书。</p>
+</div>
+
+      <h2>设置你的第一个钱包而不搞砸</h2>
+      <ol>
+        <li>只从官网或官方应用商店页面下载。仔细核对开发者名称和网址。</li>
+        <li>创建一个新钱包（不要导入别人给你的助记词——那组词属于别人的钱包，或者属于骗子）。</li>
+        <li>当 App 显示你的助记词——通常是 12 或 24 个词——按顺序手写在纸上。不要截图，不要粘贴到备忘录或云存储，不要发邮件给自己。</li>
+        <li>当 App 要求你重新输入助记词时进行验证。这能在还来得及修正时发现抄写错误。</li>
+        <li>设一个强 App 密码或 PIN，开启 App 提供的任何额外锁定（生物识别、自动锁定），然后在转移任何大额资金前先发一笔极小额测试。</li>
+      </ol>
+      <h2>助记词安全：不能跳过的一环</h2>
+      <p>你的助记词 <em>就是</em> 你的钱包。任何拥有这些词的人都可以在自己的设备上恢复你的钱包并拿走一切，没有客服团队能逆转。在自托管里没有“忘记密码”。正规客服 <strong>永远不会</strong> 索要你的助记词——索要的人就是在偷你的东西，没什么好说的。</p>
+      <p>实用规则：纸胜过手机（截图会被备份到云端并批量盗走）；两个分开的安全地点各放一份胜过一份；如果你住的地方火灾或洪水是真实风险，金属备份板胜过纸。还有，永远不要在任何网站、表单或“验证器”工具里输入助记词——它一触网，就视为已泄露，把币转到一个新钱包。我们的 <a href="wallet-safety.html">钱包安全指南</a> 更深入地讲了储存、继承，以及助记词泄露后怎么办。</p>
+      <h2>“不是你的私钥，就不是你的币”——它真正的意思</h2>
+      <p>这句话说得直白是有原因的：交易所里的币是交易所打的一张欠条。如果交易所被黑、被冻结或破产，你的访问权取决于别人的危机处理。历史已经提供了惨痛的例子，这就是有经验的持有者反复说这句话的原因。</p>
+      <p>但反过来也成立：自托管把全部责任转移给你。丢了助记词，币就和交易所倒闭时一样彻底没了——没有客服台。所以请把这句话当作思考的提示，而不是命令：理解两种风险，合理分散持仓，永远不要在任何一边放一笔你没有想清楚的金额。</p>
+      <h2>先买币，再转到你的钱包</h2>
+      <p>大多数新手先在交易所买——法币入金通道、深流动性和简单界面都在那里——然后再把币转到自己的钱包。流程是：在交易所验证、买 USDT 或你选的币，然后提到你的钱包地址。务必先发一笔小额测试提币，确认到账，再发剩下的。全额转账时地址或网络错了，是加密世界最贵的打字错误。</p>
+      <p class="in-cta">从一个交易所账户开始： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a> <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">注册 Bybit 账号</a></p>
+      <p>如果你更喜欢 Bitget，它也可以用——链接通往 <a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">Bitget 官网首页</a> 官网首页，通过 TokVS 没有返佣。无论你选哪家交易所，买完之后的钱包步骤都一样：从钱包 App 本身复制你的收款地址（绝不从消息或截图里复制）、仔细核对网络匹配，并小额测试。</p>
+      <h2>让新手花真金白银的常见错误</h2>
+      <ul>
+        <li><strong>给助记词拍照。</strong> 手机备份会同步到云端。云会被攻破。纸不会同步到任何地方。</li>
+        <li><strong>安装了假钱包 App。</strong> 仿冒 App 排在搜索结果和广告前面。每次都要：官方商店 + 核实过的开发者名称。</li>
+        <li><strong>盲签交易。</strong> 如果某个网站要求你的钱包签署你不理解的东西，拒绝。批准也是一笔交易。</li>
+        <li><strong>提币选错网络。</strong> USDT 存在于多个网络上；发错网络可能让资金滞留或丢失。每次都要保证两边网络一致。</li>
+        <li><strong>把所有东西放在一个地方。</strong> 一家交易所、一个钱包、一份助记词——每个单点故障都是未来的故事。分散风险。</li>
+      </ul>
+      <h2>多签与社交恢复：进阶内容</h2>
+      <p>当你对单个助记词感到自在后，你会听到两种升级。 <strong>多签</strong> 要求两把或更多不同的私钥批准一笔交易——例如三台设备中的两台必须签名。它消除了单点故障，但也增加了实打实的复杂性：丢太多把私钥，你就会像丢了一个助记词一样彻底把自己锁在外面。对大多数新手来说，多签是以后再学的东西，不是起步的东西。</p>
+      <p><strong>社交恢复</strong> 是听起来更友好的想法：可信联系人帮你在丢失私钥时恢复访问。问题在于它重新引入了可信第三方——而这正是自托管要去掉的东西——而且各种实现的安全性差异很大。两个选项都没有错；两者都是拿一种风险换另一种风险。考虑它们的合适时机，是当你的持仓大到额外设置成本小于丢失单个助记词的风险时。</p>
+      <h2>买币本身：交易要花多少钱</h2>
+      <p>在交易所买币再转到钱包，要付标准现货手续费：Binance 挂单/吃单 0.10% / 0.10%，OKX 0.08% / 0.10%，Bybit 0.10% / 0.10%。交易前务必以交易所官方费率页为准，因为费率表会变、活动来来去去。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">现货与合约，App 界面干净</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">注册 Bybit 账号</a></div>
+        </div>
+        <p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。</p>
+      </div>
+
+      <h3>热钱包和冷钱包有什么区别？</h3>
+      <p>热钱包连接互联网（手机 App 或浏览器扩展），日常使用方便。冷钱包把私钥离线保存在硬件设备上，更适合你很少动用的长期持仓。</p>
+      <h3>MetaMask 对新手安全吗？</h3>
+      <p>MetaMask 用得很广，只要你养成好习惯，对 EVM 链来说没问题：只从官方来源下载、绝不分享助记词、批准前检查每个连接和签名请求。</p>
+      <h3>如果我只持有小额，还需要硬件钱包吗？</h3>
+      <p>不一定。学习期间持有几百美元的话，一个口碑好的热钱包是合理的。等金额增长到你输不起的程度时，再考虑硬件钱包。</p>
+      <h3>如果我丢了助记词会怎样？</h3>
+      <p>没有助记词就无法恢复钱包——币实际上就丢了。这就是为什么放在安全地方的纸质备份比你选的 App 或设备更重要。</p>
+      <h3>我能在 MetaMask 里存比特币吗？</h3>
+      <p>不能——MetaMask 是为 EVM 兼容链构建的，原生不支持比特币。BTC 请用支持比特币的钱包，比如 Trust Wallet 或硬件钱包。</p>
+      <h3>如果钱包公司倒闭了会怎样？</h3>
+      <p>你的币生活在区块链上，不在公司里。只要你有助记词，就可以在另一个兼容的 App 或设备里恢复同一个钱包。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">如何购买比特币：全流程详解</a></li>
+        <li><a href="wallet-safety.html">钱包与助记词安全</a></li>
+        <li><a href="buy-usdt.html">如何购买 USDT：全部方式对比</a></li>
+        <li><a href="avoid-scams.html">加密货币是骗局吗？8 种骗局要认清</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+  <script src="/js/tokvs-widgets.js"></script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

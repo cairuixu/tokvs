@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>如何用 PayPal 买比特币：3 种方法 — TokVS</title>
+<meta name="description" content="用 PayPal 买比特币：PayPal 自己的加密功能、P2P 商家或接受 PayPal 入金的经纪商。真实路线、真实成本、地区注意事项。">
+<link rel="canonical" href="https://tokvs.com/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-bitcoin-with-paypal">
+<meta property="og:title" content="用 PayPal 买比特币：3 种真实方法 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="三条可行的 PayPal 换比特币路线、各自的成本和陷阱。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/how-to-buy-bitcoin-with-paypal">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "用 PayPal 买比特币", "item": "https://tokvs.com/guides/how-to-buy-bitcoin-with-paypal"}]}, {"@type": "Article", "headline": "如何用 PayPal 买比特币：3 种方法", "description": "用 PayPal 买比特币：PayPal 自己的加密功能、P2P 商家或接受 PayPal 入金的经纪商。真实路线、真实成本、地区注意事项。", "datePublished": "2026-10-16", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/how-to-buy-bitcoin-with-paypal", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "我能用同样的方式用 PayPal 买以太坊或 USDT 吗？", "acceptedAnswer": {"@type": "Answer", "text": "是——同样的三条路线适用于 ETH、USDT 和其他支持的币种。成本排序和注意事项完全相同；变的只是资产。"}}, {"@type": "Question", "name": "为什么我的 PayPal 没有显示加密资产板块？", "acceptedAnswer": {"@type": "Answer", "text": "PayPal 的加密功能受地区锁定（美国加部分其他地区）。如果没有，你的地区就没有——改用路线 2 或 3，或者改用卡入金。"}}, {"@type": "Question", "name": "先把 PayPal 提现到我的银行再买会更便宜吗？", "acceptedAnswer": {"@type": "Answer", "text": "几乎总是这样。PayPal 到银行通常免费或便宜；然后用银行转账或用卡按正常费率买加密资产。多这一跳比直接走 PayPal 加密路线省下真金白银。"}}, {"@type": "Question", "name": "我能用 PayPal Credit 买比特币吗？", "acceptedAnswer": {"@type": "Answer", "text": "技术上有时可行，实际上是个糟糕的主意：现金预支式的手续费加上加密波动，就是人们制造债务的方式。如果你是借钱买比特币，停下来重新考虑整个计划。"}}, {"@type": "Question", "name": "PayPal 会向税务机关报告加密购买吗？", "acceptedAnswer": {"@type": "Answer", "text": "PayPal 在法律要求的地方出具税务文件（门槛因司法管辖区而异），而且区块链本来就是公开的。假设一切都可见；从第一天起保留记录。"}}, {"@type": "Question", "name": "我能把比特币卖回 PayPal 吗？", "acceptedAnswer": {"@type": "Answer", "text": "通过 PayPal 自己的功能，你可以在可用地区卖回你的 PayPal 余额。通过 P2P，你会把 BTC 卖给一个用 PayPal 付款的商家换法币。路线相同，方向相反。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 用 PayPal 买比特币</div>
+      <h1>如何用 PayPal 买比特币</h1>
+      <p class="sub">PayPal 不是通用的比特币入金通道——但存在三条真实路线。下面是每一条、各自的成本和哪条适合你的情况。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 8 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>首先，诚实地先说</h2>
+      <p>PayPal 不是通用的比特币入金通道。你是否能用它，取决于 <strong>你住在哪里以及你走哪条路线</strong> ——而且每条路线都比普通银行转账贵。如果你明确就是想把 PayPal 余额花在比特币上，下面是三条真实路线，按实用性排序。在指望其中任何一条之前，先确认你所在地区的可用性。</p>
+      <h2>路线 1：PayPal 自己的加密功能（最简单，在可用地区）</h2>
+      <p>PayPal 自己在以下地方提供加密购买 <strong>美国和部分其他地区</strong> ——打开 PayPal App、找到加密资产板块，你可以直接用余额或已绑定的资金买比特币。优点：零新账户、熟悉的界面。缺点： <strong>你不能把比特币提现到你自己的钱包</strong> 在大多数实现中（它留在 PayPal 内），点差比交易所汇率宽，而且可用性受地区锁定。适合“我想要 50 美元的 BTC 敞口，就在我已经用的 App 里”。不适合“我想要真正由我控制的比特币”。</p>
+      <h2>路线 2：接受 PayPal 的 P2P 商家</h2>
+      <p>在 P2P 市场（如 Binance P2P）上，一些商家把 <strong>PayPal</strong> 列为接受的付款方式。流程就是标准的 P2P：选商家、用 PayPal 付款、他们从托管释放加密资产。这条路线特有的两个警告：1. PayPal 的 <strong>购买保护通常不包括数字货币</strong> ——查看 PayPal 的政策；不要指望拒付。2. PayPal 付款的撤销方式与银行转账不同，所以信誉好的商家会把这种风险算进报价——预期汇率比银行转账 P2P 更差。在 App 里按付款方式筛选，看看你附近是否有商家接受它。</p>
+      <p class="in-cta">P2P 是最便宜的 PayPal 路线： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></p>
+      <h2>路线 3：接受 PayPal 入金的交易所和经纪商</h2>
+      <p>少数交易所和加密经纪商接受 PayPal 作为 <strong>入金方式</strong> ——你用 PayPal 给账户入金，然后在他们的现货市场买比特币。可用性因地区而异很大，PayPal 的入金手续费通常高于用卡或银行转账。如果你走这条路线：确认 PayPal 入金是否支持 <em>（在你所在的国家）</em> （先在官网确认），并比较与路线 2 的全包成本后再投入。</p>
+      <h2>它的成本（不要跳过这一节）</h2>
+      <p>每条 PayPal 路线都带有溢价：PayPal 自己加密功能上的点差、P2P 上商家的风险加价，或经纪商的入金费。凭经验，预期要付 <strong>明显高于银行转账购买</strong> ——有时高达几个百分点。如果目标是最小化成本而不是专门花掉 PayPal 余额，借记卡或银行转账每次都胜出。确认前务必查看最终报价；永远不要想当然。</p>
+      <div class="callout warn"><b>PayPal 特有的陷阱：</b> 1. “发 PayPal，我发 BTC”私信——没有托管，就没有交易，永远如此。2. 为加密资产付亲友款——设计上就是零保护。3. 任何索要你的 PayPal 登录信息“帮你买”的人都是钓鱼。</div>
+      <h2>你应该选哪条路线？</h2>
+      <ul>
+        <li><strong>小额、美国、只想要敞口</strong> → 路线 1（PayPal 自己的功能）。两分钟，搞定。</li>
+        <li><strong>想要真正由你控制的比特币</strong> → 路线 2（用接受 PayPal 的商家做 P2P），然后提现到你的钱包。</li>
+        <li><strong>在 PayPal 加密地区之外</strong> → 路线 2 或 3（如果可用）；否则用卡入金，完全跳过 PayPal。</li>
+      </ul>
+      <h2>成本对比：PayPal vs 其他选择</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>路径</th><th>典型的高于市场价的溢价</th><th>你得到</th></tr></thead>
+        <tbody>
+          <tr><td>PayPal 自己的加密功能</td><td>更高的点差（在 App 内查看）</td><td>PayPal 内的 BTC 敞口</td></tr>
+          <tr><td>用接受 PayPal 的商家做 P2P</td><td>商家风险加价</td><td>真正的 BTC，可提现</td></tr>
+          <tr><td>接受 PayPal 入金的经纪商</td><td>入金费 + 点差</td><td>经纪商处的真正 BTC</td></tr>
+          <tr><td>借记卡（供参考）</td><td>用卡处理费</td><td>交易所上的真正 BTC</td></tr>
+          <tr><td>银行转账（供参考）</td><td>最低</td><td>交易所上的真正 BTC</td></tr>
+        </tbody>
+      </table></div>
+      <p>确切数字随地区和提供商而变化——这张表诚实的信息是 <em>排序</em>，而不是数字：PayPal 路线的成本高于用卡，用卡高于银行转账。明明白白地为便利付费。</p>
+      <h2>全程指南：路线 1（PayPal 自己的功能）</h2>
+      <ol>
+        <li>打开 PayPal App → 找到加密资产板块（美国和部分地区；如果你看不到，你的地区就没有）。</li>
+        <li>选择比特币，输入金额。 <strong>完整阅读报价界面</strong> ——PayPal 会在你确认前显示点差/手续费。</li>
+        <li>用你的余额或已绑定的资金确认。BTC 会出现在你的 PayPal 加密余额里。</li>
+        <li>了解限制：在大多数实现中，你不能提现到外部钱包。这是敞口，不是所有权。</li>
+      </ol>
+      <h2>全程指南：路线 2（用接受 PayPal 的商家做 P2P）</h2>
+      <ol>
+        <li>在 Binance P2P（或同类平台）上，筛选买入 → BTC → 你的法币 → 付款方式 <strong>PayPal</strong>.</li>
+        <li>严格审查商家：已完成订单数高、95% 以上的完成率、老账号。接受 PayPal 的商家更少，所以不要降低你的标准。</li>
+        <li>下单——BTC 锁定在托管中。通过 PayPal 向商家账户支付准确金额。附言：只写订单号。</li>
+        <li>点已付款、等待释放、在关闭前核实你钱包里的 BTC。然后如果你想要真正的托管，就提现到你自己的钱包。</li>
+      </ol>
+      <div class="callout warn"><b>为什么路线 2 需要格外小心：</b> PayPal 付款可以被撤销；银行转账大多不能。每个诚实的商家都会把这种风险算进价格——如果一个 PayPal P2P 报价看起来 <em>更便宜</em> 比银行转账报价，说明有问题。走开。</div>
+      <h2>税务说明（不要跳过）</h2>
+      <p>在许多国家，加密资产在你之后卖出或兑换的那一刻就构成应税事件——在一些国家，购买本身也有申报影响。美国把加密资产当作财产（卖出时征资本利得税）；欧盟在 MiCA 等不断演变的框架下因成员国而异。这不是税务建议：从第一天起保留每笔交易的记录（日期、金额、价格），并在交易大额之前查看你当地的规则。</p>
+      <h2>PayPal vs Cash App vs Venmo：全家福</h2>
+      <p>PayPal 不是唯一有加密资产的支付 App： <strong>Cash App</strong> （Block 公司）让美国用户能以极低的摩擦买比特币，以及 <strong>Venmo</strong> （PayPal 旗下）提供在可用地区的加密购买。处处都是同一类权衡：方便、地区锁定、点差比交易所宽，而且通常不能提现到外部。如果你已经生活在这些 App 里并想要小额敞口，它们没问题。如果你想要按真实价格拿到真正的比特币，它们都是昂贵的中介——选最便宜的路线，而不是最熟悉的 logo。</p>
+      <h2>真实成本，实例计算</h2>
+      <p>假设你想要 500 美元的 BTC。 <strong>银行转账到交易所：</strong> 约 0.50 美元手续费（0.10%），你按市场价得到约 499.50 美元的 BTC。 <strong>PayPal P2P 路线：</strong> 商家溢价，比如 2–4% → 480–490 美元的 BTC。 <strong>PayPal 自己的功能：</strong> 点差加手续费，差不多或更贵。500 美元的 PayPal 便利税大约是 <strong>$10–20</strong> ——如果替代方案是根本不买，那就值得；如果银行转账明明就在手边，那就很傻。</p>
+      <h2>买入后：把它放到真正的地方</h2>
+      <p>无论你走哪条路线，终局都一样：真正由你控制的比特币。从 P2P 或经纪商那里，提现到你自己的钱包（先小额测试、完整验证地址、正确的网络——永恒的清单）。从 PayPal 自己的功能来看，要明白你持有的是敞口，不是币——并规划你的 <em>真正的</em> 第一次购买（银行转账、限价单、自托管）作为后续。我们的 <a href="how-to-buy-bitcoin.html">完整比特币指南</a> 会妥善讲清这一点。</p>
+      <h2>常见的 PayPal 加密错误</h2>
+      <ol>
+        <li><strong>以为 PayPal 余额在各地都能直接用于加密资产。</strong> 加密功能受地区锁定；围绕它做计划前先确认。</li>
+        <li><strong>为 P2P 交易发“亲友”付款。</strong> 设计上就是零保护，而且它违反了 PayPal 关于商业交易的条款。用商品和服务付款——或者更好，用托管 P2P。</li>
+        <li><strong>忽略点差。</strong> 报价界面 <em>就是</em> 就是手续费披露。读它；路线之间的差异往往是 2–4%。</li>
+        <li><strong>把币永远留在经纪商那里。</strong> 通过 P2P/经纪商买的 BTC，一旦金额重要就应该移到你自己的钱包。App 里的敞口只是第一步，不是目的地。</li>
+      </ol>
+      <h2>PayPal 什么时候才是正确的选择</h2>
+      <p>三个诚实的情况：1. 你的可花资金 <em>在</em> PayPal 里（靠 PayPal 收款的自由职业者都懂这种生活），先把它转到银行要花时间或手续费；2. 你想要小额、快速、熟悉的首次敞口，不用新账户；3. 你所在地区到交易所的银行通道不可靠。在这三种情况下，你都是明明白白地在为便利付溢价——这没问题，只要这是一个决定，而不是意外。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        </div>
+        <p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。</p>
+      </div>
+      
+      <h3>我能用同样的方式用 PayPal 买以太坊或 USDT 吗？</h3>
+      <p>是——同样的三条路线适用于 ETH、USDT 和其他支持的币种。成本排序和注意事项完全相同；变的只是资产。</p>
+      <h3>为什么我的 PayPal 没有显示加密资产板块？</h3>
+      <p>PayPal 的加密功能受地区锁定（美国加部分其他地区）。如果没有，你的地区就没有——改用路线 2 或 3，或者改用卡入金。</p>
+      <h3>先把 PayPal 提现到我的银行再买会更便宜吗？</h3>
+      <p>几乎总是这样。PayPal 到银行通常免费或便宜；然后用银行转账或用卡按正常费率买加密资产。多这一跳比直接走 PayPal 加密路线省下真金白银。</p>
+      
+      <h3>我能用 PayPal Credit 买比特币吗？</h3>
+      <p>技术上有时可行，实际上是个糟糕的主意：现金预支式的手续费加上加密波动，就是人们制造债务的方式。如果你是借钱买比特币，停下来重新考虑整个计划。</p>
+      <h3>PayPal 会向税务机关报告加密购买吗？</h3>
+      <p>PayPal 在法律要求的地方出具税务文件（门槛因司法管辖区而异），而且区块链本来就是公开的。假设一切都可见；从第一天起保留记录。</p>
+      
+      <h3>我能把比特币卖回 PayPal 吗？</h3>
+      <p>通过 PayPal 自己的功能，你可以在可用地区卖回你的 PayPal 余额。通过 P2P，你会把 BTC 卖给一个用 PayPal 付款的商家换法币。路线相同，方向相反。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">如何购买比特币：全流程详解</a></li>
+        <li><a href="buy-usdt.html">如何买 USDT：全部方法</a></li>
+        <li><a href="avoid-scams.html">加密货币是骗局吗？8 种骗局要认清</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

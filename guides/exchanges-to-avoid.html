@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>要避开的加密交易所（及原因） — TokVS</title>
+<meta name="description" content="哪些加密交易所崩盘了，FTX、Celsius、Voyager、BlockFi、Mt. Gox 和 QuadrigaCX 出了什么问题，哪些交易所目前不服务主要西方市场——外加在信任任何平台之前要检查的危险信号。">
+<link rel="canonical" href="https://tokvs.com/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/exchanges-to-avoid">
+<meta property="og:title" content="要避开的加密交易所（及原因） — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="公开记录中的崩盘交易所、当前的市场限制，以及每个新手在信任一个平台之前应该检查的危险信号。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/exchanges-to-avoid">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "要避开的交易所", "item": "https://tokvs.com/guides/exchanges-to-avoid"}]}, {"@type": "Article", "headline": "要避开的加密交易所（及原因）", "description": "哪些加密交易所崩盘了，FTX、Celsius、Voyager、BlockFi、Mt. Gox 和 QuadrigaCX 出了什么问题，以及哪些交易所目前不服务主要西方市场。", "datePublished": "2026-10-30", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/exchanges-to-avoid", "dateModified": "2026-10-30", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "FTX 还在运营吗？", "acceptedAnswer": {"@type": "Answer", "text": "不。FTX 在 2022 年 11 月崩盘并经历了破产程序。它的交易平台没有作为正常交易所运营，客户成了破产程序中的债权人。如果你看到一个自称是重启的 FTX 的网站，务必极其谨慎，在信任它之前通过官方破产通讯核实。"}}, {"@type": "Question", "name": "我能从崩盘的交易所拿回钱吗？", "acceptedAnswer": {"@type": "Answer", "text": "有时可以，但永远不要想当然。破产程序可以在数年内返还一部分客户资金，金额取决于剩余资产和债权排序。有些案例返还了可观的金额，有些则很少。在法院批准的分配真正到达你手里之前，把崩盘平台上的任何钱都视为有风险的。"}}, {"@type": "Question", "name": "为什么人们谈论储备金证明？", "acceptedAnswer": {"@type": "Answer", "text": "储备金证明是交易所展示它持有其声称持有的资产的一种方式，通常通过第三方鉴证。它之所以重要，是因为几个崩盘的平台最后被发现并没有持有它们声称的东西。但它有局限：它展示的是某一时刻的资产，而不是负债，也不是审计。把它当作几个信号之一来读，而不是保证。"}}, {"@type": "Question", "name": "监管意味着交易所安全吗？", "acceptedAnswer": {"@type": "Answer", "text": "监管降低了一些风险，但没有完全消除任何风险。持牌交易所受规则、报告和监督约束，这总比完全没有监督好。但受监管的公司仍然可能倒闭、冻结提币或遭受黑客攻击。监管是需要与储备金透明度、过往记录和你在平台上放多少钱一起权衡的因素之一。"}}, {"@type": "Question", "name": "为什么我不能在我国家注册交易所？", "acceptedAnswer": {"@type": "Answer", "text": "交易所出于法律和牌照原因限制国家。例如，我们的国家可用性表（核查于 2026 年 10 月 30 日）显示，Binance 不在欧洲经济区和英国接纳新用户，Bybit 不服务美国和加拿大，Bitget 在美国、英国和加拿大受限，欧洲经济区准入待定。可用性会变，所以在围绕任何交易所做计划之前，请查看表格和官网。"}}, {"@type": "Question", "name": "我该把所有加密资产都放在交易所吗？", "acceptedAnswer": {"@type": "Answer", "text": "对大多数新手来说，实际答案是否定的，一旦金额对你重要就不是了。交易所里只放你积极交易的部分，把长期持仓移到你控制的钱包里，助记词由你持有。这样，即使平台倒闭，你的长期持仓也不会困在它的破产里。在金额变大之前、而不是之后，学会自托管。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 要避开的交易所</div>
+      <h1>要避开的加密交易所（及原因）</h1>
+      <p class="sub">有些交易所消失是因为崩盘了。另一些是好公司，只是恰好不服务你的国家。如果你盲目选择，两种都会浪费你的时间或困住你的钱——下面只用公开记录告诉你如何区分它们。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 11 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表（核查于 2026 年 10 月 30 日）</a> · 可用性会变，行动前请在官网核实。</p>
+      <div class="callout warn"><b>在任何地方注册之前：</b> 查看 <a href="../exchanges.html#availability">国家可用性表</a> 。在你国家不开户的交易所不是备用计划——而是死胡同，存入之后才发现是最糟糕的时机。</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>崩盘交易所：公开记录显示了什么</h2>
+      <p>下面每家交易所都在那里，是因为已经属于公开记录的事件——破产、法庭程序和当时就被报道的黑客事件。这些都不是谣言。列出它们的目的不是吓你离开加密世界；而是展示确切的失败模式，这样如果它们在别处出现，你能认出警告信号。</p>
+      <h3>FTX — 2022 年 11 月崩盘</h3>
+      <p>FTX 曾是世界上最大的加密交易所之一，直到 2022 年 11 月，在客户资金被用于支持一家关联交易公司的报道后几天内崩盘。它申请了破产，其创始人在美国后来被判欺诈罪，客户成了破产程序中的债权人，而这个程序已经拖了数年。 <strong>教训：</strong> 规模和名人代言不是良好托管的证据。如果一个平台不能清楚地展示客户资金与其自身交易是分开保管的，那是离开的理由，而不是可以忽略的细节。</p>
+      <h3>Celsius — 2022 年崩盘</h3>
+      <p>Celsius 对加密存款提供高收益，2022 年 6 月冻结提币，次月申请破产。它的业务依赖于把客户存款贷入高风险策略，当市场下跌时，它欠储户的和它持有的之间的缺口变得无法弥合。 <strong>教训：</strong> 看起来远高于市场利率的收益不是白拿的钱——它是对风险的补偿，而风险就是平台可能无法归还你的存款。入金前，先读清楚一个收益产品实际上拿你的资金做什么。</p>
+      <h3>Voyager — 2022 年崩盘</h3>
+      <p>Voyager 是一家加密经纪商，在一个大借款人未能偿还大额贷款后，于 2022 年 7 月申请破产。那些以为自己是在一家简单的经纪商持有资产的客户发现，他们的资金已经被转贷出去，追回取决于破产法庭而不是他们的账户余额。 <strong>教训：</strong> 理解为你持有的资产和代表你借出的资产之间的区别。如果一个平台借出客户资产，你的风险也是借款人的风险。</p>
+      <h3>BlockFi — 2022 年崩盘</h3>
+      <p>BlockFi 是一家加密借贷机构，在 FTX 崩盘几周后、于 2022 年 11 月申请破产，它对 FTX 有重大敞口。它曾提供许多用户当作储蓄账户的计息账户，但那些账户实际上是对公司的无担保贷款，客户再次成了破产债权人。 <strong>教训：</strong> 加密计息账户不是银行账户。许多国家的银行存款有存款保险；加密借贷产品一般没有，“计息账户”营销永远不应该被读作“有保险的储蓄”。</p>
+      <h3>Mt. Gox — 2014 年被黑并崩盘</h3>
+      <p>Mt. Gox 曾是占主导地位的比特币交易所，处理着世界上大部分比特币交易，直到 2014 年崩盘，之前数年间因盗窃损失了客户的大部分比特币。损失发现得很晚，公司申请了破产，债权人的重整程序已经持续了十年。 <strong>教训：</strong> 安全实践和透明度比市场份额更重要。一个主导交易的平台仍然可能内部控制薄弱，早期加密历史表明，问题可以在浮出水面之前隐藏很久。</p>
+      <h3>QuadrigaCX — 2019 年崩盘</h3>
+      <p>QuadrigaCX 是一家加拿大交易所，在创始人去世后于 2019 年崩盘，据报道创始人是唯一持有存有客户资金的钱包密码的人。调查人员后来发现，大量客户资金无法找到，而且该平台一直在严重短缺的情况下运营。 <strong>教训：</strong> 有单点故障的平台——一个人持有密钥、一个钱包持有资金、一个没人能说出名字的审计师——在设计上就是脆弱的。问问还有谁控制着钱，如果那个人消失了会发生什么。</p>
+      <h2>这些崩盘的共同点</h2>
+      <p>年代不同、商业模式不同，但同样的三种模式反复出现。第一， <strong>客户资金并非真正隔离</strong> 与公司自己的钱或交易赌注分开。当一个平台能动用客户存款来弥补自己的亏损时，每个客户都在不知不觉中成了无担保贷款人。第二， <strong>不透明让问题隐藏到为时已晚</strong>。资产负债表不公开，审计缺失或肤浅，用户无法核实被告知的东西。第三， <strong>增长跑赢了管控</strong>：平台向借贷、自营交易或新产品的扩张速度超过了其风险管理、托管和合规跟得上的速度。</p>
+      <p>这就是为什么新手听到的三种防御确实重要，以及为什么它们合在一起、而不是单独起作用才重要。 <strong>储备金证明</strong> 是指平台通过第三方鉴证展示它持有其声称持有的资产。它有用但有限：它只捕捉某一时刻，本身不能证明负债，也不是全面审计——把它当作一个信号来读，而不是保证。 <strong>监管</strong> 是指平台在获得牌照的司法辖区内在规则、报告和监督下运营，这降低了一些风险但没有完全消除任何风险；受监管的公司仍然可能倒闭。 <strong>自托管</strong> 是指在你控制助记词的钱包里持有自己的资产，这样任何平台的倒闭都困不住它们。这些单独都不够。合在一起，它们就是实用的工具包：优先选择透明且受监督的平台，同时仍然不要把长期持仓留在任何平台上。</p>
+      <h2>目前受限：不服务你市场的交易所</h2>
+      <p>第二种“避开”与崩盘无关。一些在运营的交易所只是出于法律和牌照原因不在某些国家接纳用户。从受限国家注册其中一家是浪费时间：验证会失败，或者账户日后会受限。更糟的是，有些用户用虚假位置信息绕过限制，这可能导致账户冻结和失去访问权限——永远不要这样做。下面的事实来自 TokVS 的 <a href="../exchanges.html#availability">国家可用性表</a>，核查于 2026 年 10 月 30 日。可用性会变，所以在围绕任何交易所做计划之前，请在官网核实。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>交易所</th><th>目前不服务</th><th>该怎么做</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>不在欧洲经济区和英国接纳新用户</td><td>查看可用性表，找在你国家开户的平台</td></tr>
+          <tr><td>Bybit</td><td>不服务美国和加拿大</td><td>查看可用性表，找在你国家开户的平台</td></tr>
+          <tr><td>Bitget</td><td>在美国、英国和加拿大受限；欧洲经济区准入待定</td><td>查看可用性表，找在你国家开户的平台</td></tr>
+        </tbody>
+      </table></div>
+      <p>有两点值得注意。第一，“受限”不是指控：这些是在运营的交易所，逐个市场做牌照决策，它们在某个国家的地位可能随着牌照的授予或撤销而变化。第二，受限清单不是对称的——一家交易所可能为你的国家提供现货交易而不提供衍生品，或者在对新用户关闭的同时继续接纳现有用户。这就是为什么可用性表、而不是任何单篇文章，是正确的第一检查：它被维护为一个追踪这些区别的地方。</p>
+      <h2>信任任何交易所之前要检查的危险信号</h2>
+      <p>在存入超过测试金额之前，对任何平台——新的或老牌的——都用这份清单。 <strong>匿名或无法核实的领导层：</strong> 如果你无法确认是谁在运营这个平台，你就无法评估他们的过往记录。 <strong>没有牌照或公司信息：</strong> 合法平台会说明它在哪里注册、受哪些监管机构监督；这里的含糊是一种选择，而不是疏忽。 <strong>承诺保证收益：</strong> 没有诚实的平台能保证投资回报，承诺本身就是经典的欺诈信号。 <strong>提币冻结或无法解释的延迟：</strong> 偶尔维护是正常的，但反复出现或无法解释的提币问题是最可靠的早期麻烦警告。 <strong>不透明的储备金：</strong> 如果一个平台不公布任何储备金信息和可信的鉴证，你就是只信它的一面之词。 <strong>催促快速入金：</strong> 倒计时器、“有限额度”说法，以及催促更大入金的客服人员，都是销售手段，不是安全功能。</p>
+      <p>还有一个习惯属于这份清单：入金前，把平台的名字和“提币问题”、“监管警告”、“破产”这样的词一起搜索。十分钟的搜索能浮现营销页面永远不会提的问题，而且不花钱。如果结果中监管警告或未解决的提币投诉占主导，那就是你的答案，不管网站看起来多精美。</p>
+      <h2>该怎么做</h2>
+      <p>实际例行程序很短。第一，先查看 <a href="../exchanges.html#availability">国家可用性表</a> ，以找到真正居住地开户的平台。第二，优先选择公布储备金信息并清楚说明牌照的平台，并把两者都当作信号而不是保证。第三，在投入更大金额之前，先做一笔小额测试入金和一笔小额测试提币——能迅速处理小额提币的平台已经通过了唯一重要的测试。第四，一旦你持有的金额到了亏掉会心疼的程度，就学习自托管：把长期持仓移到你控制的钱包里，助记词离线、私密保管，交易所里只留积极交易的资金。最后，定期重新审视你的选择，因为可用性、牌照和储备金披露都会随时间变化。</p>
+      <p>本页上的崩盘还有一个容易被忽视的最后教训：在每个案例中，警告信号在崩盘前就存在，但只有去看的人才能看到。损失最少的用户通常是那些留记录、分散持仓、把大部分加密资产放在任何平台都冻结不了的地方的人。这不是偏执。这是加密世界里最便宜的保险，只需要一点注意力。</p>
+
+      <h3>FTX 还在运营吗？</h3>
+      <p>不。FTX 在 2022 年 11 月崩盘并经历了破产程序。它的交易平台没有作为正常交易所运营，客户成了破产程序中的债权人。如果你看到一个自称是重启的 FTX 的网站，务必极其谨慎，在信任它之前通过官方破产通讯核实。</p>
+      <h3>我能从崩盘的交易所拿回钱吗？</h3>
+      <p>有时可以，但永远不要想当然。破产程序可以在数年内返还一部分客户资金，金额取决于剩余资产和债权排序。有些案例返还了可观的金额，有些则很少。在法院批准的分配真正到达你手里之前，把崩盘平台上的任何钱都视为有风险的。</p>
+      <h3>为什么人们谈论储备金证明？</h3>
+      <p>储备金证明是交易所展示它持有其声称持有的资产的一种方式，通常通过第三方鉴证。它之所以重要，是因为几个崩盘的平台最后被发现并没有持有它们声称的东西。但它有局限：它展示的是某一时刻的资产，而不是负债，也不是审计。把它当作几个信号之一来读，而不是保证。</p>
+      <h3>监管意味着交易所安全吗？</h3>
+      <p>监管降低了一些风险，但没有完全消除任何风险。持牌交易所受规则、报告和监督约束，这总比完全没有监督好。但受监管的公司仍然可能倒闭、冻结提币或遭受黑客攻击。监管是需要与储备金透明度、过往记录和你在平台上放多少钱一起权衡的因素之一。</p>
+      <h3>为什么我不能在我国家注册交易所？</h3>
+      <p>交易所出于法律和牌照原因限制国家。例如，我们的国家可用性表（核查于 2026 年 10 月 30 日）显示，Binance 不在欧洲经济区和英国接纳新用户，Bybit 不服务美国和加拿大，Bitget 在美国、英国和加拿大受限，欧洲经济区准入待定。可用性会变，所以在围绕任何交易所做计划之前，请查看表格和官网。</p>
+      <h3>我该把所有加密资产都放在交易所吗？</h3>
+      <p>对大多数新手来说，实际答案是否定的，一旦金额对你重要就不是了。交易所里只放你积极交易的部分，把长期持仓移到你控制的钱包里，助记词由你持有。这样，即使平台倒闭，你的长期持仓也不会困在它的破产里。在金额变大之前、而不是之后，学会自托管。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">新手如何购买加密货币</a></li>
+        <li><a href="is-binance-safe.html">Binance 安全吗？</a></li>
+        <li><a href="how-to-keep-your-binance-account-safe.html">如何保护你的 Binance 账户安全</a></li>
+        <li><a href="../exchanges.html#availability">国家可用性表</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

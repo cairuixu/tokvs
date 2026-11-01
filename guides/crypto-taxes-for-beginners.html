@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>新手加密税务：什么算数、记什么 — TokVS</title>
+<meta name="description" content="用大白话讲加密税务：什么算应税事件、为什么兑换即使不提现也可能应税、美国、英国和欧盟的规则在一般意义上有什么不同，以及每个新手都需要的记账模板。仅为一般信息，不是税务建议。">
+<link rel="canonical" href="https://tokvs.com/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/crypto-taxes-for-beginners">
+<meta property="og:title" content="新手加密税务 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="什么算应税事件、为什么兑换不提现也可能应税，以及每个新手都需要的记账模板。仅为一般信息，不是税务建议。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/crypto-taxes-for-beginners">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "新手加密税务", "item": "https://tokvs.com/guides/crypto-taxes-for-beginners"}]}, {"@type": "Article", "headline": "新手加密税务", "description": "什么算应税事件、为什么兑换即使不提现也可能应税、美国、英国和欧盟的规则在一般意义上有什么不同，以及每个新手都需要的记账模板。", "datePublished": "2026-10-30", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/crypto-taxes-for-beginners", "dateModified": "2026-10-30", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "只是持有加密资产就要交税吗？", "acceptedAnswer": {"@type": "Answer", "text": "在大多数国家，仅仅持有加密资产不是应税事件。税务通常在你处置它时才起作用，即卖出、兑换或花掉它。单是买入并持有，一般不会产生税单，但规则取决于你住在哪里，所以请查看你当地的规则。"}}, {"@type": "Question", "name": "把 USDT 换成 BTC 是应税事件吗？", "acceptedAnswer": {"@type": "Answer", "text": "在某些司法辖区，是的。把一种加密资产换成另一种可以算作处置第一种资产，即使没有法币碰过你的银行账户。这让许多新手吃惊。其他司法辖区对兑换的处理不同，所以在你假定兑换免税之前，先查你国家如何处理币币交易。"}}, {"@type": "Question", "name": "小额交易需要申报吗？", "acceptedAnswer": {"@type": "Answer", "text": "小额交易仍然是交易。有些国家对小额有申报门槛或豁免，但许多国家没有，而且规则经常变。稳妥的习惯是记录每笔交易，无论多小，这样日后你能用证据而不是猜测回答任何问题。"}}, {"@type": "Question", "name": "每笔交易我该保留什么记录？", "acceptedAnswer": {"@type": "Answer", "text": "每笔交易都要记录日期、所用平台、交易类型、流入的资产和数量、流出的资产和数量、已付手续费，以及交易当时的法币价值。交易所对账单和钱包历史也要留着。好的记录就是平静的报税季和痛苦的报税季之间的区别。"}}, {"@type": "Question", "name": "美国、英国和欧盟的规则有什么不同？", "acceptedAnswer": {"@type": "Answer", "text": "它们在结构上不同，而不只是细节上不同。美国一般把加密资产视为财产，英国有自己的资本利得框架和自己的免税额，欧盟成员国各自制定自己的规则，所以没有单一的欧盟加密税。税率、门槛和截止日期会变，所以本页刻意不给数字：请查看你当地的规则或咨询当地专业人士。"}}, {"@type": "Question", "name": "我该用加密税务软件还是请专业人士？", "acceptedAnswer": {"@type": "Answer", "text": "如果你在多个平台上有许多交易，软件能帮上忙，因为它导入交易所历史并为你计算收益。但软件的好坏取决于你喂给它的记录，而且它不能给你个人建议。如果你的情况涉及质押、经营收入或大额资金，请咨询当地税务专业人士。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 新手加密税务</div>
+      <h1>新手加密税务</h1>
+      <p class="sub">大多数国家都会以某种方式对加密资产征税——但规则针对的是你用它做什么，而不是拥有它。下面是大白话版本：什么算数、为什么兑换让人吃惊，以及让你远离麻烦的那一个习惯。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS 出品 · 阅读约 15 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · 数字和规则会变，行动前请在官网核实。</p>
+      <div class="callout warn"><b>先读这段：</b> 本页仅为一般信息，不是税务建议。税法经常变化，取决于你住在哪里和你的个人情况。关于你自己的税务决策，请咨询当地税务专业人士。</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>解释几乎一切的那一个概念</h2>
+      <p>世界上几乎每个加密税务系统都建立在一个区分之上： <strong>持有 vs 处置</strong>。在大多数国家，买入加密资产然后放在账户里不动，本身不是应税事件。在税务系统看来，还什么都没发生——你仍然拥有同一资产，也没有实现任何收益或亏损。税务问题从你 <strong>处置</strong> 资产时开始：当你卖出它、换成别的东西或花掉它时。那是大多数系统衡量的时刻——你为它付了什么、你得到了什么，以及两者之间的差额。</p>
+      <p>这就是为什么两个投资组合完全相同的新手，税务状况可能完全不同。一个三年前买了比特币后就再没动过；另一个每周来回交易。第一个人在那些年里可能完全没有应税事件。第二个人可能有几百个，即使他从没往银行账户提过一美元。是活动、而不是所有权，产生了文书工作。如果你从本页只记住一句话，就记住这一句： <strong>通常是交易、而不是持有，产生了应税事件</strong>.</p>
+      <p>也有例外和地方差异，有些国家即使没有卖出也对某些赚取征税，我们下面会讲。但持有 vs 处置的框架会帮你理解日后遇到的几乎每条规则。对一笔交易有疑问时，问自己：我是不是放弃了一项资产并得到了别的东西作为回报？如果答案是肯定的，就假定它可能需要记录，也可能需要申报。</p>
+      <p>本页仅为一般信息，不是税务建议。规则会变，且取决于你住在哪里——请就你的情况咨询当地税务专业人士。</p>
+      <h2>可能触发税务的四种活动</h2>
+      <p><strong>1. 把加密资产卖成法币。</strong> 这是最明显的一种。你以一个价格买入比特币，以另一个价格卖出换成美元、英镑或欧元。如果卖价高于买价，大多数国家把差额视为资本利得。如果卖价低于买价，它可能是资本亏损，在某些体系里可以抵消收益。无论如何，卖出本身就是重要的事件，而你需要的记录是交易两边的价格。</p>
+      <p><strong>2. 把一种加密资产换成另一种。</strong> 把比特币换成以太坊，或把 USDT 换成 Solana，感觉像是还留在加密世界里——没有任何东西到达你的银行账户，所以感觉不像收入。但在几个主要司法辖区，兑换算作处置第一种资产，就像你卖掉了它一样。盈亏按你收到的东西的价值衡量。这是新手最常见的意外，也是为什么那些活跃交易却从不提现的人有时会发现自己仍然欠税。我们在下面的 USDT 换 BTC 一节深入讲这个。</p>
+      <p><strong>3. 花掉加密资产。</strong> 在许多国家，用加密资产支付商品或服务也是一种处置。你放弃了一项资产并得到了回报，所以同样的盈亏计算适用。用自你买入以来已经翻倍的比特币买咖啡，从技术上讲也可能是应税事件，尽管金额很小。这就是为什么在这样对待它的国家，加密资产很少用于日常购物——记账负担是真实的。</p>
+      <p><strong>4. 赚取加密资产。</strong> 质押奖励、借贷平台的利息、空投、挖矿奖励，以及因工作而获得加密资产支付，在某些地方都可能被视为收入，按你收到时加密资产的价值计算。细节差异巨大：有些国家在收到时对奖励征税，有些在卖出时征税，有些对小额有豁免。不变的是，赚取是与交易分开的问题——即使你从不卖出任何东西，赚取也可能产生应税事件。</p>
+      <p>本页仅为一般信息，不是税务建议。规则会变，且取决于你住在哪里——请就你的情况咨询当地税务专业人士。</p>
+      <h2>为什么规则因国家而异</h2>
+      <p>没有全球统一的加密税。每个国家都把加密资产塞进自己现有的体系，塞法处处不同。理解你自己国家做法的一般形态，比记住别人的数字重要得多——而数字正是本页不会给你的，因为税率、门槛和截止日期会变，公布一个日后会变的数字对谁都没帮助。</p>
+      <p><strong>美国（一般意义上）。</strong> 美国一般把加密资产视为财产而非货币用于税务目的。这意味着资本利得框架适用于处置：卖出、兑换和消费都可能成为应税事件，持有资产的时间长短会影响收益的处理方式。交易所和个人都有申报义务，围绕质押奖励和空投的规则一直在演变。如果你是美国居民，实际要点是：活跃交易会产生大量须申报事件，好的记录不是可选项。</p>
+      <p><strong>英国（一般意义上）。</strong> 英国也对加密资产处置适用资本利得框架，有自己的年度免税额，以及关于哪些处置算数、收益如何汇总的自己的规则。币币兑换一般被视为处置。收入处理可能根据具体情况适用于质押奖励和类似收益。英国系统对记账有具体要求，免税额和税率近年来已经变过——这正是你应该查看现行规定、而不是依赖任何文章里的数字的原因。</p>
+      <p><strong>欧盟（一般意义上）。</strong> 没有单一的欧盟加密税。每个成员国制定自己的规则，差异很大：有些把加密收益按资本收入征税，有些按杂项收入征税，还有少数历来对长期持有的加密资产更宽容。除此之外，欧盟层面的加密平台申报规则正在扩大，这意味着无论你自己是否申报，你的交易所都可能把你的活动上报给当地税务机关。如果你住在欧盟，你的居住国是唯一重要的规则手册——为德国写的指南帮不了你在法国的人，反之亦然。</p>
+      <p>如果你完全住在别的地方，同样的原则适用：找到你自己国家的框架，用现行版本，忽略为其他司法辖区写的规则。加密资产几秒钟就能跨境；税法不能。</p>
+      <p>本页仅为一般信息，不是税务建议。规则会变，且取决于你住在哪里——请就你的情况咨询当地税务专业人士。</p>
+      <h2>USDT 换 BTC 的陷阱：没提现也要交税</h2>
+      <p>这是困住新手最多的场景。你用美元买 USDT。后来，你把 USDT 换成比特币。你从没往银行账户提过任何东西，所以在你看来什么应税的事都没发生——你只是在两种加密资产之间移动。但在某些司法辖区，这是错的。这次兑换被视为处置你的 USDT 并获得比特币，如果你的 USDT 仓位相对成本基础有任何收益，即使你的银行余额从未变化，那部分收益也可能应税。</p>
+      <p>具体到 USDT，兑换本身的收益常常很小，因为稳定币的设计就是保持在一美元附近。但“常常很小”不是“总是零”：如果你以折扣价获得 USDT、把它作为奖励收到，或者以某种方式赚到它而使其成本基础很低，差额可能是真实的。更大的问题不是一次兑换的规模——而是一连串兑换，每次单独都很小，却能累积成一长串你从未记录的须申报事件，因为每次都感觉什么都不算。</p>
+      <p>这个陷阱还有第二层。在某些司法辖区，稳定币换稳定币和币币兑换被区别对待，在另一些则被同等对待。有些国家对小额交易有豁免或简化处理，有些没有。唯一可靠的方法是把每次兑换都当作可能重要来记录，因为事后才判定它确实重要要难得多。你的交易所历史通常包含所有这些——但前提是你要在关闭账户或失去访问权限之前下载它。</p>
+      <p>本页仅为一般信息，不是税务建议。规则会变，且取决于你住在哪里——请就你的情况咨询当地税务专业人士。</p>
+      <h2>记账：放之四海而皆准的习惯</h2>
+      <p>如果税法因国家而异，记账就是那个放之四海而皆准的习惯。每个国家的每个税务系统都靠证据运转。当你能拿出交易的日期、金额、手续费和价值，你就能回答税务机关或会计问的任何问题。当你拿不出来，你就是在靠记忆重建历史，而记忆是个糟糕的会计。好消息是这个习惯很简单：当时就写下来，每次都写，剩下的自然会好起来。</p>
+      <p>从一张简单的电子表格开始。每笔交易一行，用下面模板里的列。开始时你不需要花哨的软件——备忘录 App 或电子表格就够你用第一年。重要的是连贯：同样的列，每笔交易都填，包括小的交易和那些感觉什么都不算的兑换。如果你用多个交易所或钱包，保留一份合并记录，而不是每个平台一份单独的记录，这样就不会有遗漏。</p>
+      <p>除了自己的电子表格，还要保留源文件：交易所交易历史导出、充值和提币记录，以及你用过的钱包地址。定期下载这些，不要一年才下一次，因为交易所可能改导出格式、限制旧历史，或者关闭你的账户。你的电子表格是摘要；导出文件是证据。两者都留着，并备份到交易设备以外的地方。</p>
+      <h3>你的记账模板</h3>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>列</th><th>写什么</th><th>为什么重要</th></tr></thead>
+        <tbody>
+          <tr><td>日期和时间</td><td>交易的准确日期</td><td>确定纳税年度和持有期</td></tr>
+          <tr><td>平台或钱包</td><td>发生的交易所或钱包</td><td>让你日后能追溯源文件</td></tr>
+          <tr><td>交易类型</td><td>买入、卖出、兑换、消费、质押、奖励</td><td>决定可能适用哪种税务处理</td></tr>
+          <tr><td>流入资产及数量</td><td>你得到了什么、得到了多少</td><td>收益计算的一半</td></tr>
+          <tr><td>流出资产及数量</td><td>你放弃了什么、放弃了多少</td><td>收益计算的另一半</td></tr>
+          <tr><td>已付手续费</td><td>交易手续费、网络费、价差</td><td>手续费常常构成你成本基础的一部分</td></tr>
+          <tr><td>当时的法币价值</td><td>双方的当地货币价值</td><td>税通常按法币计算，而不是按加密资产</td></tr>
+          <tr><td>说明</td><td>订单 ID、用途、任何异常</td><td>未来的你会感谢你</td></tr>
+        </tbody>
+      </table></div>
+      <p>还有一个值得养成的习惯：简短的月度例行程序。每月一次，从你用过的每个平台导出历史，把新行加进电子表格，并检查总额是否与你的账户显示大致相符。每月三十分钟胜过报税季一个恐慌的周末，而且能在问题——缺失的导出、遗忘的钱包——还容易修复时就抓住它们。</p>
+      <p>本页仅为一般信息，不是税务建议。规则会变，且取决于你住在哪里——请就你的情况咨询当地税务专业人士。</p>
+      <h2>新手常犯的五个错误</h2>
+      <p><strong>1. 以为没提现就不用交税。</strong> 如兑换一节所解释的，即使没有任何东西到达你的银行账户，处置也可能应税。这是加密税务中最昂贵的误解，因为它会让人交易一年后才发现随之而来的文书工作。</p>
+      <p><strong>2. 到报税季才开始记账。</strong> 交易所会保留历史，但不是永远，也不总是方便的格式。靠零散截图重建一年的交易很痛苦。边做边记，报税季就变成复核练习，而不是考古项目。</p>
+      <p><strong>3. 忘了质押奖励和空投。</strong> 奖励感觉像白拿的钱，小奖励感觉小到无关紧要。但收入处理可能在收到奖励时就适用，一年每周的小奖励加起来就是个实数。像记录交易一样记录奖励。</p>
+      <p><strong>4. 个人钱包和共用钱包混用。</strong> 用一个钱包同时做自己的交易、朋友的资金和副业生意，会让每笔交易都含糊不清。为不同用途保留不同的钱包或账户，这样每条记录都有一个明确的所有者和一个明确的来龙去脉。</p>
+      <p><strong>5. 照搬另一个国家的规则。</strong> 一篇讲美国税务的博文描述不了英国的税务，一篇两年前写的指南可能在任何地方都描述不了今年的规则。务必查看你居住国现行的规则，对任何给税率却不给日期的文章保持怀疑。</p>
+      <p>本页仅为一般信息，不是税务建议。规则会变，且取决于你住在哪里——请就你的情况咨询当地税务专业人士。</p>
+      <h2>申报前要做什么</h2>
+      <p>报税季临近时，按一份简短清单走一遍。第一，收集所有导出文件：你用过的每家交易所、你交易过的每个钱包，以及向你支付过奖励的任何平台。第二，把你的电子表格与这些导出文件对账，在历史还可获得时填补任何缺口。第三，找出任何异常——大额赠与、你自己钱包之间的转账，或经营收入——把它们作为问题留给专业人士，而不是猜测它们的处理方式。</p>
+      <p>然后决定你是否需要帮助。如果你只做了少数几次简单的买卖，你自己的记录加上你国家的官方指引可能就够了。如果你交易频繁、用了多个平台、赚了质押奖励，或者收到了加密资产付款，当地税务专业人士就是花得值的钱——不是因为规则不可能理解，而是因为专业人士知道针对你的具体情况该问哪些问题。带上你的电子表格和导出文件给他们，他们的工作就变成核查而不是重建，既更便宜也更准确。</p>
+      <p>最后，申报后把一切都留着。税务机关几年后仍可能问问题，唯一的辩护就是你当时留下的记录。把电子表格、导出文件和已申报的税表放在一起、备份好，保存到你国家规则要求的时间——有疑问时，存更久。</p>
+      <p>本页仅为一般信息，不是税务建议。规则会变，且取决于你住在哪里——请就你的情况咨询当地税务专业人士。</p>
+
+      <h3>只是持有加密资产就要交税吗？</h3>
+      <p>在大多数国家，仅仅持有加密资产不是应税事件。税务通常在你处置它时才起作用，即卖出、兑换或花掉它。单是买入并持有，一般不会产生税单，但规则取决于你住在哪里，所以请查看你当地的规则。</p>
+      <h3>把 USDT 换成 BTC 是应税事件吗？</h3>
+      <p>在某些司法辖区，是的。把一种加密资产换成另一种可以算作处置第一种资产，即使没有法币碰过你的银行账户。这让许多新手吃惊。其他司法辖区对兑换的处理不同，所以在你假定兑换免税之前，先查你国家如何处理币币交易。</p>
+      <h3>小额交易需要申报吗？</h3>
+      <p>小额交易仍然是交易。有些国家对小额有申报门槛或豁免，但许多国家没有，而且规则经常变。稳妥的习惯是记录每笔交易，无论多小，这样日后你能用证据而不是猜测回答任何问题。</p>
+      <h3>每笔交易我该保留什么记录？</h3>
+      <p>每笔交易都要记录日期、所用平台、交易类型、流入的资产和数量、流出的资产和数量、已付手续费，以及交易当时的法币价值。交易所对账单和钱包历史也要留着。好的记录就是平静的报税季和痛苦的报税季之间的区别。</p>
+      <h3>美国、英国和欧盟的规则有什么不同？</h3>
+      <p>它们在结构上不同，而不只是细节上不同。美国一般把加密资产视为财产，英国有自己的资本利得框架和自己的免税额，欧盟成员国各自制定自己的规则，所以没有单一的欧盟加密税。税率、门槛和截止日期会变，所以本页刻意不给数字：请查看你当地的规则或咨询当地专业人士。</p>
+      <h3>我该用加密税务软件还是请专业人士？</h3>
+      <p>如果你在多个平台上有许多交易，软件能帮上忙，因为它导入交易所历史并为你计算收益。但软件的好坏取决于你喂给它的记录，而且它不能给你个人建议。如果你的情况涉及质押、经营收入或大额资金，请咨询当地税务专业人士。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">新手如何购买加密货币</a></li>
+        <li><a href="how-to-sell-crypto.html">如何卖出加密资产</a></li>
+        <li><a href="how-to-withdraw-from-binance.html">如何从 Binance 提币</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

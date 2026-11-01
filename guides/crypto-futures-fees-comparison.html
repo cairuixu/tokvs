@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>合约手续费对比：4 家交易所 — TokVS</title>
+<meta name="description" content="Binance、OKX、Bybit 和 Bitget 的合约挂单/吃单费率并排对比——外加资金费率和削减你支出的习惯。">
+<link rel="canonical" href="https://tokvs.com/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/crypto-futures-fees-comparison">
+<meta property="og:title" content="合约手续费：Binance vs OKX vs Bybit vs Bitget — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="合约挂单/吃单费率对比、资金费率详解，以及削减你手续费账单的五个习惯。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/crypto-futures-fees-comparison">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "合约手续费对比", "item": "https://tokvs.com/guides/crypto-futures-fees-comparison"}]}, {"@type": "Article", "headline": "合约手续费对比：4 家交易所", "description": "Binance、OKX、Bybit 和 Bitget 的合约挂单/吃单费率并排对比——外加资金费率和削减你支出的习惯。", "datePublished": "2026-10-16", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/crypto-futures-fees-comparison", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "合约手续费和现货手续费不同吗？", "acceptedAnswer": {"@type": "Answer", "text": "是——这里展示的四家交易所上合约都更便宜。标准档合约大约是挂单 0.02% / 吃单 0.05%，而现货大约是 0.08–0.10%。交易所给合约定价很激进，因为交易量要高得多。"}}, {"@type": "Question", "name": "哪家交易所的合约手续费最低？", "acceptedAnswer": {"@type": "Answer", "text": "挂单费率上，四家交易所都是 0.02%。吃单费率上，Binance 和 OKX 的 0.05% 是四家之中最低的。但资金费率和价差可能比 0.005–0.01% 的吃单差距更重要，所以不要只凭这个数字选。"}}, {"@type": "Question", "name": "什么是资金费率？", "acceptedAnswer": {"@type": "Answer", "text": "永续合约上多头和空头之间的定期付款——通常每 8 小时一次——使合约价格锚定现货。它不是付给交易所的。持仓跨越几个资金费率区间，成本可能超过交易手续费本身。"}}, {"@type": "Question", "name": "市价单总是付吃单费吗？", "acceptedAnswer": {"@type": "Answer", "text": "是。任何立刻与挂单成交的订单都算吃单。只有挂在订单簿上、稍后才成交的限价单才能拿到挂单费率。"}}, {"@type": "Question", "name": "手续费真的能抹掉一个小合约账户吗？", "acceptedAnswer": {"@type": "Answer", "text": "慢慢地，是的。按吃单费率算，一次 20 倍杠杆往返光手续费就要花保证金的约 2%。十笔这样的交易在还没算价格变动时就大约抹掉 20%。这就是大多数新手从不算的数学。"}}, {"@type": "Question", "name": "合约手续费会随时间变化吗？", "acceptedAnswer": {"@type": "Answer", "text": "是——交易所会定期调整费率档。把任何文章，包括本篇，都当作快照。交易所的官方费率页才是真相来源；投入规模前先查它。"}}, {"@type": "Question", "name": "VIP 费率档值得追吗？", "acceptedAnswer": {"@type": "Answer", "text": "不适合新手。VIP 折扣需要可观的月交易量。对普通交易者来说，订单类型（限价 vs 市价）和交易频率省的钱远多于追一个你达不到的档位。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 合约手续费对比</div>
+      <h1>合约手续费对比</h1>
+      <p class="sub">四大合约平台的挂单和吃单费率——并排对比，让杠杆不再悄悄吃掉你的账户。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 7 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">合约交易流畅、活动频繁</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">去 Bybit 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>简短答案</h2>
+      <p>挂单费率上， <strong>四家交易所都是 0.02%</strong>。吃单费率上，Binance 和 OKX 以 0.05% 领先，Bybit 收 0.055%，Bitget 收 0.06%。每笔交易的差距看起来很小——也确实很小。但合约交易者要做几十次往返，杠杆会把每笔手续费乘以你的杠杆倍数。这就是本页存在的原因：费率表在合约里比在加密领域的任何其他地方都重要。</p>
+      <h2>费率表（标准档）</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>交易所</th><th>合约挂单</th><th>合约吃单</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.02%</td><td>0.05%</td></tr>
+          <tr><td>OKX</td><td>0.02%</td><td>0.05%</td></tr>
+          <tr><td>Bybit</td><td>0.02%</td><td>0.055%</td></tr>
+          <tr><td>Bitget</td><td>0.02%</td><td>0.06%</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">标准（非 VIP）档。交易所会定期调整费率——在投入规模之前，务必在交易所的官方费率页确认。</p>
+      <h2>“挂单”和“吃单”到底是什么意思</h2>
+      <p>每笔交易都是两种情况之一。一笔 <strong>挂单</strong> 订单是你挂在盘口等待成交的限价单——你“制造”流动性，所以你付更低的费率。一笔 <strong>吃单</strong> 订单立刻与盘口上已有的订单成交——市价单永远是吃单，定价激进到能立刻成交的限价单也是。实际要点是： <strong>耐心真的更便宜。</strong> 如果你的策略能等几秒成交，限价单在上面每家交易所都能把你的手续费账单砍掉一半以上。</p>
+      <h2>资金费率：没人报价的手续费</h2>
+      <p>永续合约——大多数人交易的合约——没有到期日。相反，它们有 <strong>资金费付款</strong>，通常每 8 小时一次，在多头和空头之间直接流动，使合约价格锚定现货。资金费率为正时，多头付给空头；为负时则相反。交易所不抽成——但成本是真实的，对于持有数天的仓位， <strong>资金费可能超过交易手续费本身</strong>。在隔夜持有任何杠杆仓位之前，先在交易所查看资金费率及其近期历史。如果每天三次付 0.1% 的资金费，0.02% 的“便宜”挂单费毫无意义。</p>
+      <h2>杠杆如何放大你的手续费账单</h2>
+      <p>这是大多数新手从不算的数学。你拿 1,000 美元保证金用 10 倍杠杆：你的仓位是 10,000 美元名义金额。按 0.05% 的吃单往返，开仓 5 美元、平仓 5 美元—— <strong>总共 10 美元，即保证金的 1%</strong>，在价格动一分钱之前就没了。在 20 倍杠杆下，同样的往返要花保证金的 2%。十笔这样的交易光手续费就大约抹掉账户的 20%。这是小合约账户的安静杀手——不是糟糕的判断，而是千刀万剐的手续费。防御很简单：更低的杠杆、更少的交易、限价单。</p>
+      <h2>费率档：你实际所在的档</h2>
+      <p>表中的数字是 <strong>标准档费率</strong> ——每个新账户都要付的。所有四家交易所都有 VIP 计划，为高月交易量打折，但门槛很严肃（有意义的档位要几千万的交易量）。作为新手或普通交易者，你在标准档，这没问题： <strong>订单类型和交易频率对你成本的影响远大于一个你达不到的 VIP 档。</strong> 不要为了追折扣而扭曲你的交易。</p>
+      <h2>削减合约手续费的五个习惯</h2>
+      <ol>
+        <li><strong>默认用限价单。</strong> 挂单 vs 吃单是最大的杠杆——每次成交 0.02% 对 0.05–0.06%。</li>
+        <li><strong>少交易。</strong> 每次往返都有固定的手续费成本。更少、把握更高的交易胜过在小账户上不停剥头皮。</li>
+        <li><strong>持仓前先查资金费率。</strong> 如果资金费率严重不利于你这一边，要么等重置，要么重新考虑这次持有。</li>
+        <li><strong>每笔交易的手续费控制在保证金的 0.5% 以下。</strong> 如果一个设置的手续费数学超过了这个数，这个设置需要更大的优势——或者更小的杠杆。</li>
+        <li><strong>提交前先对比。</strong> 把你预期的月交易量代入手续费计算器（我们的在 <a href="../exchanges.html">交易所页面</a>），而不是猜测。</li>
+      </ol>
+      <p class="in-cta">经常交易合约？从衍生品交易者聚集的地方开始： <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">去 Bybit 注册</a></p>
+      <h2>哪家交易所适合哪种合约交易者</h2>
+      <p>费率已经接近到契合度比 0.005% 的吃单差距更重要。 <strong>Bybit</strong> 靠衍生品起家——合约界面是它发光的地方。 <strong>Binance</strong> 流动性最深，这意味着主流交易对的价差最紧（这是费率表不显示的隐藏成本）。 <strong>OKX</strong> 为想要跨产品深度的活跃交易者提供强大的工具。 <strong>Bitget</strong> 在跟随他人仓位的交易者中很受欢迎。选优势与你的实际交易方式匹配的平台；上面的费率表只是防止任何人多收你钱。</p>
+      <h2>关于“零手续费”促销的说明</h2>
+      <p>交易所会定期在特定交易对上搞零挂单费或手续费返还促销。它们是真实的，但只是暂时的，而且通常排除新手最常交易的对。不要为了一次促销选平台——要为日常费率表选它，那才是你每个月实际付的钱。</p>
+      <h2>资金费率实战：算例</h2>
+      <p>数字让资金费率变得具体。假设你在永续合约上持有 20,000 美元的多头仓位，资金费率为每 8 小时区间 0.01%——在牛市里这是完全普通的读数。每个区间你要付 20,000 美元 × 0.01% = <strong>$2</strong>。每天三个区间 = 每天 6 美元。持有一周，你光资金费就付了 42 美元——超过同一仓位按吃单费率算的 10 美元往返交易手续费的四倍。现在反过来：当资金费率为负时， <em>你</em> 持有多头还能赚钱。老练的交易者在每次多日持有前都会查看资金费率，有时还会部分根据它选择方向。教训不是害怕资金费率——而是 <strong>在入场前把成本计入交易</strong>，就像你查看价差一样。大多数交易所就在合约交易界面上显示当前资金费率和到下次付款的倒计时；把它瞥一眼纳入你的交易前清单。</p>
+      <h2>只按费率选择的最后忠告</h2>
+      <p>选吃单数字最低的交易所然后收工，这很诱人。抵制它。在这四家平台上，最大的吃单差距是 0.01%——按 5,000 美元的仓位算，每笔交易五十美分。 <strong>你的杠杆选择、订单类型和交易频率各自的影响要大 10–100 倍。</strong> 在“贵”的交易所用限价单的 3 倍杠杆交易者，付的钱远少于在“便宜”交易所用市价单剥头皮的 20 倍杠杆交易者。先把大决策做对；让费率表做它本该做的决胜因素。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>准备好交易合约了吗？</b> 开个账户，从低杠杆（3–5 倍）开始，在学习机制的同时用限价单。上面的手续费数学就是你的护栏。
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">合约交易流畅、活动频繁</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">去 Bybit 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        </div>
+        <p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。</p>
+      </div>
+
+      <h3>合约手续费和现货手续费不同吗？</h3>
+      <p>是——这里展示的四家交易所上合约都更便宜。标准档合约大约是挂单 0.02% / 吃单 0.05%，而现货大约是 0.08–0.10%。交易所给合约定价很激进，因为交易量要高得多。</p>
+      <h3>哪家交易所的合约手续费最低？</h3>
+      <p>挂单费率上，四家交易所都是 0.02%。吃单费率上，Binance 和 OKX 的 0.05% 是四家之中最低的。但资金费率和价差可能比 0.005–0.01% 的吃单差距更重要，所以不要只凭这个数字选。</p>
+      <h3>什么是资金费率？</h3>
+      <p>永续合约上多头和空头之间的定期付款——通常每 8 小时一次——使合约价格锚定现货。它不是付给交易所的。持仓跨越几个资金费率区间，成本可能超过交易手续费本身。</p>
+      <h3>市价单总是付吃单费吗？</h3>
+      <p>是。任何立刻与挂单成交的订单都算吃单。只有挂在订单簿上、稍后才成交的限价单才能拿到挂单费率。</p>
+      <h3>手续费真的能抹掉一个小合约账户吗？</h3>
+      <p>慢慢地，是的。按吃单费率算，一次 20 倍杠杆往返光手续费就要花保证金的约 2%。十笔这样的交易在还没算价格变动时就大约抹掉 20%。这就是大多数新手从不算的数学。</p>
+      <h3>合约手续费会随时间变化吗？</h3>
+      <p>是——交易所会定期调整费率档。把任何文章，包括本篇，都当作快照。交易所的官方费率页才是真相来源；投入规模前先查它。</p>
+      <h3>VIP 费率档值得追吗？</h3>
+      <p>不适合新手。VIP 折扣需要可观的月交易量。对普通交易者来说，订单类型（限价 vs 市价）和交易频率省的钱远多于追一个你达不到的档位。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="leverage-guide.html">杠杆详解：风险先行</a></li>
+        <li><a href="crypto-fees.html">全部加密手续费，讲清楚</a></li>
+        <li><a href="okx-vs-bybit.html">OKX vs Bybit 对比</a></li>
+        <li><a href="../reviews/bybit.html">Bybit 测评：费率与功能</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

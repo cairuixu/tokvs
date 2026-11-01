@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>如何买狗狗币（DOGE）：新手全程指南 — TokVS</title>
+<meta name="description" content="如何买狗狗币：选交易所、验证、买 USDT、兑换 DOGE/USDT 并安全存放——附诚实的迷因币波动警告。">
+<link rel="canonical" href="https://tokvs.com/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-dogecoin">
+<meta property="og:title" content="如何买狗狗币（DOGE）：新手全程指南 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="一步步买 DOGE，附手续费、存放说明和迷因币风险警告。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/how-to-buy-dogecoin">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "如何买狗狗币", "item": "https://tokvs.com/guides/how-to-buy-dogecoin"}]}, {"@type": "Article", "headline": "如何买狗狗币（DOGE）：新手全程指南", "description": "选交易所、验证、买 USDT、兑换 DOGE/USDT 并安全存放 DOGE——外加给新手的诚实迷因币风险警告。", "datePublished": "2026-10-28", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/how-to-buy-dogecoin", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "狗狗币是好的投资吗？", "acceptedAnswer": {"@type": "Answer", "text": "本站不提供投资建议，而 DOGE 值得格外谨慎：它是一种高波动、没有收益或供应上限等基本面支撑的迷因币。只买你能完全承受损失的钱。"}}, {"@type": "Question", "name": "我最少能买多少 DOGE？", "acceptedAnswer": {"@type": "Answer", "text": "交易所设定了很小的最低金额——通常是几美元的价值。从一笔学习金额开始，确认完整流程可行，然后再决定是否多买。"}}, {"@type": "Question", "name": "我能用信用卡或借记卡买狗狗币吗？", "acceptedAnswer": {"@type": "Answer", "text": "是，在提供直接用卡购买的交易所上——它更快，但通常比先买 USDT 更贵，而且一些银行会拒绝加密购买。USDT 路线是更便宜的备选。"}}, {"@type": "Question", "name": "我应该把 DOGE 存放在哪里？", "acceptedAnswer": {"@type": "Answer", "text": "小额可以在学习期间留在交易所。大额持仓的话，用兼容 DOGE 的钱包，如 Trust Wallet 或硬件钱包。MetaMask 并不原生支持狗狗币。"}}, {"@type": "Question", "name": "狗狗币死了吗？", "acceptedAnswer": {"@type": "Answer", "text": "不是——DOGE 已经连续交易了十多年，仍然是交易量最大的迷因币之一。这对它的未来价格没有任何说明，未来价格一直由关注周期驱动。"}}, {"@type": "Question", "name": "DOGE 和 SHIB 有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "两者都是迷因币，但它们是不同链上、不同供应量和社区的不同项目。DOGE 运行在自己的区块链上；SHIB 是基于以太坊的代币。两者都没有基本面支撑——同样的风险警告适用于两者。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 如何买狗狗币</div>
+      <h1>如何买狗狗币</h1>
+      <p class="sub">交易所、验证、USDT、DOGE/USDT 兑换和存放——外加你在购买前应该读的诚实迷因币风险警告。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 9 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">现货与合约，App 界面干净</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">注册 Bybit 账号</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>一句话讲清狗狗币是什么</h2>
+      <p>狗狗币（DOGE）于 2013 年作为一个玩笑推出——一个柴犬迷因印在一种真实、可用的加密货币上，该币分叉自莱特币的代码。玩笑比笑点活得更久：DOGE 已经连续交易了十多年，建立了加密世界最大的社区之一，并被零散的商家和打赏平台接受。但从结构上讲，它也是一种迷因币：每年都会发行新的 DOGE，没有供应上限，它的价格一直以来更多由关注度和情绪驱动，而不是任何现金流、产品收入或技术路线图。</p>
+      <div class="callout warn"><b>诚实的风险警告——先读这个：</b> DOGE 是一种迷因币：极度波动，没有收益、分红或供应上限等基本面支撑。它的价格可能大幅下跌并持续低迷数年，过去的关注周期不保证未来的周期。只买你能完全承受损失的金额，不要把社交媒体的热情当作研究。</div>
+      <h2>第 1 步：选一家上架 DOGE 的交易所</h2>
+      <p>DOGE 在所有主流交易所都有上架，所以可用性不是问题——选得好才是问题。第一次购买时，用一家有 DOGE/USDT 现货交易对的大型、流动性强的交易所：深厚的订单簿意味着你的买入会以接近报价的价格成交，而不是滑点。Binance、OKX 和 Bybit 都以深厚的流动性上架 DOGE/USDT。注册一家，并跳过任何宣传 DOGE“独家”的小平台——主流场所已经有了它，更便宜、更安全。</p>
+      <p class="in-cta">先把账户准备好： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a> <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">注册 Bybit 账号</a></p>
+      <h2>第 2 步：注册并验证</h2>
+      <ol>
+        <li>用邮箱或电话号码加一个强大、唯一的密码注册。</li>
+        <li>完成身份验证：选择你的国家、提供政府签发的带照片身份证件，并通过实时人脸核验。审批通常需要几分钟到几小时。</li>
+        <li>入金前，用验证器 App（不是短信）启用双重验证，并设置防钓鱼码。这两个设置能挡住最常见的账户接管路径。</li>
+      </ol>
+      <p>如果验证卡住了，通常的原因是模糊的证件照片——在光线好的地方重拍，四个角都要可见。不要付钱给任何人来“加速”验证；没有合法服务出售这个。</p>
+      <h2>第 3 步：先买 USDT</h2>
+      <p>大多数新手用 USDT 而不是直接用法币买 DOGE，因为 DOGE/USDT 是最深、最便宜的交易对。按适合你国家的方式给账户入金——用卡、银行转账或 P2P——并先买 USDT。如果你从没做过，我们的 <a href="buy-usdt.html">USDT 全程指南</a> 逐步讲清每种方法，包括 P2P 商家检查。</p>
+      <p>从小额开始。你的第一次 USDT 购买应该是一笔学习金额——足够练习完整流程，又小到一个错误只是刺痛而不是伤害。一旦 USDT 到了你的现货钱包，DOGE 买入本身只要几秒钟。</p>
+      <h2>第 4 步：在现货上把 USDT 换成 DOGE</h2>
+      <ol>
+        <li>打开 DOGE/USDT 现货交易对。查看价格和近期图表——并在继续之前提醒自己上面那条风险警告。</li>
+        <li>选择市价单按当前价格立即买入，或者选择限价单只在你选的价格或更低时买入。市价更简单；限价在飙升时保护你。</li>
+        <li>输入 USDT 金额，查看你将收到的预估 DOGE 和手续费，然后确认。</li>
+        <li>核实现货钱包里的 DOGE 余额。搞定——你拥有 DOGE 了。</li>
+      </ol>
+      <p>成本是多少：现货买入在市价单上付吃单费（挂单限价单上付挂单费）。标准现货费率：</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>交易所</th><th>现货挂单 / 吃单</th><th>说明</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10% / 0.10%</td><td>大多数交易对流动性最深</td></tr>
+          <tr><td>OKX</td><td>0.08% / 0.10%</td><td>完整产品线</td></tr>
+          <tr><td>Bybit</td><td>0.10% / 0.10%</td><td>现货与合约在一个 App 里</td></tr>
+          <tr><td>Bitget</td><td>查看官方费率页</td><td>这里链接的是 <a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">Bitget 官网首页</a> 仅此——通过 TokVS 没有返佣</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">下面的手续费数字是大多数新手看到的标准现货挂单/吃单费率。交易所会改费率表、搞促销，所以交易前务必在交易所的官方费率页上确认。</p>
+      <h2>第 5 步：把你的 DOGE 放在哪里</h2>
+      <p>三个选项。 <strong>在交易所</strong> 在金额小、你还在学习时没问题——方便，但你要信任平台。 <strong>在你自己的钱包里</strong> 是自托管路线：Trust Wallet 原生支持狗狗币，Ledger 和 Trezor 等硬件钱包也支持它。注意，MetaMask <strong>并不</strong> 原生支持 DOGE（它是为 EVM 链构建的），所以不要把 DOGE 发到 MetaMask 地址。 <strong>长期留在交易所</strong> 是三者中金额变大后风险最高的一个——当持仓开始重要时，移到你控制的钱包。</p>
+      <p>无论你选哪种，提币规则都和别处一样：从钱包 App 本身复制收款地址，确认网络是狗狗币自己的网络，并先发一笔极小测试金额。发到错误地址或网络的 DOGE 通常无法找回。</p>
+      <h2>新手应该买多少 DOGE？</h2>
+      <p>没有正确的数字，但有一个正确的测试：如果 DOGE 明天跌 80% 并一直待在那里，你的生活会改变吗？如果答案是肯定的，仓位就太大了。迷因币奖励仓位管理胜过择时——一笔你能忘掉的小额固定金额，胜过一笔你每小时都要查看的大额。冷静时决定数字，而不是在价格飙升时，永远不要借钱或用房租钱买迷因币。告诉你反着做的人不是在给建议；他们是在招募出货流动性。</p>
+      <h2>常见的 DOGE 错误</h2>
+      <ul>
+        <li><strong>在炒作浪潮的顶部买入。</strong> DOGE 最大的绿盘日之后通常是它最糟糕的红盘周。FOMO 是这个市场最可靠的卖家。</li>
+        <li><strong>假 DOGE 代币。</strong> 骗子在其他链上推出名为 Dogecoin 的仿冒代币。真正的 DOGE 在主流交易所上以 DOGE 交易——如果一个代币需要从聊天群里粘贴合约地址，走开。</li>
+        <li><strong>把 DOGE 发到 MetaMask 地址。</strong> MetaMask 并不原生支持狗狗币。用兼容 DOGE 的钱包。</li>
+        <li><strong>相信“DOGE 赠送”账号。</strong> 没有名人会让你的 DOGE 翻倍。先发后收的计划每次都是盗窃。</li>
+        <li><strong>把社区规模当作安全。</strong> 庞大的社区意味着关注度，而不是价格下限。关注度消失的速度比到来的速度更快。</li>
+      </ul>
+      <h2>DOGE vs 你投资组合的其他部分</h2>
+      <p>把 DOGE 当作投资组合的投机角落，而不是地基。如果持有加密资产，传统的新手形态是：长期买入的 BTC/ETH 核心，外加作为你能承受损失的小卫星的迷因币。这种形态不是建议；它只是大多数熬过多个周期的人描述的、他们希望从一开始就做的事。像对待任何币种一样，保留每次 DOGE 买卖的记录（日期、金额、价格、手续费）——你未来的报税季的自己并不在乎它起初是个玩笑。</p>
+      <h2>用卡买 DOGE：会遇到什么</h2>
+      <p>一些交易所让你直接用借记卡或信用卡买 DOGE，跳过 USDT 这一步。它更快、更简单，但通常比 USDT 路线更贵，而且一些银行会拒绝加密购买或把它们当作现金预支并收取自己的手续费。如果你的卡被拒，不要反复按重试按钮——改用 USDT 路线（银行转账或 P2P）。无论如何，你最终拿到的币是一样的；不同的只是路线和价格。</p>
+      <h2>DOGE 的供应量：为什么发行量重要</h2>
+      <p>与比特币 2100 万枚的上限不同，狗狗币没有最大供应量：网络每出一个区块就发行固定数量的新 DOGE，每年大约增加 50 亿枚。这种稳定的发行量就是为什么长期持有者把 DOGE 说成是消费和打赏币，而不是稀缺的价值储存——除非需求增长快于发行量，否则新供应会不断稀释现有持有者。你不需要记住发行时间表，但应该理解方向：稀缺不是 DOGE 设计的一部分，所以任何建立在“供应有限”上的投资理由都建立在错误的前提上。</p>
+      <p>这也解释了为什么 DOGE 的价格历史看起来像一系列由长期下跌分隔的关注度飙升。当关注度到来时，需求可能短暂超过发行量，价格跳涨；当关注度离开时，发行量继续增加，价格失血。如果你买 DOGE，你就是在赌关注度会回来——对自己诚实，并据此调整赌注规模。</p>
+      <h2>查看价格而不被玩弄</h2>
+      <p>DOGE 比其他任何主流币都更生活在社交媒体上，而这是一种危险。网红帖子、经过编辑的名人推文截屏和“巨鲸警报”账号，都是为了让你买别人的出货而设计的。三个习惯有帮助：在交易所本身查看价格，而不是看截屏；无视任何承诺带期限目标价的账号；把协同兴奋——几十个账号在一小时内发布同一个口号——当作组织者的卖出信号，而不是你的买入信号。最安静的日子通常是最便宜的买入日子，而没有人会发帖讲它们。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">现货与合约，App 界面干净</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">注册 Bybit 账号</a></div>
+        </div>
+        <p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。</p>
+      </div>
+
+      <h3>狗狗币是好的投资吗？</h3>
+      <p>本站不提供投资建议，而 DOGE 值得格外谨慎：它是一种高波动、没有收益或供应上限等基本面支撑的迷因币。只买你能完全承受损失的钱。</p>
+      <h3>我最少能买多少 DOGE？</h3>
+      <p>交易所设定了很小的最低金额——通常是几美元的价值。从一笔学习金额开始，确认完整流程可行，然后再决定是否多买。</p>
+      <h3>我能用信用卡或借记卡买狗狗币吗？</h3>
+      <p>是，在提供直接用卡购买的交易所上——它更快，但通常比先买 USDT 更贵，而且一些银行会拒绝加密购买。USDT 路线是更便宜的备选。</p>
+      <h3>我应该把 DOGE 存放在哪里？</h3>
+      <p>小额可以在学习期间留在交易所。大额持仓的话，用兼容 DOGE 的钱包，如 Trust Wallet 或硬件钱包。MetaMask 并不原生支持狗狗币。</p>
+      <h3>狗狗币死了吗？</h3>
+      <p>不是——DOGE 已经连续交易了十多年，仍然是交易量最大的迷因币之一。这对它的未来价格没有任何说明，未来价格一直由关注周期驱动。</p>
+      <h3>DOGE 和 SHIB 有什么区别？</h3>
+      <p>两者都是迷因币，但它们是不同链上、不同供应量和社区的不同项目。DOGE 运行在自己的区块链上；SHIB 是基于以太坊的代币。两者都没有基本面支撑——同样的风险警告适用于两者。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">如何购买比特币：全流程详解</a></li>
+        <li><a href="buy-usdt.html">如何购买 USDT：全部方式对比</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">新手最佳加密钱包</a></li>
+        <li><a href="avoid-scams.html">加密货币是骗局吗？8 种骗局要认清</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

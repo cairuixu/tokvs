@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>如何买以太坊（ETH）：新手一步步指南 — TokVS</title>
+<meta name="description" content="新手如何买以太坊：选交易所、验证你的身份证件、给账户入金、下第一笔 ETH 现货订单，并处理 Gas 费和网络选择而不犯代价高昂的错误。">
+<link rel="canonical" href="https://tokvs.com/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-ethereum">
+<meta property="og:title" content="如何买以太坊（ETH）新手指南 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="交易所、注册、入金、第一笔 ETH 订单、Gas 费和安全存放——完整的新手流程，分 5 步。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/how-to-buy-ethereum">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/"},{"@type":"ListItem","position":2,"name":"教程","item":"https://tokvs.com/guides/"},{"@type":"ListItem","position":3,"name":"如何买以太坊（ETH）：新手一步步指南","item":"https://tokvs.com/guides/how-to-buy-ethereum"}]},{"@type":"Article","headline":"如何买以太坊（ETH）：新手一步步指南","description":"新手如何买以太坊：选交易所、验证你的身份证件、给账户入金、下第一笔 ETH 现货订单，并处理 Gas 费和网络选择而不犯代价高昂的错误。","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/guides/how-to-buy-ethereum", "dateModified": "2026-10-30"},"inLanguage":"zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "用 50 美元我能买多少 ETH？", "acceptedAnswer": {"@type": "Answer", "text": "ETH 可以分成极小的零头，所以 50 美元能买一小片 ETH。单枚价格无关紧要——重要的是百分比变动。大多数新手从价值 50–100 美元开始。"}}, {"@type": "Question", "name": "在交易所买 ETH 时我要付 Gas 费吗？", "acceptedAnswer": {"@type": "Answer", "text": "不是。在交易所的现货市场买入只花交易手续费（约 0.1%）。Gas 费适用于你在以太坊网络上转移 ETH 或使用链上应用时。提币费是另外的，会在你确认前显示。"}}, {"@type": "Question", "name": "我应该把 ETH 留在交易所还是移到钱包？", "acceptedAnswer": {"@type": "Answer", "text": "你还在交易的小额可以留在开启了 2FA 的交易所。更大的长期持仓属于你控制的钱包，助记词用纸备份。见钱包安全指南，了解完整流程。"}}, {"@type": "Question", "name": "我能把 ETH 发到任何钱包地址吗？", "acceptedAnswer": {"@type": "Answer", "text": "只发到与你为这次转账选择的网络相同的地址。以太坊主网上的 ETH 与二层网络上的 ETH 看起来一模一样，但不通过桥就无法跨越。务必把提币界面上的网络与你的钱包预期的网络匹配，并先用小额测试。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 买以太坊</div>
+      <h1>如何买以太坊：完整新手流程</h1>
+      <p class="sub">以太坊是第二大加密资产，是 DeFi、NFT 和稳定币的支柱——而买你的第一个 ETH 大约需要半小时：选一家顶级交易所、验证你的身份证件、给账户入金、下现货订单，然后决定把它放在哪里。唯一让新手绊倒的部分是 Gas 费和网络选择，本指南在你花一分钱之前就讲清这两点。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+      </div>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 8 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <div class="callout good"><b>5 步一览：</b> 1. 选交易所 → 2. 注册并验证 → 3. 给账户入金 → 4. 下 ETH 订单 → 5. 安全存放。每一步下面都有展开——跟着做，一切都可以在手机上完成。</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>开始之前：要准备的三件事</h2>
+      <ul>
+        <li><strong>政府签发的身份证件。</strong> 每家合法交易所都要求身份验证（KYC），没有例外。任何提供“无需身份证购买”的渠道都是陷阱。</li>
+        <li><strong>一部你控制的手机和一个邮箱</strong> ——用于注册、验证码和验证器 App。</li>
+        <li><strong>你能承受损失的钱。</strong> 从小额开始——足够熟悉流程，又不足以造成伤害。</li>
+      </ul>
+      <p>一句话讲清你在买什么：ETH 是以太坊网络的原生币。它支付交易手续费（叫作“Gas”），并为建立在以太坊上的应用提供动力——借贷、交易、NFT 和稳定币转账都在它上面运行。这种双重角色正是 ETH 保持需求的原因，也是 Gas 费对你作为持有者很重要的原因。</p>
+
+      <h2>第 1 步：选交易所</h2>
+      <p>交易所就是你购买的市场。新手应该只从全球顶级中选择——大型、运营时间长、费用透明。Binance、OKX 和 Bybit 都有深厚的 ETH 现货市场。它们的普通用户现货费率接近，所以按 App 体验和你国家可用的法币通道来选。我们的 <a href="choose-exchange.html">选交易所指南</a> 讲了如何评判任何平台，或者直接跳到 <a href="../exchanges.html">（带计算器的手续费对比）</a>。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>交易所</th><th>现货挂单</th><th>现货吃单</th><th>ETH 说明</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10%</td><td>0.10%</td><td>ETH 流动性最深、ETH 交易对最多</td></tr>
+          <tr><td>OKX</td><td>0.08%</td><td>0.10%</td><td>三者中现货挂单费最低</td></tr>
+          <tr><td>Bybit</td><td>0.10%</td><td>0.10%</td><td>完整的 ETH 现货市场；通过以下方式注册 <a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">我们的 Bybit 链接</a></td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">收费表会变——交易前务必查看交易所的官方手续费页面。</p>
+      <p><strong>直接结论：</strong> 大多数新手用 Binance（选择最多、流动性最深）或 OKX（现货挂单费略低，为 0.08%）就够了。先开一个账户——账户多不意味着利润多。</p>
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">决定了？开户大约需要 10 分钟： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></p>
+      <h2>第 2 步：注册并验证</h2>
+      <ol>
+        <li>只从官网或你手机的应用商店下载 App。 <strong>永远不要从别人发给你的链接安装 App</strong> ——假 App 是头号新手骗局。</li>
+        <li>用邮箱或电话加一个唯一、强大的密码注册。</li>
+        <li>完成身份验证：上传你的证件并通过人脸核验。审批通常需要几分钟到几小时。</li>
+        <li>立即启用双重验证（2FA）和防钓鱼码。这是你账户的基本护甲。</li>
+      </ol>
+      <p>详细全程指南在 <a href="../start/step3.html">新手路径第 3 步：注册</a>。</p>
+
+      <h2>第 3 步：给账户入金</h2>
+      <p>你有两条路线。标准的一条：先买 USDT，然后在 ETH/USDT 交易对上把它换成 ETH——USDT 交易对的流动性最深、价格最紧。更简单的一条：一些交易所提供直接法币交易对（ETH/USD、ETH/EUR）或即时用卡购买，跳过了 USDT 这一步，但可能更贵。无论如何，先用一笔小额测试并确认到账后再做更多。USDT 路线见 <a href="buy-usdt.html">如何购买 USDT</a>。</p>
+
+      <h2>第 4 步：下 ETH 订单</h2>
+      <ol>
+        <li>在现货交易中，打开 <strong>ETH/USDT</strong> 交易对。</li>
+        <li>新手应该用 <strong>限价单</strong>：设定你愿意支付的价格和金额（比如价值 100 美元）。当市场达到你的价格时成交，挂单费更低。着急？市价单也行，按当前盘口价格成交。</li>
+        <li>确认前检查三个数字：价格、金额、手续费。在 0.10% 的现货手续费下，一笔 100 美元的买入大约花费 0.10 美元。手续费计算见 <a href="crypto-fees.html">《手续费详解》</a>。</li>
+        <li>成交后，你的 ETH 会显示在资产 / 现货下。恭喜——第一次购买完成了。</li>
+      </ol>
+
+      <h2>第 5 步：决定把它放在哪里</h2>
+      <ul>
+        <li><strong>小额、还在交易：</strong> 留在交易所没问题——开启 2FA 且绝不分享你的账户。</li>
+        <li><strong>大额、长期持有：</strong> 把它移到你控制的钱包，助记词用纸备份。见 <a href="../start/step5.html">路径第 5 步</a> 和 <a href="wallet-safety.html">钱包与助记词安全</a>。</li>
+      </ul>
+
+      <h2>Gas 费和网络选择：新手搞错的部分</h2>
+      <p>在交易所买 ETH 只花交易手续费。昂贵的错误发生在你 <em>转移</em> ETH——而它们都归结为两个概念：Gas 和网络。</p>
+      <p><strong>什么是 Gas。</strong> 以太坊网络上的每笔交易都要付一笔 ETH 费用，叫作 Gas。Gas 价格随网络拥堵涨跌：当所有人同时交易时，费用飙升；在安静时段则下降。在交易所买入时你不用设定 Gas，但在链上提币或使用以太坊应用时，你会间接支付它——而且提币界面在你确认前总是显示费用，所以要读它，而不是一路点过去。</p>
+      <p><strong>主网 vs 二层网络。</strong> 以太坊的主网（ERC-20）是默认选项，但更便宜的“二层”网络如 Arbitrum、Optimism 和 Base 现在承载了很大一部分活动。关键是：Arbitrum 上的 ETH 与主网上的 ETH 不是同一笔余额。它们看起来一模一样，使用同样的地址格式，但它们生活在不同的网络上，不通过桥就无法跨越。把主网 ETH 发到一个只看 Arbitrum 的钱包——或者通过错误的网络选项提币——会让你的币被困住，直到你把它们桥接回来，而桥接要花时间和手续费。</p>
+      <div class="callout warn"><b>ETH 转账规则：</b> 1. 在提币界面，你选择的网络必须与你的收款钱包或交易所充值实际使用的网络匹配——两边都读，不要猜。2. 永远不要把 ETH 发到合约地址或为其他网络显示的充值地址。3. 向新目的地的第一次转账永远是一笔小额测试；只有在它到达后才转移剩下的部分。</div>
+      <p>一个能省真钱的实用习惯：每次转账前检查提币费和网络，如果转账不急，避免在明显拥堵的高峰期转移 ETH。Gas 是一种常常只需等一小时就能缩小的费用。</p>
+      <p>在第一次提币之前，还有一个值得知道的区别：交易所向你显示的费用是它自己的提币收费，而不是网络的实时 Gas 价格。两者相关但并不相同——交易所通常设定一个已包含 Gas 成本的固定或分级提币费，所以你看到的数字就是你要付的数字。如果这个数字与朋友报告的相比看起来很高，检查你是否在目的地有二层选项时选择了主网，以及这次转账是否可以等到更安静的时段。这两种调整都能明显降低成本，而且都不需要任何技术技能——只需要养成读两遍提币界面的习惯。</p>
+
+      <h2>第一次应该买多少？</h2>
+      <p>诚实的答案： <strong>一笔不会让你睡不着的金额</strong>。从小额开始（比如 50–100 美元），完整跑通整个流程——入金、买入，如果你愿意还可以提币——零失误。如果你是长期持有，考虑每月固定投入一小笔来平均你的入场价格。你的第一次购买不是为了盈利。而是为了 <strong>完美地完成整个流程</strong>.</p>
+
+      <h2>新手一直犯的五个购买错误</h2>
+      <ol>
+        <li><strong>用借来的钱或信用购买</strong> ——第一次购买就用杠杆会把正常波动变成危机。</li>
+        <li><strong>不检查就付高峰 Gas</strong> ——在拥堵时提币可能花费安静时段手续费的数倍。</li>
+        <li><strong>错误网络转账</strong> ——最昂贵的 ETH 新手错误，而且用测试金额的习惯完全可以避免。</li>
+        <li><strong>把一切都放在一个平台上</strong> ——交易所不是银行。把更大的长期持仓移到你自己的钱包。</li>
+        <li><strong>跟随“大师”和信号群</strong> ——任何告诉你买什么的人都从你的手续费和你的出货流动性中获利。</li>
+      </ol>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        </div>
+        <p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。</p>
+      </div>
+      <h2>常见问题</h2>
+      <h3>用 50 美元我能买多少 ETH？</h3>
+      <p>ETH 可以分成极小的零头，所以 50 美元能买一小片 ETH。单枚价格无关紧要——重要的是百分比变动。大多数新手从价值 50–100 美元开始。</p>
+      <h3>在交易所买 ETH 时我要付 Gas 费吗？</h3>
+      <p>不是。在交易所的现货市场买入只花交易手续费（约 0.1%）。Gas 费适用于你在以太坊网络上转移 ETH 或使用链上应用时。提币费是另外的，会在你确认前显示。</p>
+      <h3>我应该把 ETH 留在交易所还是移到钱包？</h3>
+      <p>你还在交易的小额可以留在开启了 2FA 的交易所。更大的长期持仓属于你控制的钱包，助记词用纸备份。见 <a href="wallet-safety.html">钱包与助记词安全</a> 了解完整流程。</p>
+      <h3>我能把 ETH 发到任何钱包地址吗？</h3>
+      <p>只发到与你为这次转账选择的网络相同的地址。以太坊主网上的 ETH 与二层网络上的 ETH 看起来一模一样，但不通过桥就无法跨越。务必把提币界面上的网络与你的钱包预期的网络匹配，并先用小额测试。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="buy-usdt.html">如何买 USDT：三种方法对比</a></li>
+        <li><a href="how-to-buy-bitcoin.html">如何购买比特币：全流程详解</a></li>
+        <li><a href="wallet-safety.html">钱包与助记词安全</a></li>
+        <li><a href="crypto-fees.html">加密手续费详解</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
