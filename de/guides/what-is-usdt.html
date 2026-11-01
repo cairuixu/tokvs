@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Was ist USDT? Der Stablecoin erklärt — TokVS</title>
+<meta name="description" content="Was ist USDT (Tether)? Wie der Dollar-Peg funktioniert, Reserven und Risiken — der Leitfaden in einfachem Deutsch, bevor du deine ersten USDT kaufst.">
+<link rel="canonical" href="https://tokvs.com/de/guides/what-is-usdt">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/what-is-usdt">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/what-is-usdt">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/what-is-usdt">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/what-is-usdt">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/what-is-usdt">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/what-is-usdt">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/what-is-usdt">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/what-is-usdt">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/what-is-usdt">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/what-is-usdt">
+<meta property="og:title" content="Was ist USDT? Der Leitfaden in einfachem Deutsch — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Der dollar-gebundene Stablecoin erklärt: wie er 1 $ hält, was ihn deckt, und die ehrlichen Risiken.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/de/guides/what-is-usdt">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/de/"}, {"@type": "ListItem", "position": 2, "name": "Anleitungen", "item": "https://tokvs.com/de/guides/"}, {"@type": "ListItem", "position": 3, "name": "Was ist USDT?", "item": "https://tokvs.com/de/guides/what-is-usdt"}]}, {"@type": "Article", "headline": "Was ist USDT? Der Stablecoin erklärt", "description": "Was ist USDT (Tether)? Wie der Dollar-Peg funktioniert, Reserven und Risiken — der Leitfaden in einfachem Deutsch, bevor du deine ersten USDT kaufst.", "datePublished": "2026-10-16", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/de/guides/what-is-usdt", "dateModified": "2026-10-30"}, "inLanguage": "de"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Ist USDT dasselbe wie US-Dollar?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. USDT ist ein Krypto-Token, der von einem privaten Unternehmen ausgegeben wird und einen 1:1-Wert mit dem Dollar anstrebt. Er ist keine Bankeinlage, trägt keine staatliche Versicherung, und sein Wert hängt von den Reserven des Emittenten und dem Marktvertrauen ab."}}, {"@type": "Question", "name": "Ist USDT sicher zu halten?", "acceptedAnswer": {"@type": "Answer", "text": "Er ist der am besten erprobte Stablecoin, mit über einem Jahrzehnt Peg-Halten durch Markteinbrüche — aber „sicher“ ist relativ. Er trägt Emittentenrisiko, Regulierungsrisiko und die kleine, aber reale Chance eines Depeg-Ereignisses. Behandle ihn nicht als Sparkonto."}}, {"@type": "Question", "name": "Was deckt USDTs Wert?", "acceptedAnswer": {"@type": "Answer", "text": "Tether erklärt, dass USDT durch Reserven gedeckt ist, inklusive Bargeld, Bargeldäquivalente und andere Vermögenswerte, und vierteljährliche Attestierungen der Wirtschaftsprüfungsgesellschaft BDO veröffentlicht. Kritiker merken an, dass Attestierungen keine vollständigen Audits sind — lies beide Seiten, bevor du entscheidest, wie viel du hältst."}}, {"@type": "Question", "name": "USDT vs. USDC — welcher ist besser?", "acceptedAnswer": {"@type": "Answer", "text": "USDT ist älter, größer und auf mehr Börsen und P2P-Märkten gelistet. USDCs Emittent Circle ist US-basiert mit einem Ruf für regulatorische Transparenz. Für Trading und P2P gewinnt meist USDTs Allgegenwart; zum Halten ist es eine Ermessensfrage, welchem Emittenten du mehr vertraust."}}, {"@type": "Question", "name": "Kann USDT seinen Dollar-Peg verlieren?", "acceptedAnswer": {"@type": "Answer", "text": "Kurz, ja — er hat während vergangener Marktpaniken um ein paar Cent gewackelt und sich jedes Mal erholt. Ein anhaltender, großer Depeg ist nie passiert, aber der Mechanismus hängt vom Marktvertrauen ab, das niemals garantiert ist."}}, {"@type": "Question", "name": "Welches Netzwerk sollte ich für USDT nutzen?", "acceptedAnswer": {"@type": "Answer", "text": "Für billige Überweisungen ist Tron (TRC20) die beliebte Wahl — Gebühren liegen typischerweise um einen Dollar. Ethereum (ERC20) kann ein Vielfaches kosten, wenn das Netzwerk beschäftigt ist. Stimme das Netzwerk immer auf beiden Seiten einer Überweisung ab."}}, {"@type": "Question", "name": "Brauche ich eine ID-Verifizierung, nur um USDT zu halten?", "acceptedAnswer": {"@type": "Answer", "text": "USDT in der eigenen Wallet zu halten braucht überhaupt keine ID. Ihn auf einer zentralisierten Börse zu kaufen schon — Börsen verlangen Identitätsverifizierung, bevor du Fiat einzahlen oder handeln kannst."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Einsteigerpfad</a><a href="index.html" class="on">Anleitungen</a><a href="../exchanges.html">Börsen</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Tools</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de" selected>Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Startseite</a> / <a href="index.html">Anleitungen</a> / Was ist USDT?</div>
+      <h1>Was ist USDT?</h1>
+      <p class="sub">Der dollar-gebundene Token hinter der Hälfte des Krypto-Tradings — wie er 1 $ hält, was ihn deckt, und die Risiken, die niemand überspringen sollte.</p>
+      <p class="updated">Aktualisiert Okt. 2026 · Von TokVS · 7 Min. Lesezeit</p>
+      <p class="note">Quellen &amp; Methode: <a href="../methodology.html">wie wir prüfen</a> · <a href="../exchanges.html#availability">Länderverfügbarkeitstabelle</a> · Zahlen ändern sich, prüfe vor dem Handeln auf der offiziellen Seite.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Größte Börse der Welt, tiefste Liquidität</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Vollständige Produktpalette, gute Sprachunterstützung</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX-Konto erstellen</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Die kurze Antwort</h2>
+      <p><strong>USDT (Tether) ist eine Kryptowährung, die dafür designed ist, 1 $ wert zu bleiben.</strong> Während Bitcoin an einem Tag um 5 % schwankt, schwebt USDT um einen Dollar herum — was ihn zum Parkplatz, zum Maßstab und zum meistgehandelten Vermögenswert in Krypto macht. Er wird von einem privaten Unternehmen (Tether) ausgegeben, nicht von einer Regierung, und diese Unterscheidung zählt. Dieser Leitfaden behandelt, wie der Peg funktioniert, was ihn deckt, und die ehrlichen Risiken.</p>
+      <h2>Was „Stablecoin“ bedeutet</h2>
+      <p>Ein Stablecoin ist ein Krypto-Token, dessen Wert <strong>Gebunden</strong> Ist an etwas Stabiles — fast immer den US-Dollar. Der Punkt ist nicht Wachstum; es ist <strong>Stabilität plus Krypto-Schienen</strong>: Du bekommst dollarähnlichen Wert, der sich mit Blockchain-Geschwindigkeit bewegt, 24/7, über Grenzen, ohne Banken. USDT ist der ursprüngliche und immer noch mit großem Abstand der größte Stablecoin — wenn Trader sagen „Ich bin in Stables“, meinen sie meist USDT.</p>
+      <h2>Wie der 1-$-Peg wirklich funktioniert</h2>
+      <p>Der Peg ist keine Magie; er ist <strong>Minten, Burnen und Arbitrage</strong>. Wenn die Nachfrage steigt, gibt Tether neue USDT gegen eingehende Dollar aus (mintet), und weitet das Angebot aus, um die Nachfrage zu decken. Wenn die Nachfrage fällt, wird USDT eingelöst (verbrannt), was das Angebot schrumpft. Darum herum arbitragieren Trader jede Abweichung: Wenn USDT bei 0,99 $ handelt, schnappen Käufer ihn auf und erwarten 1,00 $; wenn bei 1,01 $, tauchen Verkäufer auf. Dieser ständige zweiseitige Druck ist es, was den Peg eng hält — <strong>Es sind Marktmechaniken, keine Garantie.</strong> Das System funktioniert, solange jeder glaubt, dass Einlösung honoriert wird.</p>
+      <h2>Wer USDT ausgibt</h2>
+      <p>USDT wird ausgegeben von <strong>Tether</strong>, einem privaten Unternehmen. Das ist die einzelne wichtigste Tatsache auf dieser Seite: Anders als bei einer Bankeinlage gibt es keine staatliche Versicherung, keine Zentralbank-Absicherung und keine Regulierungsbehörde, die deinen 1 $ garantiert. Dein Vertrauen liegt in den Reserven und dem Betrieb eines Unternehmens. Tether operiert seit 2014 und hat jede Krypto-Panik seitdem überlebt — was bedeutende Evidenz ist, aber Evidenz, keine Versicherung.</p>
+      <h2>Reserven und Attestierungen: was ihn deckt</h2>
+      <p>Tether erklärt, dass jeder USDT durch Reserven gedeckt ist — Bargeld, Bargeldäquivalente und andere Vermögenswerte — und veröffentlicht <strong>Vierteljährliche Attestierungen</strong> , durchgeführt von der Wirtschaftsprüfungsgesellschaft BDO. Diese sind öffentlich und einen Blick wert. Die ehrlichen Vorbehalte: Eine Attestierung ist eine Momentaufnahme, kein vollständiges Audit, und die genaue Reservenmischung wird seit Jahren diskutiert. Unsere Einschätzung: Lies die neueste Attestierung selbst (sie ist öffentlich), verstehe, dass „gedeckt“ Sternchen hat, und bemesse deine Bestände entsprechend. Parke deine Lebensersparnisse in keinem einzelnen Stablecoin — auch nicht in diesem.</p>
+      <h2>USDT vs. USDC: der ehrliche Vergleich</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>USDT (Tether)</th><th>USDC (Circle)</th></tr></thead>
+        <tbody>
+          <tr><td>Gestartet</td><td>2014</td><td>2018</td></tr>
+          <tr><td>Emittent</td><td>Tether (privat)</td><td>Circle (US-basiert)</td></tr>
+          <tr><td>Größenordnung</td><td>Größter Stablecoin</td><td>Zweitgrößter</td></tr>
+          <tr><td>Börsen-/P2P-Abdeckung</td><td>Breiteste</td><td>Breit</td></tr>
+          <tr><td>Regulatorische Haltung</td><td>Umstrittene Historie</td><td>US-Compliance-Ruf</td></tr>
+        </tbody>
+      </table></div>
+      <p>Praktische Orientierung: <strong>Für Trading und P2P gewinnt meist USDTs Allgegenwart</strong> — Mehr Paare, mehr Händler, tiefere Liquidität. Um einfach Dollarwert zu halten, ist es eine Ermessensfrage, welchem Emittenten du mehr vertraust. Viele Menschen halten beide, was eine vernünftige Diversifizierung des Emittentenrisikos ist.</p>
+      <h2>Wofür Menschen USDT wirklich nutzen</h2>
+      <ul>
+        <li><strong>Trading-Paare.</strong> Die meisten Altcoins handeln gegen USDT, nicht Dollar. Er ist die Quotierungswährung von Krypto.</li>
+        <li><strong>Geld zwischen Börsen bewegen.</strong> Schneller und billiger als Banküberweisungen, besonders über Grenzen hinweg.</li>
+        <li><strong>Parken während Volatilität.</strong> Verkaufe BTC in USDT, wenn der Markt dreht, ohne Krypto-Schienen zu verlassen.</li>
+        <li><strong>P2P und Überweisungen.</strong> In vielen Ländern ist USDT einfach leichter zu beschaffen und zu bewegen als Dollar.</li>
+      </ul>
+      <p class="in-cta">Bereit, dir welche zu besorgen? Unsere Schritt-für-Schritt-Anleitung deckt jede Methode ab: <a class="btn-ref" href="buy-usdt.html">Wie man USDT kauft →</a></p>
+      <h2>USDT auf verschiedenen Netzwerken (vor dem Abheben lesen)</h2>
+      <p>USDT existiert auf vielen Blockchains, und <strong>Das Netzwerk, das du wählst, entscheidet über deine Gebühr</strong>. Die zwei, denen du am häufigsten begegnest:</p>
+      <ul>
+        <li><strong>Tron (TRC20):</strong> Die beliebte Wahl für Überweisungen — Gebühren liegen typischerweise um einen Dollar und Bestätigungen sind schnell.</li>
+        <li><strong>Ethereum (ERC20):</strong> Das ursprüngliche Zuhause von USDT, aber Gebühren steigen bei Netzwerküberlastung und können ein Vielfaches kosten.</li>
+      </ul>
+      <p>Die eiserne Regel: <strong>Sende- und Empfangsseite müssen dasselbe Netzwerk nutzen.</strong> TRC20-USDT an eine ERC20-Adresse zu senden kann die Gelder dauerhaft verlieren. Börsen zeigen das Netzwerk klar auf dem Auszahlungsbildschirm — verifiziere es zweimal.</p>
+      <h2>Die Risiken, ehrlich</h2>
+      <ul>
+        <li><strong>Depeg-Risiko.</strong> USDT hat während vergangener Paniken um ein paar Cent gewackelt und sich jedes Mal erholt. Ein anhaltender großer Depeg ist nie passiert — aber der Peg läuft auf Vertrauen, und Vertrauen ist niemals garantiert.</li>
+        <li><strong>Emittentenrisiko.</strong> Tether ist ein privates Unternehmen. Regulierungsmaßnahmen, Bankenprobleme oder Reservenfragen würden USDT zuerst treffen.</li>
+        <li><strong>Kein Sparkonto.</strong> USDT zahlt allein keine Zinsen, ist nicht versichert, und „stabil“ beschreibt das Preisziel, nicht die Sicherheit.</li>
+      </ul>
+      <p>Nichts davon bedeutet „nutze USDT nicht“ — es bedeutet <strong>Nutze ihn für das, worin er gut ist</strong> (Trading, Überweisungen, kurzfristiges Parken) und verwechsle ihn nicht mit einem Bankkonto.</p>
+      <h2>Wie man USDT bekommt</h2>
+      <p>Drei gängige Wege: <strong>Kauf mit Karte oder Banküberweisung</strong> Auf einer Börse (am schnellsten für Einsteiger — Apple Pay und Debitkarten funktionieren in vielen Regionen), <strong>P2P-Trading</strong> (Oft am billigsten, besonders dort, wo Banking-Schienen begrenzt sind), oder <strong>Eine Überweisung erhalten</strong> Von jemandem, der ihn schon hält. Unsere <a href="buy-usdt.html">Wie-man-USDT-kauft-Anleitung</a> Geht jede Methode Schritt für Schritt durch, inklusive was jede kostet und wie lange sie dauert.</p>
+      <h2>USDT in Zahlen</h2>
+      <p>Ein paar öffentliche Fakten setzen USDTs Ausmaß in Perspektive. Er ist der <strong>Größte Stablecoin nach Marktkapitalisierung</strong>, meist mehrfach größer als der Zweitplatzierte, und routinemäßig der <strong>Meistgehandelte Krypto-Vermögenswert nach Tagesvolumen</strong> — An vielen Tagen wechselt mehr USDT den Besitzer als Bitcoin selbst. Er operiert seit 2014, was ihn zu einem der ältesten kontinuierlich laufenden Krypto-Vermögenswerte macht, und er hat seinen Dollar-Peg durch jeden großen Markteinbruch des letzten Jahrzehnts gehalten, inklusive der 2022er-Einbrüche, die mehrere Konkurrenten zerstörten. Diese Erfolgsbilanz ist genau der Grund, warum Trader standardmäßig auf ihn setzen — und genau der Grund, warum der Risikoabschnitt oben weiterhin gilt: Langlebigkeit ist Evidenz, keine Garantie. Wenn ein so zentrales Asset auch nur um ein paar Cent wackelt, merkt der ganze Markt es innerhalb von Minuten.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Verstanden? Jetzt besorg dir welche.</b> Eröffne ein Börsenkonto, verifiziere einmal, und folge unserer USDT-Kaufanleitung — Karte, P2P oder Banküberweisung, deine Wahl.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Größte Börse der Welt, tiefste Liquidität</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Vollständige Produktpalette, gute Sprachunterstützung</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX-Konto erstellen</a></div>
+        </div>
+        <p class="note">Gleiche Gebühren wie bei direkter Registrierung — unser Link kostet dich nichts extra.</p>
+      </div>
+
+      <h3>Ist USDT dasselbe wie US-Dollar?</h3>
+      <p>Nein. USDT ist ein Krypto-Token, der von einem privaten Unternehmen ausgegeben wird und einen 1:1-Wert mit dem Dollar anstrebt. Er ist keine Bankeinlage, trägt keine staatliche Versicherung, und sein Wert hängt von den Reserven des Emittenten und dem Marktvertrauen ab.</p>
+      <h3>Ist USDT sicher zu halten?</h3>
+      <p>Er ist der am besten erprobte Stablecoin, mit über einem Jahrzehnt Peg-Halten durch Markteinbrüche — aber „sicher“ ist relativ. Er trägt Emittentenrisiko, Regulierungsrisiko und die kleine, aber reale Chance eines Depeg-Ereignisses. Behandle ihn nicht als Sparkonto.</p>
+      <h3>Was deckt USDTs Wert?</h3>
+      <p>Tether erklärt, dass USDT durch Reserven gedeckt ist, inklusive Bargeld, Bargeldäquivalente und andere Vermögenswerte, und vierteljährliche Attestierungen der Wirtschaftsprüfungsgesellschaft BDO veröffentlicht. Kritiker merken an, dass Attestierungen keine vollständigen Audits sind — lies beide Seiten, bevor du entscheidest, wie viel du hältst.</p>
+      <h3>USDT vs. USDC — welcher ist besser?</h3>
+      <p>USDT ist älter, größer und auf mehr Börsen und P2P-Märkten gelistet. USDCs Emittent Circle ist US-basiert mit einem Ruf für regulatorische Transparenz. Für Trading und P2P gewinnt meist USDTs Allgegenwart; zum Halten ist es eine Ermessensfrage, welchem Emittenten du mehr vertraust.</p>
+      <h3>Kann USDT seinen Dollar-Peg verlieren?</h3>
+      <p>Kurz, ja — er hat während vergangener Marktpaniken um ein paar Cent gewackelt und sich jedes Mal erholt. Ein anhaltender, großer Depeg ist nie passiert, aber der Mechanismus hängt vom Marktvertrauen ab, das niemals garantiert ist.</p>
+      <h3>Welches Netzwerk sollte ich für USDT nutzen?</h3>
+      <p>Für billige Überweisungen ist Tron (TRC20) die beliebte Wahl — Gebühren liegen typischerweise um einen Dollar. Ethereum (ERC20) kann ein Vielfaches kosten, wenn das Netzwerk beschäftigt ist. Stimme das Netzwerk immer auf beiden Seiten einer Überweisung ab.</p>
+      <h3>Brauche ich eine ID-Verifizierung, nur um USDT zu halten?</h3>
+      <p>USDT in der eigenen Wallet zu halten braucht überhaupt keine ID. Ihn auf einer zentralisierten Börse zu kaufen schon — Börsen verlangen Identitätsverifizierung, bevor du Fiat einzahlen oder handeln kannst.</p>
+      <h2>Weiterlesen</h2>
+      <ul>
+        <li><a href="buy-usdt.html">Wie man USDT kauft: jede Methode</a></li>
+        <li><a href="stablecoins.html">USDT vs. USDC im Detail</a></li>
+        <li><a href="wallet-safety.html">Wallet- &amp; Seed-Phrase-Sicherheit</a></li>
+        <li><a href="how-to-buy-usdt-on-binance-p2p.html">USDT auf Binance P2P kaufen</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Startseite</a><a href="../airdrops.html">Tägliche Airdrops</a><a href="../exchanges.html">Börsenvergleich</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Einsteiger</b><a href="../start/step1.html">Einsteigerpfad</a><a href="index.html">Anleitungen</a><a href="../start/step5.html">Deinen ersten Coin kaufen</a></div>
+      <div class="col" style="flex:1;"><b>Testberichte</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">Watchlist-Alarme</a><a href="../tools.html#calendar">Ereigniskalender</a><a href="../exchanges.html#calculator">Gebührenrechner</a></div>
+    </div>
+    <div class="disclosure">Diese Seite enthält Affiliate-Links. Eine Registrierung über unsere Links kostet dich nichts extra. Kryptopreise sind stark volatil; nichts hier ist Anlageberatung — schätze die Risiken selbst ein.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Noch kein Konto? In 3 Minuten registrieren →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Registrieren</a><button class="sx" aria-label="Schließen" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

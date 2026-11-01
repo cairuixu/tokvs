@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Was ist Kryptowährung? Ein Leitfaden für Einsteiger — TokVS</title>
+<meta name="description" content="Was ist Kryptowährung, erklärt für komplette Einsteiger: Coins vs. Token, wie Blockchains funktionieren, Wallets vs. Börsen, was du wirklich mit Krypto tun kannst, und die Betrugsmaschen, die es zu vermeiden gilt.">
+<link rel="canonical" href="https://tokvs.com/de/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/what-is-cryptocurrency">
+<meta property="og:title" content="Was ist Kryptowährung? Leitfaden für Einsteiger — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Coins vs. Token, Blockchains in einfachem Deutsch, Wallets, Börsen und die Warnsignale, die jeder Einsteiger kennen sollte.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/de/guides/what-is-cryptocurrency">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/de/"}, {"@type": "ListItem", "position": 2, "name": "Anleitungen", "item": "https://tokvs.com/de/guides/"}, {"@type": "ListItem", "position": 3, "name": "Was ist Kryptowährung?", "item": "https://tokvs.com/de/guides/what-is-cryptocurrency"}]}, {"@type": "Article", "headline": "Was ist Kryptowährung?", "description": "Was ist Kryptowährung, erklärt für komplette Einsteiger: Coins vs. Token, wie Blockchains funktionieren, Wallets vs. Börsen, was du wirklich mit Krypto tun kannst, und die Betrugsmaschen, die es zu vermeiden gilt.", "datePublished": "2026-10-28", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/de/guides/what-is-cryptocurrency", "dateModified": "2026-10-30"}, "inLanguage": "de"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Ist Kryptowährung echtes Geld?", "acceptedAnswer": {"@type": "Answer", "text": "Sie ist real in dem Sinne, dass Menschen sie als Zahlung akzeptieren und gegen Waren, Dienstleistungen und Fiat-Währung handeln. Sie ist in den meisten Ländern kein gesetzliches Zahlungsmittel, und ihr Preis schwankt weit mehr als Bankgeld — behandle sie als volatilen Vermögenswert, nicht als stabiles Gehalt."}}, {"@type": "Question", "name": "Wie unterscheidet sie sich von digitalem Bankgeld?", "acceptedAnswer": {"@type": "Answer", "text": "Bankgeld lebt in einem privaten Hauptbuch, das von Banken geführt wird; Kryptowährung lebt auf einem öffentlichen Hauptbuch, das von einem dezentralen Netzwerk geführt wird. Das bedeutet keine Bankzeiten, keine Kontoeinfrierungen durch ein einzelnes Unternehmen (wenn du selbst verwahrst) und keine Rückbuchungen — zum Guten wie zum Schlechten."}}, {"@type": "Question", "name": "Brauche ich eine Wallet, um Kryptowährung zu besitzen?", "acceptedAnswer": {"@type": "Answer", "text": "Nicht am ersten Tag: Ein Börsenkonto hält Coins für dich, während du lernst. Sobald der Betrag zählt, wechsle zu deiner eigenen Wallet, wo du die Seed-Phrase hältst — und die volle Verantwortung, die damit kommt."}}, {"@type": "Question", "name": "Kann Kryptowährung gehackt werden?", "acceptedAnswer": {"@type": "Answer", "text": "Blockchains selbst haben starke Sicherheitsbilanzen, aber die Dinge um sie herum werden ständig gehackt: Börsen, Apps, Browser und Menschen. Die meisten Verluste kommen von Phishing, gefälschten Apps und geleakten Schlüsseln — nicht vom Knacken der Blockchain selbst."}}, {"@type": "Question", "name": "Warum bewegen sich Kryptopreise so stark?", "acceptedAnswer": {"@type": "Answer", "text": "Kleinere, jüngere Märkte mit 24/7-Handel, starker Spekulation und ohne Circuit Breaker bewegen sich schneller als Aktienmärkte. Nachrichten, Hebel-Liquidationen und dünne Liquidität verstärken Schwankungen. Erwarte scharfe Bewegungen in beide Richtungen."}}, {"@type": "Question", "name": "Ist es zu spät, Krypto zu lernen?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. Die Technologie und der Markt sind noch jung, und die Grundlagen — was ein Coin ist, wie Verwahrung funktioniert, wie Betrugsmaschen operieren — verfallen nicht. Starte mit Bildung und einem kleinen Testbetrag, nicht mit Dringlichkeit."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Einsteigerpfad</a><a href="index.html" class="on">Anleitungen</a><a href="../exchanges.html">Börsen</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Tools</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de" selected>Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Startseite</a> / <a href="index.html">Anleitungen</a> / Was ist Kryptowährung?</div>
+      <h1>Was ist Kryptowährung?</h1>
+      <p class="sub">Wenn jede Erklärung, die du bisher gelesen hast, vorausgesetzt hat, dass du schon die halbe Antwort kennst, fange hier an: Kryptowährung von null, in einfacher Sprache.</p>
+      <p class="updated">Aktualisiert Okt. 2026 · Von TokVS · 10 Min. Lesezeit</p>
+      <p class="note">Quellen &amp; Methode: <a href="../methodology.html">wie wir prüfen</a> · <a href="../exchanges.html#availability">Länderverfügbarkeitstabelle</a> · Zahlen ändern sich, prüfe vor dem Handeln auf der offiziellen Seite.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Größte Börse der Welt, tiefste Liquidität</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren →</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Vollständige Produktpalette, gute Sprachunterstützung</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX-Konto erstellen</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">Einsteigerfreundliche App, tiefe Liquidität</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bei Bybit registrieren</a></div></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+
+      <h2>Die Antwort in einem Absatz</h2>
+      <p>Kryptowährung ist digitales Geld und digitale Vermögenswerte, die auf dezentralen Netzwerken statt in Banken leben. Statt dass ein Unternehmen das Haupthauptbuch führt, teilen sich tausende unabhängige Computer ein öffentliches Hauptbuch — die Blockchain — und einigen sich auf seine Inhalte nach Regeln, die in Software geschrieben sind. Die erste Kryptowährung war Bitcoin, gestartet 2009; heute gibt es tausende, von ernsthaften Zahlungsnetzwerken und programmierbaren Plattformen bis zu Witzen und regelrechten Betrugsmaschen. Das Wort „Krypto“ deckt sie alle ab, was genau der Grund ist, warum Einsteiger verwirrt werden: <strong>Ein Wort, wild unterschiedliche Dinge darunter.</strong> Dieser Leitfaden trennt die Schichten, damit du sie unterscheiden kannst.</p>
+      <h2>Coins vs. Token: die Unterscheidung, die alles erschließt</h2>
+      <p>Stell es dir so vor: Ein <strong>Coin</strong> Hat sein eigenes Haus; ein <strong>Token</strong> Mietet ein Zimmer im Haus eines anderen. Bitcoin läuft auf der Bitcoin-Blockchain. Ether läuft auf der Ethereum-Blockchain. Das sind Coins. Ein Token dagegen wird auf einer bestehenden Blockchain erstellt — am bekanntesten Ethereum — unter Nutzung der Regeln dieser Chain. Stablecoins wie USDT sind Token. Ebenso die meisten neuen Projekte, von denen du hörst: Sie geben einen Token auf Ethereum oder einer ähnlichen Plattform aus, statt eine ganze Blockchain von Grund auf zu bauen.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>Coin</th><th>Token</th></tr></thead>
+        <tbody>
+          <tr><td>Eigene Blockchain?</td><td>Ja</td><td>Nein — lebt auf einer anderen Chain</td></tr>
+          <tr><td>Beispiele</td><td>BTC, ETH, SOL, XRP</td><td>USDT und die meisten neuen Projekt-Assets</td></tr>
+          <tr><td>Verwendet für</td><td>Zahlen von Netzwerkgebühren, Wertaufbewahrung</td><td>Stabiler Wert, App-Zugang, Projekt-Governance</td></tr>
+          <tr><td>Erstellt von</td><td>Dem Netzwerk selbst (Mining/Staking)</td><td>Einem Projektteam, das einen Contract ausgibt</td></tr>
+        </tbody>
+      </table></div>
+      <p>Warum ist das für einen Einsteiger wichtig? Weil das Schicksal eines Tokens an zwei Dinge gebunden ist: sein eigenes Projekt und die Chain, auf der es lebt. Ein Token auf Ethereum zahlt Ethereum-Gebühren und erbt Ethereums Sicherheit; ein Coin steht oder fällt mit seinem eigenen Netzwerk. Wenn dir jemand einen Token anpreist, schneiden zwei Fragen durch den Lärm: Was tut er, und warum muss er existieren, statt einfach den zugrunde liegenden Coin zu nutzen? Wenn keine Antwort klar ist, geh weg.</p>
+      <h2>Die Blockchain, ohne Buzzwords</h2>
+      <p>Eine Blockchain ist ein gemeinsam geführtes Aufzeichnungsbuch mit drei ungewöhnlichen Eigenschaften. Erstens, <strong>Jeder hat eine Kopie</strong>: Statt dass eine Bank das Hauptbuch hält, halten tausende Computer identische Kopien und vergleichen sie. Zweitens, <strong>Einträge werden gruppiert und verkettet</strong>: Transaktionen bündeln sich zu Blöcken, jeder Block verweist auf den vorherigen, und das Ändern eines alten Eintrags bedeutet, alles danach auf den meisten Kopien neu zu schreiben — weshalb Menschen Blockchains manipulationsresistent statt manipulationssicher nennen. Drittens, <strong>Kein einzelner Herausgeber</strong>: Neue Blöcke werden von Teilnehmern hinzugefügt, die vereinbarten Regeln folgen (Mining oder Staking), nicht durch die Entscheidung eines Managers.</p>
+      <p>Was die Blockchain nicht ist: eine Datenbank, die alles besser macht, eine Garantie für Wahrheit über die Außenwelt oder ein Grund, einem Projekt zu vertrauen. Eine Blockchain zeichnet treu auf, was ihr gesagt wird — inklusive Betrugsmaschen, Fehler und wertlose Token. Ihre echte Leistung ist enger und trotzdem bemerkenswert: Fremde, die einander nicht vertrauen, können sich auf eine gemeinsame Transaktionshistorie einigen, ohne einen vertrauenswürdigen Mittelsmann zu ernennen. Alles andere in Krypto baut auf diesem einen Trick auf.</p>
+      <h2>Wie Menschen Kryptowährung bekommen</h2>
+      <p>Vier Wege decken fast jeden ab. <strong>Kaufen auf einer Börse</strong> Ist der Standardweg: Fiat-Geld rein, Krypto raus, wie in unserer <a href="how-to-buy-crypto-for-beginners.html">Einsteiger-Kaufanleitung</a>. <strong>Verdienen</strong> — In Krypto bezahlt werden für Arbeit oder verkaufte Waren — wächst, ist aber noch Nische. <strong>Mining und Staking</strong> Belohnen Menschen, die Netzwerke betreiben helfen: Miner mit Hardware, Staker mit gesperrten Coins. Beides erfordert Kapital, technisches Setup und Toleranz für dünne oder negative Renditen im kleinen Maßstab; keines ist kostenloses Geld. <strong>Airdrops</strong> Verschenken kleine Mengen neuer Token für frühe Nutzung oder Promotion — echte gibt es, aber sie sind auch eine beliebte Betrugshülle, also behandle jeden Airdrop-Link als schuldig, bis seine Unschuld bewiesen ist.</p>
+      <h2>Wallets und Börsen: Wer hält deine Coins?</h2>
+      <p>Das ist die einzelne wichtigste Verwahrungslektion in Krypto, also lies sie zweimal. Wenn deine Coins liegen <strong>Auf einer Börse</strong>, hält die Börse die Private Keys — du besitzt einen Anspruch gegen die Börse, nicht die Coins selbst. Das ist bequem (Passwort-Resets funktionieren, Trading ist sofort) und es birgt Plattformrisiko (wenn die Börse scheitert oder Auszahlungen einfriert, geht dein Zugang mit). Wenn Coins liegen <strong>In deiner eigenen Wallet</strong>, hältst du die Schlüssel — meist gesichert durch eine Seed-Phrase aus zwölf oder vierundzwanzig Wörtern. Niemand kann sie einfrieren, und niemand kann sie wiederherstellen, wenn du die Phrase verlierst.</p>
+      <p>Der Standard-Einsteigerfortschritt ist: Starte auf der Börse, solange Beträge klein sind, lerne, wie Wallets funktionieren, und bewege dann bedeutende Bestände in Selbstverwahrung. Unsere <a href="wallet-safety.html">Wallet-Sicherheitsleitfaden</a> Behandelt Seed-Phrasen-Disziplin richtig: Auf Papier geschrieben, offline an zwei Orten gelagert, niemals fotografiert, niemals in irgendeine Webseite eingetippt, niemals einem „Support“-Agenten gesagt. Es gibt zwei Arten von Wallet-Software — Hot Wallets auf deinem Handy oder Browser (bequem, internetexponiert) und Hardware-Wallets (ein physisches Gerät, Offline-Schlüssel, am besten für größere Bestände). Keine ist isoliert „die sicherste“; Sicherheit ist die Kombination aus Tool plus Gewohnheiten.</p>
+      <h2>Öffentliche Schlüssel, private Schlüssel und die Seed-Phrase</h2>
+      <p>Jede Krypto-Wallet läuft auf einem Schlüsselpaar. Der <strong>Öffentliche Schlüssel</strong> (Und die daraus abgeleitete Adresse) ist das, was du teilst: Er ist wie eine Kontonummer, die Menschen nutzen, um dir Coins zu senden. Der <strong>Private Key</strong> Ist das, was du niemals teilst: Er ist wie das Passwort, das Ausgaben autorisiert, außer dass es keinen Reset-Knopf, keinen Support und keine zweite Kopie gibt, die jemand anderes hält. Moderne Wallets verlangen nicht, dass du den Private Key direkt auswendig lernst. Stattdessen gibt dir das Setup eine <strong>Seed-Phrase</strong> — Zwölf oder vierundzwanzig gewöhnliche Wörter in fester Reihenfolge — aus denen alle deine Schlüssel abgeleitet werden. Schreibe diese Wörter auf Papier, in Reihenfolge, und lagere das Papier irgendwo sicher und offline. Wer die Phrase erhält, besitzt die Wallet; wer sie verliert, auch du, verliert den Zugang dauerhaft.</p>
+      <p>Diese einzelne Designentscheidung erklärt die meisten Wallet-Ratschläge, die du je hören wirst. Screenshots von Seed-Phrasen werden von Malware gestohlen. Cloud-Backups werden geknackt. „Support“-Agenten, die nach der Phrase fragen, sind Diebe, Punkt. Eine Hardware-Wallet hält den Private Key auf einem physischen Gerät, das ihn niemals deinem Computer aussetzt, weshalb sie die Standardempfehlung für größere Bestände ist — aber selbst Hardware kann eine Seed-Phrase nicht retten, die du fotografiert und hochgeladen hast. Das Tool zählt weniger als die Gewohnheit: Papier, offline, zwei Orte, niemals digital, niemals geteilt.</p>
+      <h2>Was kannst du wirklich damit tun?</h2>
+      <p>Jenseits von Trading sind vier Nutzungen heute real. <strong>Zahlungen</strong>: Werte über Grenzen senden ohne Korrespondenzbanken — am schnellsten und billigsten dort, wo Banking langsam oder teuer ist, obwohl Volatilität es für Alltagspreise unpraktisch macht. <strong>Stablecoin-Ersparnisse und -Überweisungen</strong>: Dollar-gebundene Token wie USDT sind das Arbeitstier zum Bewegen von Werten zwischen Börsen und über Länder hinweg; unser <a href="what-is-usdt.html">USDT-Leitfaden</a> Erklärt den Peg und seine Risiken ehrlich. <strong>Apps auf programmierbaren Chains</strong>: Verleihen, Trading und Spiele, die auf Ethereum und ähnlichen Netzwerken gebaut sind, gemeinsam DeFi genannt — mächtig, aber Smart-Contract-Bugs und Betrugsmaschen sind häufig, also behandle jede App als experimentell. <strong>Sammlerstücke und Identität</strong>: NFTs und tokenisierte Gegenstände, eine kleine und hochspekulative Ecke, wo die meisten Projekte auf null gehen.</p>
+      <p>Was du noch nicht zuverlässig tun kannst: dein Bankkonto ersetzen, garantierte Renditen verdienen oder nach Zeitplan „reich werden“. Jedes Produkt, das stetige hohe Renditen aus Krypto verspricht, geht entweder Risiken ein, die es nicht offenlegt, oder betreibt Betrug. Der ehrliche Pitch für Krypto ist enger: grenzenloser, programmierbarer, zensurresistenter Werttransfer mit echten Risiken. Wenn ein Anwendungsfall nicht in diesen Satz passt, sei skeptisch.</p>
+      <h2>Betrugsmaschen: die 5 Warnsignale</h2>
+      <p>Betrugsmaschen sind die dunkle Seite von Kryptos bestem Feature: Transaktionen sind endgültig, sodass gestohlene Coins nicht zurückkommen. Präge dir diese fünf Signale ein und du wirst den meisten ausweichen.</p>
+      <ul>
+        <li><strong>Garantierte Renditen.</strong> Keine legitime Investition garantiert Gewinne. „Verdopple deine Krypto“ ist Diebstahl mit besserem Marketing.</li>
+        <li><strong>Jemand schreibt dir zuerst eine DM.</strong> Echter Support rutscht niemals in deine Nachrichten. Echte Investmentmanager auch nicht.</li>
+        <li><strong>Coins senden, um Coins zu erhalten.</strong> Giveaways, „Verifizierung“- und „Gebühr zum Freischalten“-Anfragen sind alle derselbe Trick: Deine Coins gehen weg, nichts kommt zurück.</li>
+        <li><strong>Dringlichkeit plus Geheimhaltung.</strong> „Handle jetzt, sag niemandem etwas“ ist, wie Betrüger dich davon abhalten, einen Freund zu fragen, der es sofort erkennen würde.</li>
+        <li><strong>Anfragen nach Schlüsseln, Phrasen oder Codes.</strong> Seed-Phrasen und Verifizierungscodes werden niemals mit jemandem geteilt, aus keinem Grund, jemals.</li>
+      </ul>
+      <p>Unsere <a href="avoid-scams.html">Betrugsleitfaden</a> Geht die acht Betrugsmaschen durch, denen Einsteiger wirklich begegnen, mit dem, was zu tun ist, wenn du schon Geld gesendet hast. Lies ihn vor deinem ersten Kauf, nicht nach deinem ersten Schrecken.</p>
+      <h2>Warum Krypto niemals schließt</h2>
+      <p>Aktienmärkte schließen. Kryptomärkte nicht. Bitcoin, Ethereum und jeder Token auf ihnen handeln rund um die Uhr, inklusive Wochenenden und Feiertage, was ein Grund ist, warum Preischarts für Neulinge so unruhig aussehen. Für einen Einsteiger ist die praktische Lektion nicht, den Markt ständig zu beobachten — sondern Entscheidungen nach eigenem Zeitplan zu treffen und Orders das Warten zu überlassen. Limit-Orders, die nur zu einem von dir gesetzten Preis ausführen, existieren genau dafür, dass du nicht um 3 Uhr morgens auf einen Bildschirm starren musst. Die Immer-an-Natur des Marktes bedeutet auch, dass Nachrichten kommen und Preise sich bewegen, während du schläfst; Positionsgrößen, mit denen du dich durch eine schlechte Nacht wohlfühlst, sind die richtigen Größen, und Hebel, der über Nacht liquidieren kann, ist das falsche Werkzeug zum Lernen.</p>
+      <h2>Deine ersten Schritte, in Reihenfolge</h2>
+      <ol>
+        <li>Lies den <a href="what-is-bitcoin.html">Bitcoin-Leitfaden</a> , damit das Original Sinn ergibt, bevor die tausenden Kopien kommen.</li>
+        <li>Wähle eine große Börse, verifiziere, aktiviere Authenticator-2FA — sieh unsere <a href="how-to-buy-crypto-for-beginners.html">Einsteiger-Kaufanleitung</a> Für die vollständige Abfolge.</li>
+        <li>Tätige einen kleinen Testkauf: Fiat → USDT → ein kleiner Spot-Kauf.</li>
+        <li>Protokolliere den Trade und lies den Betrugsleitfaden. Entscheide dann ruhig, ob Krypto einen größeren Platz in deinen Finanzen verdient.</li>
+      </ol>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+<b>Bereit?</b> Die Registrierung dauert etwa 10 Minuten: einmal verifizieren, 2FA aktivieren, dann den Schritten oben folgen. Die Anleitungen auf dieser Seite führen dich durch den Rest.
+<div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Größte Börse der Welt, tiefste Liquidität</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Vollständige Produktpalette, gute Sprachunterstützung</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX-Konto erstellen</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">Einsteigerfreundliche App, tiefe Liquidität</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bei Bybit registrieren</a></div></div>
+<p class="note">Gleiche Gebühren wie bei direkter Registrierung — unser Link kostet dich nichts extra.</p>
+</div>
+      
+      <h3>Ist Kryptowährung echtes Geld?</h3>
+      <p>Sie ist real in dem Sinne, dass Menschen sie als Zahlung akzeptieren und gegen Waren, Dienstleistungen und Fiat-Währung handeln. Sie ist in den meisten Ländern kein gesetzliches Zahlungsmittel, und ihr Preis schwankt weit mehr als Bankgeld — behandle sie als volatilen Vermögenswert, nicht als stabiles Gehalt.</p>
+      <h3>Wie unterscheidet sie sich von digitalem Bankgeld?</h3>
+      <p>Bankgeld lebt in einem privaten Hauptbuch, das von Banken geführt wird; Kryptowährung lebt auf einem öffentlichen Hauptbuch, das von einem dezentralen Netzwerk geführt wird. Das bedeutet keine Bankzeiten, keine Kontoeinfrierungen durch ein einzelnes Unternehmen (wenn du selbst verwahrst) und keine Rückbuchungen — zum Guten wie zum Schlechten.</p>
+      <h3>Brauche ich eine Wallet, um Kryptowährung zu besitzen?</h3>
+      <p>Nicht am ersten Tag: Ein Börsenkonto hält Coins für dich, während du lernst. Sobald der Betrag zählt, wechsle zu deiner eigenen Wallet, wo du die Seed-Phrase hältst — und die volle Verantwortung, die damit kommt.</p>
+      <h3>Kann Kryptowährung gehackt werden?</h3>
+      <p>Blockchains selbst haben starke Sicherheitsbilanzen, aber die Dinge um sie herum werden ständig gehackt: Börsen, Apps, Browser und Menschen. Die meisten Verluste kommen von Phishing, gefälschten Apps und geleakten Schlüsseln — nicht vom Knacken der Blockchain selbst.</p>
+      <h3>Warum bewegen sich Kryptopreise so stark?</h3>
+      <p>Kleinere, jüngere Märkte mit 24/7-Handel, starker Spekulation und ohne Circuit Breaker bewegen sich schneller als Aktienmärkte. Nachrichten, Hebel-Liquidationen und dünne Liquidität verstärken Schwankungen. Erwarte scharfe Bewegungen in beide Richtungen.</p>
+      <h3>Ist es zu spät, Krypto zu lernen?</h3>
+      <p>Nein. Die Technologie und der Markt sind noch jung, und die Grundlagen — was ein Coin ist, wie Verwahrung funktioniert, wie Betrugsmaschen operieren — verfallen nicht. Starte mit Bildung und einem kleinen Testbetrag, nicht mit Dringlichkeit.</p>
+      <h2>Weiterlesen</h2>
+      <ul>
+        <li><a href="what-is-bitcoin.html">Was ist Bitcoin?</a></li>
+        <li><a href="how-to-buy-crypto-for-beginners.html">Krypto kaufen für Einsteiger</a></li>
+        <li><a href="avoid-scams.html">Ist Krypto Betrug? 8 Betrugsmaschen, die man kennen sollte</a></li>
+        <li><a href="wallet-safety.html">Wallet- &amp; Seed-Phrase-Sicherheit</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Startseite</a><a href="../airdrops.html">Tägliche Airdrops</a><a href="../exchanges.html">Börsenvergleich</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Einsteiger</b><a href="../start/step1.html">Einsteigerpfad</a><a href="index.html">Anleitungen</a><a href="../start/step5.html">Deinen ersten Coin kaufen</a></div>
+      <div class="col" style="flex:1;"><b>Testberichte</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">Watchlist-Alarme</a><a href="../tools.html#calendar">Ereigniskalender</a><a href="../exchanges.html#calculator">Gebührenrechner</a></div>
+    </div>
+    <div class="disclosure">Diese Seite enthält Affiliate-Links. Eine Registrierung über unsere Links kostet dich nichts extra. Kryptopreise sind stark volatil; nichts hier ist Anlageberatung — schätze die Risiken selbst ein.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Noch kein Konto? In 3 Minuten registrieren →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Registrieren</a><button class="sx" aria-label="Schließen" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Welche Krypto-Börse soll ich nutzen? Quiz mit 3 Fragen — TokVS</title>
+<meta name="description" content="Beantworte 3 Fragen dazu, wie du bezahlen willst, zu deiner Erfahrung und dazu, was dir am wichtigsten ist — erhalte eine klare Empfehlung unter Binance, OKX und Bybit, mit echten Gebührenzahlen.">
+<link rel="canonical" href="https://tokvs.com/de/tools/quiz">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/tools/quiz">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/tools/quiz">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/tools/quiz">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/tools/quiz">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/tools/quiz">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/tools/quiz">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/tools/quiz">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/tools/quiz">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/tools/quiz">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/tools/quiz">
+<meta property="og:title" content="Welche Krypto-Börse soll ich nutzen? Quiz mit 3 Fragen — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="3 Fragen, eine Empfehlung: Binance, OKX oder Bybit — abgestimmt darauf, wie du bezahlst und was dir wichtig ist.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/de/tools/quiz">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/de/"},{"@type":"ListItem","position":2,"name":"Tools","item":"https://tokvs.com/de/tools"},{"@type":"ListItem","position":3,"name":"Welche Krypto-Börse soll ich nutzen?","item":"https://tokvs.com/de/tools/quiz"}]},{"@type":"Article","headline":"Welche Krypto-Börse soll ich nutzen? Quiz mit 3 Fragen","description":"Beantworte 3 Fragen dazu, wie du bezahlen willst, zu deiner Erfahrung und dazu, was dir am wichtigsten ist — erhalte eine klare Empfehlung unter Binance, OKX und Bybit, mit echten Gebührenzahlen.","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/de/tools/quiz"},"inLanguage":"de"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Ist dieses Quiz eine Beratung, wohin ich mein Geld stecken soll?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. Es ordnet deine Antworten anhand öffentlicher Gebührentabellen und Produktfakten drei etablierten Börsen zu. Es ist keine Anlageberatung, und die Verfügbarkeit variiert je nach Land — prüfe immer, ob eine Börse deine Region bedient, bevor du dich registrierst."}}, {"@type": "Question", "name": "Warum nur Binance, OKX und Bybit?", "acceptedAnswer": {"@type": "Answer", "text": "Sie sind die drei großen globalen Börsen, die diese Seite ausführlich vergleicht, mit veröffentlichten Gebührentabellen, die wir prüfen können. Falls du in den USA bist: Beachte, dass Binance.com keine US-Kunden bedient — US-Einsteiger starten meist stattdessen mit Coinbase oder Kraken."}}, {"@type": "Question", "name": "Ändern sich die Gebühren im Ergebnis?", "acceptedAnswer": {"@type": "Answer", "text": "Ja — Börsen passen Gebührentabellen an, und VIP-Stufen ändern die effektiven Sätze. Betrachte die Zahlen hier als Momentaufnahme, geprüft im Oktober 2026, und bestätige die aktuelle Tabelle auf der offiziellen Gebührenseite der Börse vor dem Handel."}}, {"@type": "Question", "name": "Was, wenn mein Treffer mein Land nicht bedient?", "acceptedAnswer": {"@type": "Answer", "text": "Versuche den Zweitplatzierten unter deinem Ergebnis oder vergleiche alle drei auf der Börsenseite. Nutze niemals ein VPN, um eine regionale Sperre zu umgehen — Konten, die dabei erwischt werden, werden mit Guthaben darin eingefroren."}}]}</script>
+<style>
+.quiz{max-width:640px;margin:0 auto}
+.qstep{display:none}
+.qstep.on{display:block}
+.qopt{display:block;width:100%;text-align:left;background:#fff;border:1.5px solid #E5E7E0;border-radius:14px;padding:14px 18px;margin:10px 0;font-size:16px;font-weight:600;color:#2A2E27;cursor:pointer}
+.qopt:hover{border-color:#7CB342}
+.qopt small{display:block;font-weight:400;color:#666;font-size:13.5px;margin-top:3px}
+.qbar{height:8px;background:#EDEFE9;border-radius:99px;overflow:hidden;margin:6px 0 18px}
+.qbar i{display:block;height:100%;background:#7CB342;border-radius:99px;transition:width .3s}
+.qback{background:none;border:none;color:#666;font-size:14px;cursor:pointer;padding:6px 0}
+.result-card{border:2px solid #7CB342;border-radius:18px;padding:22px}
+.result-card .pick{font-size:13px;font-weight:800;letter-spacing:.08em;color:#558B2F;text-transform:uppercase}
+.result-card h2{margin:6px 0 4px}
+.fee-line{font-size:14px;color:#555;background:#F4F6F1;border-radius:10px;padding:10px 14px;margin:12px 0}
+.runner{border:1.5px solid #E5E7E0;border-radius:14px;padding:14px 18px;margin-top:10px}
+.runner b{font-size:15.5px}
+.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}
+</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Einsteigerpfad</a><a href="../guides/index.html">Anleitungen</a><a href="../exchanges.html">Börsen</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html" class="on">Tools</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de" selected>Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Startseite</a> / <a href="../tools.html">Tools</a> / Börsen-Quiz</div>
+      <h1>Welche Krypto-Börse soll ich nutzen?</h1>
+      <p class="sub">Drei Fragen, eine klare Antwort. Keine „kommt darauf an“-Aufsätze — wähle deine Situation und erhalte eine Empfehlung unter Binance, OKX und Bybit, mit den echten Gebührenzahlen dahinter.</p>
+      <p class="updated">Aktualisiert Okt. 2026 · Von TokVS</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="card quiz">
+      <noscript><p>Dieses Quiz braucht JavaScript. Ohne JavaScript gehe direkt zur <a href="../exchanges.html">Vier-Wege-Börsenvergleich</a> .</p></noscript>
+      <div class="qbar"><i id="qbarFill" style="width:33%"></i></div>
+
+      <div class="qstep on" id="step1">
+        <h2>1. Wie willst du bezahlen?</h2>
+        <p>Die Zahlungsmethode entscheidet, welche Börse für dich überhaupt nutzbar ist.</p>
+        <button class="qopt" data-q="1" data-a="bank">Banküberweisung<small>Günstigste Kosten, 1–2 Tage bis zur Gutschrift</small></button>
+        <button class="qopt" data-q="1" data-a="card">Debit- oder Kreditkarte<small>Sofort, aber höhere Gebühren</small></button>
+        <button class="qopt" data-q="1" data-a="p2p">P2P / lokale Zahlungsmethoden<small>Bargeld, E-Wallets, lokale Bank-Apps</small></button>
+        <button class="qopt" data-q="1" data-a="unsure">Noch unsicher<small>Will einfach den einfachsten Start</small></button>
+      </div>
+
+      <div class="qstep" id="step2">
+        <h2>2. Wie viel Erfahrung hast du?</h2>
+        <p>Sei ehrlich — die richtige erste Börse für einen totalen Einsteiger ist eine andere als für einen Trader.</p>
+        <button class="qopt" data-q="2" data-a="never">Noch nie Krypto gekauft<small>Erstes Mal, will an die Hand genommen werden</small></button>
+        <button class="qopt" data-q="2" data-a="once">Ein- oder zweimal gekauft<small>Kenne die Grundlagen</small></button>
+        <button class="qopt" data-q="2" data-a="regular">Ich trade regelmäßig<small>Achte auf Gebühren und Tiefe</small></button>
+        <button class="qback" onclick="quizBack(2)">← Zurück</button>
+      </div>
+
+      <div class="qstep" id="step3">
+        <h2>3. Was ist dir am wichtigsten?</h2>
+        <p>Wähle das, bei dem ein Fehler am meisten schmerzen würde.</p>
+        <button class="qopt" data-q="3" data-a="fees">Niedrigste Gebühren<small>Jede 0.01% summiert sich mit der Zeit</small></button>
+        <button class="qopt" data-q="3" data-a="easy">Einfachster Start<small>Einfache App, viele Anleitungen</small></button>
+        <button class="qopt" data-q="3" data-a="coins">Größte Coinauswahl<small>Zugang zu mehr Listings</small></button>
+        <button class="qopt" data-q="3" data-a="p2p">Beste P2P-Preise<small>Mit Einheimischen kaufen und verkaufen</small></button>
+        <button class="qback" onclick="quizBack(3)">← Zurück</button>
+      </div>
+
+      <div class="qstep" id="result">
+        <div class="result-card">
+          <div class="pick">Dein Treffer</div>
+          <h2 id="resName"></h2>
+          <p id="resWhy"></p>
+          <div class="fee-line" id="resFees"></div>
+          <div class="ref-btns">
+            <a class="btn-p" id="resCta" href="#" target="_blank" rel="nofollow noopener"></a>
+          </div>
+          <p style="font-size:13.5px;color:#666;margin-top:10px;">Die Verfügbarkeit variiert je nach Land. Wenn dein Treffer deine Region nicht bedient, versuche einen Zweitplatzierten unten — nutze niemals ein VPN, um eine regionale Sperre zu umgehen; Konten, die dabei erwischt werden, werden mit Guthaben darin eingefroren.</p>
+        </div>
+        <h3 style="margin-top:22px;">Auch in Betracht ziehen</h3>
+        <div id="resRunners"></div>
+        <div class="callout good" style="margin-top:18px;"><b>So funktioniert es:</b> Jede Antwort gibt Punkte an die Börse, die am besten passt; die höchste Punktzahl gewinnt, bei Gleichstand gewinnt die größte Plattform. Die Gebühren unten sind Spot-Maker/Taker aus der veröffentlichten Gebührentabelle jeder Börse, geprüft im Oktober 2026 — bestätige die aktuelle Tabelle auf der offiziellen Gebührenseite vor dem Handel.</div>
+        <p style="margin-top:16px;"><button class="qopt" style="text-align:center;" onclick="quizReset()">↺ Quiz wiederholen</button></p>
+        <p style="font-size:13.5px;color:#666;">Willst du statt eines Quiz die vollen Zahlen? Siehe den <a href="../exchanges.html">Vier-Wege-Gebühren- und Rabattvergleich</a> oder den <a href="../guides/choose-exchange.html">6-Check-Börsenleitfaden</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card article prose">
+      <h2>FAQ</h2>
+      <h3>Ist dieses Quiz eine Beratung, wohin ich mein Geld stecken soll?</h3>
+      <p>Nein. Es ordnet deine Antworten anhand öffentlicher Gebührentabellen und Produktfakten drei etablierten Börsen zu. Es ist keine Anlageberatung, und die Verfügbarkeit variiert je nach Land — prüfe immer, ob eine Börse deine Region bedient, bevor du dich registrierst.</p>
+      <h3>Warum nur Binance, OKX und Bybit?</h3>
+      <p>Sie sind die drei großen globalen Börsen, die diese Seite ausführlich vergleicht, mit veröffentlichten Gebührentabellen, die wir prüfen können. Falls du in den USA bist: Beachte, dass Binance.com keine US-Kunden bedient — US-Einsteiger starten meist stattdessen mit Coinbase oder Kraken.</p>
+      <h3>Ändern sich die Gebühren im Ergebnis?</h3>
+      <p>Ja — Börsen passen Gebührentabellen an, und VIP-Stufen ändern die effektiven Sätze. Betrachte die Zahlen hier als Momentaufnahme, geprüft im Oktober 2026, und bestätige die aktuelle Tabelle auf der offiziellen Gebührenseite der Börse vor dem Handel.</p>
+      <h3>Was, wenn mein Treffer mein Land nicht bedient?</h3>
+      <p>Versuche den Zweitplatzierten unter deinem Ergebnis oder vergleiche alle drei auf der Börsenseite. Nutze niemals ein VPN, um eine regionale Sperre zu umgehen — Konten, die dabei erwischt werden, werden mit Guthaben darin eingefroren.</p>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../start/step1.html" style="margin-top:10px;">Über uns</a><a href="../exchanges.html">Börsen</a><a href="../airdrops.html">Airdrops</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Einsteiger</b><a href="../start/step1.html">Einsteigerpfad</a><a href="../start/step2.html">Eine Börse wählen</a><a href="../start/step5.html">Erster Kauf</a></div>
+      <div class="col" style="flex:1;"><b>Testberichte</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">Watchlist</a><a href="../tools.html#calendar">Kalender</a><a href="../exchanges.html#calculator">Gebührenrechner</a></div>
+    </div>
+    <div class="disclosure">Diese Seite enthält Affiliate-Links. Eine Registrierung über unsere Links kostet dich nichts extra. Kryptopreise sind stark volatil; nichts hier ist Anlageberatung — schätze die Risiken selbst ein.</div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var EX = {
+    binance: { name: 'Binance', tagline: "Größte Börse der Welt — tiefste Liquidität, die meisten Listings", fees: 'Spot-Gebühren: 0.10% Maker / 0.10% Taker (vor VIP-Rabatten).', cta: 'Bei Binance registrieren', url: 'https://account.binance.com/register?ref=76257270&?registerChannel=user_center' },
+    okx: { name: 'OKX', tagline: 'Vollständige Produktpalette, niedrigste ausgewiesene Spot-Maker-Gebühr der drei', fees: 'Spot-Gebühren: 0.08% Maker / 0.10% Taker (vor VIP-Rabatten).', cta: 'OKX-Konto erstellen', url: 'https://www.okx.com/join/AZTPA7SQ' },
+    bybit: { name: 'Bybit', tagline: 'Starker P2P-Markt und eine übersichtliche App für regelmäßige Trader', fees: 'Spot-Gebühren: 0.10% Maker / 0.10% Taker (vor VIP-Rabatten).', cta: 'Bei Bybit registrieren', url: 'https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link' }
+  };
+  // points: [binance, okx, bybit]
+  var PTS = {
+    1: { bank: [1, 1, 0], card: [1, 1, 0], p2p: [0, 1, 2], unsure: [1, 0, 0] },
+    2: { never: [2, 0, 0], once: [1, 1, 0], regular: [0, 1, 1] },
+    3: { fees: [0, 2, 1], easy: [2, 0, 0], coins: [2, 1, 0], p2p: [0, 1, 2] }
+  };
+  var ORDER = ['binance', 'okx', 'bybit'];
+  var answers = {};
+  function show(id) {
+    document.querySelectorAll('.qstep').forEach(function (s) { s.classList.remove('on'); });
+    document.getElementById(id).classList.add('on');
+  }
+  function bar(pct) { document.getElementById('qbarFill').style.width = pct + '%'; }
+  document.querySelectorAll('.qopt[data-q]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var q = btn.getAttribute('data-q'), a = btn.getAttribute('data-a');
+      answers[q] = a;
+      if (q === '1') { show('step2'); bar(66); }
+      else if (q === '2') { show('step3'); bar(100); }
+      else { finish(); }
+    });
+  });
+  window.quizBack = function (step) {
+    if (step === 2) { show('step1'); bar(33); }
+    if (step === 3) { show('step2'); bar(66); }
+  };
+  window.quizReset = function () {
+    answers = {};
+    show('step1'); bar(33);
+  };
+  function finish() {
+    var score = { binance: 0, okx: 0, bybit: 0 };
+    ['1', '2', '3'].forEach(function (q) {
+      var p = PTS[q][answers[q]];
+      if (p) { score.binance += p[0]; score.okx += p[1]; score.bybit += p[2]; }
+    });
+    var win = ORDER[0];
+    ORDER.forEach(function (k) { if (score[k] > score[win]) win = k; });
+    var w = EX[win];
+    var whyParts = [];
+    if (answers['1'] === 'p2p') whyParts.push('du P2P- oder lokale Zahlungsmethoden willst');
+    if (answers['1'] === 'bank') whyParts.push('du Banküberweisung bevorzugst');
+    if (answers['1'] === 'card') whyParts.push('du lieber mit Karte bezahlst');
+    if (answers['2'] === 'never') whyParts.push("du bei null startest");
+    if (answers['2'] === 'regular') whyParts.push('du regelmäßig tradest');
+    if (answers['3'] === 'fees') whyParts.push('dir Gebühren am wichtigsten sind');
+    if (answers['3'] === 'easy') whyParts.push('du den einfachsten Start willst');
+    if (answers['3'] === 'coins') whyParts.push('du die größte Coinauswahl willst');
+    if (answers['3'] === 'p2p') whyParts.push('dir P2P-Preise am wichtigsten sind');
+    document.getElementById('resName').textContent = w.name;
+    document.getElementById('resWhy').textContent = w.tagline + (whyParts.length ? ' — sie passt, weil ' + whyParts.join(', ') + '.' : '.');
+    document.getElementById('resFees').textContent = w.fees + ' Gebühren ändern sich mit der Zeit — bestätige die aktuelle Tabelle auf der offiziellen Gebührenseite vor dem Handel.';
+    var cta = document.getElementById('resCta');
+    cta.textContent = w.cta + ' →';
+    cta.href = w.url;
+    var runners = ORDER.filter(function (k) { return k !== win; }).map(function (k) {
+      var e = EX[k];
+      return '<div class="runner"><b>' + e.name + '</b> — ' + e.tagline + '<br><a href="' + e.url + '" target="_blank" rel="nofollow noopener">Registrieren bei ' + e.name + ' →</a></div>';
+    }).join('');
+    document.getElementById('resRunners').innerHTML = runners;
+    show('result');
+  }
+})();
+</script>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Schritt 2: Eine Börse wählen — Einsteigerpfad | TokVS</title>
+<meta name="description" content="Wähle eine Börse in fünf Checks: Größe, Gebühren, Sicherheitsbilanz, Sprachunterstützung und Einzahlungswege. Dann geht es zur Registrierung.">
+<link rel="canonical" href="https://tokvs.com/de/start/step2">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/start/step2">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/start/step2">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/start/step2">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/start/step2">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/start/step2">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/start/step2">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/start/step2">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/start/step2">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/start/step2">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/start/step2">
+<meta property="og:title" content="Schritt 2: Eine Börse wählen — Einsteigerpfad | TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Fünf Auswahlkriterien, ein schneller Blick auf die vier Großen und die Fallen, die es zu vermeiden gilt.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/de/start/step2">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/de/"},{"@type":"ListItem","position":2,"name":"Einsteigerpfad","item":"https://tokvs.com/de/start/step1"},{"@type":"ListItem","position":3,"name":"Schritt 2: Eine Börse wählen — Einsteigerpfad","item":"https://tokvs.com/de/start/step2"}]}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="step1.html" class="on">Einsteigerpfad</a><a href="../guides/index.html">Anleitungen</a><a href="../exchanges.html">Börsen</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Tools</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de" selected>Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Startseite</a> / Einsteigerpfad / Schritt 2</div>
+      <h1>Schritt 2: Eine Börse wählen</h1>
+      <p class="sub">Dein Geld wird die meiste Zeit auf einer Börse liegen. Falsch gewählt, zahlst du im besten Fall zu viel an Gebühren — oder verlierst im schlimmsten Fall alles. Zuerst Standards, dann das Urteil.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="steps">
+      <a class="step done" href="step1.html"><div class="n">1</div><div class="t">Bitcoin kennenlernen</div><div class="d">Was es ist und warum es Wert hat</div><span class="arr">›</span></a>
+      <span class="step" style="outline:2.5px solid #00C853;cursor:default;" aria-current="step"><div class="n">2</div><div class="t">Eine Börse wählen</div><div class="d">Zuerst Gebühren und Sicherheit vergleichen</div></span>
+      <a class="step" href="step3.html"><div class="n">3</div><div class="t">Registrieren</div><div class="d">Anschauliche Schritte, KYC gleich beim ersten Versuch bestehen</div><span class="arr">›</span></a>
+      <a class="step" href="step4.html"><div class="n">4</div><div class="t">USDT kaufen</div><div class="d">So lädst du dein Konto richtig auf</div><span class="arr">›</span></a>
+      <a class="step" href="step5.html"><div class="n">5</div><div class="t">Deinen ersten Coin kaufen</div><div class="d">Spot-Order + sichere Verwahrung</div></a>
+    </div>
+  </section>
+
+  <section>
+    <div class="card article prose">
+      <h2>Fünf Kriterien für die Börsenwahl</h2>
+      <ol>
+        <li><strong>Größe und Liquidität.</strong> Plattformen mit hohem Volumen haben enge Spreads und wenig Slippage bei großen Orders — und eine relativ geringere Chance zu verschwinden. Einsteiger brauchen nur die globale Topliga.</li>
+        <li><strong>Gebühren.</strong> Spot-Sätze häufen sich bei 0.08%–0.10% und sehen ähnlich aus; Futures-Taker-Sätze liegen bei 0.05%–0.06%, was sich für aktive Trader zu echtem Geld summiert. Nutze die Vergleichstabelle und den Rechner unten.</li>
+        <li><strong>Sicherheitsbilanz.</strong> Gab es große Hacks? Veröffentlicht sie Proof of Reserves? Wurden Nutzer entschädigt, als etwas schiefging? Alles harte Indikatoren.</li>
+        <li><strong>Sprache und Support.</strong> Wenn etwas kaputtgeht, erreichst du einen Menschen und verstehst die Oberfläche? Für Einsteiger ist das wichtiger, als es klingt.</li>
+        <li><strong>Einzahlungswege.</strong> Unterstützt sie P2P-Fiat-Handel in deiner Währung, laufen Auszahlungen reibungslos, gibt es seltsame Limits?</li>
+      </ol>
+
+      <h2>Die vier Großen auf einen Blick</h2>
+      <div class="table-wrap">
+        <table class="fee num">
+          <thead><tr><th>Börse</th><th>Spot-Gebühr</th><th>Futures-Taker</th><th>In einem Satz</th><th>Testbericht</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Binance</td><td>0.10%</td><td>0.05%</td><td>Tiefste Liquidität weltweit, die meisten Listings</td><td><a href="../reviews/binance.html">Lesen →</a></td></tr>
+            <tr><td class="name">OKX</td><td>ab 0.08%</td><td>0.05%</td><td>Vollständigste Produktpalette, integrierte Web3-Wallet</td><td><a href="../reviews/okx.html">Lesen →</a></td></tr>
+            <tr><td class="name">Bybit</td><td>0.10%</td><td>0.055%</td><td>Reibungsloses Futures-Erlebnis, häufige Kampagnen</td><td><a href="../reviews/bybit.html">Lesen →</a></td></tr>
+            <tr><td class="name">Bitget</td><td>0.10%</td><td>0.06%</td><td>Starkes Copy-Trading, einsteigerfreundlich</td><td><a href="../reviews/bitget.html">Lesen →</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Die vollständige Gebührentabelle, Rabattregelungen und ein Round-Trip-Kostenrechner findest du auf der <a href="../exchanges.html">Börsenvergleichsseite</a>. Klare Empfehlung für Einsteiger: <strong>Wenn du nur große Coins auf Spot kaufst, sind Binance und OKX beide sichere Wahlen</strong>; wenn du an Futures denkst, rechne zuerst die Kosten durch.</p>
+
+      <h2>Drei Fallen, die du unbedingt vermeiden musst</h2>
+      <ul>
+        <li><strong>Unbekannte Börsen, von denen du nie gehört hast.</strong>„Null Gebühren“- und „Anmeldebonus“-Versprechen sind Köder. Kleine Plattformen, die Gelder veruntreuen, Kurse manipulieren oder mit Nutzergeld verschwinden, schaffen es jedes einzelne Jahr in die Nachrichten.</li>
+        <li><strong>„Mentoren“-Gruppen und verwaltete Konten.</strong>Wer dich bittet, Geld an eine Person oder eine unbekannte Plattform zu senden, damit sie für dich „tradet“, fährt das älteste Schema überhaupt.</li>
+        <li><strong>Gefälschte Apps und gefälschte Webseiten.</strong>Lade nur von offiziellen Seiten oder offiziellen App-Stores herunter. Die „offizielle Seite“ in Suchanzeigen ist oft ein Doppelgänger — ein einziger zusätzlicher Buchstabe in der Domain kann dich alles kosten.</li>
+      </ul>
+
+      <div class="callout"><b>Gut zu wissen:</b>Eine Registrierung über unsere Rabatt-Links ändert deine Gebührentabelle nicht — die Börse gibt einen Teil ihrer Gebühr an dich zurück. Gleicher Preis, eingebauter Rabatt. Jeder Link ist offengelegt.</div>
+
+      <p>Plattform gewählt? Als Nächstes kommen Registrierung und Verifizierung — etwa 10 Minuten, wenn du deinen Ausweis bereit hast, und es gibt einen Weg, gleich beim ersten Versuch zu bestehen.</p>
+    </div>
+
+    <div class="stepnav">
+      <a href="step1.html"><span><span class="sm">Vorheriger Schritt</span>Schritt 1: Bitcoin kennenlernen</span></a>
+      <a class="next" href="step3.html"><span><span class="sm">Nächster Schritt</span>Schritt 3: Registrieren</span><span>→</span></a>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Startseite</a><a href="../airdrops.html">Tägliche Airdrops</a><a href="../exchanges.html">Börsenvergleich</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Einsteiger</b><a href="step1.html">Einsteigerpfad</a><a href="step2.html">Eine Börse wählen</a><a href="step5.html">Deinen ersten Coin kaufen</a></div>
+      <div class="col" style="flex:1;"><b>Testberichte</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">Watchlist-Alarme</a><a href="../tools.html#calendar">Ereigniskalender</a><a href="../exchanges.html#calculator">Gebührenrechner</a></div>
+    </div>
+    <div class="disclosure">Diese Seite enthält Affiliate-Links. Eine Registrierung über unsere Links kostet dich nichts extra. Kryptopreise sind stark volatil; nichts hier ist Anlageberatung — schätze die Risiken selbst ein.</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

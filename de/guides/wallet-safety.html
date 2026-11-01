@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Krypto-Wallet für Einsteiger: Seed-Phrase-Leitfaden — TokVS</title>
+<meta name="description" content="Krypto-Wallet für Einsteiger: was eine Wallet kontrolliert, Hot- vs. Cold-Wallets, was eine Seed-Phrase ist, 5 Aufbewahrungsregeln und was bei einem Leak zu tun ist.">
+<link rel="canonical" href="https://tokvs.com/de/guides/wallet-safety">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/wallet-safety">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/wallet-safety">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/wallet-safety">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/wallet-safety">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/wallet-safety">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/wallet-safety">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/wallet-safety">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/wallet-safety">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/wallet-safety">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/wallet-safety">
+<meta property="og:title" content="Krypto-Wallet- &amp; Seed-Phrase-Sicherheit — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Was eine Seed-Phrase ist, wie man sie sicher aufbewahrt, Hot- vs. Cold-Wallets und Wiederherstellungsschritte bei Verlust oder Leaks.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/de/guides/wallet-safety">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/de/"}, {"@type": "ListItem", "position": 2, "name": "Anleitungen", "item": "https://tokvs.com/de/guides/"}, {"@type": "ListItem", "position": 3, "name": "Krypto-Wallet für Einsteiger: Seed-Phrase-Leitfaden", "item": "https://tokvs.com/de/guides/wallet-safety"}]}, {"@type": "Article", "headline": "Krypto-Wallet für Einsteiger: Seed-Phrase-Leitfaden", "description": "Krypto-Wallet für Einsteiger: was eine Wallet kontrolliert, Hot- vs. Cold-Wallets, was eine Seed-Phrase ist, 5 Aufbewahrungsregeln und was bei einem Leak zu tun ist.", "datePublished": "2026-10-12", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/de/guides/wallet-safety", "dateModified": "2026-10-30"}, "inLanguage": "de"}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Einsteigerpfad</a><a href="index.html" class="on">Anleitungen</a><a href="../exchanges.html">Börsen</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Tools</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de" selected>Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Startseite</a> / <a href="index.html">Anleitungen</a> / Wallet-Sicherheit</div>
+      <h1>Wallet- &amp; Seed-Phrase-Sicherheit: Wer kontrolliert deine Coins wirklich</h1>
+      <p class="sub">Deine Seed-Phrase ist der Hauptschlüssel zu deiner Wallet: 12 oder 24 Wörter. Wer sie hat, kann jeden Coin in der Wallet nehmen — kein Support, kein Einfrieren, kein „Passwort vergessen“. Dieser Leitfaden behandelt die Wallet-Wahl und die richtige Aufbewahrung dieser Phrase.</p>
+      <p class="updated">Aktualisiert Okt. 2026 · Von TokVS · 4 Min. Lesezeit</p>
+      <p class="note">Quellen &amp; Methode: <a href="../methodology.html">wie wir prüfen</a> · <a href="../exchanges.html#availability">Länderverfügbarkeitstabelle</a> · Zahlen ändern sich, prüfe vor dem Handeln auf der offiziellen Seite.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Zuerst: Ein Börsenkonto ist nicht deine Wallet</h2>
+      <p>Coins, die auf einer Börse liegen, werden von der Plattform kontrolliert; was du hältst, ist eine Forderung gegen sie. Wenn die Plattform gehackt wird, Auszahlungen einfriert oder zusammenbricht, sind deine Coins darin gefangen. Coins in eine <strong>Wallet zu bewegen, deren Seed-Phrase du kontrollierst</strong> macht sie wirklich zu deinen — und macht Sicherheit vollständig zu deiner Aufgabe. Die sinnvolle Aufteilung: Kleine, aktiv gehandelte Beträge auf Börsen lassen; große, langfristige Bestände selbst verwahren.</p>
+
+      <h2>Die zwei Arten von Wallets</h2>
+      <ul>
+        <li><strong>Hot-Wallets</strong>: Handy-Apps oder Browser-Erweiterungen, mit dem Internet verbunden. Praktisch für alltägliche Überweisungen, Airdrop-Farming und DeFi. Die Risikofläche ist dein Gerät: Malware und Phishing-Links sind die üblichen Angriffswege.</li>
+        <li><strong>Cold-Wallets (Hardware-Wallets)</strong>: Spezielle Geräte, die Schlüssel offline halten und sich nur zum Signieren verbinden. Die sicherste Option für große langfristige Bestände; die Kosten sind der Gerätepreis und ein umständlicherer Ablauf.</li>
+      </ul>
+      <p>Wähle nach Betrag: Unter ein paar tausend Dollar ist eine Hot-Wallet in Ordnung. Sobald der Betrag „darüber würde ich nicht schlafen können“ erreicht, lohnt sich eine Hardware-Wallet — nur vom Hersteller oder autorisierten Händlern gekauft. Kaufe niemals eine gebrauchte Hardware-Wallet.</p>
+
+      <h2>Was eine Seed-Phrase wirklich ist</h2>
+      <p>Wenn du eine Wallet erstellst, erzeugt sie 12 oder 24 englische Wörter: deine Seed-Phrase, eine menschenlesbare Form des Private Keys, die jede Adresse in der Wallet neu erzeugen kann. <strong>Die App ist nur eine Oberfläche; die Phrase ist der Vermögenswert.</strong> Neues Handy, neu installierte App — Phrase eintippen und alles ist zurück. Verliere die Phrase, und nichts auf der Welt stellt die Wallet wieder her.</p>
+
+      <h2>5 eiserne Regeln zur Aufbewahrung deiner Seed-Phrase</h2>
+      <ol>
+        <li><strong>Stift und Papier, offline.</strong> Schreibe sie von Hand auf (oder präge sie in eine Metall-Backup-Platte) und bewahre sie an einem Ort auf, den nur du kennst.</li>
+        <li><strong>Screenshotte sie niemals, fotografiere sie nicht und lege sie nicht in Cloud-Speicher oder Chats.</strong> Fotobibliotheken und Cloud-Konten sind die häufigste Leak-Quelle — Malware und Kontoübernahmen durchsuchen sie automatisch.</li>
+        <li><strong>Teile sie niemals mit jemandem.</strong> Kein Support-Mitarbeiter, kein Offizieller und kein Airdrop-Projekt wird jemals danach fragen. Wer fragt, ist ein Dieb, ohne Wenn und Aber.</li>
+        <li><strong>Bewahre mindestens zwei Kopien an getrennten Orten auf</strong> um Feuer, Wasser und einfaches Verlegen zu überstehen.</li>
+        <li><strong>Verrate nicht, wo sie aufbewahrt wird</strong> — und wenn du Wallet-Screenshots postest oder online prahlst, stelle sicher, dass das Backup-Notizbuch nicht im Bild ist. Genau dieser Unfall passiert jedes Jahr.</li>
+      </ol>
+      <div class="callout warn"><b>Die eine tödlichste Regel, wiederholt:</b> Jede Webseite, App oder jeder „Support-Mitarbeiter“, die dich bitten, deine Seed-Phrase einzutippen, stiehlt deine Coins. „Claim your airdrop“, „verify your wallet“, „account upgrade“ — alles Maschen. Die einzige legitime Verwendung der Phrase bist du, wenn du deine eigene Wallet in der offiziellen App wiederherstellst.</div>
+
+      <h2>Sicherheitsgewohnheiten für jeden Tag</h2>
+      <ul>
+        <li>Rufe Wallets und Börsen nur über deine eigenen Lesezeichen auf und prüfe Domains Buchstabe für Buchstabe — Phishing-Seiten unterscheiden sich routinemäßig um ein Zeichen.</li>
+        <li>Bevor du dich mit einer unbekannten Seite verbindest (eine Freigabe signierst), frage, was die Freigabe bewegen darf. Unsicher? Teste zuerst mit einer Wegwerf-Wallet.</li>
+        <li>Sende vor jeder großen Überweisung eine kleine Testüberweisung und bestätige Adresse und Netzwerk. Sendungen an die falsche Chain sind meist für immer weg.</li>
+        <li>Nutze eine <strong>separate Wallet</strong> für Airdrops und Testnets — lass deine Haupt-Wallet nicht überall im Internet Freigaben signieren. Warum: siehe <a href="airdrop-guide.html">Was ist ein Krypto-Airdrop?</a></li>
+      </ul>
+
+      <h2>Verloren, oder glaubst du, sie ist geleakt?</h2>
+      <ul>
+        <li><strong>Phrase verloren, Wallet-App öffnet sich noch:</strong> Handle jetzt — erstelle eine brandneue Wallet, sichere ihre Phrase richtig und bewege alles dorthin.</li>
+        <li><strong>Phrase verloren, App auch weg:</strong> Unwiederbringlich. Das ist die harte Regel der Selbstverwahrung. Sichere am ersten Tag, nicht „später“.</li>
+        <li><strong>Möglicher Leak (geteilt oder in eine seltsame Seite eingetippt):</strong> Warte nicht darauf, „zu sehen, was passiert“. Erstelle eine neue Wallet und bewege die Vermögenswerte sofort — du läufst gegen den Dieb um die Wette.</li>
+      </ul>
+      <p>Börsenseitige Sicherheit (2FA, Anti-Phishing-Code, Passworthygiene) hat eine vollständige Checkliste in <a href="../start/step3.html">Schritt 3 des Einsteigerpfads</a>. Mache beide Seiten richtig.</p>
+
+      <h2>FAQ</h2>
+      <h3>Was ist der Unterschied zwischen einer Seed-Phrase und einem Passwort?</h3>
+      <p>Ein Passwort ist ein Schloss an einer App — zurücksetzbar. Die Seed-Phrase ist der Vermögenswert selbst: Wer sie hält, kann deine Wallet auf jedem Gerät öffnen. Ein Passwort zu verlieren ist ärgerlich; die Phrase zu verlieren ist das Ereignis.</p>
+      <h3>Ist es sicher, alles auf einer Börse zu lassen?</h3>
+      <p>Top-Börsen haben ordentliche Sicherheitsbilanzen, aber Plattformausfälle, die Nutzer auslöschen, sind ein wiederkehrendes historisches Muster. Faustregel: Handelsbestand bleibt auf der Börse; langfristige und große Bestände wandern in die eigene Wallet.</p>
+      <h3>Wenn jemand meine Wallet-Adresse kennt, kann er meine Coins stehlen?</h3>
+      <p>Nein. Eine Adresse ist öffentlich, wie eine Kontonummer — wer sie kennt, kann dir nur Geld schicken. Schütze den Private Key und die Seed-Phrase, und achte darauf, was du freigibst.</p>
+      <h3>Lohnt sich eine Hardware-Wallet?</h3>
+      <p>Wenn dein selbstverwahrter Bestand zu einem Betrag wird, um den du wirklich trauern würdest, ja. Ein preisgünstiges Gerät zur Offline-Schlüsselspeicherung ist der preiswerteste Sicherheitskauf in Krypto.</p>
+
+      <h2>Weiterlesen</h2>
+      <ul>
+        <li><a href="../start/step5.html">Einsteigerpfad Schritt 5: Erstkauf + sichere Verwahrung</a></li>
+        <li><a href="avoid-scams.html">Ist Krypto Betrug? 8 Maschen, die man kennen sollte</a></li>
+        <li><a href="airdrop-guide.html">Was ist ein Krypto-Airdrop? Warum Farmer eine separate Wallet nutzen</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Startseite</a><a href="../airdrops.html">Tägliche Airdrops</a><a href="../exchanges.html">Börsenvergleich</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Einsteiger</b><a href="../start/step1.html">Einsteigerpfad</a><a href="index.html">Anleitungen</a><a href="../start/step5.html">Deinen ersten Coin kaufen</a></div>
+      <div class="col" style="flex:1;"><b>Testberichte</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">Watchlist-Alarme</a><a href="../tools.html#calendar">Ereigniskalender</a><a href="../exchanges.html#calculator">Gebührenrechner</a></div>
+    </div>
+    <div class="disclosure">Diese Seite enthält Affiliate-Links. Eine Registrierung über unsere Links kostet dich nichts extra. Kryptopreise sind stark volatil; nichts hier ist Anlageberatung — schätze die Risiken selbst ein.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Noch kein Konto? In 3 Minuten registrieren →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Registrieren</a><button class="sx" aria-label="Schließen" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
