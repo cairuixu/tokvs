@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Billetera de criptomonedas para principiantes: guía de frase semilla — TokVS</title>
+<meta name="description" content="Billetera de criptomonedas para principiantes: qué controla una billetera, billeteras calientes vs frías, qué es una frase semilla, 5 reglas de almacenamiento y qué hacer si filtra.">
+<link rel="canonical" href="https://tokvs.com/es/guides/wallet-safety">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/wallet-safety">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/wallet-safety">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/wallet-safety">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/wallet-safety">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/wallet-safety">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/wallet-safety">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/wallet-safety">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/wallet-safety">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/wallet-safety">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/wallet-safety">
+<meta property="og:title" content="Seguridad de billetera de criptomonedas y frase semilla — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Qué es una frase semilla, cómo guardarla de forma segura, billeteras calientes vs frías, y pasos de recuperación para pérdida o filtraciones.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/wallet-safety">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"Billetera de criptomonedas para principiantes: guía de frase semilla","item":"https://tokvs.com/es/guides/wallet-safety"}]},{"@type":"Article","headline":"Billetera de criptomonedas para principiantes: guía de frase semilla","description":"Billetera de criptomonedas para principiantes: qué controla una billetera, billeteras calientes vs frías, qué es una frase semilla, 5 reglas de almacenamiento y qué hacer si filtra.","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/wallet-safety","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Seguridad de billetera</div>
+      <h1>Seguridad de billetera y frase semilla: quién realmente controla tus monedas</h1>
+      <p class="sub">Tu frase semilla es la llave maestra de tu billetera: 12 o 24 palabras. Cualquiera que la tenga puede tomar cada moneda en la billetera: sin mesa de soporte, sin congelamiento, sin «olvidé contraseña». Esta guía cubre elegir una billetera y guardar esa frase adecuadamente.</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 4 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Primero: una cuenta de exchange no es tu billetera</h2>
+      <p>Las monedas en un exchange están controladas por la plataforma; lo que tienes es un reclamo contra ella. Si la plataforma es hackeada, congela retiros o colapsa, tus monedas quedan atrapadas en ello. Mover monedas a una <strong>billetera cuya frase semilla controlas</strong> las hace genuinamente tuyas, y hace que la seguridad sea enteramente tu trabajo. La división sensata: mantén pequeños importes activamente operados en exchanges; autocustodia las tenencias grandes a largo plazo.</p>
+
+      <h2>Los dos tipos de billetera</h2>
+      <ul>
+        <li><strong>Billeteras calientes</strong>: apps de teléfono o extensiones de navegador, conectadas a internet. Convenientes para transferencias cotidianas, farming de airdrops y DeFi. La superficie de riesgo es tu dispositivo: malware y enlaces de phishing son las rutas de ataque habituales.</li>
+        <li><strong>Billeteras frías (billeteras hardware)</strong>: dispositivos dedicados que mantienen claves fuera de línea y solo se conectan para firmar. La opción más segura para tenencias grandes a largo plazo; los costes son el precio del dispositivo y un flujo más torpe.</li>
+      </ul>
+      <p>Elige por importe: bajo unos pocos miles de dólares, una billetera caliente está bien. Una vez que el número alcanza «perdería el sueño por esto», una billetera hardware se gana su lugar: comprada solo del fabricante o vendedores autorizados. Nunca compres una billetera hardware de segunda mano.</p>
+
+      <h2>Qué es realmente una frase semilla</h2>
+      <p>Cuando creas una billetera, genera 12 o 24 palabras en inglés: tu frase semilla, una forma legible por humanos de la clave privada que puede regenerar cada dirección en la billetera. <strong>La app es solo una interfaz; la frase es el activo.</strong> Teléfono nuevo, app reinstalada: escribe la frase y todo vuelve. Pierde la frase, y nada en la Tierra recupera la billetera.</p>
+
+      <h2>5 reglas de hierro para guardar tu frase semilla</h2>
+      <ol>
+        <li><strong>Pluma y papel, fuera de línea.</strong> Escríbela a mano (o estímpala en una placa de respaldo metálica) y guárdala en algún lugar que solo tú conozcas.</li>
+        <li><strong>Nunca la captures, fotografíes, ni la pongas en almacenamiento en la nube o chats.</strong> Las bibliotecas de fotos y cuentas en la nube son la fuente de filtración más común: malware y tomas de cuenta las barren automáticamente.</li>
+        <li><strong>Nunca la compartas con nadie.</strong> Ningún agente de soporte, oficial, ni proyecto de airdrop pedirá jamás una. Quien la pida es un ladrón, punto.</li>
+        <li><strong>Guarda al menos dos copias en lugares separados</strong> para sobrevivir fuego, agua y simple extravío.</li>
+        <li><strong>No reveles dónde está guardada</strong> : y cuando publiques capturas de billetera o presumas en línea, asegúrate de que el cuaderno de respaldo no esté en cuadro. Este accidente exacto ocurre cada año.</li>
+      </ol>
+      <div class="callout warn"><b>La regla individual más mortal, repetida:</b> cualquier sitio web, app o «agente de soporte» que te pida escribir tu frase semilla está robando tus monedas. «Reclama tu airdrop», «verifica tu billetera», «actualización de cuenta»: todos guiones. El único uso legítimo de la frase eres tú, restaurando tu propia billetera, dentro de la app oficial.</div>
+
+      <h2>Hábitos de seguridad cotidianos</h2>
+      <ul>
+        <li>Alcanza billeteras y exchanges solo a través de tus propios marcadores, y comprueba dominios letra por letra: los sitios de phishing rutinariamente difieren por un carácter.</li>
+        <li>Antes de conectarte a un sitio desconocido (firmar una aprobación), pregunta qué permite mover la aprobación. ¿Dudas? Prueba primero con una billetera desechable.</li>
+        <li>Envía una pequeña transferencia de prueba antes de cualquier grande, y confirma dirección y red. Los envíos a cadena incorrecta normalmente se van para siempre.</li>
+        <li>Usa una <strong>billetera separada</strong> para airdrops y testnets: no dejes que tu billetera principal firme aprobaciones por todo internet. Por qué: ver <a href="airdrop-guide.html">¿Qué es un airdrop de criptomonedas?</a></li>
+      </ul>
+
+      <h2>¿La perdiste, o crees que filtró?</h2>
+      <ul>
+        <li><strong>Frase perdida, la app de billetera aún abre:</strong> actúa ahora: crea una billetera totalmente nueva, respalda su frase adecuadamente, y mueve todo.</li>
+        <li><strong>Frase perdida, la app también se fue:</strong> irrecuperable. Esa es la regla dura de la autocustodia. Respalda el día uno, no «luego».</li>
+        <li><strong>Posible filtración (la compartiste, o la escribiste en un sitio extraño):</strong> no esperes a «ver qué pasa». Crea una billetera nueva y mueve los activos inmediatamente: estás compitiendo con el ladrón.</li>
+      </ul>
+      <p>La seguridad del lado del exchange (2FA, código antiphishing, higiene de contraseñas) tiene una lista completa en <a href="../start/step3.html">Paso 3 del camino para principiantes</a>. Haz ambos lados adecuadamente.</p>
+
+      <h2>Preguntas frecuentes</h2>
+      <h3>¿Cuál es la diferencia entre una frase semilla y una contraseña?</h3>
+      <p>Una contraseña es un candado en una app: restablecible. La frase semilla es el propio activo: quien la tenga puede abrir tu billetera en cualquier dispositivo. Perder una contraseña es una molestia; perder la frase es el evento.</p>
+      <h3>¿Es seguro mantener todo en un exchange?</h3>
+      <p>Los exchanges top tienen registros de seguridad decentes, pero los fallos de plataforma que arrasan usuarios son un patrón histórico recurrente. Regla práctica: el flotante de trading queda en el exchange; las tenencias a largo plazo y grandes se mueven a tu propia billetera.</p>
+      <h3>Si alguien conoce mi dirección de billetera, ¿puede robar mis monedas?</h3>
+      <p>No. Una dirección es pública, como un número de cuenta bancaria: conocerla solo permite a la gente enviarte dinero. Protege la clave privada y frase semilla, y vigila qué apruebas.</p>
+      <h3>¿Vale una billetera hardware?</h3>
+      <p>Cuando tu saldo autocustodiado se convierte en un importe que genuinamente lamentarías, sí. Un dispositivo de precio modesto para almacenamiento de claves fuera de línea es la mejor compra de seguridad en relación calidad-precio en criptomonedas.</p>
+
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="../start/step5.html">Camino del principiante paso 5: primera compra + almacenamiento seguro</a></li>
+        <li><a href="avoid-scams.html">¿Las criptomonedas son una estafa? 8 esquemas que hay que conocer</a></li>
+        <li><a href="airdrop-guide.html">¿Qué es un airdrop de criptomonedas? Por qué los farmers usan una billetera separada</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>¿Aún no tienes cuenta? Regístrate en 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate</a><button class="sx" aria-label="Cerrar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
