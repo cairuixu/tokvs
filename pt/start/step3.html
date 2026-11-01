@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Passo 3: Cadastre-se — Trilha do Iniciante | TokVS</title>
+<meta name="description" content="O fluxo completo de cadastro em uma exchange: registro, senhas fortes, autenticação de dois fatores e passar no KYC de primeira.">
+<link rel="canonical" href="https://tokvs.com/pt/start/step3">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/start/step3">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/start/step3">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/start/step3">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/start/step3">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/start/step3">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/start/step3">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/start/step3">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/start/step3">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/start/step3">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/start/step3">
+<meta property="og:title" content="Passo 3: Cadastre-se — Trilha do Iniciante | TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Registro, 2FA, KYC de primeira e um checklist de segurança pós-cadastro.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/pt/start/step3">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/pt/"},{"@type":"ListItem","position":2,"name":"Trilha do Iniciante","item":"https://tokvs.com/pt/start/step1"},{"@type":"ListItem","position":3,"name":"Passo 3: Cadastre-se — Trilha do Iniciante","item":"https://tokvs.com/pt/start/step3"}]}]}
+</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="step1.html" class="on">Trilha do Iniciante</a><a href="../guides/index.html">Guias</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Ferramentas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt" selected>Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Início</a> / Trilha do Iniciante / Passo 3</div>
+      <h1>Passo 3: Cadastre-se</h1>
+      <p class="sub">O fluxo é quase idêntico nas quatro exchanges: registre-se → defina uma senha → ative a autenticação de dois fatores → verifique sua identidade. Tenha seu documento em mãos e leva cerca de 10 minutos.</p>
+    </div>
+    <div class="disclosure-bar">Divulgação: este site contém links de afiliados. Cadastrar-se pelos nossos links não custa nada a mais — o rebate é subsidiado pela exchange.</div>
+  </div>
+
+  <section>
+    <div class="steps">
+      <a class="step done" href="step1.html"><div class="n">1</div><div class="t">Conheça o Bitcoin</div><div class="d">O que é e por que tem valor</div><span class="arr">›</span></a>
+      <a class="step done" href="step2.html"><div class="n">2</div><div class="t">Escolha uma exchange</div><div class="d">Compare taxas e segurança primeiro</div><span class="arr">›</span></a>
+      <span class="step" style="outline:2.5px solid #00C853;cursor:default;" aria-current="step"><div class="n">3</div><div class="t">Cadastre-se</div><div class="d">Passos visuais, passe no KYC de primeira</div></span>
+      <a class="step" href="step4.html"><div class="n">4</div><div class="t">Compre USDT</div><div class="d">O jeito certo de financiar sua conta</div><span class="arr">›</span></a>
+      <a class="step" href="step5.html"><div class="n">5</div><div class="t">Compre sua primeira moeda</div><div class="d">Ordem spot + armazenamento seguro</div></a>
+    </div>
+  </section>
+
+  <section>
+    <div class="card article prose">
+      <h2>Links oficiais de cadastro</h2>
+      <p>Entre somente por estes — o "site oficial" em anúncios de busca frequentemente é uma imitação. Confira o domínio duas vezes antes de clicar.</p>
+      <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Negociação spot · account.binance.com</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Rebate disponível · okx.com</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Cadastre-se</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">Rebate disponível · bybit.com</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Cadastre-se</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#3861FB;">B</div><div><div class="tt">Bitget</div><div class="dd">Ainda sem link de indicação nosso · bitget.com</div></div><a class="go dark" href="https://www.bitget.com" target="_blank" rel="nofollow noopener">Site oficial</a></div>
+      </div>
+
+      <h2>Cinco passos de cadastro (iguais nas quatro)</h2>
+      <ol>
+        <li><strong>Crie a conta.</strong> Registre-se com um e-mail ou número de telefone que você realmente usa. O ideal é usar um e-mail dedicado, com sua própria autenticação de dois fatores, não compartilhado com contas sociais.</li>
+        <li><strong>Defina uma senha forte.</strong> Mais de 16 caracteres, maiúsculas e minúsculas + dígitos + símbolos, e <strong>nunca reutilizada em nenhum outro lugar</strong>. Uma senha de exchange vazada significa que o dinheiro simplesmente sumiu.</li>
+        <li><strong>Ative a autenticação de dois fatores (2FA).</strong> Vincule um app autenticador (como o Google Authenticator) nas configurações de segurança. Anote a chave de recuperação no papel e guarde offline — não tire print dela no celular.</li>
+        <li><strong>Complete a verificação de identidade (KYC).</strong> Envie os dois lados do seu documento mais uma verificação facial. Sem KYC, geralmente não dá para depositar moeda fiduciária nem sacar — é uma exigência regulatória global, não implicância da plataforma.</li>
+        <li><strong>Termine o checklist de segurança abaixo</strong> antes de financiar qualquer coisa. Não pule passos.</li>
+      </ol>
+
+      <h2>Como passar na verificação de primeira</h2>
+      <ul>
+        <li>As fotos devem ser nítidas, sem reflexos, com os quatro cantos visíveis — iluminação ruim é o motivo mais comum de reprovação.</li>
+        <li>Os dados digitados devem corresponder ao documento <strong>exatamente</strong> — incluindo a grafia do nome e o número do documento. Cuidado com erros de digitação.</li>
+        <li>Para a verificação facial, tire chapéu e óculos e fique de frente para uma fonte de luz. Se falhar duas vezes, pare, espere uma hora e tente de novo — não fique insistindo.</li>
+        <li>A análise geralmente leva de minutos a algumas horas; feriados e horários de pico podem demorar mais. Isso é normal.</li>
+      </ul>
+
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">Ainda não se cadastrou? Os links oficiais estão acima — 10 minutos: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se na Binance</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Criar conta na OKX</a> <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Cadastre-se na Bybit</a></p>
+      <h2>Checklist de segurança — faça logo após o cadastro</h2>
+      <ul>
+        <li>✅ 2FA ativado, chave de recuperação guardada offline</li>
+        <li>✅ Código anti-phishing definido (e-mails oficiais o trazem — qualquer e-mail sem ele é falso)</li>
+        <li>✅ Lista branca de endereços de saque ativada (os fundos só podem sair para endereços pré-cadastrados)</li>
+        <li>✅ Senha única e longa guardada em um gerenciador de senhas</li>
+        <li>✅ Uma regra de ferro memorizada: <strong>o suporte nunca vai te mandar DM nem pedir para mover moedas para uma "conta segura"</strong></li>
+      </ul>
+
+      <div class="callout warn"><b>Vale saber:</b>alguns países e regiões são restritos por regulação quanto ao uso de certas exchanges — verifique se sua localidade é atendida antes de se cadastrar (a página de registro vai informar). Nunca se cadastre com a identidade de outra pessoa; as análises de saque vão travar você depois.</div>
+
+      <p>Conta pronta. Próximo passo: transformar moeda fiduciária em USDT — o ingresso de entrada para quase todas as moedas.</p>
+    </div>
+
+    <div class="stepnav">
+      <a href="step2.html"><span><span class="sm">Passo anterior</span>Passo 2: Escolha uma Exchange</span></a>
+      <a class="next" href="step4.html"><span><span class="sm">Próximo passo</span>Passo 4: Compre USDT</span><span>→</span></a>
+    </div>
+  </section>
+
+</div>
+
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Início</a><a href="../airdrops.html">Airdrops diários</a><a href="../exchanges.html">Comparação de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Iniciantes</b><a href="step1.html">Trilha do iniciante</a><a href="step2.html">Escolha uma exchange</a><a href="step5.html">Compre sua primeira moeda</a></div>
+      <div class="col" style="flex:1;"><b>Análises</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Ferramentas</b><a href="../tools.html#watchlist">Alertas de lista de acompanhamento</a><a href="../tools.html#calendar">Calendário de eventos</a><a href="../exchanges.html#calculator">Calculadora de taxas</a></div>
+    </div>
+    <div class="disclosure">Este site contém links de afiliados. Cadastrar-se pelos nossos links não custa nada a mais para você. Os preços das criptomoedas são altamente voláteis; nada aqui é conselho de investimento — avalie os riscos por conta própria.</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

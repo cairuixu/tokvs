@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Como Avaliamos Exchanges: Metodologia TokVS — TokVS</title>
+<meta name="description" content="Como a TokVS avalia exchanges de cripto: dimensões e pesos de pontuação, fontes, datas de verificação e o que nunca fazemos por dinheiro.">
+<link rel="canonical" href="https://tokvs.com/pt/methodology">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/methodology">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/methodology">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/methodology">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/methodology">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/methodology">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/methodology">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/methodology">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/methodology">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/methodology">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/methodology">
+<meta property="og:title" content="Comprar USDT na Índia: Guia UPI e P2P — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Passo a passo de P2P por UPI e transferência bancária para a Índia, mais notas sobre impostos e checklist de segurança.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/pt/methodology">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/pt/"}, {"@type": "ListItem", "position": 2, "name": "Guias", "item": "https://tokvs.com/pt/guides/"}, {"@type": "ListItem", "position": 3, "name": "Comprar USDT na Índia", "item": "https://tokvs.com/pt/methodology"}]}, {"@type": "Article", "headline": "Nossa Metodologia: UPI, Banco e P2P", "description": "Compre USDT na Índia com UPI ou transferência bancária via P2P: passo a passo, segurança de comerciantes, taxas e o alerta sobre impostos. Comece com um pequeno valor de teste.", "datePublished": "2026-10-16", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/pt/methodology"}, "inLanguage": "pt"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "As exchanges pagam vocês para subir no ranking?", "acceptedAnswer": {"@type": "Answer", "text": "Não. Nenhuma exchange pode pagar por um ranking mais alto, uma nota melhor ou a remoção de um achado negativo. A comissão não afeta nossos rankings ou notas."}}, {"@type": "Question", "name": "Com que frequência vocês re-verificam taxas e disponibilidade?", "acceptedAnswer": {"@type": "Answer", "text": "As páginas de comparação mostram o mês em que seus números foram compilados, e as tabelas de disponibilidade mostram uma data exata de verificação. Re-verificamos quando atualizamos uma página e mostramos a data para que você mesmo julgue a atualidade."}}, {"@type": "Question", "name": "Por que suas escolhas diferem das de outros sites?", "acceptedAnswer": {"@type": "Answer", "text": "Porque os pesos diferem. Ponderamos a disponibilidade primeiro: uma exchange que você não pode usar legalmente pontua mal conosco, por mais barata que seja. Outros sites ponderam taxas ou quantidade de moedas primeiro, então a ordem deles difere legitimamente."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Trilha do Iniciante</a><a href="index.html" class="on">Guias</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Ferramentas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt" selected>Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Início</a> / <a href="index.html">Guias</a> / Comprar USDT na Índia</div>
+      <h1>Nossa Metodologia</h1>
+      <p class="sub">Como comparamos exchanges, o que verificamos e de onde vem nosso dinheiro.</p>
+      <p class="updated">Atualizado em out. de 2026 · Por TokVS</p>
+      <h2>Como pontuamos as exchanges</h2>
+      <p>Pontuamos as exchanges em cinco dimensões. Os pesos abaixo são nosso framework editorial — descrevem como julgamos, não uma medição de laboratório. Regulação e disponibilidade 30%, taxas 25%, segurança 20%, experiência do iniciante 15%, moedas e recursos 10%. A disponibilidade é ponderada primeiro de propósito: a exchange mais barata que você não pode usar legalmente não vale nada para você.</p>
+      <p>Cada dimensão é julgada a partir de fontes primárias quando possível: a página oficial de taxas da exchange, o registro do regulador, a página de prova de reservas da exchange e seus recursos de segurança publicados. Quando dependemos de uma fonte secundária, dizemos isso na página.</p>
+      <h2>O que verificamos, e quando</h2>
+      <p>Taxas: taxas-base spot e de futuros maker/taker no nível padrão (VIP0), mais taxas de rede de saque. Disponibilidade: quais países e estados cada exchange atende, a partir de seus termos oficiais e páginas de países restritos. Segurança: prova de reservas, fundos de emergência, recursos de segurança da conta e o histórico de enforcement — incluindo as partes negativas.</p>
+      <p>Cada página de comparação mostra o mês em que seus números foram compilados, e as tabelas de disponibilidade mostram uma data exata de verificação. Taxas e disponibilidade mudam com frequência; uma página que não mostra sua data de verificação não deve ser confiável, incluindo a nossa se a data estiver desatualizada.</p>
+      <h2>O que nunca fazemos</h2>
+      <p>Nenhuma exchange pode pagar por um ranking mais alto, uma nota melhor ou a remoção de um achado negativo. A comissão não afeta rankings ou notas. Se a disponibilidade ou as taxas de uma exchange piorarem, sua posição em nossas páginas piora, independentemente do que ela nos paga.</p>
+      <p>Não publicamos um número que não possamos rastrear até uma fonte. Quando um número é aproximado — por exemplo, taxas de rede que variam com o congestionamento — nós o rotulamos como aproximado e dizemos onde o número exato aparece (geralmente na tela de saque).</p>
+      <h2>Como este site ganha dinheiro</h2>
+      <p>Por meio de links de afiliados para Binance, OKX e Bybit. Se você se cadastrar por esses links, a exchange nos paga uma parte das taxas que você gera; não custa nada a mais para você. Nosso botão da Bitget é um link simples para o site oficial — no momento, não temos acordo de rebate com a Bitget. Veja a <a href="disclosure.html">divulgação de afiliados completa</a>.</p>
+      <h2>Perguntas frequentes</h2>
+      <h3>As exchanges pagam vocês para subir no ranking?</h3>
+      <p>Não. Nenhuma exchange pode pagar por um ranking mais alto, uma nota melhor ou a remoção de um achado negativo. A comissão não afeta nossos rankings ou notas.</p>
+      <h3>Com que frequência vocês re-verificam taxas e disponibilidade?</h3>
+      <p>As páginas de comparação mostram o mês em que seus números foram compilados, e as tabelas de disponibilidade mostram uma data exata de verificação. Re-verificamos quando atualizamos uma página e mostramos a data para que você mesmo julgue a atualidade.</p>
+      <h3>Por que suas escolhas diferem das de outros sites?</h3>
+      <p>Porque os pesos diferem. Ponderamos a disponibilidade primeiro: uma exchange que você não pode usar legalmente pontua mal conosco, por mais barata que seja. Outros sites ponderam taxas ou quantidade de moedas primeiro, então a ordem deles difere legitimamente.</p>
+      <h2>Continue lendo</h2>
+      <ul>
+        <li><a href="exchanges.html">Taxas e Rebates de Exchanges Comparados</a></li>
+        <li><a href="disclosure.html">Divulgação de Afiliados</a></li>
+        <li><a href="guides/is-binance-safe.html">A Binance é Segura?</a></li>
+      </ul>
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Início</a><a href="../airdrops.html">Airdrops diários</a><a href="../exchanges.html">Comparação de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Iniciantes</b><a href="../start/step1.html">Trilha do iniciante</a><a href="index.html">Guias</a><a href="../start/step5.html">Compre sua primeira moeda</a></div>
+      <div class="col" style="flex:1;"><b>Análises</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Ferramentas</b><a href="../tools.html#watchlist">Alertas de lista de acompanhamento</a><a href="../tools.html#calendar">Calendário de eventos</a><a href="../exchanges.html#calculator">Calculadora de taxas</a></div>
+    </div>
+    <div class="disclosure">Este site contém links de afiliados. Cadastrar-se pelos nossos links não custa nada a mais para você. Os preços das criptomoedas são altamente voláteis; nada aqui é conselho de investimento — avalie os riscos por conta própria.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Ainda sem conta? Cadastre-se em 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se</a><button class="sx" aria-label="Fechar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
