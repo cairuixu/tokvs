@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>ステップ2：取引所を選ぶ — 初心者パス | TokVS</title>
+<meta name="description" content="5つのチェックで取引所を選ぶ：規模、手数料、セキュリティ実績、言語対応、入金経路。その後、登録へ進みましょう。">
+<link rel="canonical" href="https://tokvs.com/ja/start/step2">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/start/step2">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/start/step2">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/start/step2">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/start/step2">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/start/step2">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/start/step2">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/start/step2">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/start/step2">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/start/step2">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/start/step2">
+<meta property="og:title" content="ステップ2：取引所を選ぶ — 初心者パス | TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="5つの選定基準、大手4社の概要、避けるべき罠。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/start/step2">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"初心者パス","item":"https://tokvs.com/ja/start/step1"},{"@type":"ListItem","position":3,"name":"ステップ2：取引所を選ぶ — 初心者パス","item":"https://tokvs.com/ja/start/step2"}]}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="step1.html" class="on">初心者パス</a><a href="../guides/index.html">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/ 初心者パス / ステップ2</div>
+      <h1>ステップ2：取引所を選ぶ</h1>
+      <p class="sub">あなたのお金は、ほとんどの時間を取引所に置いたままになります。選び方を間違えると、良くても手数料を払いすぎ、最悪の場合はすべてを失います。まず基準を定め、次に結論を出しましょう。</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="steps">
+      <a class="step done" href="step1.html"><div class="n">1</div><div class="t">ビットコインを知る</div><div class="d">仕組みと価値の理由</div><span class="arr">›</span></a>
+      <span class="step" style="outline:2.5px solid #00C853;cursor:default;" aria-current="step"><div class="n">2</div><div class="t">取引所を選ぶ</div><div class="d">まず手数料と安全性を比較</div></span>
+      <a class="step" href="step3.html"><div class="n">3</div><div class="t">登録する</div><div class="d">図解ステップで、KYCを一発で通過</div><span class="arr">›</span></a>
+      <a class="step" href="step4.html"><div class="n">4</div><div class="t">USDTを買う</div><div class="d">アカウントへの正しい入金方法</div><span class="arr">›</span></a>
+      <a class="step" href="step5.html"><div class="n">5</div><div class="t">初めてのコインを買う</div><div class="d">現物注文と安全な保管</div></a>
+    </div>
+  </section>
+
+  <section>
+    <div class="card article prose">
+      <h2>取引所選びの5つの基準</h2>
+      <ol>
+        <li><strong>規模と流動性。</strong> 取引量の多いプラットフォームはスプレッドが狭く、大口注文でもスリッページが小さい。消滅する可能性も相対的に低い。初心者に必要なのは世界のトップ層だけです。</li>
+        <li><strong>手数料。</strong> 現物料率は0.08%～0.10%に集中し、似通って見えます。先物テイカー料率は0.05%～0.06%で、活発なトレーダーにとっては積み重なって大きな金額になります。以下の比較表と計算機を使って確認してください。</li>
+        <li><strong>セキュリティ実績。</strong> 大規模なハッキングを受けたことがあるか？準備金証明を公開しているか？問題が起きたとき、ユーザーは補償を受けたか？これらはすべて確かな指標です。</li>
+        <li><strong>言語とサポート。</strong> 何か問題が起きたとき、人間に連絡でき、インターフェースを読めるか？初心者にとって、これは想像以上に重要です。</li>
+        <li><strong>入金経路。</strong> あなたの通貨でのP2P法定通貨取引に対応しているか？出金はスムーズか？奇妙な制限はないか？</li>
+      </ol>
+
+      <h2>大手4社を一目で</h2>
+      <div class="table-wrap">
+        <table class="fee num">
+          <thead><tr><th>取引所</th><th>現物手数料</th><th>先物テイカー</th><th>一言で</th><th>レビュー</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Binance</td><td>0.10%</td><td>0.05%</td><td>世界最深の流動性、最多の上場銘柄</td><td><a href="../reviews/binance.html">読む →</a></td></tr>
+            <tr><td class="name">OKX</td><td>0.08%から</td><td>0.05%</td><td>最も充実した商品ラインナップ、内蔵Web3ウォレット</td><td><a href="../reviews/okx.html">読む →</a></td></tr>
+            <tr><td class="name">Bybit</td><td>0.10%</td><td>0.055%</td><td>スムーズな先物体験、頻繁なキャンペーン</td><td><a href="../reviews/bybit.html">読む →</a></td></tr>
+            <tr><td class="name">Bitget</td><td>0.10%</td><td>0.06%</td><td>強力なコピートレード、初心者に優しい</td><td><a href="../reviews/bitget.html">読む →</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>手数料表の全文、リベート方針、往復コスト計算機は<a href="../exchanges.html">取引所比較ページ</a>にあります。初心者への率直な助言：<strong>主要コインを現物で買うだけなら、BinanceもOKXも安全な選択肢です</strong>。先物を考えているなら、まずコストを計算してください。</p>
+
+      <h2>避けなければならない3つの罠</h2>
+      <ul>
+        <li><strong>聞いたこともない無名の取引所。</strong> 「手数料ゼロ」や「登録ボーナス」の売り文句は餌です。資金を流用したり、価格を操作したり、ユーザーの資金を持って逃げたりする小規模プラットフォームは、毎年のようにニュースになります。</li>
+        <li><strong>「メンター」グループや運用口座。</strong> 「代わりに取引する」と言って個人や無名のプラットフォームにお金を送るよう求める人は、昔からある手口を使っています。</li>
+        <li><strong>偽アプリと偽サイト。</strong> 公式サイトや公式アプリストアからのみダウンロードしてください。検索広告の「公式サイト」はしばしば偽物です。ドメインに1文字余分にあるだけで、すべてを失う可能性があります。</li>
+      </ul>
+
+      <div class="callout"><b>知っておくと良いこと：</b>私たちのリベートリンク経由で登録しても、手数料表は変わりません。取引所が手数料の一部をあなたに返金します。同じ価格で、組み込みの割引が付きます。すべてのリンクは開示されています。</div>
+
+      <p>プラットフォームは決まりましたか？次は登録と本人確認です。身分証明書を用意していれば約10分で、初回で通過する方法があります。</p>
+    </div>
+
+    <div class="stepnav">
+      <a href="step1.html"><span><span class="sm">前のステップ</span>ステップ1：ビットコインを知る</span></a>
+      <a class="next" href="step3.html"><span><span class="sm">次のステップ</span>ステップ3：登録する</span><span>→</span></a>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="step1.html">初心者パス</a><a href="step2.html">取引所を選ぶ</a><a href="step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>ステップ4：USDTを買う — 初心者パス | TokVS</title>
+<meta name="description" content="なぜ最初にUSDTを買うのか、P2P購入の全手順、業者の選び方、カード凍結と偽の領収書のリスク回避法。">
+<link rel="canonical" href="https://tokvs.com/ja/start/step4">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/start/step4">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/start/step4">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/start/step4">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/start/step4">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/start/step4">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/start/step4">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/start/step4">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/start/step4">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/start/step4">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/start/step4">
+<meta property="og:title" content="ステップ4：USDTを買う — 初心者パス | TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="USDT購入のP2P手順、業者選び、リスク防止。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/start/step4">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"初心者パス","item":"https://tokvs.com/ja/start/step1"},{"@type":"ListItem","position":3,"name":"ステップ4：USDTを買う — 初心者パス","item":"https://tokvs.com/ja/start/step4"}]}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="step1.html" class="on">初心者パス</a><a href="../guides/index.html">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/ 初心者パス / ステップ4</div>
+      <h1>ステップ4：USDTを買う</h1>
+      <p class="sub">法定通貨ではほとんどのコインを直接買えません。まずUSDT——「暗号資産のドル」——に換えれば、すべての市場が開きます。このステップではP2Pの手順とその罠を解説します。</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="steps">
+      <a class="step done" href="step1.html"><div class="n">1</div><div class="t">ビットコインを知る</div><div class="d">仕組みと価値の理由</div><span class="arr">›</span></a>
+      <a class="step done" href="step2.html"><div class="n">2</div><div class="t">取引所を選ぶ</div><div class="d">まず手数料と安全性を比較</div><span class="arr">›</span></a>
+      <a class="step done" href="step3.html"><div class="n">3</div><div class="t">登録する</div><div class="d">図解ステップで、KYCを一発で通過</div><span class="arr">›</span></a>
+      <span class="step" style="outline:2.5px solid #00C853;cursor:default;" aria-current="step"><div class="n">4</div><div class="t">USDTを買う</div><div class="d">アカウントへの正しい入金方法</div></span>
+      <a class="step" href="step5.html"><div class="n">5</div><div class="t">初めてのコインを買う</div><div class="d">現物注文と安全な保管</div></a>
+    </div>
+  </section>
+
+  <section>
+    <div class="card article prose">
+      <h2>なぜ最初にUSDTなのか</h2>
+      <p>USDT（Tether）は、1 USDT ≒ 1 USDを維持するよう設計された「ステーブルコイン」です。ほぼすべてのコインはUSDTペア（BTC/USDTなど）で取引されるため、標準的な入金ルートは<strong>法定通貨 → USDT → 目標のコイン</strong>です。最初にUSDTを買うことにはもう一つの利点があります。資金が入ってしまえば、急ぐ必要はありません。市場を観察し、タイミングを選ぶことができます。</p>
+
+      <h2>選択肢1：P2P購入（最も一般的）</h2>
+      <p>P2Pとは、プラットフォーム上の認証済み業者と1対1で取引することです。プラットフォームがコインをエスクローし、支払いが確認された後にのみ解放します。</p>
+      <ol>
+        <li>アプリの「購入／P2P」セクションを開き、USDTとあなたの法定通貨を選択します。</li>
+        <li><strong>業者を選ぶ：</strong> 注文数が多く、好評価率98%以上、登録歴の長い業者を優先します。市場価格を明らかに下回る価格は、お買い得ではなく危険信号です。</li>
+        <li>金額を入力して注文し、業者の口座に支払います。<strong>支払いの備考欄には何も書かない</strong>でください。特に「暗号資産」や「USDT」とは書かないでください。</li>
+        <li>支払い後、プラットフォームで「支払い済み」をタップし、業者がコインを解放するのを待ちます。</li>
+        <li>金額が到着したことを確認し、注文を完了します。</li>
+      </ol>
+
+      <h2>選択肢2：エクスプレス購入とオンチェーン入金</h2>
+      <ul>
+        <li><strong>エクスプレス購入：</strong> カードや第三者決済で直接支払います。最もシンプルな手順ですが、レートは通常P2Pより数%悪くなります。少額の最初のテストに適しています。</li>
+        <li><strong>オンチェーン入金：</strong> 他のプラットフォームやウォレットにすでにUSDTを持っている場合は、そこから出金します。ネットワークを正確に合わせてください（TRC20は安いですが、誤ったネットワークへの送金は通常取り戻せません）。</li>
+      </ul>
+
+      <h2>入金段階での3つのリスク</h2>
+      <ul>
+        <li><strong>カード凍結リスク。</strong> P2Pの相手の資金が不正なものであることが判明すると、受取カードが一時的に凍結される可能性があります。リスクを減らすには、実績のある信用度の高い業者を使い、金額を適度に抑え、専用カードを使い、取引記録を保管してください。</li>
+        <li><strong>偽の支払いスクリーンショット。</strong> 売却する際は、実際に自分の口座に着金したお金だけを信じてください。相手が送るスクリーンショットは決して信じないでください。着金がなければ、解放もしません。</li>
+        <li><strong>プラットフォーム外の取引。</strong> 「より良い価格」を理由にチャットアプリへの移動を提案する人は、あなたを守るエスクローを外そうとしています。これは最も一般的な入金詐欺です。</li>
+      </ul>
+
+      <div class="callout warn"><b>初めての入金は少額のテストにする：</b>まず少額（20～70ドル相当）で全手順を1回試し、着金と自分の理解を確認してから、金額を増やしてください。手順に慣れることは、わずかに良いレートよりもはるかに価値があります。</div>
+
+      <p>USDTを手に入れれば、入場券を手にしたことになります。最後のステップは、それを初めてのビットコインに変えることです。</p>
+    </div>
+
+    <div class="stepnav">
+      <a href="step3.html"><span><span class="sm">前のステップ</span>ステップ3：登録する</span></a>
+      <a class="next" href="step5.html"><span><span class="sm">次のステップ</span>ステップ5：初めてのコインを買う</span><span>→</span></a>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="step1.html">初心者パス</a><a href="step2.html">取引所を選ぶ</a><a href="step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

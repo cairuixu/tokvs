@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>暗号資産とは何か？初心者ガイド — TokVS</title>
+<meta name="description" content="暗号資産とは何か、完全な初心者向けに解説する。コイン対トークン、ブロックチェーンの仕組み、ウォレット対取引所、暗号資産で実際にできること、避けるべき詐欺。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/what-is-cryptocurrency">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/what-is-cryptocurrency">
+<meta property="og:title" content="暗号通貨とは何ですか？ 初心者向けガイド— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="コイン対トークン、平易な言葉でのブロックチェーン、ウォレット、取引所、すべての初心者が知るべき危険信号。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/what-is-cryptocurrency">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"暗号資産とは？","item":"https://tokvs.com/ja/guides/what-is-cryptocurrency"}]},{"@type":"Article","headline":"暗号資産とは？","description":"暗号資産とは何か、完全な初心者向けに解説する。コイン対トークン、ブロックチェーンの仕組み、ウォレット対取引所、暗号資産で実際にできること、避けるべき詐欺。","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/what-is-cryptocurrency","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"暗号資産は本物のお金か？","acceptedAnswer":{"@type":"Answer","text":"人々がそれを支払いとして受け入れ、商品、サービス、および法定通貨と交換するという意味で現実的です。 ほとんどの国で法定通貨ではなく、その価格は銀行のお金よりもはるかに大きく変動します。安定した給料ではなく、不安定な資産として扱われます。"}},{"@type":"Question","name":"デジタル銀行マネーとどう違うのか？","acceptedAnswer":{"@type":"Answer","text":"銀行のお金は、銀行が運営する非公開の台帳に存在する。暗号資産は、分散型ネットワークが運営する公開台帳に存在する。つまり、銀行の営業時間はなく、（セルフカストディする場合）単一の企業による口座凍結はなく、チャージバックもない——良い意味でも悪い意味でも。"}},{"@type":"Question","name":"暗号資産を保有するのにウォレットは必要か？","acceptedAnswer":{"@type":"Answer","text":"初日ではありません。交換口座には、学習中にコインが保管されています。 金額が重要な場合は、シードフレーズを保持している自分の財布に移動し、それに伴う全責任を負います。"}},{"@type":"Question","name":"暗号通貨はハッキングされる可能性がありますか？","acceptedAnswer":{"@type":"Answer","text":"ブロックチェーン自体には強力なセキュリティ記録がありますが、取引所、アプリ、ブラウザ、人など、ブロックチェーンを取り巻くものは絶えずハッキングされています。ほとんどの損失は、ブロックチェーン自体を壊すことではなく、フィッシング、偽のアプリ、漏洩したキーから発生します。"}},{"@type":"Question","name":"なぜ暗号資産の価格はそんなに動くのか？","acceptedAnswer":{"@type":"Answer","text":"24時間年中無休の取引、大量の投機、サーキットブレーカーが株式市場よりも速く動くことのない、小規模で若い市場。 ニュース、レバレッジ清算、そして薄い流動性はすべてスイングを増幅します。 両方向に鋭い動きを期待してください。"}},{"@type":"Question","name":"暗号を学び始めるには遅すぎますか？","acceptedAnswer":{"@type":"Answer","text":"いいえ。技術も市場もまだ若く、基礎——コインとは何か、カストディの仕組み、詐欺の手口——は期限切れにならない。焦りではなく、教育と少額のテスト金額から始めること。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/ <a href="index.html">ガイド</a> / 暗号資産とは何か？</div>
+      <h1>暗号資産とは？</h1>
+      <p class="sub">これまで読んだすべての解説が、あなたがすでに答えの半分を知っていることを前提にしていたなら、ここから始めてほしい。ゼロからの暗号資産を、平易な言葉で。</p>
+      <p class="updated">2026年10月更新· By TokVS · 10分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ→</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">初心者向けアプリ、深い流動性</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitに登録する</a></div></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+
+      <h2>1段落の回答</h2>
+      <p>暗号資産とは、銀行の内部ではなく、分散型ネットワーク上に存在するデジタルマネーとデジタル資産だ。企業がマスター台帳を保持する代わりに、数千の独立したコンピューターが1つの公開台帳——ブロックチェーン——を共有し、ソフトウェアに書き込まれたルールでその内容に合意する。最初の暗号資産は2009年に開始されたビットコインであり、今日では数千種類があり、真剣な決済ネットワークやプログラム可能なプラットフォームから、冗談やあからさまな詐欺までさまざまだ。「暗号資産」という言葉はそれらすべてをカバーしており、それこそが初心者が混乱する理由だ。<strong>1つの言葉、その下にあるものは大きく異なる。</strong>このガイドでは層を分離し、それらを見分けられるようにする。</p>
+      <h2>コイン対トークン：すべてを解き明かす区別</h2>
+      <p>次のように考えてください。<strong>コイン</strong>は独自の家を持っています。<strong>トークン</strong>は他の人の家の部屋を借ります。 ビットコインはビットコインブロックチェーン上で動作します。 イーサリアムはイーサリアムブロックチェーン上で動作します。 これらはコインです。対照的に、トークンは既存のブロックチェーン(最も有名なのはイーサリアム)の上にそのチェーンのルールを使用して作成されます。 USDTのようなステーブルコインはトークンです。 あなたが聞いたほとんどの新しいプロジェクトもそうです。ゼロからブロックチェーン全体を構築するのではなく、イーサリアムまたは同様のプラットフォームでトークンを発行します。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>コイン</th><th>トークン</th></tr></thead>
+        <tbody>
+          <tr><td>ブロックチェーンをお持ちですか？</td><td>はい</td><td>いいえ—別のチェーンに住んでいます</td></tr>
+          <tr><td>例</td><td>BTC, ETH, SOL, XRP</td><td>USDT、そしてほとんどの新しいプロジェクトアセット</td></tr>
+          <tr><td>使用目的</td><td>ネットワーク料金の支払い、価値の保管</td><td>安定した価値、アプリへのアクセス、プロジェクトのガバナンス</td></tr>
+          <tr><td>作成者</td><td>ネットワーク自体(マイニング/ステーキング)</td><td>契約書を発行するプロジェクトチーム</td></tr>
+        </tbody>
+      </table></div>
+      <p>なぜこれが初心者にとって重要なのでしょうか？なぜなら、トークンの運命は、それ自身のプロジェクトとそれが生きているチェーンという2つのことに結びついているからです。イーサリアムのトークンは、イーサリアムの手数料を支払い、イーサリアムのセキュリティを継承します。コインは独自のネットワーク上に存在します。誰かがあなたにトークンを売り込むとき、2つの質問がノイズを通り抜けます。それは何ですか、そしてなぜ基礎となるコインを単に使用するのではなく、それが存在する必要があるのですか？どちらの答えも明確でない場合は、立ち去ってください。</p>
+      <h2>ブロックチェーン、誇大広告なしで</h2>
+      <p>ブロックチェーンは、3つの異常な特性を持つ共有レコードブックです。 まず、<strong>誰もがコピーを持っています</strong>：台帳を保持している1つの銀行の代わりに、何千ものコンピュータが同じコピーを保持し、それらを比較します。 次に、<strong>エントリがグループ化され、チェーン化されます</strong>。トランザクションはブロックにバンドルされ、各ブロックは前のブロックを参照します。古いエントリを変更すると、ほとんどのコピーで後のすべてが書き換えられます。そのため、人々は改ざん防止ではなく改ざん防止と呼ばれています。 第三に、<strong>単一のエディタがない</strong>：新しいブロックは、マネージャーの決定ではなく、合意されたルール(マイニングまたはステーキング)に従って参加者によって追加されます。</p>
+      <p>ブロックチェーンがそうでないもの：すべてをより良くするデータベース、外の世界についての真実の保証、またはプロジェクトを信頼する理由。 ブロックチェーンは、詐欺、ミス、価値のないトークンなど、言われたことを忠実に記録します。 その本当の成果はより狭く、依然として注目に値します。お互いを信頼していない見知らぬ人は、信頼できる仲介者を任命することなく、取引の1つの共有履歴に同意することができます。 暗号の他のすべては、その1つのトリックの上に構築されています。</p>
+      <h2>人々が暗号資産を手に入れる方法</h2>
+      <p>4つのルートでほぼすべての人をカバーできる。<strong>取引所で買うこと</strong>が標準的な道だ。法定通貨を入れ、暗号資産を出す——当社の<a href="how-to-buy-crypto-for-beginners.html">初心者向け購入ガイド</a>で解説している。<strong>稼ぐこと</strong>——仕事や商品販売の対価として暗号資産で支払われること——は成長しているが、まだニッチだ。<strong>マイニングとステーキング</strong>は、ネットワークの運営を助ける人々に報酬を与える。マイナーはハードウェアで、ステーカーはロックされたコインで。どちらも資本、技術的な設定、そして小規模では薄いかマイナスのリターンへの耐性を必要とする。どちらも無料のお金ではない。<strong>エアドロップ</strong>は、早期利用や宣伝のために少量の新しいトークンを配布する——本物は存在するが、詐欺の包装としても好まれているため、すべてのエアドロップリンクは無罪が証明されるまで有罪として扱うこと。</p>
+      <h2>ウォレットと取引所：誰があなたのコインを保持していますか？</h2>
+      <p>これは暗号資産における最も重要なカストディの教訓なので、2回読んでほしい。コインが<strong>取引所に</strong>ある場合、秘密鍵を握っているのは取引所だ——コインそのものではなく、取引所に対する請求権を持っているにすぎない。便利な反面（パスワードリセットが効き、取引は即座にできる）、プラットフォームリスクを伴う（取引所が破綻したり出金を凍結したりすれば、あなたのアクセスも一緒に失われる）。コインが<strong>自分のウォレットに</strong>ある場合、鍵を握っているのはあなただ——通常、12語または24語のシードフレーズでバックアップされている。誰も凍結できないし、フレーズを失くせば誰も回復できない。</p>
+      <p>標準的な初心者の進行は次のとおりです。金額が少ないうちに取引を開始し、ウォレットの仕組みを学び、有意義な保有物を自己保管に移します。 当社の<a href="wallet-safety.html">ウォレット安全ガイド</a>は、シードフレーズの規律を適切にカバーしています。紙に書かれ、2つの場所にオフラインで保管され、写真に撮られず、ウェブサイトに入力されず、「サポート」エージェントと話したこともありません。 ウォレットソフトウェアには、携帯電話やブラウザのホットウォレット(便利でインターネットに公開されている)とハードウェアウォレット(物理的なデバイス、オフラインキー、大規模な保有に最適)の2種類があります。 どちらも孤立して「最も安全」ではありません。安全とは、道具と習慣の組み合わせです。</p>
+      <h2>公開鍵、秘密鍵、シードフレーズ</h2>
+      <p>すべての暗号ウォレットは、1組のキーで実行されます。<strong>公開鍵</strong>(およびそれから派生したアドレス)は、あなたが共有するものです。それは人々があなたにコインを送るために使用する口座番号のようなものです。<strong>秘密鍵</strong>は、あなたが決して共有しないものです。リセットボタン、サポートデスク、および他の人が保持する2番目のコピーがないことを除いて、支出を承認するパスワードのようなものです。現代の財布では、秘密鍵を直接暗記するように求められません。代わりに、セットアップでは、<strong>シードフレーズ</strong> —固定された順序で12個または24個の普通の単語—が与えられ、すべてのキーがそこから派生します。これらの言葉を紙に整理し、安全でオフラインの場所に保管してください。フレーズを取得した人は誰でもウォレットを所有しています。あなたを含め、それを失った人は誰でも永久にアクセスできなくなります。</p>
+      <p>その単一のデザインの選択は、あなたが今までに聞いたことのあるほとんどの財布のアドバイスを説明しています。シードフレーズのスクリーンショットがマルウェアによって盗まれます。クラウドバックアップが侵害されます。フレーズを要求する「サポート」エージェントは泥棒です、フルストップ。ハードウェアウォレットは、それをコンピュータに公開することのない物理的なデバイスに秘密鍵を保持します。そのため、大規模な保有物の標準的な推奨事項ですが、ハードウェアでさえ、写真やアップロードしたシードフレーズを保存することはできません。ツールは習慣よりも重要です。紙、オフライン、2つの場所、決してデジタル、決して共有されません。</p>
+      <h2>実際にそれで何ができますか？</h2>
+      <p>取引を超えて、今日実際に存在する4つの用途がある。<strong>決済</strong>：コルレス銀行なしで国境を越えて価値を送ること——銀行が遅いか高額な場所では最も速く最も安いが、変動性のため日常の価格付けには不向きだ。<strong>ステーブルコインによる貯蓄と送金</strong>：USDTのようなドル連動トークンは、取引所間や国境を越えて価値を移動させるための主力だ。当社の<a href="what-is-usdt.html">USDTガイド</a>は、ペッグとそのリスクを正直に解説している。<strong>プログラム可能なチェーン上のアプリ</strong>：イーサリアムや同様のネットワーク上に構築された貸付、取引、ゲームで、総称してDeFiと呼ばれる——強力だが、スマートコントラクトのバグや詐欺は一般的だ。すべてのアプリを実験的なものとして扱うこと。<strong>コレクティブルとアイデンティティ</strong>：NFTやトークン化されたアイテム。ほとんどのプロジェクトがゼロになる、小さく非常に投機的な一角だ。</p>
+      <p>まだ確実にできないことがある。銀行口座を置き換えること、保証されたリターンを得ること、またはスケジュール通りに「金持ちになる」ことだ。暗号資産から安定した高い利回りを約束する商品は、開示していないリスクを取っているか、詐欺を行っているかのいずれかだ。暗号資産についての正直な売り文句はもっと狭い。国境を越え、プログラム可能で、検閲に強い価値移転であり、実際のリスクが付随する。ユースケースがその文に合わなければ、懐疑的になること。</p>
+      <h2>詐欺：5つの危険信号</h2>
+      <p>詐欺は暗号通貨の最大の特徴です。トランザクションは最終的なものなので、盗まれたコインは戻ってきません。 これらの5つの旗を暗記すると、そのほとんどをかわすことができます。</p>
+      <ul>
+        <li><strong>保証されたリターン。</strong>正規の投資は利益を保証しない。「暗号資産を2倍にする」は、より良いマーケティングを伴った窃盗だ。</li>
+        <li><strong>誰かが先にDMを送ってくること。</strong>本物のサポートがメッセージに滑り込んでくることは決してない。本物の投資マネージャーも同様だ。</li>
+        <li><strong>コインを送ってコインを受け取りましょう。</strong>プレゼント、「検証」、「ロック解除料」のリクエストはすべて同じトリックです。コインが残っても何も返されません。</li>
+        <li><strong>緊急性と秘密性。</strong>「今すぐ行動して、誰にも言わないでください」は、詐欺師がすぐにそれを見つけてくれる友人に尋ねるのを止める方法です。</li>
+        <li><strong>キー、フレーズ、またはコードのリクエスト。</strong>シードフレーズと検証コードは、理由の如何を問わず、決して誰とも共有されません。</li>
+      </ul>
+      <p>当社の<a href="avoid-scams.html">詐欺ガイド</a>では、初心者が実際に会う8つの詐欺について、すでに送金した場合の対処方法について説明します。最初の購入前に読んでください。最初の恐怖の後ではありません。</p>
+      <h2>なぜ暗号資産は決して閉まらないのか</h2>
+      <p>株式市場は閉まる。暗号資産市場は閉まらない。ビットコイン、イーサリアム、そしてその上のすべてのトークンは、週末や祝日を含め、24時間取引されている。これが、初心者にとって価格チャートがとても落ち着かないように見える理由の1つだ。初心者にとって実用的な教訓は、市場を常に見ることではなく、自分のスケジュールで判断し、注文に待つことを任せることだ。設定した価格でのみ執行されるリミット注文は、まさに午前3時に画面を見つめる必要がないように存在する。市場が常に開いているという性質は、ニュースが流れ、あなたが眠っている間に価格が動くことも意味する。悪い夜を乗り越えて保有していられるポジションサイズが正しいサイズであり、一晩で清算されうるレバレッジは、学習には間違ったツールだ。</p>
+      <h2>最初のステップ、順序通りに</h2>
+      <ol>
+        <li><a href="what-is-bitcoin.html">ビットコインガイド</a>を読んで、オリジナルが何千ものコピーの前に理にかなっているようにしてください。</li>
+        <li>大規模なエクスチェンジを1つ選択し、検証し、オーセンティケーター2 FAを有効にします。完全なシーケンスについては、<a href="how-to-buy-crypto-for-beginners.html">初心者向け購入ガイド</a>を参照してください。</li>
+        <li>小規模なテスト購入を1回行ってください：フィアット→USDTは小規模→な現物購入です。</li>
+        <li>取引を記録し、詐欺ガイドを読むこと。そして落ち着いて、暗号資産があなたの財政の中でより大きな位置を占めるに値するかどうかを判断すること。</li>
+      </ol>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+<b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">初心者向けアプリ、深い流動性</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitに登録する</a></div></div>
+<p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+</div>
+      
+      <h3>暗号資産は本物のお金か？</h3>
+      <p>人々がそれを支払いとして受け入れ、商品、サービス、および法定通貨と交換するという意味で現実的です。 ほとんどの国で法定通貨ではなく、その価格は銀行のお金よりもはるかに大きく変動します。安定した給料ではなく、不安定な資産として扱われます。</p>
+      <h3>デジタル銀行マネーとどう違うのか？</h3>
+      <p>銀行のお金は、銀行が運営する非公開の台帳に存在する。暗号資産は、分散型ネットワークが運営する公開台帳に存在する。つまり、銀行の営業時間はなく、（セルフカストディする場合）単一の企業による口座凍結はなく、チャージバックもない——良い意味でも悪い意味でも。</p>
+      <h3>暗号資産を保有するのにウォレットは必要か？</h3>
+      <p>初日ではありません。交換口座には、学習中にコインが保管されています。 金額が重要な場合は、シードフレーズを保持している自分の財布に移動し、それに伴う全責任を負います。</p>
+      <h3>暗号通貨はハッキングされる可能性がありますか？</h3>
+      <p>ブロックチェーン自体には強力なセキュリティ記録がありますが、取引所、アプリ、ブラウザ、人など、ブロックチェーンを取り巻くものは絶えずハッキングされています。ほとんどの損失は、ブロックチェーン自体を壊すことではなく、フィッシング、偽のアプリ、漏洩したキーから発生します。</p>
+      <h3>なぜ暗号資産の価格はそんなに動くのか？</h3>
+      <p>24時間年中無休の取引、大量の投機、サーキットブレーカーが株式市場よりも速く動くことのない、小規模で若い市場。 ニュース、レバレッジ清算、そして薄い流動性はすべてスイングを増幅します。 両方向に鋭い動きを期待してください。</p>
+      <h3>暗号を学び始めるには遅すぎますか？</h3>
+      <p>いいえ。技術も市場もまだ若く、基礎——コインとは何か、カストディの仕組み、詐欺の手口——は期限切れにならない。焦りではなく、教育と少額のテスト金額から始めること。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="what-is-bitcoin.html">ビットコインとは？</a></li>
+        <li><a href="how-to-buy-crypto-for-beginners.html">初心者向け暗号資産の買い方</a></li>
+        <li><a href="avoid-scams.html">暗号通貨は詐欺ですか？知っておくべき8つの詐欺</a></li>
+        <li><a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

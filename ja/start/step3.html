@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>ステップ3：登録する — 初心者パス | TokVS</title>
+<meta name="description" content="取引所登録の全手順：登録、強固なパスワード、二要素認証、初回でのKYC通過。">
+<link rel="canonical" href="https://tokvs.com/ja/start/step3">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/start/step3">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/start/step3">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/start/step3">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/start/step3">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/start/step3">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/start/step3">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/start/step3">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/start/step3">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/start/step3">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/start/step3">
+<meta property="og:title" content="ステップ3：登録する — 初心者パス | TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="登録、2FA、初回でのKYC、登録後のセキュリティチェックリスト。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/start/step3">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"初心者パス","item":"https://tokvs.com/ja/start/step1"},{"@type":"ListItem","position":3,"name":"ステップ3：登録する — 初心者パス","item":"https://tokvs.com/ja/start/step3"}]}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="step1.html" class="on">初心者パス</a><a href="../guides/index.html">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/ 初心者パス / ステップ3</div>
+      <h1>ステップ3：登録する</h1>
+      <p class="sub">手順は4社すべてほぼ同じです：登録 → パスワード設定 → 二要素認証の有効化 → 本人確認。身分証明書を用意すれば約10分で完了します。</p>
+    </div>
+    <div class="disclosure-bar">開示：本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。リベートは取引所が負担します。</div>
+  </div>
+
+  <section>
+    <div class="steps">
+      <a class="step done" href="step1.html"><div class="n">1</div><div class="t">ビットコインを知る</div><div class="d">仕組みと価値の理由</div><span class="arr">›</span></a>
+      <a class="step done" href="step2.html"><div class="n">2</div><div class="t">取引所を選ぶ</div><div class="d">まず手数料と安全性を比較</div><span class="arr">›</span></a>
+      <span class="step" style="outline:2.5px solid #00C853;cursor:default;" aria-current="step"><div class="n">3</div><div class="t">登録する</div><div class="d">図解ステップで、KYCを一発で通過</div></span>
+      <a class="step" href="step4.html"><div class="n">4</div><div class="t">USDTを買う</div><div class="d">アカウントへの正しい入金方法</div><span class="arr">›</span></a>
+      <a class="step" href="step5.html"><div class="n">5</div><div class="t">初めてのコインを買う</div><div class="d">現物注文と安全な保管</div></a>
+    </div>
+  </section>
+
+  <section>
+    <div class="card article prose">
+      <h2>公式登録リンク</h2>
+      <p>ここからのみアクセスしてください。検索広告の「公式サイト」はしばしば偽物です。クリックする前にドメインを再確認してください。</p>
+      <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">現物取引 · account.binance.com</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">okx.com</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">bybit.com</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#3861FB;">B</div><div><div class="tt">Bitget</div><div class="dd">当サイトからの紹介リンクはまだありません · bitget.com</div></div><a class="go dark" href="https://www.bitget.com" target="_blank" rel="nofollow noopener">ウェブサイト</a></div>
+      </div>
+
+      <h2>登録の5ステップ（4社共通）</h2>
+      <ol>
+        <li><strong>アカウントを作成する。</strong> 実際に使うメールアドレスまたは電話番号で登録します。理想は、SNSアカウントと共有しない、独自の二要素認証を持つ専用メールアドレスです。</li>
+        <li><strong>強固なパスワードを設定する。</strong> 16文字以上、大文字・小文字＋数字＋記号の組み合わせで、<strong>他では一切使い回さない</strong>こと。取引所のパスワードが漏れると、お金はそのまま失われます。</li>
+        <li><strong>二要素認証（2FA）を有効化する。</strong> セキュリティ設定で認証アプリ（Google Authenticatorなど）を紐付けます。リカバリーキーは紙に書いてオフラインで保管してください。スマホにスクリーンショットで保存しないでください。</li>
+        <li><strong>本人確認（KYC）を完了する。</strong> 身分証明書の両面と顔認証をアップロードします。KYCなしでは通常、法定通貨の入金や出金ができません。これは世界的な規制要件であり、プラットフォームが意地悪をしているわけではありません。</li>
+        <li><strong>以下のセキュリティチェックリストを完了する</strong>前に、入金しないでください。ステップを飛ばさないでください。</li>
+      </ol>
+
+      <h2>初回で本人確認を通過する方法</h2>
+      <ul>
+        <li>写真は鮮明で、反射がなく、四隅すべてが見える必要があります。照明不足が最も多い却下理由です。</li>
+        <li>入力する情報は、氏名の綴りやID番号を含め、書類と<strong>完全に</strong>一致しなければなりません。タイプミスに注意してください。</li>
+        <li>顔認証では、帽子や眼鏡を外し、光源に向かってください。2回失敗したら、止めて1時間待ち、再試行してください。繰り返し試し続けないでください。</li>
+        <li>審査は通常、数分から数時間かかります。休日やピーク時にはさらに長くかかることがありますが、正常です。</li>
+      </ul>
+
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">まだ登録していませんか？公式リンクは上にあります。10分で完了：<a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a><a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a><a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitに登録する</a></p>
+      <h2>セキュリティチェックリスト——登録直後に行うこと</h2>
+      <ul>
+        <li>✅ 2FA有効化、リカバリーキーをオフラインでバックアップ済み</li>
+        <li>✅ フィッシング対策コード設定済み（公式メールにはこれが含まれます。これがないメールは偽物です）</li>
+        <li>✅ 出金アドレスのホワイトリスト有効（資金は事前登録したアドレスにのみ出金可能）</li>
+        <li>✅ パスワードマネージャーに保存した、固有の長いパスワード</li>
+        <li>✅ 鉄則を暗記済み：<strong>サポートがDMを送ったり、コインを「安全なアカウント」へ移動するよう求めたりすることは決してありません</strong></li>
+      </ul>
+
+      <div class="callout warn"><b>知っておく価値があること：</b>一部の国や地域では、規制により特定の取引所の利用が制限されています。登録前に、自分の地域が対応しているか確認してください（登録ページに表示されます）。他人の身分で登録しないでください。後で出金審査により凍結されます。</div>
+
+      <p>アカウントの準備ができました。次は、法定通貨をUSDTに変えることです。これはほぼすべてのコインへの入場券です。</p>
+    </div>
+
+    <div class="stepnav">
+      <a href="step2.html"><span><span class="sm">前のステップ</span>ステップ2：取引所を選ぶ</span></a>
+      <a class="next" href="step4.html"><span><span class="sm">次のステップ</span>ステップ4：USDTを買う</span><span>→</span></a>
+    </div>
+  </section>
+
+</div>
+
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="step1.html">初心者パス</a><a href="step2.html">取引所を選ぶ</a><a href="step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>ツール | ウォッチリスト価格アラート＋イベントカレンダー - TokVS</title>
+<meta name="description" content="無料の暗号資産ツール：価格アラート付きウォッチリスト（CoinGeckoデータ、登録不要、ブラウザ内に保存）とイベントカレンダー。">
+<link rel="canonical" href="https://tokvs.com/ja/tools">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/tools">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/tools">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/tools">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/tools">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/tools">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/tools">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/tools">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/tools">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/tools">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/tools">
+<meta property="og:title" content="ツール | ウォッチリスト価格アラート＋イベントカレンダー - TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="ウォッチリスト、価格アラート、イベントカレンダーを1ページに。登録は不要です。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tokvs.com/ja/tools">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../styles.css?v=20261031a">
+<script>window.TOKVS_DATA_BASE = '../data/';</script>
+<style>
+/* ===== 工具页专属样式（.tk- 前缀，与全站 styles.css 解耦） ===== */
+.tk-stats { display:flex; gap:12px; flex-wrap:wrap; margin-top:20px; }
+.tk-stat { flex:1; min-width:120px; background:#F7F7F5; border-radius:16px; padding:13px 18px; }
+.tk-stat b { display:block; font-size:23px; font-weight:900; line-height:1.15; font-variant-numeric:tabular-nums; }
+.tk-stat span { font-size:12.5px; color:#8A9082; font-weight:700; }
+.tk-grid { display:grid; grid-template-columns:minmax(0,7fr) minmax(0,5fr); gap:22px; align-items:start; margin-top:26px; padding-bottom:8px; }
+.tk-main { display:flex; flex-direction:column; gap:22px; min-width:0; }
+.tk-card { background:#fff; border-radius:24px; box-shadow:0 1px 3px rgba(18,21,15,.05), 0 10px 30px rgba(18,21,15,.04); padding:24px 26px; }
+.tk-card-head { display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
+.tk-card-head h2 { font-size:20px; font-weight:900; }
+.tk-card-head .tk-desc { color:#8A9082; font-size:13px; }
+.tk-card #alert-banner { margin-bottom:14px; }
+/* 自选项 */
+.tk-ava { width:38px; height:38px; border-radius:12px; display:inline-flex; align-items:center; justify-content:center; font-weight:900; font-size:16px; color:#fff; flex:none; }
+.tk-ava.sm { width:32px; height:32px; border-radius:10px; font-size:13.5px; }
+.tk-wl-item { border:1.5px solid #EFF1EA; border-radius:18px; padding:16px 18px; }
+.tk-wl-item + .tk-wl-item { margin-top:12px; }
+.tk-wl-top { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+.tk-wl-id { display:flex; align-items:center; gap:11px; min-width:0; }
+.tk-wl-id strong { font-size:16.5px; font-weight:900; }
+.tk-coin-name { color:#8A9082; font-size:13px; font-weight:600; margin-left:7px; }
+.tk-wl-price { font-size:23px; font-weight:900; margin-top:10px; font-variant-numeric:tabular-nums; }
+.tk-wl-price .chg { font-size:14.5px; font-weight:800; margin-left:6px; }
+.tk-wl-form { display:flex; gap:9px; flex-wrap:wrap; margin-top:13px; }
+.tk-in { flex:1; min-width:150px; border:1.5px solid #E3E6DC; border-radius:12px; padding:10px 14px; font-size:15px; font-weight:700; font-family:inherit; background:#FDFDFB; color:#12150F; }
+.tk-in:focus { outline:none; border-color:#00C853; }
+.tk-sel { border:1.5px solid #E3E6DC; border-radius:12px; padding:10px 12px; font-size:14.5px; font-weight:700; font-family:inherit; background:#FDFDFB; color:#12150F; }
+.tk-btn { background:#12150F; color:#fff; border:none; font-family:inherit; font-weight:800; font-size:13.5px; padding:9px 16px; border-radius:999px; cursor:pointer; white-space:nowrap; display:inline-block; }
+.tk-btn:hover { background:#2B2F25; }
+.tk-btn.green { background:#00C853; }
+.tk-btn.green:hover { background:#00B34A; }
+.tk-del { background:none; border:none; font-family:inherit; font-size:13px; font-weight:800; color:#E5322D; cursor:pointer; padding:2px 4px; white-space:nowrap; }
+.tk-alert-list { margin-top:12px; display:flex; flex-direction:column; gap:8px; }
+.tk-alert-item { display:flex; justify-content:space-between; align-items:center; gap:10px; background:#F7F7F5; border-radius:12px; padding:9px 14px; font-size:13.5px; font-weight:700; color:#3D4238; }
+/* 自选空状态 */
+.tk-empty { border:1.5px dashed #DDE1D4; border-radius:18px; padding:30px 22px; text-align:center; }
+.tk-empty-title { font-size:16.5px; font-weight:900; margin-bottom:7px; }
+.tk-empty p { color:#8A9082; font-size:13.5px; line-height:1.7; max-width:440px; margin:0 auto 15px; }
+/* Top100 表格 */
+.tk-search { margin-bottom:8px; }
+.tk-search input { width:100%; border:1.5px solid #E3E6DC; border-radius:14px; padding:12px 16px; font-size:15px; font-weight:600; font-family:inherit; background:#FDFDFB; color:#12150F; }
+.tk-search input:focus { outline:none; border-color:#00C853; background:#fff; }
+.tk-tblwrap { overflow-x:hidden; overflow-y:auto; max-height:640px; }
+.tk-tbl { width:100%; border-collapse:collapse; table-layout:fixed; }
+.tk-tbl thead th { position:sticky; top:0; z-index:1; background:#fff; text-align:left; font-size:12.5px; color:#8A9082; font-weight:800; padding:10px 6px; border-bottom:1.5px solid #EFF1EA; white-space:nowrap; }
+.tk-tbl thead th:nth-child(1) { width:36px; }
+.tk-tbl thead th:nth-child(3) { width:116px; }
+.tk-tbl thead th:nth-child(4) { width:92px; }
+.tk-tbl thead th:nth-child(5) { width:88px; }
+.tk-tbl thead th.r, .tk-tbl tbody td.r { text-align:right; }
+.tk-tbl tbody td { padding:10px 6px; border-bottom:1px solid #F3F4EF; vertical-align:middle; }
+.tk-tbl tbody tr:nth-child(even) { background:#FBFBF8; }
+.tk-tbl tbody tr:hover { background:#F2F8F2; }
+.tk-rank { color:#B9BEB0; font-weight:800; font-size:13.5px; font-variant-numeric:tabular-nums; }
+.tk-coin { display:flex; align-items:center; gap:8px; min-width:0; }
+.tk-coin .nm { font-weight:800; font-size:14.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tk-coin .sy { color:#8A9082; font-size:12px; font-weight:700; white-space:nowrap; flex:none; }
+.tk-coin .tk-ava { flex:none; }
+.tk-tbl .tk-btn { padding:8px 12px; }
+.tk-price { font-weight:900; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.tk-chg { font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.tk-tag { background:#E5F9EC; color:#00782E; font-size:11.5px; padding:4px 10px; border-radius:999px; font-weight:700; white-space:nowrap; }
+/* 事件日历（时间线） */
+.tk-side { position:sticky; top:16px; min-width:0; }
+.tk-cal-card { display:flex; flex-direction:column; max-height:calc(100vh - 32px); }
+.tk-cal-scroll { overflow-y:auto; min-height:0; margin:0 -8px; padding:0 8px; }
+.tk-cal-list { position:relative; }
+.tk-cal-list::before { content:''; position:absolute; left:27px; top:10px; bottom:10px; width:2px; background:#EFF1EA; border-radius:2px; }
+.tk-cal-item { position:relative; display:flex; gap:14px; padding:12px 0; }
+.tk-cal-item.past { opacity:.55; }
+.tk-cal-date { position:relative; z-index:1; flex:none; width:56px; height:56px; border-radius:16px; background:#E5F9EC; color:#00782E; display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.1; }
+.tk-cal-item.today .tk-cal-date { background:#00C853; color:#fff; }
+.tk-cal-date .d { font-size:20px; font-weight:900; font-variant-numeric:tabular-nums; }
+.tk-cal-date .m { font-size:11px; font-weight:800; margin-top:2px; }
+.tk-cal-body { min-width:0; padding-top:3px; }
+.tk-cal-meta { display:flex; align-items:center; gap:9px; flex-wrap:wrap; }
+.tk-cal-when { font-size:12px; color:#8A9082; font-weight:700; font-variant-numeric:tabular-nums; }
+.tk-badge { display:inline-block; font-size:12px; font-weight:800; padding:4px 11px; border-radius:999px; background:#E5F9EC; color:#00782E; }
+.tk-badge.type-unlock { background:#E8F0FE; color:#1A56DB; }
+.tk-badge.type-airdrop { background:#F3E8FD; color:#7B1FA2; }
+.tk-badge.type-tge { background:#FEF3E2; color:#B45309; }
+.tk-badge.type-event { background:#E5F9EC; color:#00782E; }
+.tk-badge.type-macro { background:#E0F2F1; color:#00695C; }
+.tk-cal-body h3 { font-size:15.5px; font-weight:900; line-height:1.45; margin:6px 0 4px; }
+.tk-cal-body p { font-size:13.5px; color:#5C6154; line-height:1.65; }
+.tk-cal-more { display:inline-block; margin-top:6px; font-size:13px; font-weight:800; color:#00782E; }
+@media (max-width:560px) {
+  /* 窄屏：藏起序号列、币种符号与图标，只留名+价+涨跌+按钮，整表仍贴合卡片、无横向滑块 */
+  .tk-tbl thead th:nth-child(1), .tk-tbl tbody td.tk-rank { display:none; }
+  .tk-coin .sy, .tk-coin .tk-ava { display:none; }
+  .tk-tbl thead th:nth-child(3) { width:96px; }
+  .tk-tbl thead th:nth-child(4) { width:72px; }
+  .tk-tbl thead th:nth-child(5) { width:76px; }
+  .tk-tbl thead th { font-size:12px; padding:9px 4px; }
+  .tk-tbl tbody td { padding:9px 4px; }
+  .tk-coin .nm { white-space:normal; line-height:1.35; font-size:13.5px; }
+  .tk-price { font-size:13.5px; }
+  .tk-chg { font-size:13px; }
+  .tk-tbl .tk-btn { padding:7px 10px; font-size:12.5px; }
+  .tk-tag { font-size:11px; padding:3px 8px; }
+}
+@media (max-width:640px) {
+  .tk-card { border-radius:0; box-shadow:none; padding:20px 16px; }
+}
+@media (max-width: 980px) {
+  .tk-grid { grid-template-columns:1fr; }
+  .tk-side { position:static; }
+  .tk-cal-card { max-height:none; }
+  .tk-cal-scroll { overflow:visible; margin:0; padding:0; }
+  .tk-card { padding:20px 18px; }
+  .tk-in { min-width:120px; }
+}
+</style>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ツール | ウォッチリスト価格アラート＋イベントカレンダー","item":"https://tokvs.com/ja/tools"}]}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="start/step1.html">初心者パス</a><a href="guides/index.html">ガイド</a><a href="exchanges.html">取引所</a><a href="airdrops.html">エアドロップ</a><a href="tools.html" class="on">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="index.html">ホーム</a>/ ツール</div>
+      <h1>ツール</h1>
+      <p class="sub">1ページに2つの便利なツール：価格アラート付きウォッチリスト（このページを開くたびにチェック。チャートをにらみ続ける必要はありません）と、アンロック、エアドロップ、金利決定に不意を突かれないためのイベントカレンダー。すべて無料、登録不要です。</p>
+      <div class="tk-stats">
+        <div class="tk-stat"><b id="tk-stat-watch">0</b><span>ウォッチ中</span></div>
+        <div class="tk-stat"><b id="tk-stat-alerts">0</b><span>設定済みアラート</span></div>
+        <div class="tk-stat"><b id="tk-stat-events">–</b><span>イベント · 今後7日間</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tk-grid">
+    <div class="tk-main">
+
+      <section class="tk-card" id="watchlist">
+        <div class="tk-card-head"><h2>マイウォッチリスト</h2><span class="tk-desc">価格アラート · CoinGeckoのライブデータ · このブラウザ内に保存</span></div>
+        <div id="alert-banner" style="display:none"></div>
+        <div id="my-watchlist"><div class="loading">読み込み中…</div></div>
+      </section>
+
+      <section class="tk-card" id="top100-card">
+        <div class="tk-card-head"><h2>時価総額トップ100</h2><span class="tk-desc">検索して「+ Watch」をクリックして追加</span></div>
+        <div class="tk-search"><input type="search" id="top100-search" placeholder="コインを検索（例：BTC、Ethereum、Solana…）" aria-label="コインを検索"></div>
+        <div class="tk-tblwrap">
+          <table class="tk-tbl">
+            <thead>
+              <tr><th>#</th><th>コイン</th><th class="r">価格</th><th class="r">24時間変動</th><th class="r"></th></tr>
+            </thead>
+            <tbody id="top100-body">
+              <tr><td colspan="5"><div class="load-fail"></div>市場データを読み込み中…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">データ：CoinGecko、USD建て。ウォッチリストとアラートはこのブラウザ内にのみ保存され、ブラウザデータを消去すると失われます。アラートはこのページを開いたときにチェックされ、バックグラウンドでプッシュされるわけではありません。</p>
+      </section>
+
+    </div>
+
+    <aside class="tk-side">
+      <section class="tk-card tk-cal-card" id="calendar">
+        <div class="tk-card-head"><h2>イベントカレンダー</h2><span class="tk-desc">トークンアンロック · エアドロップ · TGE · 業界イベント · マクロ（Fed／CPI）</span></div>
+        <div class="tk-cal-scroll">
+          <div id="cal-list"><div class="loading">カレンダーを読み込み中…</div></div>
+        </div>
+        <p class="note">日付はイベント日です。アンロックが自動的に売りを意味するわけではありませんが、大規模なものではボラティリティが高まることがよくあります。マクロイベントの時刻は情報源のタイムゾーンに従います。詳細は「Source」を開いて確認してください。</p>
+      </section>
+    </aside>
+  </div>
+<style>
+.tk-rellinks a{display:block;padding:13px 2px;border-top:1px solid #ECEEE8;font-weight:700;color:#12150F;text-decoration:none;line-height:1.5}
+.tk-rellinks a:first-child{border-top:0}
+.tk-rellinks a:hover{color:#00A344}
+.tk-rellinks a small{display:block;font-weight:400;color:#6b7263;font-size:12.5px;margin-top:2px}
+</style>
+
+    <section class="tk-card">
+      <div class="tk-card-head"><h2>関連</h2><span class="tk-desc">行動する前にルールを学ぶ</span></div>
+      <div class="tk-rellinks">
+        <a href="exchanges.html">取引所手数料とリベートの比較<small>4社の現物・先物手数料</small></a>
+        <a href="guides/crypto-fees.html">暗号資産の手数料解説<small>メイカー／テイカーとファンディングレートをまとめて</small></a>
+        <a href="tools/quiz.html">どの取引所を使うべき？（3問クイズ）<small>3つの質問に答えて、自分に合う提案を受け取る</small></a>
+        <a href="guides/choose-exchange.html">取引所選びの前の6つのチェック<small>規模、手数料、安全性、サポート</small></a>
+      </div>
+    </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="start/step1.html" style="margin-top:10px;">概要</a><a href="exchanges.html">取引所比較</a><a href="airdrops.html">毎日のエアドロップ</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="start/step1.html">初心者パス</a><a href="start/step2.html">取引所を選ぶ</a><a href="start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="reviews/binance.html">Binance</a><a href="reviews/okx.html">OKX</a><a href="reviews/bybit.html">Bybit</a><a href="reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="tools.html#watchlist">ウォッチリストアラート</a><a href="tools.html#calendar">イベントカレンダー</a><a href="exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<script src="../js/tools.js?v=20261017b"></script>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

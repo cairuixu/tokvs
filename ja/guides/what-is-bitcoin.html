@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>ビットコインとは何ですか？ 初心者向け平易な英語ガイド— TokVS</title>
+<meta name="description" content="ビットコインとは何か、平易な言葉で。2009年の由来、ブロックチェーンとマイニングの仕組み、なぜ2100万枚しか存在しないのか、買い方、そして正直に述べたリスク。予測はなし。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/what-is-bitcoin">
+<meta property="og:title" content="ビットコインとは何ですか？ 平易な英語ガイド— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="専門用語なしのビットコイン解説。由来、ブロックチェーン、マイニング、2100万枚の上限、買い方、正直なリスク。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/what-is-bitcoin">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"ビットコインとは？","item":"https://tokvs.com/ja/guides/what-is-bitcoin"}]},{"@type":"Article","headline":"ビットコインとは？","description":"ビットコインとは何か、平易な言葉で。2009年の由来、ブロックチェーンとマイニングの仕組み、なぜ2100万枚しか存在しないのか、買い方、そして正直に述べたリスク。予測はなし。","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/what-is-bitcoin","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"誰がビットコインを管理していますか？","acceptedAnswer":{"@type":"Answer","text":"ビットコインを管理している個人、企業、政府は存在しない。ルールは、数千の独立した参加者が運営するオープンソースソフトウェアの中にあり、ルールを変更するには、マイナー、ノード運営者、ユーザー全体の幅広い合意が必要だ。"}},{"@type":"Question","name":"ビットコインはコピーや複製ができるか？","acceptedAnswer":{"@type":"Answer","text":"誰でもソフトウェアをコピーできるが、コピーにはビットコインのネットワークも、台帳の履歴も、保有者も引き継がれない。価値は、コード単体ではなく、実際に誰もが使うライブのネットワークから生まれる。"}},{"@type":"Question","name":"これまでにいくつのビットコインが存在しますか？","acceptedAnswer":{"@type":"Answer","text":"2100万枚であり、コードで強制される。新しいコインはマイニング報酬を通じてのみ入り、その報酬はおよそ4年ごとに半減するため、発行は誰でも検証できるスケジュールで減速する。"}},{"@type":"Question","name":"ビットコインを1枚まるごと買う必要があるか？","acceptedAnswer":{"@type":"Answer","text":"いいえ。ビットコインは1コインあたり1億サトシに分割されるため、正確に$10分を買うことができる。ほとんどの初心者は、1枚まるごとではなく、1枚の一部を保有している。"}},{"@type":"Question","name":"ビットコインは匿名ですか？","acceptedAnswer":{"@type":"Answer","text":"いいえ。匿名です。 トランザクションはブロックチェーン上で永久に公開され、規制された取引所はアドレスを実際のIDにリンクします。 あなたのオンチェーンアクティビティが追跡可能であると仮定します。"}},{"@type":"Question","name":"2100万枚すべてが採掘されたらどうなるか？","acceptedAnswer":{"@type":"Answer","text":"マイニング報酬は終わり、マイナーは取引手数料からのみ支払われるようになる。その移行は数十年先のことであり、すでに設計の一部だ。ネットワークが停止することはない。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/ビットコインとは何ですか？</div>
+      <h1>ビットコインとは？</h1>
+      <p class="sub">会社も、本社も、予測もありません。ビットコインとは何か、それがどのように機能するか、そして購入する前に知っておくべきことです。</p>
+      <p class="updated">2026年10月更新· By TokVS · 10分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ→</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">初心者向けアプリ、深い流動性</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitに登録する</a></div></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+
+      <h2>簡潔な答えは？</h2>
+      <p>ビットコインは分散型のデジタル通貨です。銀行、決済会社、または単一の会社を担当せずにインターネットを介して移動するお金です。 2009年に開始され、ブロックチェーンと呼ばれる公共台帳で実行され、総供給量は2100万コインに制限されています。これは、誰も一方的に変更できないコードに書かれている制限です。 人々はそれを価値の保管、国境を越えた送金、そしてますます広範な暗号市場へのエントリーポイントとして使用しています。 1つの文章しか覚えていない場合は、次のことを覚えておいてください。<strong>ビットコインは発行者のいないお金であり、機関ではなくネットワークによって正直に保たれます。</strong></p>
+      <h2>ビットコインの由来</h2>
+      <p>2008年10月、世界的な金融危機の最中に、筆名をSatoshi Nakamotoとする個人またはグループが、「Bitcoin: A Peer - to - Peer Electronic Cash System (ビットコイン：ピアツーピア電子キャッシュシステム)」と題する短い論文を発表しました。「この論文では、銀行や決済プロセッサーを信用することなく、人々がオンラインで直接お互いに価値を送る方法が説明されています。2009年1月、ネットワークは最初のブロックで稼働し、アイデアは論文ではなくなりました。サトシが誰であるかは誰にもわかりません。それは解決すべき謎ではなく、設計の一部です。ビットコインには、逮捕すべき創設者も、圧力をかけるCEOも、自らの利益のためにルールを変更できる企業もありません。開発はオープンです。誰でもコードを読み、変更を提案し、ソフトウェアを実行できます。</p>
+      <p>その由来の物語が重要なのは、ビットコインの珍しい特性を説明するからだ。従来のお金は、発行者を信頼することで機能する。中央銀行が供給を管理し、銀行システムがそれを移動させる。ビットコインは、単一の当事者を信頼しなくてよいことで機能する。ルールは公開され、台帳は公開され、数千の独立した参加者が同じルールを強制する。抽象的に聞こえるなら、次のセクションがそれを具体的にする。</p>
+      <h2>ビットコインの実際の仕組み</h2>
+      <p>3つの要素がすべての仕事をする。第1に、<strong>ブロックチェーン</strong>だ。世界中の数千台のコンピューターにコピーされた公開台帳であり、これまでに作られたすべてのビットコイン取引を記録する。取引は「ブロック」にまとめられ、各ブロックは前のブロックにリンクしてチェーンを形成する。ブロックが十分に後のブロックの下に埋まれば、それを変更するには、コピーの過半数においてそれ以降のすべてを書き換える必要があり、実質的に不可能だ。だから台帳は最終的なものとして扱われる。</p>
+      <p>第二に、<strong>マイニング</strong>：新しいブロックを追加し、新しいコインを発行するプロセス。マイナーはコンピューターパズルを解こうと競い合うコンピューターです。勝者は次のブロックを追加し、報酬として新しく作成されたビットコインを受け取ります。マイニングは一度に2つの仕事を行います。トランザクションを誠実に注文し(不正行為には誠実な大多数を出し抜く必要があり、実際には電気とハードウェアがかかります)、固定スケジュールで新しいコインのリリースを制御します。第三に、<strong>鍵</strong>：あなたのビットコインは秘密鍵(長い秘密番号)によって制御され、あなたのパブリックアドレスはそれから派生しています。秘密鍵を持っている人なら誰でもコインを使うことができ、持っていない人は使えません。その1つの事実は、ビットコインのセキュリティと最も有名なリスクの両方を説明しています。鍵を失い、コインを失い、パスワードをリセットすることはありません。</p>
+      <h2>2100万人が重要な理由</h2>
+      <p>ビットコインのコードは総供給量を2100万コインに制限し、新しいコインは時間の経過とともに縮小するマイニング報酬を通じて流通します。 およそ4年ごとに、<strong>半減</strong>と呼ばれるイベントが採鉱報酬を半減させ、誰もが事前に確認できるスケジュールで新しい供給を遅らせます。 これは、中央銀行が自由に供給を拡大できる法定通貨の仕組みとは正反対です。 希少性だけでは価値のあるものにはなりません。多くの希少なものは無価値です。しかし、予測可能で変わらない供給が、人々がビットコインを「デジタルゴールド」と表現する理由です。ビットコインは、誰も静かに膨らませることができない将来の発行資産です。</p>
+      <p>2つの実用的な帰結が続く。1つ目に、ビットコインは分割可能だ。1枚まるごと買う必要は決してない。1ビットコインはサトシと呼ばれる1億の小さな単位に分割されるため、金の粉$10分を保有するのとまったく同じように、正確に$10分のビットコインを保有できる。2つ目に、失くしたコインは永遠になくなる——鍵を失くしたコインも2100万枚に数えられるため、実際に使える供給量は見出しの数字より小さい。どちらの事実も、価格予測を信じることを必要としない。これらは仕組みであり、判断の基礎にすべきは仕組みだ。</p>
+      <h2>ビットコインと銀行のお金の比較</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>特徴</th><th>ビットコイン</th><th>銀行のお金</th></tr></thead>
+        <tbody>
+          <tr><td>発行者</td><td>誰もいない—ネットワークルール</td><td>中央銀行＋銀行</td></tr>
+          <tr><td>総供給量</td><td>上限2100万</td><td>ポリシーによって拡張可能</td></tr>
+          <tr><td>営業時間</td><td>祝日を含め24時間365日</td><td>営業時間＋決済遅延</td></tr>
+          <tr><td>国境を越えた送金</td><td>どこでも同じプロセス</td><td>コルレス銀行、数日、手数料</td></tr>
+          <tr><td>可逆性</td><td>取引は最終的</td><td>チャージバックの可能性</td></tr>
+          <tr><td>アカウント凍結のリスク</td><td>自分の鍵を持っていればなし</td><td>銀行や裁判所が凍結できる</td></tr>
+          <tr><td>価格の安定性</td><td>非常に変動が激しい</td><td>自国通貨で安定</td></tr>
+        </tbody>
+      </table></div>
+      <p>その表はまた、正直なトレードオフでもあります。ビットコインは検閲抵抗性、ボーダーレス性、予測可能な供給に勝ち、価格の安定性と消費者保護に大きな損失を被ります。 銀行振込は、詐欺されたときに元に戻すことができます。ビットコインの振込はできません。 銀行口座は、家主が受け入れる通貨で表示されます。ビットコインの価格は1週間で急激に変動する可能性があります。 その台帳のどちらの側も、ビットコインを単独で購入または回避する理由ではありません。もしあれば、それはあなたの財務にどれだけ含まれるかを決定するためのコンテキストです。</p>
+      <h2>人々がビットコインをどのように購入するか</h2>
+      <p>標準的な初心者パスは、取引所を介して実行されます。登録、身元確認、法定通貨でUSDTを購入し、USDTを使用して現物ペアでBTCを購入します。当社の<a href="how-to-buy-bitcoin.html">ビットコインウォークスルー</a>はその流れを段階的にカバーしており、<a href="how-to-buy-crypto-for-beginners.html">初心者向け購入ガイド</a>は暗号通貨全般についても同じことをカバーしています。購入後、ストレージを選択します。金額が小さく、学習している間は取引所に保管しておくか、金額が重要になったら、自分の財布に移動します(秘密鍵は自分だけが保管しています)。当社の<a href="wallet-safety.html">ウォレット安全ガイド</a>は、シードフレーズ、セルフカストディウォレットをバックアップする12または24の単語、およびそれらが要求する規律を説明します。</p>
+      <p>初日にすべきではないこと：レバレッジで購入する、オンラインで誰かが返品を約束したためにコインを追いかける、または何らかの理由(「プレゼント」、「サポート」、「投資倍増」など)で見知らぬ人があなたに与えたアドレスにビットコインを送る。 ビットコインの最終性は、正直な送金のための機能であり、詐欺師のための武器です。防御は退屈で絶対的です。アドレスを自分で確認し、キーやコードを共有しないでください。そうでないことが証明されるまで、すべての迷惑なオファーは罠であると仮定します。</p>
+      <h2>ビットコインの支払いの決済方法</h2>
+      <p>ビットコインを送ると、ウォレットは署名済みの取引をネットワークへ放送し、それはメモリプールと呼ばれる待機エリアで待つ。マイナーはメモリプールから取引を選ぶ——スペースが厳しいときは、たいてい手数料の高いものを優先する——そして勝利したマイナーが、およそ10分後の次のブロックにあなたの取引を含める。最初のブロックが最初の承認だ。ほとんどの受け取り手は、数回の承認の後に支払いが確定したとみなす。各ブロックが上に追加されるごとに、取引を覆すことは指数関数的に難しくなるからだ。日常の少額であれば、通常1回の承認で十分だ。大きな金額では、6回待つことが一般的な慣習だ。これには、受け取り手や仲介者を信頼することは何も必要ない——ネットワークの共有ルールが検証を行い、ウォレットは承認数が増えるにつれてそれを表示する。</p>
+      <p>その仕組みのレッスンから、2つの実用的な習慣が続く。第1に、手数料はメニューではなく市場だ。メモリプールが混雑すると手数料は上がり、ウォレットの提案する手数料を支払うことが、初心者にはたいてい正しい。第2に、未承認の取引を確定したお金として決して扱わないこと。売り手が承認前に商品を解放し、その取引が後に失敗したり置き換えられたりすれば、訴える相手はいない。忍耐はプロトコルの一部だ。ブロックまで10分、確信まで数ブロック。そのどちらも飛ばす近道はない。</p>
+      <h2>はっきりと述べたリスク</h2>
+      <p><strong>ボラティリティ。</strong>ビットコインの価格はピークから繰り返し半分以上下落し、回復に数か月または数年かかりました。パニックセールスをせずにホールディングが急激に低下するのを見ることができない人は、それに応じてサイズを決めるか、外に出るべきです。</p>
+      <p><strong>不可逆性。</strong>間違ったアドレスや詐欺師のアドレスは、コインがなくなることを意味する。サポートデスクも、チャージバックも、ユーザーエラーに対する保険基金もない。</p>
+      <p><strong>セルフカストディの責任。</strong>自分のキーを保持することは、交換リスクを取り除き、それを個人的な責任に置き換えます。シードフレーズをオフラインでバックアップし、写真を撮ったり、ウェブサイトに入力したりしないでください。</p>
+      <p><strong>規制はさまざまだ。</strong>ルールは国によって異なり、時間とともに変わる——税務上の扱い、取引所の対応状況、さらには合法性も。買う前に現地のルールを確認し、納税時期のためにすべての取引の記録を残すこと。</p>
+      <p><strong>詐欺はビットコインの名前の周りに集まる。</strong>偽の取引所、偽のサポートアカウント、偽のプレゼント、そして被害者に2度料金を請求する「回復サービス」はすべて、ビットコインの名声を餌として使う。当社の<a href="avoid-scams.html">詐欺ガイド</a>には、初心者が実際に遭遇する8つの詐欺が載っている。</p>
+      <h2>消えない神話</h2>
+      <ul>
+        <li><strong>「ビットコインは匿名だ。」</strong>実際には仮名性だ。アドレスは名前ではないが、すべての取引は永遠に公開され、取引所はアドレスと身元を結び付ける。見えないものとしてではなく、追跡可能なものとして扱うこと。</li>
+        <li><strong>「ビットコインは犯罪のためだけのものだ。」</strong>違法な使用は、現金と同様に存在するが、取引量の圧倒的大多数は、規制された場での取引、保有、正規の送金だ。</li>
+        <li><strong>「ビットコインは破綻しうる企業だ。」</strong>企業は存在しない。ネットワークは独立した参加者が運営するソフトウェアであり、人々がそれを運営し続ける限り続く。</li>
+        <li><strong>「買うには遅すぎる。」</strong>それは事実に偽装した価格意見だ。ビットコインがあなたの財政に合うかどうかは、何年であるかではなく、あなたの目標とリスク許容度による。</li>
+        <li><strong>「ビットコインは何も裏付けられていません。」</strong>現代のすべての法定通貨もそうです。ビットコインは、ネットワークセキュリティ、固定供給スケジュール、そして人々がビットコインを受け入れる意欲によって支えられています。これは、発行者を差し引いた同じ種類のソーシャルバッキングです。</li>
+      </ul>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+<b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">初心者向けアプリ、深い流動性</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitに登録する</a></div></div>
+<p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+</div>
+      
+      <h3>誰がビットコインを管理していますか？</h3>
+      <p>ビットコインを管理している個人、企業、政府は存在しない。ルールは、数千の独立した参加者が運営するオープンソースソフトウェアの中にあり、ルールを変更するには、マイナー、ノード運営者、ユーザー全体の幅広い合意が必要だ。</p>
+      <h3>ビットコインはコピーや複製ができるか？</h3>
+      <p>誰でもソフトウェアをコピーできるが、コピーにはビットコインのネットワークも、台帳の履歴も、保有者も引き継がれない。価値は、コード単体ではなく、実際に誰もが使うライブのネットワークから生まれる。</p>
+      <h3>これまでにいくつのビットコインが存在しますか？</h3>
+      <p>2100万枚であり、コードで強制される。新しいコインはマイニング報酬を通じてのみ入り、その報酬はおよそ4年ごとに半減するため、発行は誰でも検証できるスケジュールで減速する。</p>
+      <h3>ビットコインを1枚まるごと買う必要があるか？</h3>
+      <p>いいえ。ビットコインは1コインあたり1億サトシに分割されるため、正確に$10分を買うことができる。ほとんどの初心者は、1枚まるごとではなく、1枚の一部を保有している。</p>
+      <h3>ビットコインは匿名ですか？</h3>
+      <p>いいえ。匿名です。 トランザクションはブロックチェーン上で永久に公開され、規制された取引所はアドレスを実際のIDにリンクします。 あなたのオンチェーンアクティビティが追跡可能であると仮定します。</p>
+      <h3>2100万枚すべてが採掘されたらどうなるか？</h3>
+      <p>マイニング報酬は終わり、マイナーは取引手数料からのみ支払われるようになる。その移行は数十年先のことであり、すでに設計の一部だ。ネットワークが停止することはない。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">ビットコインの購入方法：完全なウォークスルー</a></li>
+        <li><a href="what-is-cryptocurrency.html">暗号通貨とは何ですか？</a></li>
+        <li><a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a></li>
+        <li><a href="bitcoin-vs-ethereum.html">ビットコイン vs イーサリアム</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
