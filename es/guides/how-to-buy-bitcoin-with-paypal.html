@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Cómo comprar Bitcoin con PayPal: 3 formas — TokVS</title>
+<meta name="description" content="Compra bitcoin con PayPal: la propia función de criptomonedas de PayPal, comerciantes P2P, o brókers con depósito PayPal. Rutas reales, costes reales, advertencias regionales.">
+<link rel="canonical" href="https://tokvs.com/es/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-bitcoin-with-paypal">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-bitcoin-with-paypal">
+<meta property="og:title" content="Compra Bitcoin con PayPal: 3 formas reales — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Las tres rutas funcionales de PayPal a bitcoin, lo que cuesta cada una, y las trampas.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/how-to-buy-bitcoin-with-paypal">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"Compra Bitcoin con PayPal","item":"https://tokvs.com/es/guides/how-to-buy-bitcoin-with-paypal"}]},{"@type":"Article","headline":"Cómo comprar Bitcoin con PayPal: 3 formas","description":"Compra bitcoin con PayPal: la propia función de criptomonedas de PayPal, comerciantes P2P, o brókers con depósito PayPal. Rutas reales, costes reales, advertencias regionales.","datePublished":"2026-10-16","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/how-to-buy-bitcoin-with-paypal","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Puedo comprar Ethereum o USDT con PayPal de la misma forma?","acceptedAnswer":{"@type":"Answer","text":"Sí: las mismas tres vías aplican a ETH, USDT y otras monedas admitidas. El orden de costes y las advertencias son idénticos; solo cambia el activo."}},{"@type":"Question","name":"¿Por qué mi PayPal no muestra una sección de criptomonedas?","acceptedAnswer":{"@type":"Answer","text":"La función de criptomonedas de PayPal está bloqueada por región (EE. UU. más otras seleccionadas). Si falta, tu región no la tiene: usa la vía 2 o 3, o financia con tarjeta en su lugar."}},{"@type":"Question","name":"¿Es más barato simplemente retirar PayPal a mi banco primero?","acceptedAnswer":{"@type":"Answer","text":"Casi siempre sí. PayPal-a-banco normalmente es gratis o barato; luego compra criptomonedas mediante transferencia bancaria o tarjeta a tasas normales. El salto extra ahorra dinero real frente a las rutas directas de criptomonedas de PayPal."}},{"@type":"Question","name":"¿Puedo usar PayPal Credit para comprar bitcoin?","acceptedAnswer":{"@type":"Answer","text":"Técnicamente a veces, prácticamente una idea terrible: comisiones estilo adelanto de efectivo más volatilidad de criptomonedas es como la gente fabrica deuda. Si estás pidiendo prestado para comprar bitcoin, detente y reconsidera todo el plan."}},{"@type":"Question","name":"¿PayPal reporta compras de criptomonedas a autoridades fiscales?","acceptedAnswer":{"@type":"Answer","text":"PayPal emite documentos fiscales donde la ley lo requiere (los umbrales varían según la jurisdicción), y las blockchains son públicas de todos modos. Asume que todo es visible; guarda registros desde el día uno."}},{"@type":"Question","name":"¿Puedo vender bitcoin de vuelta a PayPal?","acceptedAnswer":{"@type":"Answer","text":"Mediante la propia función de PayPal puedes vender de vuelta a tu saldo de PayPal donde esté disponible. Mediante P2P, venderías BTC por fiat a un comerciante que paga vía PayPal. Las mismas vías, invertidas."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Compra Bitcoin con PayPal</div>
+      <h1>Cómo comprar Bitcoin con PayPal</h1>
+      <p class="sub">PayPal no es una rampa de entrada universal a bitcoin, pero existen tres vías reales. Aquí está cada una, lo que cuesta, y cuál se ajusta a tu situación.</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 8 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Primero, lo honesto por adelantado</h2>
+      <p>PayPal no es una rampa de entrada universal a bitcoin. Si puedes usarlo en absoluto depende de <strong>dónde vives y qué vía tomas</strong> — y cada vía cuesta más que una simple transferencia bancaria. Si específicamente quieres gastar un saldo de PayPal en bitcoin, aquí están las tres rutas reales, en orden de practicidad. Comprueba la disponibilidad en tu región antes de contar con ninguna de ellas.</p>
+      <h2>Vía 1: La propia función de criptomonedas de PayPal (la más simple, donde está disponible)</h2>
+      <p>PayPal mismo ofrece compra de criptomonedas en <strong>EE. UU. y otras regiones seleccionadas</strong> — abre la app de PayPal, busca la sección de criptomonedas, y puedes comprar bitcoin directamente con tu saldo o financiación vinculada. Pros: cero cuentas nuevas, interfaz familiar. Contras: <strong>no puedes retirar el bitcoin a tu propia billetera</strong> en la mayoría de las implementaciones (se queda dentro de PayPal), el diferencial es más amplio que las tasas de exchange, y la disponibilidad está bloqueada por región. Bien para «quiero $50 de exposición a BTC en una app que ya uso». No bien para «quiero bitcoin real que controlo».</p>
+      <h2>Vía 2: Comerciantes P2P que aceptan PayPal</h2>
+      <p>En mercados P2P (como Binance P2P), algunos comerciantes listan <strong>PayPal</strong> como método de pago aceptado. El flujo es P2P estándar: elige un comerciante, paga vía PayPal, liberan criptomonedas desde la garantía. Dos advertencias específicas de esta vía: 1. la <strong>protección de compra de PayPal normalmente excluye monedas digitales</strong> — consulta la política de PayPal; no cuentes con contracargos. 2. Los pagos de PayPal son reversibles de formas que las transferencias bancarias no son, así que los comerciantes reputados incluyen ese riesgo en sus cotizaciones: espera tasas peores que el P2P con transferencia bancaria. Filtra por método de pago en la app para ver si algún comerciante cerca de ti lo acepta.</p>
+      <p class="in-cta">El P2P es la ruta PayPal más barata: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></p>
+      <h2>Vía 3: Exchanges y brókers que aceptan depósitos PayPal</h2>
+      <p>Un puñado de exchanges y brókers de criptomonedas aceptan PayPal como <strong>método de depósito</strong> — financias la cuenta con PayPal, luego compras bitcoin en su mercado spot. La disponibilidad varía mucho según la región, y las comisiones de depósito para PayPal son normalmente más altas que las de tarjetas o transferencias bancarias. Si tomas esta ruta: confirma que los depósitos PayPal están admitidos <em>en tu país</em> en el sitio oficial primero, y compara el coste total contra la vía 2 antes de comprometerte.</p>
+      <h2>Lo que cuesta (no te saltes esto)</h2>
+      <p>Cada vía PayPal conlleva una prima: el propio diferencial de PayPal en su función de criptomonedas, el recargo de riesgo del comerciante en P2P, o las comisiones de depósito en brókers. Como regla general, espera pagar <strong>notablemente más que una compra con transferencia bancaria</strong> — a veces varios puntos porcentuales. Si el objetivo es minimizar el coste en lugar de gastar un saldo de PayPal específicamente, una tarjeta de débito o transferencia bancaria gana cada vez. Comprueba siempre la cotización final antes de confirmar; nunca asumas.</p>
+      <div class="callout warn"><b>Trampas específicas de PayPal:</b> 1. DMs de «Envía PayPal, te envío BTC»: sin garantía, sin trato, jamás. 2. Pagos de Amigos y Familiares por criptomonedas: cero protección por diseño. 3. Cualquiera que pida tu inicio de sesión de PayPal «para ayudarte a comprar» está haciendo phishing.</div>
+      <h2>¿Qué vía deberías elegir?</h2>
+      <ul>
+        <li><strong>Cantidad pequeña, EE. UU., solo quieres exposición</strong> → Vía 1 (la propia función de PayPal). Dos minutos, listo.</li>
+        <li><strong>Quieres bitcoin real que controlas</strong> → Vía 2 (P2P con comerciante que acepta PayPal), luego retira a tu billetera.</li>
+        <li><strong>Fuera de regiones de criptomonedas de PayPal</strong> → Vía 2 o 3 si están disponibles; si no, financia con tarjeta y omite PayPal por completo.</li>
+      </ul>
+      <h2>Comparación de costes: PayPal vs. las alternativas</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Ruta</th><th>Prima típica sobre el mercado</th><th>Lo que recibes</th></tr></thead>
+        <tbody>
+          <tr><td>La propia función de criptomonedas de PayPal</td><td>Diferencial más alto (comprueba en la app)</td><td>Exposición a BTC dentro de PayPal</td></tr>
+          <tr><td>P2P con comerciante PayPal</td><td>Recargo de riesgo del comerciante</td><td>BTC real, retirable</td></tr>
+          <tr><td>Bróker con depósito PayPal</td><td>Comisión de depósito + diferencial</td><td>BTC real en el bróker</td></tr>
+          <tr><td>Tarjeta de débito (de referencia)</td><td>Comisión de procesamiento de tarjeta</td><td>BTC real en el exchange</td></tr>
+          <tr><td>Transferencia bancaria (de referencia)</td><td>La más baja</td><td>BTC real en el exchange</td></tr>
+        </tbody>
+      </table></div>
+      <p>Las cifras exactas se mueven con la región y el proveedor: el mensaje honesto de la tabla es el <em>orden</em>, no los dígitos: las rutas PayPal cuestan más que la tarjeta, que cuesta más que la transferencia bancaria. Paga por conveniencia sabiéndolo.</p>
+      <h2>Recorrido: Vía 1 (la propia función de PayPal)</h2>
+      <ol>
+        <li>Abre la app de PayPal → encuentra la sección de criptomonedas (EE. UU. y regiones seleccionadas; si no la ves, tu región no la tiene).</li>
+        <li>Selecciona Bitcoin, introduce el importe. <strong>Lee la pantalla de cotización completa</strong> — PayPal muestra el diferencial/comisiones antes de confirmar.</li>
+        <li>Confirma con tu saldo o financiación vinculada. El BTC aparece en tu saldo de criptomonedas de PayPal.</li>
+        <li>Entiende los límites: en la mayoría de las implementaciones no puedes retirar a una billetera externa. Esto es exposición, no propiedad.</li>
+      </ol>
+      <h2>Recorrido: Vía 2 (P2P con un comerciante PayPal)</h2>
+      <ol>
+        <li>En Binance P2P (o equivalente), filtra Comprar → BTC → tu fiat → método de pago <strong>PayPal</strong>.</li>
+        <li>Investiga al comerciante a fondo: alto conteo de pedidos completados, 95%+ de finalización, cuenta antigua. Los comerciantes que aceptan PayPal son menos, así que no bajes tus estándares.</li>
+        <li>Haz el pedido: el BTC se bloquea en garantía. Paga el importe exacto vía PayPal a la cuenta del comerciante. Referencia: solo el número de pedido.</li>
+        <li>Toca pagado, espera la liberación, verifica el BTC en tu billetera antes de cerrar. Luego retira a tu propia billetera si quieres custodia real.</li>
+      </ol>
+      <div class="callout warn"><b>Por qué la vía 2 exige cuidado extra:</b> Los pagos de PayPal pueden revertirse; las transferencias bancarias mayormente no. Cada comerciante honesto incluye ese riesgo en el precio: si una cotización P2P de PayPal parece <em>más barata</em> que las cotizaciones con transferencia bancaria, algo está mal. Aléjate.</div>
+      <h2>Nota fiscal (no te la saltes)</h2>
+      <p>Comprar criptomonedas es un hecho imponible en muchos países en el momento en que luego vendes o intercambias, y en algunos, la propia compra tiene implicaciones de declaración. EE. UU. trata las criptomonedas como propiedad (ganancias de capital en la venta); la UE varía según el estado miembro bajo marcos en evolución como MiCA. Esto no es asesoría fiscal: guarda registros de cada transacción (fecha, importe, precio) desde el día uno, y consulta tus reglas locales antes de operar con tamaño.</p>
+      <h2>PayPal vs. Cash App vs. Venmo: la foto de familia</h2>
+      <p>PayPal no es la única app de pagos con criptomonedas: <strong>Cash App</strong> (Block) permite a usuarios de EE. UU. comprar bitcoin con fricción famosamente baja, y <strong>Venmo</strong> (propiedad de PayPal) ofrece compra de criptomonedas donde está disponible. La misma familia de compensaciones en todas partes: conveniente, bloqueado por región, diferenciales más amplios que los exchanges, y normalmente sin retiro externo. Si ya vives en una de estas apps y quieres pequeña exposición, están bien. Si quieres bitcoin real a precios reales, todas son intermediarios caros: elige la vía más barata, no el logo más familiar.</p>
+      <h2>El coste real, ejemplo trabajado</h2>
+      <p>Digamos que quieres $500 de BTC. <strong>Transferencia bancaria al exchange:</strong> ~$0.50 en comisiones (0.10%), recibes ~$499.50 de BTC a mercado. <strong>Ruta P2P de PayPal:</strong> prima del comerciante de, digamos, 2–4% → $480–490 de BTC. <strong>La propia función de PayPal:</strong> diferencial más comisiones, rango similar o peor. El impuesto de conveniencia de PayPal sobre $500 es aproximadamente <strong>$10–20</strong> — vale la pena si la alternativa es no comprar en absoluto, tonto si una transferencia bancaria estaba justo ahí.</p>
+      <h2>Después de comprar: llévalo a un lugar real</h2>
+      <p>Cualquiera que sea la vía que tomaste, el final es el mismo: bitcoin que realmente controlas. Desde P2P o un bróker, retira a tu propia billetera (primero una pequeña prueba, verificación completa de dirección, red correcta: la lista eterna). Desde la propia función de PayPal, entiende que tienes exposición, no monedas, y planifica tu <em>real</em> primera compra (transferencia bancaria, orden limit, autocustodia) como seguimiento. Nuestra <a href="how-to-buy-bitcoin.html">recorrido completo de bitcoin</a> lo cubre adecuadamente.</p>
+      <h2>Errores comunes de criptomonedas con PayPal</h2>
+      <ol>
+        <li><strong>Asumir que el saldo de PayPal = listo para criptomonedas en todas partes.</strong> La función de criptomonedas está bloqueada por región; comprueba antes de planificar en torno a ella.</li>
+        <li><strong>Enviar «Amigos y Familiares» para una operación P2P.</strong> Cero protección por diseño, y viola los términos de PayPal para transacciones comerciales. Usa Bienes y Servicios, o mejor, P2P con garantía.</li>
+        <li><strong>Ignorar el diferencial.</strong> La pantalla de cotización <em>es</em> la divulgación de comisiones. Léela; la diferencia entre vías a menudo es 2–4%.</li>
+        <li><strong>Dejar monedas en el bróker para siempre.</strong> El BTC comprado en P2P/bróker debería moverse a tu propia billetera una vez que el importe importe. La exposición en una app es el paso uno, no el destino.</li>
+      </ol>
+      <h2>Cuándo PayPal es realmente la elección correcta</h2>
+      <p>Tres casos honestos: 1. tu dinero gastable <em>vive</em> en PayPal (los freelancers pagados en PayPal conocen esta vida) y moverlo a un banco primero cuesta tiempo o comisiones; 2. quieres una pequeña, rápida y familiar primera exposición sin cuentas nuevas; 3. los rieles bancarios de tu región hacia exchanges no son fiables. En los tres, estás pagando conscientemente una prima de conveniencia, lo que está bien, siempre que sea una decisión y no un accidente.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>¿Listo?</b> Registrarte tarda unos 10 minutos: verifícate una vez, activa la 2FA y luego sigue los pasos anteriores. Las guías de este sitio te acompañan en el resto.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Línea de productos completa, buen soporte de idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+        </div>
+        <p class="note">Las mismas comisiones que registrarte directamente: nuestro enlace no te cuesta nada extra.</p>
+      </div>
+      
+      <h3>¿Puedo comprar Ethereum o USDT con PayPal de la misma forma?</h3>
+      <p>Sí: las mismas tres vías aplican a ETH, USDT y otras monedas admitidas. El orden de costes y las advertencias son idénticos; solo cambia el activo.</p>
+      <h3>¿Por qué mi PayPal no muestra una sección de criptomonedas?</h3>
+      <p>La función de criptomonedas de PayPal está bloqueada por región (EE. UU. más otras seleccionadas). Si falta, tu región no la tiene: usa la vía 2 o 3, o financia con tarjeta en su lugar.</p>
+      <h3>¿Es más barato simplemente retirar PayPal a mi banco primero?</h3>
+      <p>Casi siempre sí. PayPal-a-banco normalmente es gratis o barato; luego compra criptomonedas mediante transferencia bancaria o tarjeta a tasas normales. El salto extra ahorra dinero real frente a las rutas directas de criptomonedas de PayPal.</p>
+      
+      <h3>¿Puedo usar PayPal Credit para comprar bitcoin?</h3>
+      <p>Técnicamente a veces, prácticamente una idea terrible: comisiones estilo adelanto de efectivo más volatilidad de criptomonedas es como la gente fabrica deuda. Si estás pidiendo prestado para comprar bitcoin, detente y reconsidera todo el plan.</p>
+      <h3>¿PayPal reporta compras de criptomonedas a autoridades fiscales?</h3>
+      <p>PayPal emite documentos fiscales donde la ley lo requiere (los umbrales varían según la jurisdicción), y las blockchains son públicas de todos modos. Asume que todo es visible; guarda registros desde el día uno.</p>
+      
+      <h3>¿Puedo vender bitcoin de vuelta a PayPal?</h3>
+      <p>Mediante la propia función de PayPal puedes vender de vuelta a tu saldo de PayPal donde esté disponible. Mediante P2P, venderías BTC por fiat a un comerciante que paga vía PayPal. Las mismas vías, invertidas.</p>
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">Cómo comprar bitcoin: guía completa</a></li>
+        <li><a href="buy-usdt.html">Cómo comprar USDT: todos los métodos</a></li>
+        <li><a href="avoid-scams.html">¿Las criptomonedas son una estafa? 8 fraudes que hay que conocer</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>¿Aún no tienes cuenta? Regístrate en 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate</a><button class="sx" aria-label="Cerrar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

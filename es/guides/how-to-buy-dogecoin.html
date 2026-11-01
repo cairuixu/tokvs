@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Cómo comprar Dogecoin (DOGE): un recorrido para principiantes — TokVS</title>
+<meta name="description" content="Cómo comprar Dogecoin: elige un exchange, verifica, compra USDT, intercambia DOGE/USDT, y guárdalo de forma segura, con una advertencia honesta de volatilidad de meme-coin.">
+<link rel="canonical" href="https://tokvs.com/es/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-dogecoin">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-dogecoin">
+<meta property="og:title" content="Cómo comprar Dogecoin (DOGE): un recorrido para principiantes — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Compra DOGE paso a paso, con comisiones, notas de almacenamiento, y una advertencia de riesgo de meme-coin.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/how-to-buy-dogecoin">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"Cómo comprar Dogecoin","item":"https://tokvs.com/es/guides/how-to-buy-dogecoin"}]},{"@type":"Article","headline":"Cómo comprar Dogecoin (DOGE): un recorrido para principiantes","description":"Elige un exchange, verifica, compra USDT, intercambia DOGE/USDT, y guarda DOGE de forma segura, además de la advertencia honesta de riesgo de meme-coin para principiantes.","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/how-to-buy-dogecoin","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Dogecoin es una buena inversión?","acceptedAnswer":{"@type":"Answer","text":"Este sitio no da asesoría de inversión, y DOGE merece cautela extra: es una meme coin con alta volatilidad y sin respaldo fundamental como ganancias o una oferta limitada. Compra solo dinero que puedas permitirte perder por completo."}},{"@type":"Question","name":"¿Cuál es la cantidad mínima de DOGE que puedo comprar?","acceptedAnswer":{"@type":"Answer","text":"Los exchanges fijan mínimos pequeños, normalmente unos pocos dólares. Empieza con una cantidad de aprendizaje, confirma que todo el flujo funciona, y solo entonces decide si comprar más."}},{"@type":"Question","name":"¿Puedo comprar Dogecoin con tarjeta de crédito o débito?","acceptedAnswer":{"@type":"Answer","text":"Sí, en exchanges que ofrecen compra directa con tarjeta: es más rápido pero normalmente más caro que comprar USDT primero, y algunos bancos rechazan compras de criptomonedas. La ruta USDT es el respaldo más barato."}},{"@type":"Question","name":"¿Dónde debería guardar mi DOGE?","acceptedAnswer":{"@type":"Answer","text":"Pequeñas cantidades pueden quedarse en el exchange mientras aprendes. Para tenencias mayores, usa una billetera compatible con DOGE como Trust Wallet o una billetera hardware. MetaMask no admite Dogecoin de forma nativa."}},{"@type":"Question","name":"¿Dogecoin está muerto?","acceptedAnswer":{"@type":"Answer","text":"No: DOGE ha operado continuamente durante más de una década y sigue siendo una de las meme coins más operadas. Eso no dice nada sobre su precio futuro, que siempre ha estado impulsado por ciclos de atención."}},{"@type":"Question","name":"¿Cuál es la diferencia entre DOGE y SHIB?","acceptedAnswer":{"@type":"Answer","text":"Ambas son meme coins, pero son proyectos distintos en cadenas distintas con ofertas y comunidades distintas. DOGE funciona en su propia blockchain; SHIB es un token basado en Ethereum. Ninguna tiene respaldo fundamental: la misma advertencia de riesgo aplica a ambas."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Cómo comprar Dogecoin</div>
+      <h1>Cómo comprar Dogecoin</h1>
+      <p class="sub">Exchange, verificación, USDT, intercambio DOGE/USDT, y almacenamiento, además de la advertencia honesta de riesgo de meme-coin que deberías leer antes de comprar.</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 9 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Línea de productos completa, buen soporte de idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">Spot y futuros con una app limpia</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Crea una cuenta en Bybit</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Qué es Dogecoin, en un párrafo</h2>
+      <p>Dogecoin (DOGE) se lanzó en 2013 como broma: un meme de Shiba Inu estampado en una criptomoneda real y funcional bifurcada del código de Litecoin. La broma sobrevivió al chiste: DOGE ha operado continuamente durante más de una década, construyó una de las comunidades más grandes de criptomonedas, y es aceptada por un conjunto disperso de comerciantes y plataformas de propinas. También es, estructuralmente, una meme coin: nuevo DOGE se emite cada año sin límite de oferta, y su precio siempre ha estado impulsado mucho más por atención y sentimiento que por cualquier flujo de caja, ingreso de producto o hoja de ruta técnica.</p>
+      <div class="callout warn"><b>Advertencia honesta de riesgo: lee esto primero:</b> DOGE es una meme coin: extremadamente volátil, sin respaldo fundamental como ganancias, dividendos o una oferta limitada. Su precio puede caer bruscamente y quedarse abajo durante años, y los ciclos de atención pasados no son promesa de futuros. Compra solo un importe que puedas permitirte perder por completo, y no trates el entusiasmo de redes sociales como investigación.</div>
+      <h2>Paso 1: elige un exchange que liste DOGE</h2>
+      <p>DOGE está listado en todos los exchanges importantes, así que la disponibilidad no es el problema: elegir bien lo es. Para una primera compra, usa un exchange grande y líquido con un par spot DOGE/USDT: libros de órdenes profundos significan que tu compra se llena cerca del precio cotizado en lugar de deslizarse. Binance, OKX y Bybit listan DOGE/USDT con liquidez profunda. Regístrate en uno, y omite cualquier plataforma pequeña que anuncie «exclusivas» de DOGE: los venues importantes ya lo tienen, más barato y más seguro.</p>
+      <p class="in-cta">Prepara primero tu cuenta: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a> <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Crea una cuenta en Bybit</a></p>
+      <h2>Paso 2: regístrate y verifica</h2>
+      <ol>
+        <li>Regístrate con un correo o número de teléfono y una contraseña fuerte y única.</li>
+        <li>Completa la verificación de identidad: selecciona tu país, proporciona un documento de identidad gubernamental, y pasa la comprobación facial en vivo. La aprobación normalmente toma minutos a unas pocas horas.</li>
+        <li>Antes de depositar nada, activa la autenticación de dos factores con una app de autenticador (no SMS) y establece un código antiphishing. Estos dos ajustes bloquean las vías más comunes de toma de cuenta.</li>
+      </ol>
+      <p>Si la verificación se atasca, la causa usual es una foto borrosa del documento: vuélvela a tomar con buena luz con las cuatro esquinas visibles. No pagues a nadie para «acelerar»</p>
+      <h2>Paso 3: compra USDT primero</h2>
+      <p>La mayoría de los principiantes compran DOGE con USDT en lugar de fiat directamente, porque DOGE/USDT es el par más profundo y barato. Financia tu cuenta de la forma que se ajuste a tu país — tarjeta, transferencia bancaria o P2P — y compra USDT primero. Si nunca has hecho esto, nuestro <a href="buy-usdt.html">recorrido USDT</a> cubre cada método paso a paso, incluyendo comprobaciones de comerciantes P2P.</p>
+      <p>Empieza pequeño. Tu primera compra de USDT debería ser una cantidad de aprendizaje: suficiente para practicar todo el flujo, suficientemente pequeña para que un error escueza en lugar de doler. La propia compra de DOGE toma segundos una vez que USDT está en tu billetera Spot.</p>
+      <h2>Paso 4: intercambia USDT por DOGE en spot</h2>
+      <ol>
+        <li>Abre el par spot DOGE/USDT. Comprueba el precio y el gráfico reciente, y recuérdate la advertencia de riesgo arriba antes de proceder.</li>
+        <li>Elige una orden de mercado para comprar inmediatamente al precio actual, o una orden limit para comprar solo a tu precio elegido o menor. Mercado es más simple; limit te protege durante un pico.</li>
+        <li>Introduce el importe USDT, revisa el DOGE estimado que recibirás y la comisión, luego confirma.</li>
+        <li>Verifica el saldo DOGE en tu billetera Spot. Hecho: posees DOGE.</li>
+      </ol>
+      <p>Lo que cuesta: una compra spot paga la comisión taker en una orden de mercado (o maker en una orden limit en reposo). Tasas spot estándar:</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Exchange</th><th>Maker / taker spot</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10% / 0.10%</td><td>Liquidez más profunda para la mayoría de los pares</td></tr>
+          <tr><td>OKX</td><td>0.08% / 0.10%</td><td>Línea de productos completa</td></tr>
+          <tr><td>Bybit</td><td>0.10% / 0.10%</td><td>Spot y futuros en una app</td></tr>
+          <tr><td>Bitget</td><td>Consulta la página oficial de comisiones</td><td>Enlazado aquí a la <a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">página principal de Bitget</a> solo: sin reembolso vía TokVS</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Las cifras de comisiones abajo son las tasas spot maker/taker estándar que la mayoría de los principiantes ven. Los exchanges cambian tarifarios y ejecutan promociones, así que confirma siempre en la página oficial de comisiones del exchange antes de operar.</p>
+      <h2>Paso 5: dónde guardar tu DOGE</h2>
+      <p>Tres opciones. <strong>En el exchange</strong> está bien mientras el importe es pequeño y aún estás aprendiendo: conveniente, pero estás confiando en la plataforma. <strong>En tu propia billetera</strong> es la ruta de autocustodia: Trust Wallet admite Dogecoin de forma nativa, y billeteras hardware como Ledger y Trezor también lo admiten. Nota que MetaMask no <strong>no</strong> admite DOGE de forma nativa (está construido para cadenas EVM), así que no envíes DOGE a una dirección MetaMask. <strong>Dejarlo en el exchange a largo plazo</strong> es lo más arriesgado de las tres una vez que el importe crece: muévete a una billetera que controlas cuando la tenencia empiece a importar.</p>
+      <p>Elijas lo que elijas, la regla de retiro es la misma que en todas partes: copia la dirección de recepción desde la propia app de billetera, confirma que la red es la propia red de Dogecoin, y primero envía una cantidad diminuta de prueba. DOGE enviado a la dirección o red equivocada generalmente no es recuperable.</p>
+      <h2>¿Cuánto DOGE debería comprar un principiante?</h2>
+      <p>No hay un número correcto, pero hay una prueba correcta: si DOGE cayera 80% mañana y se quedara ahí, ¿cambiaría tu vida? Si la respuesta es sí, la posición es demasiado grande. Las meme coins premian el tamaño de posición más que el timing: una cantidad pequeña y fija que puedes olvidar supera una cantidad grande que revisas cada hora. Decide el número cuando estés tranquilo, no durante un pico de precio, y nunca pidas dinero prestado ni uses dinero del alquiler para comprar una meme coin. Quien te diga lo contrario no está dando consejos; está reclutando liquidez de salida.</p>
+      <h2>Errores comunes con DOGE</h2>
+      <ul>
+        <li><strong>Comprar en la cima de una ola de bombo.</strong> Los días verdes más grandes de DOGE suelen ir seguidos de sus peores semanas rojas. El FOMO es el vendedor más fiable en este mercado.</li>
+        <li><strong>Tokens DOGE falsos.</strong> Los estafadores lanzan tokens parecidos llamados Dogecoin en otras cadenas. El DOGE real opera como DOGE en exchanges importantes: si un token necesita una dirección de contrato pegada desde un grupo de chat, aléjate.</li>
+        <li><strong>Enviar DOGE a una dirección MetaMask.</strong> MetaMask no admite Dogecoin de forma nativa. Usa una billetera compatible con DOGE.</li>
+        <li><strong>Confiar en cuentas de «sorteos DOGE».</strong> Ninguna celebridad está duplicando tu DOGE. Los esquemas de enviar-para-recibir son robo, cada vez.</li>
+        <li><strong>Tratar el tamaño de la comunidad como seguridad.</strong> Una comunidad grande significa atención, no un precio mínimo. La atención se va más rápido de lo que llega.</li>
+      </ul>
+      <h2>DOGE vs. el resto de tu cartera</h2>
+      <p>Piensa en DOGE como el rincón especulativo de una cartera, no la base. La forma convencional para principiantes — si tienes criptomonedas en absoluto — es un núcleo de BTC/ETH comprado a largo plazo, con meme coins como un pequeño satélite que puedes permitirte perder. Esa forma no es una recomendación; es simplemente cómo la mayoría de las personas que sobreviven varios ciclos describen lo que desearían haber hecho desde el principio. Guarda registros de cada compra y venta de DOGE (fecha, importe, precio, comisiones) igual que harías con cualquier moneda: tu yo de temporada fiscal futura no le importa que empezara como broma.</p>
+      <h2>Comprar DOGE con tarjeta: qué esperar</h2>
+      <p>Algunos exchanges te permiten comprar DOGE directamente con tarjeta de débito o crédito, saltando el paso USDT. Es más rápido y simple, pero normalmente más caro que la ruta USDT, y algunos bancos rechazan compras de criptomonedas o las tratan como adelantos de efectivo con sus propias comisiones. Si tu tarjeta es rechazada, no martillees el botón de reintentar: cambia a la ruta USDT (transferencia bancaria o P2P) en su lugar. De cualquier manera, la moneda con la que terminas es idéntica; solo difieren el camino y el precio.</p>
+      <h2>La oferta de DOGE: por qué importa la emisión</h2>
+      <p>A diferencia de los 21 millones limitados de Bitcoin, Dogecoin no tiene oferta máxima: la red emite una cantidad fija de nuevo DOGE con cada bloque, añadiendo aproximadamente cinco mil millones de monedas al año. Esa emisión constante es por qué los tenedores de largo tiempo hablan de DOGE como una moneda de gasto y propinas en lugar de una reserva de valor escasa: la nueva oferta diluye constantemente a los tenedores existentes a menos que la demanda crezca más rápido que la emisión. No necesitas memorizar el calendario de emisión, pero deberías entender la dirección: la escasez no forma parte del diseño de DOGE, así que cualquier caso de inversión construido sobre «oferta limitada» está construido sobre una premisa falsa.</p>
+      <p>Esto también explica por qué el historial de precios de DOGE parece una serie de picos de atención separados por largas caídas. Cuando llega la atención, la demanda puede superar brevemente la emisión y el precio salta; cuando la atención se va, la emisión sigue llegando y el precio sangra. Si compras DOGE, estás apostando a que la atención regrese: sé honesto contigo mismo sobre eso, y dimensiona la apuesta en consecuencia.</p>
+      <h2>Consultar el precio sin que te jueguen</h2>
+      <p>DOGE vive en redes sociales más que cualquier otra moneda importante, y eso es un peligro. Las publicaciones de influencers, capturas editadas de tuits de celebridades, y cuentas de «alerta de ballenas» están diseñadas para hacerte comprar la salida de otro. Tres hábitos ayudan: consulta el precio en el propio exchange, no en una captura; ignora cualquier cuenta que prometa un precio objetivo con fecha límite; y trata el entusiasmo coordinado — docenas de cuentas publicando el mismo eslogan en una hora — como señal de venta para quien lo organizó, no señal de compra para ti. Los días más tranquilos suelen ser los días más baratos para comprar, y nadie publica sobre ellos.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>¿Listo?</b> Registrarte tarda unos 10 minutos: verifícate una vez, activa la 2FA y luego sigue los pasos anteriores. Las guías de este sitio te acompañan en el resto.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Línea de productos completa, buen soporte de idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">Spot y futuros con una app limpia</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Crea una cuenta en Bybit</a></div>
+        </div>
+        <p class="note">Las mismas comisiones que registrarte directamente: nuestro enlace no te cuesta nada extra.</p>
+      </div>
+
+      <h3>¿Dogecoin es una buena inversión?</h3>
+      <p>Este sitio no da asesoría de inversión, y DOGE merece cautela extra: es una meme coin con alta volatilidad y sin respaldo fundamental como ganancias o una oferta limitada. Compra solo dinero que puedas permitirte perder por completo.</p>
+      <h3>¿Cuál es la cantidad mínima de DOGE que puedo comprar?</h3>
+      <p>Los exchanges fijan mínimos pequeños, normalmente unos pocos dólares. Empieza con una cantidad de aprendizaje, confirma que todo el flujo funciona, y solo entonces decide si comprar más.</p>
+      <h3>¿Puedo comprar Dogecoin con tarjeta de crédito o débito?</h3>
+      <p>Sí, en exchanges que ofrecen compra directa con tarjeta: es más rápido pero normalmente más caro que comprar USDT primero, y algunos bancos rechazan compras de criptomonedas. La ruta USDT es el respaldo más barato.</p>
+      <h3>¿Dónde debería guardar mi DOGE?</h3>
+      <p>Pequeñas cantidades pueden quedarse en el exchange mientras aprendes. Para tenencias mayores, usa una billetera compatible con DOGE como Trust Wallet o una billetera hardware. MetaMask no admite Dogecoin de forma nativa.</p>
+      <h3>¿Dogecoin está muerto?</h3>
+      <p>No: DOGE ha operado continuamente durante más de una década y sigue siendo una de las meme coins más operadas. Eso no dice nada sobre su precio futuro, que siempre ha estado impulsado por ciclos de atención.</p>
+      <h3>¿Cuál es la diferencia entre DOGE y SHIB?</h3>
+      <p>Ambas son meme coins, pero son proyectos distintos en cadenas distintas con ofertas y comunidades distintas. DOGE funciona en su propia blockchain; SHIB es un token basado en Ethereum. Ninguna tiene respaldo fundamental: la misma advertencia de riesgo aplica a ambas.</p>
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">Cómo comprar bitcoin: guía completa</a></li>
+        <li><a href="buy-usdt.html">Cómo comprar USDT: todos los métodos comparados</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">La mejor billetera de criptomonedas para principiantes</a></li>
+        <li><a href="avoid-scams.html">¿Las criptomonedas son una estafa? 8 fraudes que hay que conocer</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>¿Aún no tienes cuenta? Regístrate en 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate</a><button class="sx" aria-label="Cerrar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

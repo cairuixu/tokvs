@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Comisiones de futuros de criptomonedas comparadas: 4 exchanges — TokVS</title>
+<meta name="description" content="Comisiones maker/taker de futuros en Binance, OKX, Bybit y Bitget comparadas lado a lado, además de tasas de financiación y hábitos que recortan lo que pagas.">
+<link rel="canonical" href="https://tokvs.com/es/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/crypto-futures-fees-comparison">
+<meta property="og:title" content="Comisiones de futuros: Binance vs OKX vs Bybit vs Bitget — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Comisiones maker/taker de futuros comparadas, tasas de financiación explicadas, y cinco hábitos que recortan tu factura de comisiones.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/crypto-futures-fees-comparison">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"Comisiones de futuros de criptomonedas comparadas","item":"https://tokvs.com/es/guides/crypto-futures-fees-comparison"}]},{"@type":"Article","headline":"Comisiones de futuros de criptomonedas comparadas: 4 exchanges","description":"Comisiones de futuros de criptomonedas comparadas: Binance, OKX, Bybit y Bitget comparadas lado a lado, además de tasas de financiación y hábitos que recortan lo que pagas.","datePublished":"2026-10-16","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/crypto-futures-fees-comparison","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Las comisiones de futuros difieren de las comisiones spot?","acceptedAnswer":{"@type":"Answer","text":"Sí: los futuros son más baratos en los cuatro exchanges mostrados aquí. Los futuros de nivel estándar rondan 0.02% maker / 0.05% taker, frente a aproximadamente 0.08–0.10% en spot. Los exchanges fijan precios agresivos a los futuros porque los volúmenes son mucho mayores."}},{"@type":"Question","name":"¿Qué exchange tiene las comisiones de futuros más bajas?","acceptedAnswer":{"@type":"Answer","text":"En comisiones maker, los cuatro empatan al 0.02%. En comisiones taker, Binance y OKX al 0.05% son los más bajos de los cuatro. Pero las tasas de financiación y los diferenciales pueden importar más que una brecha taker de 0.005–0.01%, así que no elijas solo por este número."}},{"@type":"Question","name":"¿Qué es una tasa de financiación?","acceptedAnswer":{"@type":"Answer","text":"Un pago periódico entre largos y cortos en contratos perpetuos, normalmente cada 8 horas, que mantiene el precio del contrato anclado al spot. No se paga al exchange. Mantener una posición durante varios intervalos de financiación puede costar más que la propia comisión de trading."}},{"@type":"Question","name":"¿Las órdenes de mercado siempre pagan comisiones taker?","acceptedAnswer":{"@type":"Answer","text":"Sí. Cualquier orden que se ejecute inmediatamente contra órdenes en reposo cuenta como orden taker. Solo las órdenes limit que se asientan en el libro de órdenes y se llenan después ganan la tasa maker."}},{"@type":"Question","name":"¿Pueden las comisiones realmente acabar con una pequeña cuenta de futuros?","acceptedAnswer":{"@type":"Answer","text":"Lentamente, sí. Un recorrido con apalancamiento 20x a tasas taker cuesta alrededor del 2% de tu margen solo en comisiones. Diez operaciones así borran aproximadamente el 20% antes de contar siquiera el movimiento de precio. Esta es la matemática que la mayoría de los principiantes nunca hace."}},{"@type":"Question","name":"¿Las comisiones cambian con el tiempo?","acceptedAnswer":{"@type":"Answer","text":"Sí: los exchanges ajustan los niveles de comisiones periódicamente. Trata cualquier artículo, incluido este, como una instantánea. La página oficial de comisiones del exchange es la fuente de verdad; consúltala antes de comprometer tamaño."}},{"@type":"Question","name":"¿Valen la pena los niveles VIP de comisiones?","acceptedAnswer":{"@type":"Answer","text":"No para principiantes. Los descuentos VIP requieren volumen mensual serio. El tipo de orden (limit vs mercado) y la frecuencia de trading ahorran mucho más para traders regulares que perseguir un nivel que no alcanzarás."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Comisiones de futuros de criptomonedas comparadas</div>
+      <h1>Comisiones de futuros de criptomonedas comparadas</h1>
+      <p class="sub">Maker y taker en los cuatro mayores venues de futuros, lado a lado, para que el apalancamiento deje de comerse tu cuenta en silencio.</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 7 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">Trading de futuros fluido, promociones frecuentes</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Regístrate en Bybit</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>La respuesta corta</h2>
+      <p>En comisiones maker, <strong>los cuatro exchanges empatan al 0.02%</strong>. En comisiones taker, Binance y OKX lideran al 0.05%, Bybit cobra 0.055% y Bitget 0.06%. La brecha por operación parece diminuta, y lo es. Pero los traders de futuros hacen docenas de recorridos, y el apalancamiento multiplica cada comisión por tu múltiplo de apalancamiento. Por eso existe esta página: el tarifario importa más en futuros que en ningún otro lugar de las criptomonedas.</p>
+      <h2>La tabla de comisiones (nivel estándar)</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Exchange</th><th>Comisión maker de futuros</th><th>Comisión taker de futuros</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.02%</td><td>0.05%</td></tr>
+          <tr><td>OKX</td><td>0.02%</td><td>0.05%</td></tr>
+          <tr><td>Bybit</td><td>0.02%</td><td>0.055%</td></tr>
+          <tr><td>Bitget</td><td>0.02%</td><td>0.06%</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Nivel estándar (no VIP). Los exchanges ajustan las comisiones periódicamente: confirma siempre en la página oficial de comisiones del exchange antes de comprometer tamaño.</p>
+      <h2>Qué significan realmente «maker» y «taker»</h2>
+      <p>Cada operación es una de dos cosas. Una orden <strong>maker</strong> de orden es una orden limit que colocas en el libro y que espera ser llenada: «creas» liquidez, así que pagas la tasa más baja. Una orden <strong>taker</strong> de orden se ejecuta inmediatamente contra órdenes ya en el libro: las órdenes de mercado siempre son órdenes taker, y también lo son las órdenes limit con precio lo bastante agresivo para llenarse al instante. La conclusión práctica: <strong>la paciencia es literalmente más barata.</strong> Si tu estrategia puede esperar segundos para un llenado, las órdenes limit recortan tu factura de comisiones en más de la mitad en cada exchange de arriba.</p>
+      <h2>Tasas de financiación: la comisión que nadie cotiza</h2>
+      <p>Los futuros perpetuos, los contratos que la mayoría opera, no tienen vencimiento. En su lugar tienen <strong>pagos de financiación</strong>, normalmente cada 8 horas, fluyendo directamente entre largos y cortos para mantener el precio del contrato anclado al spot. Cuando la financiación es positiva, los largos pagan a los cortos; cuando es negativa, al revés. El exchange no se queda con un recorte, pero el coste es real, y para posiciones mantenidas días seguidos, <strong>la financiación puede superar la propia comisión de trading</strong>. Antes de mantener cualquier posición apalancada durante la noche, comprueba la tasa de financiación y su historial reciente en el exchange. Una comisión maker «barata» del 0.02% no significa nada si pagas 0.1% de financiación tres veces al día.</p>
+      <h2>Cómo el apalancamiento multiplica tu factura de comisiones</h2>
+      <p>Aquí está la matemática que la mayoría de los principiantes nunca hace. Pones $1,000 de margen a 10x de apalancamiento: tu posición es $10,000 nocional. Un recorrido taker al 0.05% cuesta $5 al abrir y $5 al cerrar: <strong>$10 en total, que es el 1% de tu margen</strong>, se fue antes de que el precio se mueva un céntimo. A 20x de apalancamiento, el mismo recorrido cuesta 2% del margen. Diez operaciones así borran aproximadamente el 20% de la cuenta solo en comisiones. Este es el asesino silencioso de las pequeñas cuentas de futuros: no malas decisiones, sino muerte por mil recortes de comisiones. Las defensas son simples: menor apalancamiento, menos operaciones, órdenes limit.</p>
+      <h2>Niveles de comisiones: en qué estás realmente</h2>
+      <p>Los números en la tabla son <strong>tasas de nivel estándar</strong> — lo que paga cada cuenta nueva. Los cuatro exchanges gestionan programas VIP que descuentan comisiones por alto volumen mensual, pero los umbrales son serios (decenas de millones en volumen para los niveles significativos). Como principiante o trader regular, estás en estándar, y eso está bien: <strong>el tipo de orden y la frecuencia de trading mueven tus costes mucho más que un nivel VIP que no puedes alcanzar.</strong> No retuerzas tu trading para perseguir un descuento.</p>
+      <h2>Cinco hábitos que recortan las comisiones de futuros</h2>
+      <ol>
+        <li><strong>Por defecto órdenes limit.</strong> Maker vs taker es la palanca más grande: 0.02% vs 0.05–0.06% en cada llenado.</li>
+        <li><strong>Opera con menos frecuencia.</strong> Cada recorrido tiene un coste fijo de comisión. Menos operaciones de mayor convicción superan al scalping constante en una cuenta pequeña.</li>
+        <li><strong>Comprueba la financiación antes de mantener.</strong> Si la financiación está fuertemente en tu contra, espera al reinicio o reconsidera mantener.</li>
+        <li><strong>Mantén las comisiones por debajo del 0.5% del margen por operación.</strong> Si la matemática de comisiones de una configuración supera eso, la configuración necesita una ventaja mayor, o menor apalancamiento.</li>
+        <li><strong>Compara antes de comprometerte.</strong> Ejecuta tu volumen mensual esperado a través de una calculadora de comisiones (la nuestra está en la <a href="../exchanges.html">página de exchanges</a>) en lugar de adivinar.</li>
+      </ol>
+      <p class="in-cta">¿Operas futuros regularmente? Empieza donde se agrupan los traders de derivados: <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Regístrate en Bybit</a></p>
+      <h2>Qué exchange para qué trader de futuros</h2>
+      <p>Las comisiones son lo bastante cercanas para que el ajuste importe más que una brecha taker de 0.005%. <strong>Bybit</strong> construyó su reputación en derivados: la interfaz de futuros es donde brilla. <strong>Binance</strong> tiene la liquidez más profunda, lo que significa los diferenciales más ajustados en pares principales (un coste oculto que la tabla de comisiones no muestra). <strong>OKX</strong> ofrece herramientas fuertes para traders activos que quieren profundidad en productos. <strong>Bitget</strong> es popular entre traders que siguen las posiciones de otros traders. Elige el venue cuyas fortalezas coincidan con cómo operas realmente; la tabla de comisiones de arriba solo evita que alguien te cobre de más.</p>
+      <h2>Una nota sobre promociones «cero comisiones»</h2>
+      <p>Los exchanges periódicamente ejecutan promociones de cero comisiones maker o reembolsos de comisiones en pares selectos. Son reales, pero son temporales y normalmente excluyen los pares que los principiantes operan más. No elijas un venue por una promoción: elígelo por el tarifario diario, que es lo que realmente pagarás mes tras mes.</p>
+      <h2>Financiación en la práctica: un ejemplo trabajado</h2>
+      <p>Los números hacen concreta la financiación. Digamos que mantienes una posición larga de $20,000 en un contrato perpetuo y la tasa de financiación es 0.01% por intervalo de 8 horas, una lectura completamente ordinaria en un mercado alcista. Cada intervalo te cuesta $20,000 × 0.01% = <strong>$2</strong>. Tres intervalos al día = $6/día. Mantén una semana y has pagado $42 solo en financiación, más de cuatro veces la comisión de recorrido de $10 en la misma posición a tasas taker. Ahora invierte: cuando la financiación es negativa, <em>tú</em> te pagan por mantener la posición larga. Los traders sofisticados comprueban la financiación antes de cada mantenimiento de varios días y a veces eligen su dirección en parte basándose en ella. La lección no es temer la financiación, es <strong>incluirla en el precio de la operación antes de entrar</strong>, de la misma forma que comprobarías el diferencial. La mayoría de los exchanges muestran la tasa de financiación actual y una cuenta atrás hasta el próximo pago justo en la pantalla de trading de futuros; haz de echarle un vistazo parte de tu lista de verificación previa a la operación.</p>
+      <h2>Una palabra final sobre elegir solo por comisiones</h2>
+      <p>Es tentador elegir el exchange con el número taker más bajo y dar por terminado el día. Resístelo. En estos cuatro venues, la brecha taker máxima es 0.01%: en una posición de $5,000, eso es cincuenta céntimos por operación. <strong>Tu elección de apalancamiento, tu tipo de orden y tu frecuencia de trading mueven la aguja 10–100x más.</strong> Un trader con apalancamiento 3x usando órdenes limit en el exchange «caro» paga mucho menos que un scalper de órdenes de mercado a 20x en el «barato». Primero acierta las grandes decisiones; deja que la tabla de comisiones sea el desempate que es.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>¿Listo para operar futuros?</b> Abre una cuenta, empieza con bajo apalancamiento (3–5x), y usa órdenes limit mientras aprendes la mecánica. La matemática de comisiones de arriba es tu barandilla.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">Trading de futuros fluido, promociones frecuentes</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Regístrate en Bybit</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+        </div>
+        <p class="note">Las mismas comisiones que registrarte directamente: nuestro enlace no te cuesta nada extra.</p>
+      </div>
+
+      <h3>¿Las comisiones de futuros difieren de las comisiones spot?</h3>
+      <p>Sí: los futuros son más baratos en los cuatro exchanges mostrados aquí. Los futuros de nivel estándar rondan 0.02% maker / 0.05% taker, frente a aproximadamente 0.08–0.10% en spot. Los exchanges fijan precios agresivos a los futuros porque los volúmenes son mucho mayores.</p>
+      <h3>¿Qué exchange tiene las comisiones de futuros más bajas?</h3>
+      <p>En comisiones maker, los cuatro empatan al 0.02%. En comisiones taker, Binance y OKX al 0.05% son los más bajos de los cuatro. Pero las tasas de financiación y los diferenciales pueden importar más que una brecha taker de 0.005–0.01%, así que no elijas solo por este número.</p>
+      <h3>¿Qué es una tasa de financiación?</h3>
+      <p>Un pago periódico entre largos y cortos en contratos perpetuos, normalmente cada 8 horas, que mantiene el precio del contrato anclado al spot. No se paga al exchange. Mantener una posición durante varios intervalos de financiación puede costar más que la propia comisión de trading.</p>
+      <h3>¿Las órdenes de mercado siempre pagan comisiones taker?</h3>
+      <p>Sí. Cualquier orden que se ejecute inmediatamente contra órdenes en reposo cuenta como orden taker. Solo las órdenes limit que se asientan en el libro de órdenes y se llenan después ganan la tasa maker.</p>
+      <h3>¿Pueden las comisiones realmente acabar con una pequeña cuenta de futuros?</h3>
+      <p>Lentamente, sí. Un recorrido con apalancamiento 20x a tasas taker cuesta alrededor del 2% de tu margen solo en comisiones. Diez operaciones así borran aproximadamente el 20% antes de contar siquiera el movimiento de precio. Esta es la matemática que la mayoría de los principiantes nunca hace.</p>
+      <h3>¿Las comisiones cambian con el tiempo?</h3>
+      <p>Sí: los exchanges ajustan los niveles de comisiones periódicamente. Trata cualquier artículo, incluido este, como una instantánea. La página oficial de comisiones del exchange es la fuente de verdad; consúltala antes de comprometer tamaño.</p>
+      <h3>¿Valen la pena los niveles VIP de comisiones?</h3>
+      <p>No para principiantes. Los descuentos VIP requieren volumen mensual serio. El tipo de orden (limit vs mercado) y la frecuencia de trading ahorran mucho más para traders regulares que perseguir un nivel que no alcanzarás.</p>
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="leverage-guide.html">Apalancamiento explicado: primero los riesgos</a></li>
+        <li><a href="crypto-fees.html">Todas las comisiones de criptomonedas, decodificadas</a></li>
+        <li><a href="okx-vs-bybit.html">OKX vs Bybit comparados</a></li>
+        <li><a href="../reviews/bybit.html">Reseña de Bybit: comisiones y funciones</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>¿Aún no tienes cuenta? Regístrate en 3 minutos →</span><a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Regístrate</a><button class="sx" aria-label="Cerrar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

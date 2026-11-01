@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Comisiones de criptomonedas explicadas: spot, futuros y retiros — TokVS</title>
+<meta name="description" content="Comisiones de Binance explicadas: maker vs taker, la comisión spot del 0.1%, costes de apertura/cierre de futuros, financiación y comisiones de retiro, además de una tabla de comisiones.">
+<link rel="canonical" href="https://tokvs.com/es/guides/crypto-fees">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/crypto-fees">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/crypto-fees">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/crypto-fees">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/crypto-fees">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/crypto-fees">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/crypto-fees">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/crypto-fees">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/crypto-fees">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/crypto-fees">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/crypto-fees">
+<meta property="og:title" content="Comisiones de Binance explicadas — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Maker vs taker, comisiones spot y de futuros, tasas de financiación, comisiones de retiro, además de una tabla de cuatro exchanges y formas de pagar menos.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/crypto-fees">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"Comisiones de Binance: spot, futuros y tasas de financiación","item":"https://tokvs.com/es/guides/crypto-fees"}]},{"@type":"Article","headline":"Comisiones de Binance: spot, futuros y tasas de financiación","description":"Comisiones de Binance explicadas: maker vs taker, la comisión spot del 0.1%, costes de apertura/cierre de futuros, financiación y comisiones de retiro, además de una tabla de comisiones.","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/crypto-fees","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Comisiones explicadas</div>
+      <h1>Comisiones de criptomonedas explicadas: lo que realmente cuesta cada operación</h1>
+      <p class="sub">Una fórmula cubre la mayor parte: comisión = valor de operación × tasa de comisión. Las comisiones spot habituales son 0.1%: comprar $10,000 de bitcoin cuesta $10. Los futuros añaden un segundo coste más silencioso llamado tasa de financiación. Aquí está cada pieza, desmontada.</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 5 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">Línea de productos completa, buen soporte de idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">Trading de futuros fluido, promociones frecuentes</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Regístrate en Bybit</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Primero: maker vs taker</h2>
+      <p>A <strong>maker</strong> de orden descansa en el libro esperando ser llenada (una orden limit): estás suministrando liquidez, así que pagas menos. Una orden <strong>taker</strong> de orden se llena inmediatamente contra el libro (una orden de mercado, o una orden limit con precio para llenarse al instante): pagas más. En la misma plataforma, las tasas maker a menudo son la mitad de la tasa taker o menos. El hábito de ahorro de comisiones más fácil que un principiante puede aprender: cuando no tienes prisa, coloca una orden limit.</p>
+
+      <h2>Comisiones spot, ejemplo trabajado</h2>
+      <p>Compra $10,000 de BTC en Binance con una orden de mercado. Comisión taker spot 0.10%: comisión = 10,000 × 0.10% = <strong>$10</strong>, así que recibes unos $9,990 en BTC. Vender cuesta otro 0.10%. Un recorrido completo ronda ~0.2%, y se acumula con cada operación. Muchas cuentas no se pierden por mala dirección; se desgastan por fricción.</p>
+
+      <h2>Comisiones de futuros, ejemplo trabajado</h2>
+      <p>Las comisiones de futuros se cobran sobre <strong>valor nocional de la posición</strong>, no sobre tu margen. Ejemplo: $1,000 de margen a 10× apalancamiento = $10,000 nocional. En Binance, abrir como maker cuesta 0.02% ($2), cerrar como taker cuesta 0.05% ($5): $7 en total, o 0.7% de tu margen. Ahora escala el apalancamiento: los mismos $1,000 a 50× cuestan aproximadamente $35 por recorrido: has perdido 3.5% antes de que el precio siquiera se mueva. Haz tus propios números con nuestra <a href="../exchanges.html#calculator">calculadora de comisiones</a>, y lee <a href="leverage-guide.html">Apalancamiento y liquidación</a> antes de tocar futuros en absoluto.</p>
+
+      <h2>Tasas de financiación: el cargo nocturno en perpetuos</h2>
+      <p>Los futuros perpetuos nunca expiran, así que los exchanges usan una <strong>tasa de financiación</strong> para mantener el precio del contrato pegado al spot: normalmente liquidada cada 8 horas, los largos pagan a los cortos cuando la tasa es positiva, y viceversa. La norma silenciosa es 0.01% por intervalo, pero en mercados eufóricos puede dispararse más allá del 0.1%: en una posición de $10,000 eso es $30 al día, cerca de $900 al mes. Los day traders apenas la notan; cualquiera que mantenga durante días debe contarla como un coste real.</p>
+
+      <h2>Comisiones de retiro: elige la red correcta</h2>
+      <p>Mover monedas fuera cuesta una comisión de retiro: fundamentalmente la comisión de minero/gas de la blockchain más un pequeño cargo de plataforma. El mismo USDT puede costar varios dólares en ERC20 (Ethereum) y menos de un dólar en TRC20 (Tron). Antes de retirar, compara redes y comprueba tres veces que <strong>el remitente y el receptor usan la misma cadena</strong>; una discrepancia normalmente es irrecuperable. Detalles en <a href="wallet-safety.html">Seguridad de billeteras y frases semilla</a>.</p>
+
+      <h2>La tabla de comisiones de cuatro exchanges (tasas estándar)</h2>
+      <div class="table-wrap">
+        <table class="fee num">
+          <thead><tr><th>Exchange</th><th>Comisión maker spot</th><th>Comisión taker spot</th><th>Comisión maker de futuros</th><th>Comisión taker de futuros</th><th>Límite de reembolso</th></tr></thead>
+          <tbody>
+            <tr><td class="name"><a href="../reviews/binance.html">Binance</a></td><td>0.10%</td><td>0.10%</td><td>0.02%</td><td>0.05%</td><td>Hasta el 50%</td></tr>
+            <tr><td class="name"><a href="../reviews/okx.html">OKX</a></td><td>0.08%</td><td>0.10%</td><td>0.02%</td><td>0.05%</td><td>Hasta el 50%</td></tr>
+            <tr><td class="name"><a href="../reviews/bybit.html">Bybit</a></td><td>0.10%</td><td>0.10%</td><td>0.02%</td><td>0.055%</td><td>Hasta el 30%</td></tr>
+            <tr><td class="name"><a href="../reviews/bitget.html">Bitget</a></td><td>0.10%</td><td>0.10%</td><td>0.02%</td><td>0.06%</td><td>Hasta el 50%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Tasas base publicadas para usuarios regulares (VIP0); las plataformas las ajustan con el tiempo, así que trata la página de comisiones en vivo de cada exchange como definitiva. Los topes de reembolso son los máximos publicados de las plataformas; los términos reales siguen sus políticas oficiales de recomendación.</p>
+
+      <h2>Cinco formas de pagar menos</h2>
+      <ol>
+        <li><strong>Por defecto órdenes limit (maker)</strong> — reduce a la mitad las comisiones spot y ahorra aún más en futuros.</li>
+        <li><strong>Usa un enlace de recomendación cuando te registres.</strong> Los reembolsos compensan las comisiones que realmente pagas, y solo pueden adjuntarse en el registro.</li>
+        <li><strong>Opera menos.</strong> Cada recorrido es dinero real en fricción. Sin razón clara, sin operación.</li>
+        <li><strong>Retira en redes baratas</strong>, y primero prueba con una cantidad pequeña.</li>
+        <li><strong>Los niveles VIP van al final.</strong> Los niveles superiores bajan las tasas, pero operar volumen extra solo para calificar es ir al revés.</li>
+      </ol>
+      <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Trading spot · account.binance.com</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Registro · okx.com</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Regístrate</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">Registro · bybit.com</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Regístrate</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#3861FB;">B</div><div><div class="tt">Bitget</div><div class="dd">Sin enlace de recomendación nuestro por ahora · bitget.com</div></div><a class="go dark" href="https://www.bitget.com" target="_blank" rel="nofollow noopener">Sitio oficial</a></div>
+      </div>
+
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">Comisiones descifradas: ahora elige una plataforma de bajas comisiones: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a> <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Regístrate en Bybit</a></p>
+      <h2>Preguntas frecuentes</h2>
+      <h3>Compré $100 de BTC pero recibí menos del 0.1% por debajo de eso. ¿Por qué?</h3>
+      <p>Más allá de la comisión, las órdenes de mercado también pagan el diferencial bid-ask y el deslizamiento, notables en libros delgados de small-caps. Las órdenes limit en majors líquidos mantienen ambos al mínimo.</p>
+      <h3>¿Cómo funcionan realmente los reembolsos de comisiones?</h3>
+      <p>Regístrate mediante un enlace de recomendación y una parte de las comisiones que generas vuelve a tu cuenta bajo las reglas de la plataforma (los reembolsos spot y de futuros se manejan por separado). Las tasas y mecánicas siguen la política oficial de recomendación de cada plataforma; nuestra página de comparación lista los topes publicados.</p>
+      <h3>Si me liquidan, ¿sigo pagando comisiones?</h3>
+      <p>Sí: la liquidación cierra tu posición bajo la lógica normal de comisiones, y muchas plataformas deducen cargos adicionales de liquidación de lo que queda de tu margen. Las pérdidas reales de liquidación suelen ser peores que las cuentas de servilleta, por eso seguimos alejando a los principiantes del alto apalancamiento.</p>
+      <h3>¿Pagar comisiones en el token de la plataforma es más barato?</h3>
+      <p>Algunos exchanges ofrecen un descuento por pagar comisiones en su propio token, con términos que cambian con bastante frecuencia: consulta las reglas oficiales actuales. Clava primero las dos grandes victorias: órdenes maker y reembolsos de registro.</p>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>¿Listo?</b> Registrarte tarda unos 10 minutos: verifícate una vez, activa la 2FA y luego compra tu primer USDT vía P2P. Sigue las guías de este sitio y todo irá bien.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">Línea de productos completa, buen soporte de idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">Trading de futuros fluido, promociones frecuentes</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Regístrate en Bybit</a></div>
+        </div>
+        <p class="note">Las mismas comisiones que registrarte directamente: nuestro enlace no te cuesta nada extra.</p>
+      </div>
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="../exchanges.html">Comparación de comisiones y reembolsos con calculadora: introduce un importe, consulta los cuatro</a></li>
+        <li><a href="leverage-guide.html">Apalancamiento y liquidación: la guía de riesgo para principiantes</a></li>
+        <li><a href="binance-vs-okx.html">Binance vs OKX, comparados</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>¿Aún no tienes cuenta? Regístrate en 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate</a><button class="sx" aria-label="Cerrar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

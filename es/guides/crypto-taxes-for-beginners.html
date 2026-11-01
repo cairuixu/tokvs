@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Impuestos de criptomonedas para principiantes: qué cuenta, qué registrar — TokVS</title>
+<meta name="description" content="Impuestos de criptomonedas explicados en lenguaje claro: qué cuenta como hecho imponible, por qué un swap puede tributar incluso sin retirar efectivo, cómo difieren en términos generales las reglas de EE. UU., Reino Unido y la UE, y la plantilla de registro que todo principiante necesita. Solo información general, no asesoría fiscal.">
+<link rel="canonical" href="https://tokvs.com/es/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/crypto-taxes-for-beginners">
+<meta property="og:title" content="Impuestos de criptomonedas para principiantes — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Qué cuenta como hecho imponible, por qué los swaps pueden tributar sin retirar efectivo, y la plantilla de registro que todo principiante necesita. Solo información general, no asesoría fiscal.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/crypto-taxes-for-beginners">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"Impuestos de criptomonedas para principiantes","item":"https://tokvs.com/es/guides/crypto-taxes-for-beginners"}]},{"@type":"Article","headline":"Impuestos de criptomonedas para principiantes","description":"Qué cuenta como hecho imponible, por qué un swap puede tributar incluso sin retirar efectivo, cómo difieren en términos generales las reglas de EE. UU., Reino Unido y la UE, y la plantilla de registro que todo principiante necesita.","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/crypto-taxes-for-beginners","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Debo impuestos solo por tener criptomonedas?","acceptedAnswer":{"@type":"Answer","text":"En la mayoría de los países, simplemente tener criptomonedas no es un hecho imponible. Los impuestos normalmente entran en juego cuando te deshaces de ellas, vendiendo, intercambiando o gastándolas. Comprar y mantener, por sí solo, generalmente no crea una factura fiscal, pero las reglas dependen de dónde vives, así que consulta tus reglas locales."}},{"@type":"Question","name":"¿Intercambiar USDT por BTC es un hecho imponible?","acceptedAnswer":{"@type":"Answer","text":"En algunas jurisdicciones, sí. Intercambiar una criptomoneda por otra puede contar como deshacerte del primer activo, aunque ningún dinero fiat haya tocado tu cuenta bancaria. Eso sorprende a muchos principiantes. Otras jurisdicciones tratan los swaps de forma distinta, así que comprueba cómo tu país maneja las operaciones cripto-a-cripto antes de asumir que un swap está libre de impuestos."}},{"@type":"Question","name":"¿Necesito declarar operaciones pequeñas?","acceptedAnswer":{"@type":"Answer","text":"Las operaciones pequeñas siguen siendo operaciones. Algunos países tienen umbrales de declaración o exenciones para importes pequeños, pero muchos no, y las reglas cambian a menudo. El hábito seguro es registrar cada operación, por pequeña que sea, para poder responder cualquier pregunta sobre ella después con evidencia en lugar de conjeturas."}},{"@type":"Question","name":"¿Qué registros debería guardar para cada operación?","acceptedAnswer":{"@type":"Answer","text":"Para cada operación, registra la fecha, la plataforma usada, el tipo de transacción, el activo y el importe que entra, el activo y el importe que sale, las comisiones pagadas y el valor fiat en el momento de la operación. Guarda también los extractos del exchange y el historial de billetera. Los buenos registros son la diferencia entre una temporada de declaración tranquila y una dolorosa."}},{"@type":"Question","name":"¿Cómo difieren las reglas de EE. UU., Reino Unido y la UE?","acceptedAnswer":{"@type":"Answer","text":"Difieren en estructura, no solo en detalle. EE. UU. generalmente trata las criptomonedas como propiedad, el Reino Unido tiene su propio marco de ganancias de capital con sus propias exenciones, y los estados miembros de la UE establecen cada uno sus propias reglas, así que no existe un único impuesto cripto de la UE. Las tasas, umbrales y plazos cambian, así que esta página deliberadamente no da cifras: consulta tus reglas locales o un profesional local."}},{"@type":"Question","name":"¿Debería usar software de impuestos de criptomonedas o un profesional?","acceptedAnswer":{"@type":"Answer","text":"El software puede ayudar si tienes muchas operaciones en varias plataformas, porque importa el historial del exchange y calcula las ganancias por ti. Pero el software solo es tan bueno como los registros que le das, y no puede darte asesoría personal. Si tu situación involucra staking, ingresos empresariales o grandes importes, habla con un profesional fiscal local."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Impuestos de criptomonedas para principiantes</div>
+      <h1>Impuestos sobre criptomonedas para principiantes</h1>
+      <p class="sub">La mayoría de los países gravan las criptomonedas de alguna manera, pero las reglas tratan de lo que haces con ellas, no de poseerlas. Aquí está la versión en lenguaje claro: qué cuenta,</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 15 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · las cifras y reglas cambian, verifica en la página oficial antes de actuar.</p>
+      <div class="callout warn"><b>Lee esto primero:</b> esta página es solo información general, no asesoría fiscal. Las reglas fiscales cambian a menudo y dependen de dónde vives y de tu situación personal. Para decisiones sobre tus propios impuestos, habla con un profesional fiscal local.</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>La única idea que explica casi todo</h2>
+      <p>Casi todos los sistemas fiscales de criptomonedas del mundo se basan en una sola distinción: <strong>tener versus deshacerte</strong>. Comprar criptomonedas y dejarlas en tu cuenta es, en la mayoría de los países, no un hecho imponible por sí solo. Aún no ha ocurrido nada a ojos del sistema fiscal: sigues poseyendo el mismo activo, y no se ha realizado ninguna ganancia ni pérdida. La pregunta fiscal empieza cuando te <strong>deshaces</strong> del activo: cuando lo vendes, lo intercambias por otra cosa o lo gastas. Ese es el momento que la mayoría de los sistemas miden: lo que pagaste por él, lo que recibiste por él y la diferencia entre ambos.</p>
+      <p>Por eso dos principiantes con carteras idénticas pueden tener situaciones fiscales completamente distintas. Uno compró Bitcoin hace tres años y nunca lo tocó; el otro operó de ida y vuelta cada semana. La primera persona puede no tener ningún hecho imponible en esos años. La segunda puede tener cientos, aunque nunca haya retirado un solo dólar a su cuenta bancaria. La actividad, no la propiedad, es lo que genera papeleo. Si recuerdas solo una frase de esta página, que sea esta: <strong>es la operación, no la tenencia, lo que normalmente crea el hecho imponible</strong>.</p>
+      <p>Hay excepciones y variaciones locales, y algunos países tratan ciertos tipos de ganancias como imponibles incluso sin venta, lo que cubrimos abajo. Pero el marco tener-versus-deshacerte te ayudará a entender casi cada regla que encuentres después. Cuando dudes sobre una transacción, pregúntate: ¿me deshice de un activo y recibí algo más a cambio? Si la respuesta es sí, asume que puede necesitar registro, y posiblemente declaración.</p>
+      <p>Esta página es solo información general, no asesoría fiscal. Las reglas cambian y dependen de dónde vives: habla con un profesional fiscal local sobre tu situación.</p>
+      <h2>Cuatro actividades que pueden generar impuestos</h2>
+      <p><strong>1. Vender criptomonedas por dinero fiat.</strong> Esta es la más obvia. Compraste Bitcoin a un precio y lo vendiste por dólares, libras o euros a otro. Si vendiste por más de lo que pagaste, la mayoría de los países tratan la diferencia como ganancia de capital. Si vendiste por menos, puede ser una pérdida de capital, que en algunos sistemas puede compensar ganancias. De cualquier manera, la venta en sí es el evento que importa, y el registro que necesitas es el precio en ambos lados de la operación.</p>
+      <p><strong>2. Intercambiar una criptomoneda por otra.</strong> Operar Bitcoin por Ethereum, o USDT por Solana, se siente como quedarse dentro de las criptomonedas: nada llegó a tu cuenta bancaria, así que nada se siente como ingreso. Pero en varias jurisdicciones importantes, un swap cuenta como deshacerte del primer activo, exactamente como si lo hubieras vendido. La ganancia o pérdida se mide contra el valor de lo que recibiste. Esta es la sorpresa más común para principiantes, y es por eso que personas que operaron activamente sin retirar efectivo a veces descubren que aún deben impuestos. Profundizamos en esto en la sección USDT-a-BTC abajo.</p>
+      <p><strong>3. Gastar criptomonedas.</strong> Pagar bienes o servicios con criptomonedas es, en muchos países, también una disposición. Te deshiciste de un activo y recibiste algo a cambio, así que se aplica el mismo cálculo de ganancia o pérdida. Comprar un café con Bitcoin que se ha duplicado desde que lo compraste puede técnicamente ser un hecho imponible, aunque el importe sea diminuto. Esta es una razón por la que las criptomonedas rara vez se usan para compras cotidianas en países que las tratan así: la carga de registro es real.</p>
+      <p><strong>4. Ganar criptomonedas.</strong> Las recompensas de staking, los intereses de plataformas de préstamos, los airdrops, las recompensas de minería y que te paguen en criptomonedas por trabajo pueden tratarse todos como ingresos en algunos lugares, al valor de la criptomoneda cuando la recibiste. Los detalles varían enormemente: algunos países gravan las recompensas cuando se reciben, otros cuando se venden, y algunos tienen exenciones para importes pequeños. Lo consistente es que ganar es una pregunta separada de operar: puedes tener un hecho imponible por ganar aunque nunca vendas nada.</p>
+      <p>Esta página es solo información general, no asesoría fiscal. Las reglas cambian y dependen de dónde vives: habla con un profesional fiscal local sobre tu situación.</p>
+      <h2>Por qué las reglas cambian de país a país</h2>
+      <p>No existe un impuesto cripto global. Cada país encaja las criptomonedas en su propio sistema existente, y el encaje es distinto en todas partes. Entender la forma general del enfoque de tu propio país importa más que memorizar las cifras de otro, y las cifras son exactamente lo que esta página no te dará, porque las tasas, umbrales y plazos cambian, y publicar una cifra que luego cambia no ayuda a nadie.</p>
+      <p><strong>Estados Unidos, en términos generales.</strong> EE. UU. generalmente trata las criptomonedas como propiedad en lugar de moneda a efectos fiscales. Eso significa que el marco de ganancias de capital se aplica a las disposiciones: vender, intercambiar y gastar pueden ser cada uno hechos imponibles, y cuánto tiempo tuviste el activo puede afectar cómo se trata la ganancia. Existen obligaciones de declaración para exchanges y para personas, y las reglas sobre recompensas de staking y airdrops han estado evolucionando. Si eres residente de EE. UU., la conclusión práctica es que el trading activo crea una gran cantidad de eventos declarables, y los buenos registros no son opcionales.</p>
+      <p><strong>Reino Unido, en términos generales.</strong> El Reino Unido también aplica un marco de ganancias de capital a las disposiciones de criptomonedas, con su propio importe anual exento y sus propias reglas sobre qué disposiciones cuentan y cómo se agrupan las ganancias. Intercambiar criptomonedas por criptomonedas generalmente se trata como disposición. El tratamiento de ingresos puede aplicar a recompensas de staking y ganancias similares según las circunstancias. El sistema del Reino Unido tiene expectativas específicas de registro, y el importe exento y las tasas han cambiado en años recientes, precisamente por eso deberías comprobar la posición actual en lugar de confiar en las cifras de ningún artículo.</p>
+      <p><strong>Unión Europea, en términos generales.</strong> No existe un único impuesto cripto de la UE. Cada estado miembro establece sus propias reglas, y difieren ampliamente: algunos gravan las ganancias de criptomonedas como ingresos de capital, otros como ingresos diversos, y unos pocos han tratado históricamente las criptomonedas mantenidas largo tiempo con más indulgencia. Además, las reglas de declaración a nivel UE para plataformas de criptomonedas se están ampliando, lo que significa que tu exchange puede declarar tu actividad a tu autoridad fiscal local declares o no declares nada tú mismo. Si vives en la UE, tu país de residencia es el único manual que importa: una guía escrita para Alemania no te ayudará en Francia, y viceversa.</p>
+      <p>Si vives en otro lugar completamente, se aplica el mismo principio: encuentra el marco de tu propio país, en su versión actual, e ignora las reglas escritas para otras jurisdicciones. Las criptomonedas se mueven entre fronteras en segundos; la ley fiscal no.</p>
+      <p>Esta página es solo información general, no asesoría fiscal. Las reglas cambian y dependen de dónde vives: habla con un profesional fiscal local sobre tu situación.</p>
+      <h2>La trampa USDT-a-BTC: gravado sin retirar efectivo</h2>
+      <p>Aquí está el escenario que atrapa a más principiantes que ningún otro. Compras USDT con dólares. Después, intercambias ese USDT por Bitcoin. Nunca retiraste nada a tu cuenta bancaria, así que en tu mente no ocurrió nada imponible: simplemente te moviste entre dos criptoactivos. En algunas jurisdicciones, eso está mal. El swap se trata como deshacerte de tu USDT y adquirir Bitcoin, y si tu posición de USDT tenía alguna ganancia respecto a su base de coste, esa ganancia puede ser imponible aunque tu saldo bancario nunca haya cambiado.</p>
+      <p>Con USDT específicamente, la ganancia en el propio swap a menudo es pequeña, porque una stablecoin está diseñada para mantenerse cerca de un dólar. Pero «a menudo pequeña» no es «siempre cero»: si adquiriste USDT con descuento, lo recibiste como recompensa, o lo ganaste de una forma que le dio una base de coste baja, la diferencia puede ser real. Y el problema mayor no es el tamaño de un swap: es que una cadena de swaps, cada uno individualmente pequeño, puede sumar una larga lista de eventos declarables que nunca registraste porque cada uno se sintió como nada.</p>
+      <p>Hay una segunda capa en la trampa. En algunas jurisdicciones, los swaps stablecoin-a-stablecoin y los swaps cripto-a-cripto se tratan de forma distinta, y en otras se tratan igual. Algunos países tienen exenciones o tratamiento simplificado para transacciones pequeñas, y otros no. El único enfoque fiable es registrar cada swap como si pudiera importar, porque decidir después que sí importaba es mucho más difícil que registrarlo en el momento. Tu historial del exchange normalmente contiene todo esto, pero solo si lo descargas antes de cerrar una cuenta o perder acceso.</p>
+      <p>Esta página es solo información general, no asesoría fiscal. Las reglas cambian y dependen de dónde vives: habla con un profesional fiscal local sobre tu situación.</p>
+      <h2>Registro: el único hábito que funciona en todas partes</h2>
+      <p>Si las reglas fiscales difieren según el país, el registro es el único hábito universal. Todo sistema fiscal, en todo país, funciona con evidencia. Cuando puedes mostrar la fecha, los importes, las comisiones y el valor de una operación, puedes responder cualquier pregunta que tu autoridad fiscal o tu contador te haga. Cuando no puedes, estás reconstruyendo historia de memoria, y la memoria es un mal contador. La buena noticia es que el hábito es simple: escríbelo en el momento, cada vez, y el resto se resuelve solo.</p>
+      <p>Empieza con una hoja de cálculo simple. Una fila por transacción, con las columnas de la plantilla abajo. No necesitas software sofisticado para empezar: una app de notas o una hoja de cálculo basta para tu primer año. Lo que importa es la consistencia: las mismas columnas, rellenadas para cada operación, incluidas las pequeñas y los swaps que se sintieron como nada. Si usas varios exchanges o billeteras, mantén un registro combinado en lugar de una nota separada por plataforma, para que nada se pierda entre grietas.</p>
+      <p>Junto a tu propia hoja de cálculo, guarda los documentos fuente: exportaciones del historial de transacciones del exchange, registros de depósitos y retiros, y direcciones de billetera que usaste. Descárgalos regularmente, no una vez al año, porque los exchanges pueden cambiar sus formatos de exportación, restringir historial antiguo o cerrar tu cuenta. Tu hoja de cálculo es tu resumen; las exportaciones son tu prueba. Guarda ambas, y guárdalas con copia de seguridad en otro lugar que no sea el dispositivo con el que operas.</p>
+      <h3>Tu plantilla de registro</h3>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Columna</th><th>Qué escribir</th><th>Por qué importa</th></tr></thead>
+        <tbody>
+          <tr><td>Fecha y hora</td><td>La fecha exacta de la transacción</td><td>Establece el año fiscal y el período de tenencia</td></tr>
+          <tr><td>Plataforma o billetera</td><td>Exchange o billetera donde ocurrió</td><td>Te permite rastrear el documento fuente después</td></tr>
+          <tr><td>Tipo de transacción</td><td>Comprar, vender, intercambiar, gastar, hacer staking, recompensa</td><td>Determina qué tratamiento fiscal puede aplicar</td></tr>
+          <tr><td>Activo que entra y cantidad</td><td>Lo que recibiste y cuánto</td><td>La mitad del cálculo de ganancia</td></tr>
+          <tr><td>Activo que sale y cantidad</td><td>Lo que entregaste y cuánto</td><td>La otra mitad del cálculo de ganancia</td></tr>
+          <tr><td>Comisiones pagadas</td><td>Comisión de trading, comisión de red, diferencial</td><td>Las comisiones a menudo forman parte de tu base de coste</td></tr>
+          <tr><td>Valor fiat en el momento</td><td>Valor en moneda local de ambos lados</td><td>El impuesto normalmente se calcula en fiat, no en criptomonedas</td></tr>
+          <tr><td>Notas</td><td>ID de pedido, propósito, cualquier cosa inusual</td><td>Tu yo futuro te lo agradecerá</td></tr>
+        </tbody>
+      </table></div>
+      <p>Un hábito más que vale la pena construir: una rutina mensual corta. Una vez al mes, exporta tu historial de cada plataforma que usaste, añade las nuevas filas a tu hoja de cálculo, y comprueba que los totales concuerdan aproximadamente con lo que muestran tus cuentas. Treinta minutos al mes superan un fin de semana de pánico en temporada de declaración, y detecta problemas — una exportación faltante, una billetera olvidada — mientras aún son fáciles de arreglar.</p>
+      <p>Esta página es solo información general, no asesoría fiscal. Las reglas cambian y dependen de dónde vives: habla con un profesional fiscal local sobre tu situación.</p>
+      <h2>Cinco errores que cometen los principiantes</h2>
+      <p><strong>1. Asumir que no retirar efectivo significa no pagar impuestos.</strong> Como explica la sección de swaps, las disposiciones pueden ser imponibles aunque nada llegue a tu cuenta bancaria. Este es el malentendido más caro en impuestos de criptomonedas, porque lleva a la gente a operar durante un año y solo descubrir el papeleo después.</p>
+      <p><strong>2. No guardar registros hasta la temporada de declaración.</strong> Los exchanges guardan historial, pero no para siempre ni siempre en un formato conveniente. Reconstruir un año de operaciones a partir de capturas dispersas es miserable. Registra sobre la marcha, y la temporada de declaración se convierte en un ejercicio de revisión en lugar de un proyecto de arqueología.</p>
+      <p><strong>3. Olvidar recompensas de staking y airdrops.</strong> Las recompensas se sienten como dinero gratis, y las recompensas pequeñas se sienten demasiado pequeñas para importar. Pero el tratamiento de ingresos puede aplicar a las recompensas cuando se reciben, y un año de pequeñas recompensas semanales suma una cifra real. Registra las recompensas igual que registras las operaciones.</p>
+      <p><strong>4. Mezclar billeteras personales y compartidas.</strong> Usar una billetera para tu propio trading, los fondos de un amigo y un negocio paralelo hace cada transacción ambigua. Mantén billeteras o cuentas separadas para propósitos separados, para que cada registro tenga un único propietario claro y una única historia clara.</p>
+      <p><strong>5. Copiar las reglas de otro país.</strong> Una publicación sobre impuestos de EE. UU. no describe los impuestos del Reino Unido, y una guía escrita hace dos años puede no describir las reglas de este año en ningún lugar. Comprueba siempre las reglas actuales para tu propio país de residencia, y desconfía de cualquier artículo que te dé una tasa sin fecha.</p>
+      <p>Esta página es solo información general, no asesoría fiscal. Las reglas cambian y dependen de dónde vives: habla con un profesional fiscal local sobre tu situación.</p>
+      <h2>Qué hacer antes de declarar</h2>
+      <p>Cuando se acerca la temporada de declaración, recorre una lista corta. Primero, reúne cada exportación: cada exchange que usaste, cada billetera con la que operaste, y cualquier plataforma que te pagó recompensas. Segundo, concilia tu hoja de cálculo contra esas exportaciones y rellena cualquier hueco mientras el historial aún está disponible. Tercero, identifica cualquier cosa inusual — grandes regalos, transferencias entre tus propias billeteras, o ingresos empresariales — y apártalas como preguntas para un profesional en lugar de adivinar su tratamiento.</p>
+      <p>Luego decide si necesitas ayuda. Si hiciste un puñado de compras y ventas simples, tus propios registros más la orientación oficial de tu país pueden bastar. Si operaste frecuentemente, usaste varias plataformas, ganaste recompensas de staking o recibiste criptomonedas como pago, un profesional fiscal local vale bien el dinero: no porque las reglas sean imposibles, sino porque un profesional sabe qué preguntas hacer sobre tu situación específica. Llévale tu hoja de cálculo y tus exportaciones, y su trabajo se convierte en verificación en lugar de reconstrucción, lo que es más barato y más preciso.</p>
+      <p>Finalmente, guarda todo después de declarar. Las autoridades fiscales pueden hacer preguntas años después, y la única defensa es el registro que guardaste en el momento. Guarda tu hoja de cálculo, tus exportaciones y tu declaración presentada juntas, con copia de seguridad, durante tanto tiempo como requieran las reglas de tu país, y cuando dudes, más tiempo.</p>
+      <p>Esta página es solo información general, no asesoría fiscal. Las reglas cambian y dependen de dónde vives: habla con un profesional fiscal local sobre tu situación.</p>
+
+      <h3>¿Debo impuestos solo por tener criptomonedas?</h3>
+      <p>En la mayoría de los países, simplemente tener criptomonedas no es un hecho imponible. Los impuestos normalmente entran en juego cuando te deshaces de ellas, vendiendo, intercambiando o gastándolas. Comprar y mantener, por sí solo, generalmente no crea una factura fiscal, pero las reglas dependen de dónde vives, así que consulta tus reglas locales.</p>
+      <h3>¿Intercambiar USDT por BTC es un hecho imponible?</h3>
+      <p>En algunas jurisdicciones, sí. Intercambiar una criptomoneda por otra puede contar como deshacerte del primer activo, aunque ningún dinero fiat haya tocado tu cuenta bancaria. Eso sorprende a muchos principiantes. Otras jurisdicciones tratan los swaps de forma distinta, así que comprueba cómo tu país maneja las operaciones cripto-a-cripto antes de asumir que un swap está libre de impuestos.</p>
+      <h3>¿Necesito declarar operaciones pequeñas?</h3>
+      <p>Las operaciones pequeñas siguen siendo operaciones. Algunos países tienen umbrales de declaración o exenciones para importes pequeños, pero muchos no, y las reglas cambian a menudo. El hábito seguro es registrar cada operación, por pequeña que sea, para poder responder cualquier pregunta sobre ella después con evidencia en lugar de conjeturas.</p>
+      <h3>¿Qué registros debería guardar para cada operación?</h3>
+      <p>Para cada operación, registra la fecha, la plataforma usada, el tipo de transacción, el activo y el importe que entra, el activo y el importe que sale, las comisiones pagadas y el valor fiat en el momento de la operación. Guarda también los extractos del exchange y el historial de billetera. Los buenos registros son la diferencia entre una temporada de declaración tranquila y una dolorosa.</p>
+      <h3>¿Cómo difieren las reglas de EE. UU., Reino Unido y la UE?</h3>
+      <p>Difieren en estructura, no solo en detalle. EE. UU. generalmente trata las criptomonedas como propiedad, el Reino Unido tiene su propio marco de ganancias de capital con sus propias exenciones, y los estados miembros de la UE establecen cada uno sus propias reglas, así que no existe un único impuesto cripto de la UE. Las tasas, umbrales y plazos cambian, así que esta página deliberadamente no da cifras: consulta tus reglas locales o un profesional local.</p>
+      <h3>¿Debería usar software de impuestos de criptomonedas o un profesional?</h3>
+      <p>El software puede ayudar si tienes muchas operaciones en varias plataformas, porque importa el historial del exchange y calcula las ganancias por ti. Pero el software solo es tan bueno como los registros que le das, y no puede darte asesoría personal. Si tu situación involucra staking, ingresos empresariales o grandes importes, habla con un profesional fiscal local.</p>
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">Cómo comprar criptomonedas para principiantes</a></li>
+        <li><a href="how-to-sell-crypto.html">Cómo vender criptomonedas</a></li>
+        <li><a href="how-to-withdraw-from-binance.html">Cómo retirar de Binance</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
