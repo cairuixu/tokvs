@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Come mantenere sicuro il tuo account Binance: 2FA, anti-phishing e whitelist di prelievo — TokVS</title>
+<meta name="description" content="The Binance checklist di sicurezza dell'account for beginners: 2FA authenticator, codice anti-phishing, whitelist di prelievo, gestione dispositivi, e come individuare i link di phishing prima che ti costino.">
+<link rel="canonical" href="https://tokvs.com/it/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-keep-your-binance-account-safe">
+<meta property="og:title" content="Come mantenere sicuro il tuo account Binance — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="2FA authenticator, codice anti-phishing, whitelist di prelievo, controlli dispositivi e individuazione phishing — la checklist completa di sicurezza Binance.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/it/guides/how-to-keep-your-binance-account-safe">
+<meta property="og:locale" content="it_IT">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/it/"}, {"@type": "ListItem", "position": 2, "name": "Guide", "item": "https://tokvs.com/it/guides/"}, {"@type": "ListItem", "position": 3, "name": "Keep Your Binance Account Safe", "item": "https://tokvs.com/it/guides/how-to-keep-your-binance-account-safe"}]}, {"@type": "Article", "headline": "Come mantenere sicuro il tuo account Binance", "description": "The Binance checklist di sicurezza dell'account for beginners: authenticator 2FA, anti-phishing code, withdrawal whitelist, device management, and phishing spotting.", "datePublished": "2026-10-30", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/it/guides/how-to-keep-your-binance-account-safe", "dateModified": "2026-10-30"}, "inLanguage": "it"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "La 2FA via SMS è sufficiente per Binance?", "acceptedAnswer": {"@type": "Answer", "text": "No. I codici SMS possono essere intercettati tramite attacchi SIM-swap, dove un truffatore convince il tuo operatore a spostare il tuo numero sulla sua SIM. Un'app authenticator genera codici sul tuo dispositivo e non è vulnerabile a quel trucco. Usa un'app authenticator come metodo 2FA primario."}}, {"@type": "Question", "name": "Cos'è il codice anti-phishing di Binance e perché conta?", "acceptedAnswer": {"@type": "Answer", "text": "È una breve parola o frase che imposti nelle impostazioni di sicurezza. Binance include poi quel codice in ogni email genuina che ti invia. Se un'email che afferma di essere da Binance manca del tuo codice, è falsa — eliminala e non cliccare nulla in essa."}}, {"@type": "Question", "name": "Cosa fa la whitelist di prelievo?", "acceptedAnswer": {"@type": "Answer", "text": "Una volta attivata, i prelievi possono andare solo verso indirizzi che hai pre-approvato. Anche se qualcuno entra nel tuo account, non può inviare i tuoi fondi al suo wallet. Aggiungere un nuovo indirizzo innesca un periodo di attesa, che ti dà tempo per reagire se la modifica non era tua."}}, {"@type": "Question", "name": "SAFU mi protegge se il mio account viene hackerato?", "acceptedAnswer": {"@type": "Answer", "text": "No. SAFU è un fondo di emergenza che copre i fallimenti lato piattaforma, e ha notoriamente coperto tutte le perdite degli utenti per intero dopo l'hack del 2019. Non copre le perdite causate dalla tua password trapelata, clic di phishing o truffe di falso supporto. La sicurezza lato account è un tuo compito."}}, {"@type": "Question", "name": "Ho cliccato un link di phishing. Cosa faccio prima?", "acceptedAnswer": {"@type": "Answer", "text": "Agisci in fretta: cambia la password da un dispositivo pulito, revoca tutte le sessioni attive e le chiavi API, controlla la whitelist di prelievo e i prelievi recenti, e contatta il supporto Binance solo tramite app o sito ufficiali. La velocità conta più dell'imbarazzo — i team di supporto vedono questo ogni giorno."}}, {"@type": "Question", "name": "Dovrei tenere tutte le mie crypto su Binance?", "acceptedAnswer": {"@type": "Answer", "text": "Per il trading attivo, tenere fondi sull'exchange è normale e comodo. Per detenzioni a lungo termine più grandi, spostale nel tuo wallet dove controlli la seed phrase. La suddivisione su cui si assestano la maggior parte degli utenti esperti è: denaro di trading sull'exchange, risparmi in autocustodia."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Percorso per principianti</a><a href="index.html" class="on">Guide</a><a href="../exchanges.html">Exchange</a><a href="../airdrops.html">Airdrop</a><a href="../tools.html">Strumenti</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it" selected>Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Home</a> / <a href="index.html">Guide</a> / Mantieni sicuro il tuo account Binance</div>
+      <h1>Come mantenere sicuro il tuo account Binance</h1>
+      <p class="sub">La maggior parte delle storie di «account exchange hackerato» non sono affatto hack di exchange. Sono password riutilizzate, 2FA mancante e un clic incauto. Questa checklist chiude tutti e tre i buchi in circa dieci minuti.</p>
+      <p class="updated">Aggiornato ottobre 2026 · Di TokVS · 12 min di lettura</p>
+      <p class="note">Fonti e metodo: <a href="../methodology.html">come verifichiamo</a> · <a href="../exchanges.html#availability">tabella di disponibilità per paese</a> · i dati cambiano, verifica sulla pagina ufficiale prima di agire.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Il più grande al mondo, la liquidità più profonda</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Iscriviti su Binance →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Gamma completa di prodotti, buon supporto linguistico</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea un account OKX</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>La verità in 30 secondi sulla sicurezza Binance</h2>
+      <p>Ecco il fatto scomodo che plasma tutto ciò che segue: quando i principianti perdono crypto, il caveau dell'exchange non è quasi mai il problema. Lo schema si ripete migliaia di volte l'anno. Qualcuno riutilizza una password trapelata in una vecchia violazione di dati. Qualcuno accede tramite un annuncio Google che porta a un dominio simile. Qualcuno si fida di un «agente di supporto» su Telegram che chiede un codice di verifica. I fondi escono dalla porta principale, con credenziali valide, e nessun sistema di sicurezza al mondo può distinguere quel login dal tuo.</p>
+      <p>Questa è in realtà una buona notizia. Significa che i rischi più grandi sono quelli che puoi eliminare tu stesso, gratuitamente, in una seduta. Le protezioni lato piattaforma di Binance — il fondo di emergenza SAFU, la prova delle riserve, la conservazione a freddo per la maggior parte degli asset — coprono il lato dell'exchange dell'accordo. Questa guida copre il tuo. Fai l'intera checklist una volta, e i percorsi di attacco più comuni contro il tuo account smettono semplicemente di funzionare.</p>
+      <p class="in-cta">Ancora nessun account? <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Iscriviti su Binance</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea un account OKX</a></p>
+      <h2>Passo 1: una password che non esiste da nessun'altra parte</h2>
+      <p>La tua password Binance deve essere unica per Binance — non una variazione della password email, non la tua vecchia password preferita con un «!» aggiunto. Gli attacchi di credential-stuffing funzionano provando password trapelate da altri siti contro exchange crypto, e riescono su larga scala proprio perché le persone riutilizzano le password. Un gestore di password risolve questo correttamente: genera una lunga password casuale, la ricorda, e la compila per te. Se non userai un gestore, scrivi una lunga passphrase su carta e tienila in un luogo sicuro — mai in un'app per note, un messaggio in chat a te stesso, o uno screenshot.</p>
+      <p>Altre due regole. Primo, non digitare mai la tua password da nessun'altra parte se non nell'app Binance reale o nel dominio reale binance.com, che hai raggiunto digitandolo tu stesso o da un preferito — mai da un link in un'email, annuncio o messaggio. Secondo, cambia subito la password se mai sospetti che sia trapelata, e tratta qualsiasi email inattesa di «reset password» come un segnale d'allarme, non un'istruzione da seguire.</p>
+      <h2>Passaggio 2: 2FA con authenticator, non SMS</h2>
+      <p>L'autenticazione a due fattori è la singola impostazione di maggior valore in questa pagina, e il tipo conta. I codici SMS sembrano comodi, ma possono essere intercettati tramite attacchi SIM-swap: un truffatore convince il tuo operatore mobile a spostare il tuo numero su una SIM che controlla, e improvvisamente i tuoi codici via testo arrivano sul suo telefono. Succede a persone comuni, non solo a celebrità.</p>
+      <p>Un'app authenticator (Google Authenticator, Authy o simili) genera codici basati sul tempo sul tuo dispositivo. Non c'è operatore da ingannare e nessun testo da intercettare. Configurala nell'app Binance sotto Sicurezza, e quando ti mostra la chiave di backup, salva quella chiave offline — su carta, in un luogo sicuro. Se perdi il telefono senza la chiave di backup, il recupero diventa un lento processo di verifica d'identità. Se conservi la chiave di backup, il recupero richiede minuti.</p>
+      <div class="callout warn"><b>Non condividere mai un codice 2FA con nessuno, mai.</b> Nessun dipendente Binance, nessun agente di supporto, nessun «team di sicurezza» te lo chiederà mai. Chiunque lo chieda è un truffatore, punto — incluse persone che suonano professionali e conoscono già il tuo nome.</div>
+      <h2>Passo 3: imposta il tuo codice anti-phishing</h2>
+      <p>Questa è la funzione di sicurezza più sottoutilizzata su Binance, e richiede trenta secondi. Nelle impostazioni di sicurezza puoi impostare una breve parola o frase — scegli qualcosa che solo tu riconosceresti. Da allora in poi, ogni email genuina da Binance include quel codice. Un'email che afferma di essere da Binance e manca del tuo codice è falsa, non importa quanto convincenti sembrino logo, layout o avviso urgente.</p>
+      <p>Rendilo un riflesso: prima di cliccare qualsiasi cosa in qualsiasi email legata alle crypto, controlla il tuo codice. Niente codice, niente clic. Le email di phishing sono il metodo di consegna numero uno per pagine di login false, e questa singola impostazione trasforma la maggior parte di esse in falsi ovvi. Mentre sei nelle impostazioni email, conferma anche che l'indirizzo email sul tuo account sia uno che controlli e monitori davvero — una casella obsoleta o condivisa è un anello debole.</p>
+      <h2>Passo 4: attiva la whitelist di prelievo</h2>
+      <p>La whitelist di prelievo (chiamata anche allowlisting di gestione indirizzi) è la tua ultima linea di difesa, ed è brutalmente efficace. Una volta attivata, i prelievi possono andare solo verso indirizzi wallet che hai pre-approvato. Se un attaccante in qualche modo ottiene pieno accesso al tuo account — password, 2FA e tutto — non può comunque inviare i tuoi fondi al suo wallet. Dovrebbe prima aggiungere il suo indirizzo, e aggiungere un nuovo indirizzo innesca un periodo di attesa e notifiche email, che ti dà tempo per congelare l'account.</p>
+      <p>La configurazione è semplice: vai alla gestione degli indirizzi di prelievo, aggiungi solo gli indirizzi che usi davvero (il tuo wallet, e qualsiasi account exchange a cui invii regolarmente), e attiva la whitelist. Sì, aggiunge un piccolo ritardo la prima volta che prelevi da qualche parte di nuovo. Quel ritardo è l'intero punto. Per un account che detiene un importo significativo, non c'è una buona ragione per lasciarla disattivata.</p>
+      <h2>Passo 5: gestisci dispositivi e sessioni</h2>
+      <p>Ogni login lascia una traccia. Nelle impostazioni di sicurezza puoi vedere i dispositivi e le sessioni attualmente connessi al tuo account — tipo di dispositivo, posizione e ora. Rivedi questa lista una volta al mese, e subito dopo qualsiasi cosa strana (un avviso di login che non hai innescato, un'email su un nuovo dispositivo). Se vedi un dispositivo che non riconosci, rimuovilo e cambia subito la password.</p>
+      <p>Abitudini correlate che non costano nulla: disconnettiti su computer condivisi, non restare mai connesso su un telefono che potresti perdere senza blocco schermo, e mantieni aggiornato il sistema operativo del telefono. Il tuo telefono ora è il tuo secondo fattore — un telefono senza blocco schermo è un caveau con la porta aperta. Inoltre, attiva le notifiche di login se non sono già attive; un avviso su un login da una città che non hai mai visitato vale più di qualsiasi antivirus.</p>
+      <h2>Passo 6: link di phishing — come individuarli prima di cliccare</h2>
+      <p>Le pagine di phishing oggi sembrano perfette al pixel. I segnali sono altrove:</p>
+      <ul>
+        <li><strong>Il dominio.</strong> Vero: binance.com. Falso: binance-support.com, binance-login.net, binance.com.verify-account.io. Salva il dominio vero tra i preferiti e usa il preferito.</li>
+        <li><strong>L'urgenza.</strong> «Il tuo account verrà chiuso in 24 ore a meno che tu non verifichi» è un copione. Gli exchange reali non minacciano la chiusura dell'account tramite link email.</li>
+        <li><strong>Il canale.</strong> Il supporto Binance non ti contatta per primo su Telegram, WhatsApp o DM di Twitter. Chiunque lo faccia sta impersonando il supporto.</li>
+        <li><strong>La richiesta.</strong> Seed phrase, password, codici 2FA e accesso desktop remoto non sono mai richieste legittime. Un vero agente di supporto ha strumenti backend e non ha bisogno di nessuno di questi.</li>
+        <li><strong>L'annuncio.</strong> I truffatori comprano annunci di ricerca sul nome stesso dell'exchange. Se hai cercato Binance e cliccato il primo risultato, ricontrolla il dominio prima di accedere — o meglio, usa il tuo preferito.</li>
+      </ul>
+      <p>Un'altra trappola moderna: le app false. Installa l'app Binance solo dalla lista ufficiale Apple App Store o Google Play pubblicata da Binance, e controlla il nome dello sviluppatore e il numero di recensioni. Gli APK caricati da siti web casuali sono un modo classico per consegnare le tue credenziali a uno sconosciuto.</p>
+      <h2>Passo 7: chiavi API — solo se le usi</h2>
+      <p>La maggior parte dei principianti non ha mai bisogno di chiavi API, e se non sai cosa siano, salta questa sezione — sei più sicuro senza di esse. Se colleghi un bot di trading o un tracker di portafoglio, segui tre regole: limita i permessi di ciascuna chiave esattamente a ciò di cui lo strumento ha bisogno (sola lettura se legge soltanto), limitala agli indirizzi IP dello strumento quando possibile, e non incollare mai una chiave in un sito web, chat o ticket di supporto. Una chiave trapelata con permesso di prelievo vale quanto una password trapelata, e le chiavi API non innescano richieste 2FA. Elimina le chiavi che non usi più; le chiavi dimenticate sono buchi dimenticati.</p>
+      <h2>Cosa copre e non copre SAFU</h2>
+      <p>Il fondo SAFU di Binance è una riserva di emergenza finanziata dalle commissioni di trading, e ha un track record reale: dopo l'hack del 2019 in cui furono sottratti circa 7.000 BTC, SAFU coprì tutte le perdite degli utenti per intero. Questa è la rete di sicurezza lato piattaforma, ed è una ragione per cui Binance è valutato tra gli exchange più sicuri in un nostro <a href="is-binance-safe.html">Binance è sicura</a> analisi.</p>
+      <p>Ma SAFU ha un confine che devi capire. Copre i fallimenti di Binance, non i tuoi. Non rimborsa fondi persi perché la tua password è trapelata, perché hai cliccato un link di phishing, o perché hai inviato crypto all'indirizzo di un truffatore. Non copre le perdite di mercato — se le tue monete scendono del 50%, quello è il mercato, non un evento di sicurezza. Ed è un fondo aziendale, non un sostegno governativo: non c'è alcuna garanzia in stile FDIC dietro di esso. L'inquadramento onesto è questo: Binance è tra i luoghi più sicuri per fare trading, e la tua igiene di account resta comunque il fattore decisivo per stabilire se i tuoi fondi restano tuoi.</p>
+      <h2>How much to keep sull'exchange</h2>
+      <p>Sicurezza e comodità tirano in direzioni opposte, e il giusto equilibrio dipende da cosa serve il denaro. I fondi che scambi attivamente appartengono sull'exchange — spostarli avanti e indietro per ogni trade spreca commissioni e tempo. I fondi che pianifichi di detenere per mesi o anni, specialmente quando l'importo farebbe davvero male perdere, appartengono nel tuo wallet, dove controlli la seed phrase e nessun account exchange può essere il singolo punto di fallimento. La nostra <a href="best-crypto-wallet-for-beginners.html">beginner guida al wallet</a> percorre quel passaggio passo passo. Una regola pratica: se perderlo cambierebbe il tuo mese, non dovrebbe stare tutto dietro una password. La stessa logica si applica su qualsiasi piattaforma tu usi — incluso <a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit</a>, un altro grande exchange dove si applica l'identica checklist (password unica, 2FA authenticator, codice anti-phishing, whitelist).</p>
+      <h2>La checklist di configurazione da 10 minuti</h2>
+      <ol>
+        <li>Password unica, conservata in un password manager (o su carta, offline).</li>
+        <li>2FA con app authenticator attivata; chiave di backup salvata offline.</li>
+        <li>Codice anti-phishing impostato; controllalo in ogni email Binance prima di cliccare.</li>
+        <li>Whitelist di prelievo attivata con solo i tuoi indirizzi approvati.</li>
+        <li>Notifiche di login attive; dispositivi e sessioni attuali rivisti.</li>
+        <li>Salva binance.com tra i preferiti; non accedere mai da link email, annunci o messaggi.</li>
+        <li>Il telefono ha un blocco schermo e aggiornamenti software attuali.</li>
+        <li>Detenzioni a lungo termine spostate nel tuo wallet quando l'importo conta.</li>
+      </ol>
+      <p>Fai queste otto cose e avrai chiuso i percorsi di attacco dietro la stragrande maggioranza delle perdite dei principianti. La sicurezza non è mai finita — nuove truffe appaiono costantemente — ma le basi sopra sono la differenza tra un bersaglio facile e uno difficile, e gli attaccanti scelgono in modo schiacciante bersagli facili.</p>
+      <h2>Se pensi di essere stato compromesso</h2>
+      <p>La velocità batte l'imbarazzo. Primo, da un dispositivo pulito, cambia la password e revoca tutte le sessioni attive e le chiavi API. Secondo, controlla i prelievi recenti e la tua whitelist — se un prelievo è ancora in sospeso, contatta subito il supporto; potrebbe esserci una finestra per fermarlo. Terzo, contatta il supporto Binance solo tramite app o sito ufficiale, e descrivi esattamente cosa è successo. Quarto, se i fondi sono già usciti, salva ogni record (ID transazione, indirizzi, timestamp, log chat) — il recupero è improbabile ma non impossibile, e i record sono ciò che lo rende possibile. Non pagare nessuno che promette di «recuperare» le tue crypto a pagamento; quella è la seconda truffa, mirata alle vittime della prima.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Pronto?</b> La registrazione richiede circa 10 minuti: verifica una volta, attiva la 2FA, poi segui i passaggi sopra. Le guide di questo sito ti accompagnano nel resto.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Il più grande al mondo, la liquidità più profonda</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Iscriviti su Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Gamma completa di prodotti, buon supporto linguistico</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea un account OKX</a></div>
+        </div>
+        <p class="note">Stesse commissioni della registrazione diretta — il nostro link non ti costa nulla in più. Bitget (<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">bitget.com</a>) è anche disponibile; nota che al momento non abbiamo alcun accordo di rimborso con Bitget.</p>
+      </div>
+
+      <h3>La 2FA via SMS è sufficiente per Binance?</h3>
+      <p>No. I codici SMS possono essere intercettati tramite attacchi SIM-swap, dove un truffatore convince il tuo operatore a spostare il tuo numero sulla sua SIM. Un'app authenticator genera codici sul tuo dispositivo e non è vulnerabile a quel trucco. Usa un'app authenticator come metodo 2FA primario.</p>
+      <h3>Cos'è il codice anti-phishing di Binance e perché conta?</h3>
+      <p>È una breve parola o frase che imposti nelle impostazioni di sicurezza. Binance include poi quel codice in ogni email genuina che ti invia. Se un'email che afferma di essere da Binance manca del tuo codice, è falsa — eliminala e non cliccare nulla in essa.</p>
+      <h3>Cosa fa la whitelist di prelievo?</h3>
+      <p>Una volta attivata, i prelievi possono andare solo verso indirizzi che hai pre-approvato. Anche se qualcuno entra nel tuo account, non può inviare i tuoi fondi al suo wallet. Aggiungere un nuovo indirizzo innesca un periodo di attesa, che ti dà tempo per reagire se la modifica non era tua.</p>
+      <h3>SAFU mi protegge se il mio account viene hackerato?</h3>
+      <p>No. SAFU è un fondo di emergenza che copre i fallimenti lato piattaforma, e ha notoriamente coperto tutte le perdite degli utenti per intero dopo l'hack del 2019. Non copre le perdite causate dalla tua password trapelata, clic di phishing o truffe di falso supporto. La sicurezza lato account è un tuo compito.</p>
+      <h3>Ho cliccato un link di phishing. Cosa faccio prima?</h3>
+      <p>Agisci in fretta: cambia la password da un dispositivo pulito, revoca tutte le sessioni attive e le chiavi API, controlla la whitelist di prelievo e i prelievi recenti, e contatta il supporto Binance solo tramite app o sito ufficiali. La velocità conta più dell'imbarazzo — i team di supporto vedono questo ogni giorno.</p>
+      <h3>Dovrei tenere tutte le mie crypto su Binance?</h3>
+      <p>Per il trading attivo, tenere fondi sull'exchange è normale e comodo. Per detenzioni a lungo termine più grandi, spostale nel tuo wallet dove controlli la seed phrase. La suddivisione su cui si assestano la maggior parte degli utenti esperti è: denaro di trading sull'exchange, risparmi in autocustodia.</p>
+      <h2>Continua a leggere</h2>
+      <ul>
+        <li><a href="is-binance-safe.html">Binance è sicura? SAFU, riserve e avvertenze oneste</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">Miglior wallet crypto per principianti</a></li>
+        <li><a href="how-to-buy-crypto-for-beginners.html">Come acquistare crypto per principianti</a></li>
+        <li><a href="buy-usdt.html">Come acquistare USDT: tutti i metodi a confronto</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Home</a><a href="../airdrops.html">Airdrop giornalieri</a><a href="../exchanges.html">Confronto tra exchange</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principianti</b><a href="../start/step1.html">Percorso per principianti</a><a href="index.html">Guide</a><a href="../start/step5.html">Acquista la tua prima moneta</a></div>
+      <div class="col" style="flex:1;"><b>Recensioni</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Strumenti</b><a href="../tools.html#watchlist">Avvisi della watchlist</a><a href="../tools.html#calendar">Calendario degli eventi</a><a href="../exchanges.html#calculator">Calcolatore delle commissioni</a></div>
+    </div>
+    <div class="disclosure">Questo sito contiene link di affiliazione. Registrarsi tramite i nostri link non ti costa nulla in più. I prezzi delle criptovalute sono estremamente volatili; nulla qui è un consiglio di investimento: valuta tu stesso i rischi.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Non hai ancora un account? Registrati in 3 minuti →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Registrati</a><button class="sx" aria-label="Chiudi" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
