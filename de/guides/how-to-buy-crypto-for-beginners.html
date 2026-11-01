@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Wie man Krypto für Einsteiger kauft: 5 Schritte, kein Jargon — TokVS</title>
+<meta name="description" content="Wie man Krypto für Einsteiger in 5 einfachen Schritten kauft: Verstehe den Coin, wähle eine Börse, verifiziere, finanziere mit Fiat, platziere deine erste Order und lagere sie sicher. Kein Jargon, kein Hype.">
+<link rel="canonical" href="https://tokvs.com/de/guides/how-to-buy-crypto-for-beginners">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-crypto-for-beginners">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-crypto-for-beginners">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-crypto-for-beginners">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-crypto-for-beginners">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-crypto-for-beginners">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-crypto-for-beginners">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-crypto-for-beginners">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-crypto-for-beginners">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-crypto-for-beginners">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-crypto-for-beginners">
+<meta property="og:title" content="Wie man Krypto für Einsteiger kauft — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Fünf einfache Schritte von null zu deinen ersten Coins, plus echte Gebühren und die Fehler, die Einsteiger wirklich machen.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/de/guides/how-to-buy-crypto-for-beginners">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/de/"}, {"@type": "ListItem", "position": 2, "name": "Anleitungen", "item": "https://tokvs.com/de/guides/"}, {"@type": "ListItem", "position": 3, "name": "Krypto kaufen für Einsteiger", "item": "https://tokvs.com/de/guides/how-to-buy-crypto-for-beginners"}]}, {"@type": "Article", "headline": "Krypto kaufen für Einsteiger", "description": "Wie man Krypto für Einsteiger in 5 einfachen Schritten kauft: Verstehe den Coin, wähle eine Börse, verifiziere, finanziere mit Fiat, platziere deine erste Order und lagere sie sicher. Kein Jargon, kein Hype.", "datePublished": "2026-10-28", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/de/guides/how-to-buy-crypto-for-beginners", "dateModified": "2026-10-30"}, "inLanguage": "de"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Brauche ich viel Geld, um mit dem Kauf von Krypto zu starten?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. Die meisten Börsen lassen dich mit dem Gegenwert von 10 $ oder weniger starten. Starte mit einem kleinen Testbetrag, um den Ablauf zu lernen — die Größe deines ersten Kaufs zählt weit weniger als das Verstehen jedes Schritts."}}, {"@type": "Question", "name": "Welchen Coin sollte ein Einsteiger zuerst kaufen?", "acceptedAnswer": {"@type": "Answer", "text": "Die meisten Einsteiger starten mit Bitcoin oder Ethereum, weil sie die größten, liquidesten und am besten dokumentierten sind. Kaufe zuerst USDT als Zwischenschritt, dann nutze ihn, um BTC oder ETH auf einem Spot-Paar zu kaufen."}}, {"@type": "Question", "name": "Ist Krypto kaufen legal?", "acceptedAnswer": {"@type": "Answer", "text": "Es hängt von deinem Land ab und ändert sich mit der Zeit. Die meisten großen Volkswirtschaften erlauben es mit Regeln; ein paar beschränken oder verbieten es. Prüfe deine lokalen Regeln, bevor du startest, und nutze niemals ein VPN, um eine regionale Einschränkung zu umgehen — das riskiert ein eingefrorenes Konto."}}, {"@type": "Question", "name": "Kann ich all mein Geld verlieren?", "acceptedAnswer": {"@type": "Answer", "text": "Ja, und du solltest annehmen, dass dieses Risiko real ist: Preise können stark fallen, Börsen können scheitern, und Betrugsmaschen sind überall. Nutze nur Geld, dessen vollständigen Verlust du dir leisten kannst, und behandle Sicherheitsschritte als Teil der Investition, nicht als optionale Extras."}}, {"@type": "Question", "name": "Brauche ich eine Wallet am ersten Tag?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. Einen kleinen Erstkauf auf der Börse zu lassen, während du lernst, ist vollkommen in Ordnung. Wechsle in deine eigene Wallet, sobald der Betrag für dich zählt — unsere Wallet-Sicherheitsanleitung behandelt Seed-Phrasen richtig."}}, {"@type": "Question", "name": "Wie lange dauert die Verifizierung?", "acceptedAnswer": {"@type": "Answer", "text": "Meist Minuten bis wenige Stunden, nachdem du einen klaren staatlich ausgestellten Lichtbildausweis und einen Live-Gesichtscheck eingereicht hast. Unscharfe Fotos verursachen die meisten Verzögerungen, also nimm sie bei gutem Licht neu auf, wenn die Genehmigung stockt."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Einsteigerpfad</a><a href="index.html" class="on">Anleitungen</a><a href="../exchanges.html">Börsen</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Tools</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de" selected>Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Startseite</a> / <a href="index.html">Anleitungen</a> / Wie man Krypto für Einsteiger kauft</div>
+      <h1>Krypto kaufen für Einsteiger</h1>
+      <p class="sub">Fünf Schritte, kein Jargon, kein Hype: vom Verstehen deines ersten Coins bis zum Platzieren einer Order und sicheren Lagern. Lies dies einmal und der Rest der Seite fügt sich zusammen.</p>
+      <p class="updated">Aktualisiert Okt. 2026 · Von TokVS · 10 Min. Lesezeit</p>
+      <p class="note">Quellen &amp; Methode: <a href="../methodology.html">wie wir prüfen</a> · <a href="../exchanges.html#availability">Länderverfügbarkeitstabelle</a> · Zahlen ändern sich, prüfe vor dem Handeln auf der offiziellen Seite.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Größte Börse der Welt, tiefste Liquidität</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren →</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Vollständige Produktpalette, gute Sprachunterstützung</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX-Konto erstellen</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">Einsteigerfreundliche App, tiefe Liquidität</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bei Bybit registrieren</a></div></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+
+      <h2>Die 5-Schritte-Karte</h2>
+      <p>Krypto zum ersten Mal zu kaufen fühlt sich kompliziert an, weil jeder Leitfaden zehn neue Wörter auf einmal auf dich wirft. Reduziere es und der gesamte Prozess sind fünf Schritte: <strong>1. Verstehe, was du kaufst, 2. wähle eine Börse, 3. registriere dich und verifiziere, 4. füge Geld hinzu und kaufe USDT, 5. platziere deine erste Order und lagere sie.</strong> Das ist es. Alles andere — Charts, Hebel, Staking, Airdrops — ist optionale Dekoration, die du später lernen kannst, nachdem sich die Grundlagen langweilig anfühlen. Dieser Leitfaden geht jeden Schritt in Reihenfolge durch, mit den genauen Klicks und den Fallen in jedem. Folge ihm einmal mit einem kleinen Testbetrag und du wirst dich auf einer Börse nie wieder verloren fühlen.</p>
+      <ol>
+        <li><strong>Verstehe, was du kaufst.</strong> Kenne den Unterschied zwischen einem Coin, einem Token und einem Stablecoin, bevor du etwas ausgibst.</li>
+        <li><strong>Wähle eine Börse.</strong> Ein Konto auf einer großen, liquiden Plattform schlägt fünf Konten auf kleinen.</li>
+        <li><strong>Registriere dich und verifiziere.</strong> Identitätsverifizierung plus Zwei-Faktor-Authentifizierung, richtig gemacht, einmal.</li>
+        <li><strong>Füge Geld hinzu und kaufe USDT.</strong> USDT ist der dollar-gebundene Zwischenschritt, den die meisten Einsteiger nutzen, um andere Coins zu erreichen.</li>
+        <li><strong>Platziere deine erste Order und lagere sie.</strong> Ein kleiner Spot-Kauf, dann eine bewusste Wahl darüber, wo die Coins leben.</li>
+      </ol>
+      <h2>Schritt 1: Verstehe, was du kaufst</h2>
+      <p>Drei Wörter decken fast alles ab, dem ein Einsteiger begegnet. <strong>Bitcoin (BTC)</strong> Ist die ursprüngliche Kryptowährung: ein dezentrales Zahlungsnetzwerk mit festem Maximalangebot von 21 Millionen Coins, seit 2009 laufend ohne irgendein Unternehmen dahinter. <strong>Ethereum (ETH)</strong> Ist das zweitgrößte Netzwerk und funktioniert mehr wie eine programmierbare Plattform — Apps, Stablecoins und Token laufen alle darauf. <strong>USDT (Tether)</strong> Ist ein Stablecoin: ein Token, der designed ist, nahe einem US-Dollar zu bleiben, genutzt als Brücke zwischen Fiat-Geld und Kryptomärkten. Die meisten Einsteiger kaufen zuerst USDT, dann nutzen sie ihn, um BTC, ETH oder alles andere zu kaufen, weil USDT-Trading-Paare für fast jeden Coin existieren.</p>
+      <p>Zwei Unterscheidungen retten dich vor der meisten Einsteigerverwirrung. Erstens, <strong>Coins vs. Token</strong>: Ein Coin betreibt seine eigene Blockchain (BTC auf Bitcoin, ETH auf Ethereum), während ein Token auf der Blockchain eines anderen lebt (USDT existiert auf mehreren Chains). Zweitens, <strong>Preis vs. Wert</strong>: Ein Coin bei 0,01 $ ist nicht „billiger“ als ein Coin bei 80.000 $ — was zählt, ist Marktkapitalisierung (Preis mal Gesamtangebot) und was das Netzwerk wirklich tut. Wenn diese zwei Ideen klar sind, lies unsere <a href="what-is-bitcoin.html">Was ist Bitcoin?</a> und <a href="what-is-cryptocurrency.html">Was ist Kryptowährung?</a> Leitfäden für das vollständige Bild, und unsere <a href="what-is-usdt.html">Was ist USDT?</a> Anleitung, bevor du Stablecoins anfasst.</p>
+      <h2>Schritt 2: Wähle eine Börse</h2>
+      <p>Eine Börse ist, wo du Fiat-Geld in Krypto und zurück umwandelst. Für ein erstes Konto optimiere für drei Dinge: <strong>Größe, Sicherheitsbilanz und eine Zahlungsmethode, die in deinem Land funktioniert.</strong> Größe zählt, weil tiefere Orderbücher bedeuten, dass dein Kauf sich zu einem Preis füllt, der nahe dem liegt, was du auf dem Bildschirm siehst. Sicherheitsbilanz zählt, weil du einem Unternehmen dein Geld anvertraust — suche nach Proof of Reserves, langer Betriebshistorie und einem Sicherheitssetup, das Zwei-Faktor-Authentifizierung und Abhebeadress-Whitelisting enthält. Zahlungsmethode zählt in der Praxis am meisten: Die „beste“ Börse ist nutzlos, wenn sie deine Banküberweisung, Karte oder lokale P2P-Schiene nicht akzeptieren kann.</p>
+      <p>Die drei Plattformen, die diese Seite für Einsteiger empfiehlt, sind <strong>Binance</strong> (die weltweit größte nach Volumen, tiefste Liquidität), <strong>OKX</strong> (eine volle Produktlinie mit guter Sprachunterstützung), und <strong>Bybit</strong> (eine einsteigerfreundliche App mit tiefer Liquidität). <a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">Bitget</a> Ist ebenfalls als vierte Option verfügbar; wir haben aktuell keine Rabattvereinbarung mit Bitget, also nutze den einfachen Link. Unsere <a href="choose-exchange.html">Börsenwahl-Anleitung</a> Führt sechs Prüfungen durch, die du auf jede Plattform anwenden kannst, unsere <a href="best-crypto-exchange-2026.html">Beste-Börse-2026-Rundschau</a> Vergleicht die großen Namen Kopf an Kopf, und unsere <a href="is-binance-safe.html">Binance-Sicherheitsprüfung</a> Untersucht Reserven und Erfolgsbilanz im Detail. Wähle eine, nicht drei — du kannst später immer eine weitere hinzufügen.</p>
+      <p class="in-cta">Mache dein Konto zuerst bereit: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX-Konto erstellen</a> <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bei Bybit registrieren</a></p>
+      <h2>Schritt 3: Registriere dich und verifiziere</h2>
+      <p>Die Registrierung selbst dauert Minuten: eine E-Mail-Adresse oder Telefonnummer, ein starkes einzigartiges Passwort, und du bist drin. <strong>Verifizierung (KYC)</strong> Ist der Teil, bei dem Menschen stocken, und er ist auf regulierten Börsen nicht verhandelbar: Du wirst einen staatlich ausgestellten Lichtbildausweis einreichen und meist einen Live-Gesichtscheck abschließen. Genehmigung landet typischerweise innerhalb von Minuten bis wenigen Stunden; unscharfe Dokumentenfotos verursachen die meisten Ablehnungen, also nimm sie bei gutem Licht neu auf, wenn es stockt. Einige Regionen unterliegen Einschränkungen — zum Beispiel bedient Binance.com keine US-Nutzer — also wenn dein Land blockiert ist, versuche nicht, es mit einem VPN zu umgehen; das riskiert ein eingefrorenes Konto, und kein Leitfaden auf dieser Seite wird dir etwas anderes sagen.</p>
+      <p>Bevor du etwas einzahlst, aktiviere drei Schutzmaßnahmen in dieser Reihenfolge: <strong>Eine Authenticator-App für Zwei-Faktor-Authentifizierung</strong> (Nicht SMS, die per SIM-Swap gekapert werden kann), <strong>Eine Abhebeadress-Whitelist</strong> Sodass Gelder nur an Adressen gehen können, die du genehmigt hast, und <strong>Ein Anti-Phishing-Code</strong> Sodass echte Börsen-E-Mails ein Wort tragen, das nur du kennst. Schreibe dein Passwort irgendwo sicher auf und teile Verifizierungscodes niemals mit jemandem, inklusive Menschen, die behaupten, Support-Mitarbeiter zu sein. Echter Support fragt niemals danach.</p>
+      <h2>Schritt 4: Füge Geld hinzu und kaufe USDT</h2>
+      <p>Es gibt drei gängige Wege, dein Konto zu finanzieren, und der richtige hängt von deinem Land ab. <strong>P2P-Trading</strong> — USDT direkt von verifizierten Händlern innerhalb der Börsen-App zu kaufen, per Banküberweisung oder lokaler Wallet zu zahlen — ist meist die billigste Route und die Standardroute in vielen Ländern; Treuhand hält die USDT des Händlers, bis deine Zahlung landet, was es sicher macht. <strong>Kartenkauf</strong> Ist der schnellste für einen ersten winzigen Test, trägt aber die höchsten Gebühren und die meisten abgelehnten Transaktionen. <strong>Banküberweisung oder Drittanbieter-Zahlung</strong> Liegt in der Mitte: langsamer als eine Karte, billiger als eine, und am besten für größere Beträge.</p>
+      <p>Welche Schiene du auch nutzt, kaufe zuerst USDT. Der Grund ist praktisch, nicht ideologisch: USDT-Paare existieren für fast jeden Coin, sodass ein USDT-Guthaben dich BTC, ETH, SOL oder alles andere kaufen lässt, ohne jedes Mal zu Fiat zurückzukehren. Unsere <a href="buy-usdt.html">Wie-man-USDT-kauft-Anleitung</a> Vergleicht alle Methoden nebeneinander, und unsere <a href="how-to-buy-usdt-on-binance-p2p.html">Binance-P2P-Anleitung</a> Behandelt Treuhand, Händlerprüfungen und Zahlungssicherheit im Detail. Starte mit einem kleinen Testbetrag — genug, um den Ablauf zu lernen, klein genug, dass ein Fehler sticht statt schmerzt.</p>
+      <h2>Schritt 5: Platziere deine erste Order und lagere sie</h2>
+      <p>Mit USDT auf deinem Konto bewege sie von deiner Funding-Wallet in deine Spot-Wallet (kostenlos und sofort auf den meisten Börsen), dann öffne den Spot-Markt — zum Beispiel das BTC/USDT-Paar. Du wirst zwei Ordertypen sehen: eine <strong>Market-Order</strong> Kauft sofort zum aktuellen Preis, und eine <strong>Limit-Order</strong> Kauft nur, wenn der Preis ein von dir gesetztes Niveau erreicht. Für einen ersten Kauf ist eine Market-Order für einen kleinen Betrag die ehrliche Wahl; Limit-Orders sind für wenn du einen Preis im Kopf hast und die Geduld zu warten. Nachdem sich die Order füllt, sitzen deine Coins auf deinem Börsenkonto — bequem für Trading, und der richtige Ort, solange der Betrag klein ist.</p>
+      <p>Lagerung ist eine Entscheidung, die du erneut besuchst, während deine Bestände wachsen. <strong>Auf der Börse</strong> Ist in Ordnung zum Lernen und für Beträge, deren Verlust du dir leisten kannst. <strong>In deiner eigenen Wallet</strong> — Eine Handy-App oder ein Hardware-Gerät, wo du allein die Seed-Phrase hältst — ist der Standardzug, sobald der Betrag für dich zählt, weil kein Börsenversagen sie berühren kann; der Trade-off ist, dass der Verlust der Seed-Phrase den Verlust der Coins bedeutet, ohne Support, den man anrufen kann. Unsere <a href="wallet-safety.html">Wallet-Sicherheitsleitfaden</a> Behandelt Seed-Phrasen richtig, und unsere <a href="how-to-buy-bitcoin.html">Bitcoin-Anleitung</a> Wiederholt diesen gesamten Ablauf mit Screenshot-Level-Detail speziell für BTC.</p>
+      <h2>Was es kostet, alles zusammen</h2>
+      <p>Einsteiger überschätzen meist Handelsgebühren und unterschätzen alles darum herum. Die Handelsgebühr selbst ist klein: Standard-Spot-Sätze sind <strong>Binance 0.10% Maker / 0.10% Taker, OKX 0.08% Maker / 0.10% Taker und Bybit Spot 0.10% Maker / 0.10% Taker</strong> — Bei einem 100-$-Trade sind das etwa zehn Cent. Deine echten Kosten sind die Finanzierungsroute (P2P-Premiums, Kartengebühren), die Netzwerk-Abhebegebühr, wenn du Coins von der Börse bewegst, und der Spread — die Lücke zwischen Kauf- und Verkaufspreisen auf dünnen Märkten. Prüfe die offizielle Gebührenseite der Börse, bevor du tradest; offizielle Sätze siegen immer über jeden Leitfaden, inklusive diesem.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Börse</th><th>Spot-Maker</th><th>Spot-Taker</th><th>Notizen</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10%</td><td>0.10%</td><td>Tiefste Liquidität; P2P breit verfügbar</td></tr>
+          <tr><td>OKX</td><td>0.08%</td><td>0.10%</td><td>Volle Produktlinie; gute Sprachunterstützung</td></tr>
+          <tr><td>Bybit</td><td>0.10%</td><td>0.10%</td><td>Einsteigerfreundliche App; tiefe Liquidität</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Standard-Spot-Sätze gezeigt; dein tatsächlicher Satz kann mit Handelsvolumen oder Token-Beständen abweichen. Bestätige immer auf der offiziellen Gebührenseite der Börse — offizielle Sätze siegen.</p>
+      <h2>6 Fehler, die jeder Einsteiger macht</h2>
+      <ul>
+        <li><strong>Mit Hebel zu starten.</strong> Gehebeltes Trading multipliziert Verluste genau so schnell wie Gewinne und liquidiert Einsteiger bei normalem Marktrauschen. Lerne zuerst Spot; Hebel ist keine Abkürzung, es ist ein anderes Spiel.</li>
+        <li><strong>Zu kaufen, weil ein Coin „billig“ ist.</strong> Ein 0,001-$-Coin ist kein Schnäppchen — prüfe Marktkapitalisierung und Angebot, bevor du irgendeinen Preis beurteilst.</li>
+        <li><strong>DMs und „Support“-Konten zu vertrauen.</strong> Kein legitimer Support-Agent wird dir jemals zuerst eine DM schicken, und kein echtes Giveaway bittet dich, Coins zu senden, um mehr zurückzuerhalten.</li>
+        <li><strong>2FA bis „später“ zu überspringen.</strong> Später ist, wenn Konten übernommen werden. Authenticator-App ab Tag eins, keine Ausnahmen.</li>
+        <li><strong>Geld zu investieren, das sie bald brauchen.</strong> Krypto kann stark fallen und Monate unten bleiben. Nutze nur Geld, das du lange in Ruhe lassen kannst.</li>
+        <li><strong>Alles für immer auf einer Börse zu halten.</strong> In Ordnung zum Lernen; sobald Bestände wachsen, lerne Selbstverwahrung und verteile das Risiko.</li>
+      </ul>
+      <h2>Deine Erste-Woche-Checkliste</h2>
+      <ol>
+        <li>Konto verifiziert, Authenticator-2FA und Anti-Phishing-Code aktiviert.</li>
+        <li>Kleiner Testkauf abgeschlossen: Fiat → USDT → ein Spot-Kauf.</li>
+        <li>Abhebung mit einem winzigen Betrag an eine von dir kontrollierte Adresse getestet (optional, aber augenöffnend).</li>
+        <li>Jeder Trade protokolliert: Datum, Plattform, Betrag, Order-ID.</li>
+        <li>Ein Betrugsleitfaden von Anfang bis Ende gelesen — unser <a href="avoid-scams.html">Betrugsleitfaden</a> Behandelt die acht Betrugsmaschen, denen Einsteiger wirklich begegnen.</li>
+        <li>Wiederhole in deiner echten Größe erst, wenn sich der gesamte Ablauf langweilig anfühlt. Langweilig bedeutet, dass du ihn gelernt hast.</li>
+      </ol>
+
+      <div id="tokvs-first-buy-checklist">
+  <style>
+    #tokvs-first-buy-checklist ul { list-style:none; padding:0; }
+    #tokvs-first-buy-checklist li { margin:8px 0; }
+    #tokvs-first-buy-checklist label { cursor:pointer; }
+    #tokvs-first-buy-checklist input[type="checkbox"] { margin-right:8px; accent-color:#00C853; }
+    #tokvs-checklist-count { font-weight:800; }
+  </style>
+  <h2>Deine Erstkauf-Checkliste (hake sie ab, während du gehst)</h2>
+  <p>Hake jeden Schritt ab, wenn du ihn abschließt. Dein Fortschritt wird nur in diesem Browser gespeichert.</p>
+  <ul>
+    <li><label><input type="checkbox" data-idx="0"> Bestätige, dass die Börse in deinem Land verfügbar ist</label></li>
+    <li><label><input type="checkbox" data-idx="1"> Aktiviere Zwei-Faktor-Authentifizierung (2FA), bevor du einzahlst</label></li>
+    <li><label><input type="checkbox" data-idx="2"> Starte mit einer kleinen Testeinzahlung</label></li>
+    <li><label><input type="checkbox" data-idx="3"> Prüfe die Vorschau-Gesamtsumme (Betrag, Preis und Gebühren), bevor du einen Kauf bestätigst</label></li>
+    <li><label><input type="checkbox" data-idx="4"> Stimme das Netzwerk auf beiden Seiten ab, bevor du abhebst</label></li>
+    <li><label><input type="checkbox" data-idx="5"> Protokolliere den Trade: Datum, Betrag, Preis und Gebühren</label></li>
+    <li><label><input type="checkbox" data-idx="6"> Sende eine winzige Testabhebung, bevor du einen größeren Betrag bewegst</label></li>
+    <li><label><input type="checkbox" data-idx="7"> Bewege Gelder in Selbstverwahrung, wenn der Betrag für dich zählt</label></li>
+  </ul>
+  <p><span id="tokvs-checklist-count">0 von 8 erledigt</span> <button type="button" class="btn-add" id="tokvs-checklist-reset">Zurücksetzen</button></p>
+  <p class="note">Nur in diesem Browser gespeichert. Das Löschen von Websitedaten setzt es zurück.</p>
+</div>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+<b>Bereit?</b> Die Registrierung dauert etwa 10 Minuten: einmal verifizieren, 2FA aktivieren, dann den Schritten oben folgen. Die Anleitungen auf dieser Seite führen dich durch den Rest.
+<div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Größte Börse der Welt, tiefste Liquidität</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Vollständige Produktpalette, gute Sprachunterstützung</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX-Konto erstellen</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">Einsteigerfreundliche App, tiefe Liquidität</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bei Bybit registrieren</a></div></div>
+<p class="note">Gleiche Gebühren wie bei direkter Registrierung — unser Link kostet dich nichts extra.</p>
+</div>
+      
+      <h3>Brauche ich viel Geld, um mit dem Kauf von Krypto zu starten?</h3>
+      <p>Nein. Die meisten Börsen lassen dich mit dem Gegenwert von 10 $ oder weniger starten. Starte mit einem kleinen Testbetrag, um den Ablauf zu lernen — die Größe deines ersten Kaufs zählt weit weniger als das Verstehen jedes Schritts.</p>
+      <h3>Welchen Coin sollte ein Einsteiger zuerst kaufen?</h3>
+      <p>Die meisten Einsteiger starten mit Bitcoin oder Ethereum, weil sie die größten, liquidesten und am besten dokumentierten sind. Kaufe zuerst USDT als Zwischenschritt, dann nutze ihn, um BTC oder ETH auf einem Spot-Paar zu kaufen.</p>
+      <h3>Ist Krypto kaufen legal?</h3>
+      <p>Es hängt von deinem Land ab und ändert sich mit der Zeit. Die meisten großen Volkswirtschaften erlauben es mit Regeln; ein paar beschränken oder verbieten es. Prüfe deine lokalen Regeln, bevor du startest, und nutze niemals ein VPN, um eine regionale Einschränkung zu umgehen — das riskiert ein eingefrorenes Konto.</p>
+      <h3>Kann ich all mein Geld verlieren?</h3>
+      <p>Ja, und du solltest annehmen, dass dieses Risiko real ist: Preise können stark fallen, Börsen können scheitern, und Betrugsmaschen sind überall. Nutze nur Geld, dessen vollständigen Verlust du dir leisten kannst, und behandle Sicherheitsschritte als Teil der Investition, nicht als optionale Extras.</p>
+      <h3>Brauche ich eine Wallet am ersten Tag?</h3>
+      <p>Nein. Einen kleinen Erstkauf auf der Börse zu lassen, während du lernst, ist vollkommen in Ordnung. Wechsle in deine eigene Wallet, sobald der Betrag für dich zählt — unsere Wallet-Sicherheitsanleitung behandelt Seed-Phrasen richtig.</p>
+      <h3>Wie lange dauert die Verifizierung?</h3>
+      <p>Meist Minuten bis wenige Stunden, nachdem du einen klaren staatlich ausgestellten Lichtbildausweis und einen Live-Gesichtscheck eingereicht hast. Unscharfe Fotos verursachen die meisten Verzögerungen, also nimm sie bei gutem Licht neu auf, wenn die Genehmigung stockt.</p>
+      <h2>Weiterlesen</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">Bitcoin kaufen: vollständige Anleitung</a></li>
+        <li><a href="buy-usdt.html">Wie man USDT kauft: alle Methoden verglichen</a></li>
+        <li><a href="wallet-safety.html">Wallet- &amp; Seed-Phrase-Sicherheit</a></li>
+        <li><a href="avoid-scams.html">Ist Krypto Betrug? 8 Betrugsmaschen, die man kennen sollte</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Startseite</a><a href="../airdrops.html">Tägliche Airdrops</a><a href="../exchanges.html">Börsenvergleich</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Einsteiger</b><a href="../start/step1.html">Einsteigerpfad</a><a href="index.html">Anleitungen</a><a href="../start/step5.html">Deinen ersten Coin kaufen</a></div>
+      <div class="col" style="flex:1;"><b>Testberichte</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">Watchlist-Alarme</a><a href="../tools.html#calendar">Ereigniskalender</a><a href="../exchanges.html#calculator">Gebührenrechner</a></div>
+    </div>
+    <div class="disclosure">Diese Seite enthält Affiliate-Links. Eine Registrierung über unsere Links kostet dich nichts extra. Kryptopreise sind stark volatil; nichts hier ist Anlageberatung — schätze die Risiken selbst ein.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Noch kein Konto? In 3 Minuten registrieren →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Registrieren</a><button class="sx" aria-label="Schließen" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+  <script src="/js/tokvs-widgets.js"></script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

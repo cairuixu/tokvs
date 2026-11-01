@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Krypto-Börsen, die es zu meiden gilt (und warum) — TokVS</title>
+<meta name="description" content="Welche Krypto-Börsen kollabiert sind, was bei FTX, Celsius, Voyager, BlockFi, Mt. Gox und QuadrigaCX schiefging, und welche Börsen aktuell große westliche Märkte nicht bedienen — plus die Warnsignale, die vor dem Vertrauen in irgendeine Plattform zu prüfen sind.">
+<link rel="canonical" href="https://tokvs.com/de/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/exchanges-to-avoid">
+<meta property="og:title" content="Krypto-Börsen, die es zu meiden gilt (und warum) — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Kollabierte Börsen aus öffentlicher Aufzeichnung, aktuelle Markteinschränkungen und die Warnsignale, die jeder Einsteiger prüfen sollte, bevor er einer Plattform vertraut.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/de/guides/exchanges-to-avoid">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/de/"}, {"@type": "ListItem", "position": 2, "name": "Anleitungen", "item": "https://tokvs.com/de/guides/"}, {"@type": "ListItem", "position": 3, "name": "Zu meidende Börsen", "item": "https://tokvs.com/de/guides/exchanges-to-avoid"}]}, {"@type": "Article", "headline": "Krypto-Börsen, die es zu meiden gilt (und warum)", "description": "Welche Krypto-Börsen kollabiert sind, was bei FTX, Celsius, Voyager, BlockFi, Mt. Gox und QuadrigaCX schiefging, und welche Börsen aktuell große westliche Märkte nicht bedienen.", "datePublished": "2026-10-30", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/de/guides/exchanges-to-avoid", "dateModified": "2026-10-30"}, "inLanguage": "de"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Operiert FTX noch?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. FTX kollabierte im November 2022 und durchlief Insolvenzverfahren. Seine Handelsplattform operiert nicht als normale Börse, und Kunden wurden Gläubiger im Insolvenzverfahren. Wenn du eine Seite siehst, die behauptet, ein neu gestartetes FTX zu sein, behandle sie mit extremer Vorsicht und verifiziere sie über offizielle Insolvenzkommunikation, bevor du ihr vertraust."}}, {"@type": "Question", "name": "Kann ich Geld von einer kollabierten Börse zurückbekommen?", "acceptedAnswer": {"@type": "Answer", "text": "Manchmal, aber nimm es niemals an. Insolvenzverfahren können über Jahre einen Teil der Kundengelder zurückgeben, und der Betrag hängt davon ab, welche Vermögenswerte verbleiben und wie Ansprüche rangieren. Einige Fälle haben erhebliche Beträge zurückgegeben, andere sehr wenig. Behandle jedes Geld auf einer kollabierten Plattform als gefährdet, bis eine gerichtlich genehmigte Ausschüttung dich wirklich erreicht."}}, {"@type": "Question", "name": "Warum sprechen Menschen über Proof of Reserves?", "acceptedAnswer": {"@type": "Answer", "text": "Proof of Reserves ist ein Weg für eine Börse zu zeigen, dass sie die Vermögenswerte hält, die sie zu halten behauptet, meist über eine Drittpartei-Attestierung. Es zählt, weil mehrere kollabierte Plattformen sich als nicht haltend herausstellten, was sie behaupteten. Aber es hat Grenzen: Es zeigt Vermögenswerte zu einem Moment, keine Verbindlichkeiten, und es ist kein Audit. Lies es als ein Signal unter mehreren, nicht als Garantie."}}, {"@type": "Question", "name": "Bedeutet Regulierung, dass eine Börse sicher ist?", "acceptedAnswer": {"@type": "Answer", "text": "Regulierung reduziert einige Risiken, entfernt aber keines vollständig. Eine lizenzierte Börse unterliegt Regeln, Meldepflichten und Aufsicht, was besser ist als gar keine Aufsicht. Aber regulierte Firmen können trotzdem scheitern, Abhebungen einfrieren oder Hacks erleiden. Regulierung ist ein Faktor, der neben Reserven-Transparenz, Erfolgsbilanz und wie viel du auf der Plattform hältst, abzuwägen ist."}}, {"@type": "Question", "name": "Warum kann ich mich in meinem Land nicht bei einer Börse registrieren?", "acceptedAnswer": {"@type": "Answer", "text": "Börsen beschränken Länder aus rechtlichen und lizenzrechtlichen Gründen. Zum Beispiel zeigt unsere Länderverfügbarkeitstabelle, geprüft am 30. Oktober 2026, dass Binance keine neuen Nutzer im EWR und im Vereinigten Königreich aufnimmt, Bybit die USA und Kanada nicht bedient, und Bitget in den USA, dem Vereinigten Königreich und Kanada eingeschränkt ist, mit ausstehendem EWR-Zugang. Verfügbarkeit ändert sich, also prüfe die Tabelle und die offizielle Seite, bevor du um irgendeine Börse herum planst."}}, {"@type": "Question", "name": "Sollte ich alle meine Krypto auf einer Börse halten?", "acceptedAnswer": {"@type": "Answer", "text": "Für die meisten Einsteiger ist die praktische Antwort nein, nicht sobald der Betrag für dich zählt. Halte auf einer Börse nur, was du aktiv tradest, und bewege längerfristige Bestände in eine Wallet, die du kontrollierst, wo du die Seed-Phrase hältst. So sind deine langfristigen Bestände selbst dann, wenn eine Plattform scheitert, nicht in ihrer Insolvenz gefangen. Lerne Selbstverwahrung, bevor der Betrag wächst, nicht danach."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Einsteigerpfad</a><a href="index.html" class="on">Anleitungen</a><a href="../exchanges.html">Börsen</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Tools</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de" selected>Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Startseite</a> / <a href="index.html">Anleitungen</a> / Zu meidende Börsen</div>
+      <h1>Krypto-Börsen, die es zu meiden gilt (und warum)</h1>
+      <p class="sub">Einige Börsen sind weg, weil sie kollabiert sind. Andere sind gute Unternehmen, die einfach dein Land nicht bedienen. Beide Arten verschwenden deine Zeit oder fangen dein Geld ein, wenn du blind wählst — hier steht, wie du sie unterscheidest, nur anhand öffentlicher Aufzeichnungen.</p>
+      <p class="updated">Aktualisiert Okt. 2026 · Von TokVS · 11 Min. Lesezeit</p>
+      <p class="note">Quellen &amp; Methode: <a href="../methodology.html">wie wir prüfen</a> · <a href="../exchanges.html#availability">Länderverfügbarkeitstabelle</a> · Zahlen ändern sich, prüfe vor dem Handeln auf der offiziellen Seite.</p>
+      <p class="note">Quellen &amp; Methode: <a href="../methodology.html">wie wir prüfen</a> · <a href="../exchanges.html#availability">Länderverfügbarkeitstabelle (geprüft am 30. Okt. 2026)</a> · Verfügbarkeit ändert sich, verifiziere vor dem Handeln auf der offiziellen Seite.</p>
+      <div class="callout warn"><b>Bevor du dich irgendwo registrierst:</b> Prüfe die <a href="../exchanges.html#availability">Länderverfügbarkeitstabelle</a> Zuerst. Eine Börse, die keine Nutzer in deinem Land aufnimmt, ist kein Ausweichplan — sie ist eine Sackgasse, und es nach der Einzahlung herauszufinden ist der schlechteste Zeitpunkt, es zu lernen.</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Kollabierte Börsen: was die öffentliche Aufzeichnung zeigt</h2>
+      <p>Jede Börse unten steht dort wegen Ereignissen, die bereits öffentliche Aufzeichnung sind — Insolvenzen, Gerichtsverfahren und Hacks, die damals gemeldet wurden. Nichts davon ist Gerücht. Der Punkt der Auflistung ist nicht, dich von Krypto abzuschrecken; es ist, dir die genauen Fehlermuster zu zeigen, damit du die Warnzeichen erkennst, falls sie jemals woanders auftauchen.</p>
+      <h3>FTX — kollabiert November 2022</h3>
+      <p>FTX war eine der größten Krypto-Börsen der Welt bis November 2022, als sie innerhalb von Tagen kollabierte, nachdem berichtet wurde, dass Kundengelder genutzt worden waren, um eine verbundene Handelsfirma zu stützen. Sie meldete Insolvenz an, ihr Gründer wurde später in den Vereinigten Staaten wegen Betrugs verurteilt, und Kunden wurden Gläubiger in einem Insolvenzverfahren, das sich über Jahre erstreckt hat. <strong>Die Lektion:</strong> Größe und Promi-Empfehlungen sind kein Beweis für solide Verwahrung. Wenn eine Plattform nicht klar zeigen kann, dass Kundengelder getrennt von ihrem eigenen Trading gehalten werden, ist das ein Grund zu gehen, kein zu ignorierendes Detail.</p>
+      <h3>Celsius — kollabiert 2022</h3>
+      <p>Celsius bot hohe Erträge auf Krypto-Einlagen, fror Abhebungen im Juni 2022 ein und meldete im Folgemonat Insolvenz an. Sein Geschäft hing davon ab, Kundeneinlagen in riskante Strategien zu verleihen, und als Märkte fielen, wurde die Lücke zwischen dem, was es Einlegern schuldete, und dem, was es hielt, unmöglich zu schließen. <strong>Die Lektion:</strong> Ein Ertrag, der weit über dem Marktsatz aussieht, ist kein kostenloses Geld — er ist Kompensation für Risiko, und das Risiko ist, dass die Plattform deine Einlage nicht zurückgeben kann. Lies, was ein Renditeprodukt wirklich mit deinen Geldern tut, bevor du einzahlst.</p>
+      <h3>Voyager — kollabiert 2022</h3>
+      <p>Voyager war ein Krypto-Broker, der im Juli 2022 Insolvenz anmeldete, nachdem ein großer Kreditnehmer einen großen Kredit nicht zurückgezahlt hatte. Kunden, die glaubten, Vermögenswerte auf einem unkomplizierten Broker zu halten, entdeckten, dass ihre Gelder weiterverliehen worden waren, und dass die Wiedererlangung von einem Insolvenzgericht abhing statt von ihrem Kontostand. <strong>Die Lektion:</strong> Verstehe den Unterschied zwischen Vermögenswerten, die für dich gehalten werden, und Vermögenswerten, die in deinem Namen weiterverliehen werden. Wenn eine Plattform Kundenvermögen verleiht, ist dein Risiko auch das Risiko des Kreditnehmers.</p>
+      <h3>BlockFi — kollabiert 2022</h3>
+      <p>BlockFi war ein Krypto-Verleiher, der im November 2022 Insolvenz anmeldete, Wochen nach dem FTX-Kollaps, gegenüber dem er erhebliches Exposure hatte. Er hatte zinstragende Konten angeboten, die viele Nutzer als Sparkonten behandelten, aber diese Konten waren unbesicherte Kredite an das Unternehmen, und Kunden wurden wieder Insolvenz gläubiger. <strong>Die Lektion:</strong> Ein Krypto-Zinskonto ist kein Bankkonto. Bankeinlagen tragen in vielen Ländern Einlagensicherung; Krypto-Verleihprodukte im Allgemeinen nicht, und „Zinskonto“-Marketing sollte niemals als „versicherte Ersparnisse“ gelesen werden.</p>
+      <h3>Mt. Gox — gehackt und kollabiert 2014</h3>
+      <p>Mt. Gox war einst die dominante Bitcoin-Börse, die den Großteil des weltweiten Bitcoin-Handels abwickelte, bis sie 2014 kollabierte, nachdem sie über Jahre einen großen Teil der Bitcoin ihrer Kunden durch Diebstahl verloren hatte. Der Verlust wurde spät entdeckt, das Unternehmen meldete Insolvenz an, und der Sanierungsprozess für Gläubiger dauert seit einem Jahrzehnt an. <strong>Die Lektion:</strong> Sicherheitspraktiken und Transparenz zählen mehr als Marktanteil. Eine Plattform, die Trading dominiert, kann trotzdem schwache interne Kontrollen haben, und frühe Krypto-Geschichte zeigt, dass Probleme lange verborgen bleiben können, bevor sie auftauchen.</p>
+      <h3>QuadrigaCX — kollabiert 2019</h3>
+      <p>QuadrigaCX war eine kanadische Börse, die 2019 kollabierte, nachdem ihr Gründer starb, Berichten zufolge als einzige Person, die die Passwörter zu den Wallets hielt, die Kundengelder enthielten. Ermittler fanden später, dass ein Großteil der Kundengelder nicht lokalisiert werden konnte, und dass die Plattform mit ernsthaften Fehlbeträgen operiert hatte. <strong>Die Lektion:</strong> Eine Plattform mit einem einzigen Ausfallpunkt — eine Person, die die Schlüssel hält, eine Wallet, die die Gelder hält, ein Prüfer, den niemand nennen kann — ist per Design fragil. Frage, wer sonst das Geld kontrolliert, und was passiert, wenn diese Person verschwindet.</p>
+      <h2>Was diese Kollapse gemeinsam haben</h2>
+      <p>Unterschiedliche Jahrzehnte, unterschiedliche Geschäftsmodelle, aber dieselben drei Muster wiederholen sich. Erstens, <strong>Kundengelder waren nicht wirklich getrennt</strong> Vom eigenen Geld des Unternehmens oder seinen Trading-Wetten. Wenn eine Plattform in Kundeneinlagen greifen kann, um eigene Verluste zu decken, wird jeder Kunde unbemerkt zum unbesicherten Kreditgeber. Zweitens, <strong>Intransparenz verbarg das Problem, bis es zu spät war</strong>. Bilanzen waren unveröffentlicht, Audits fehlten oder waren oberflächlich, und Nutzer hatten keine Möglichkeit zu verifizieren, was ihnen gesagt wurde. Drittens, <strong>Wachstum überholte Kontrollen</strong>: Plattformen expandierten in Verleihen, Eigenhandel oder neue Produkte schneller, als ihr Risikomanagement, ihre Verwahrung und ihre Compliance mithalten konnten.</p>
+      <p>Deshalb zählen die drei Verteidigungen, von denen Einsteiger hören, wirklich, und warum sie zusammen statt allein zählen. <strong>Proof of Reserves</strong> Ist eine Plattform, die durch eine Drittpartei-Attestierung zeigt, dass sie die Vermögenswerte hält, die sie zu halten behauptet. Es ist nützlich, aber begrenzt: Es erfasst einen Moment, es beweist allein keine Verbindlichkeiten, und es ist kein vollständiges Audit — lies es als ein Signal, nicht als Garantie. <strong>Regulierung</strong> Bedeutet, dass eine Plattform unter Regeln, Meldepflichten und Aufsicht in den Jurisdiktionen operiert, in denen sie lizenziert ist, was einige Risiken reduziert, aber keines vollständig entfernt; regulierte Firmen können trotzdem scheitern. <strong>Selbstverwahrung</strong> Bedeutet, eigene Vermögenswerte in einer Wallet zu halten, wo du die Seed-Phrase kontrollierst, sodass kein Plattformversagen sie einfangen kann. Keine davon reicht allein aus. Zusammen sind sie das praktische Werkzeug: Bevorzuge Plattformen, die transparent und beaufsichtigt sind, und lasse trotzdem keine langfristigen Bestände auf irgendeiner Plattform liegen.</p>
+      <h2>Aktuell eingeschränkt: Börsen, die deinen Markt nicht bedienen</h2>
+      <p>Eine zweite Art von „meiden“ hat nichts mit Kollaps zu tun. Einige operierende Börsen nehmen einfach keine Nutzer in bestimmten Ländern auf, aus rechtlichen und lizenzrechtlichen Gründen. Sich bei einer davon aus einem eingeschränkten Land zu registrieren verschwendet deine Zeit: Verifizierung wird scheitern, oder das Konto wird später eingeschränkt. Schlimmer noch, einige Nutzer umgehen Einschränkungen mit falschen Standortangaben, was zu eingefrorenen Konten und verlorenem Zugang führen kann — tue dies niemals. Die Fakten unten stammen aus TokVS’ <a href="../exchanges.html#availability">Länderverfügbarkeitstabelle</a>, geprüft am 30. Oktober 2026. Verfügbarkeit ändert sich, also verifiziere auf der offiziellen Seite, bevor du um irgendeine Börse herum planst.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Börse</th><th>Bedient aktuell nicht</th><th>Was stattdessen zu tun ist</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>Keine neuen Nutzer im EWR und im Vereinigten Königreich</td><td>Prüfe die Verfügbarkeitstabelle für Plattformen, die in deinem Land aufnehmen</td></tr>
+          <tr><td>Bybit</td><td>Bedient die USA und Kanada nicht</td><td>Prüfe die Verfügbarkeitstabelle für Plattformen, die in deinem Land aufnehmen</td></tr>
+          <tr><td>Bitget</td><td>Eingeschränkt in den USA, dem Vereinigten Königreich und Kanada; EWR-Zugang ausstehend</td><td>Prüfe die Verfügbarkeitstabelle für Plattformen, die in deinem Land aufnehmen</td></tr>
+        </tbody>
+      </table></div>
+      <p>Zwei Dinge, die es zu beachten lohnt. Erstens, „eingeschränkt“ ist keine Anschuldigung: Dies sind operierende Börsen, die Lizenzentscheidungen Markt für Markt treffen, und ihr Status in einem gegebenen Land kann sich ändern, wenn Lizenzen erteilt oder entzogen werden. Zweitens sind Einschränkungslisten nicht symmetrisch — eine Börse kann dein Land für Spot-Trading bedienen, aber nicht für Derivate, oder bestehende Nutzer aufnehmen, während sie für neue schließt. Deshalb ist die Verfügbarkeitstabelle, statt irgendeines einzelnen Artikels, die richtige erste Prüfung: Sie wird als ein Ort gepflegt, wo diese Unterscheidungen verfolgt werden.</p>
+      <h2>Warnsignale, die vor dem Vertrauen in irgendeine Börse zu prüfen sind</h2>
+      <p>Nutze diese Checkliste auf jeder Plattform, neu oder etabliert, bevor du mehr als einen Testbetrag einzahlst. <strong>Anonyme oder nicht verifizierbare Führung:</strong> Wenn du nicht identifizieren kannst, wer die Plattform betreibt, kannst du deren Erfolgsbilanz nicht beurteilen. <strong>Keine Lizenz- oder Firmeninformationen:</strong> Eine legitime Plattform erklärt, wo sie inkorporiert ist und welche Regulierungsbehörden sie beaufsichtigen; Vagheit hier ist eine Wahl, kein Versehen. <strong>Versprechen garantierter Renditen:</strong> Keine ehrliche Plattform kann Investitionsrenditen garantieren, und das Versprechen selbst ist ein klassisches Betrugssignal. <strong>Abhebe-Einfrierungen oder unerklärte Verzögerungen:</strong> Gelegentliche Wartung ist normal, aber wiederholte oder unerklärte Abhebeprobleme sind die einzelne verlässlichste Frühwarnung für Schwierigkeiten. <strong>Intransparente Reserven:</strong> Wenn eine Plattform keine Reserveninformationen und keine glaubwürdige Attestierung veröffentlicht, vertraust du allein ihrem Wort. <strong>Druck, schnell einzuzahlen:</strong> Countdown-Timer, „begrenzte Zuteilung“-Behauptungen und Support-Agenten, die zu größeren Einzahlungen drängen, sind Verkaufstaktiken, keine Sicherheitsfeatures.</p>
+      <p>Eine weitere Gewohnheit gehört auf diese Liste: Suche nach dem Namen der Plattform zusammen mit Wörtern wie „Abhebeprobleme“, „Reguliererwarnung“ und „Insolvenz“, bevor du einzahlst. Zehn Minuten Suche bringen Probleme ans Licht, die Marketingseiten niemals erwähnen, und es kostet nichts. Wenn die Ergebnisse von Reguliererwarnungen oder ungelösten Abhebebeschwerden dominiert werden, ist das deine Antwort, egal wie poliert die Webseite aussieht.</p>
+      <h2>Was stattdessen zu tun ist</h2>
+      <p>Die praktische Routine ist kurz. Zuerst prüfe die <a href="../exchanges.html#availability">Länderverfügbarkeitstabelle</a> , um Plattformen zu finden, die wirklich Nutzer dort aufnehmen, wo du lebst. Zweitens, bevorzuge Plattformen, die Reserveninformationen veröffentlichen und ihre Lizenzierung klar angeben, und behandle beides als Signale statt Garantien. Drittens, starte mit einer kleinen Testeinzahlung und einer kleinen Testabhebung, bevor du größere Beträge bindest — eine Plattform, die eine kleine Abhebung prompt handhabt, hat den einzigen Test bestanden, der zählt. Viertens, sobald du einen Betrag hältst, dessen Verlust schmerzen würde, lerne Selbstverwahrung: Bewege längerfristige Bestände in eine Wallet, die du kontrollierst, halte die Seed-Phrase offline und privat, und halte nur aktive Trading-Gelder auf einer Börse. Schließlich überprüfe deine Entscheidungen regelmäßig, weil Verfügbarkeit, Lizenzierung und Reservenoffenlegungen sich mit der Zeit alle ändern.</p>
+      <p>Die Kollapse auf dieser Seite teilen eine letzte Lektion, die leicht zu übersehen ist: In jedem Fall existierten die Warnzeichen vor dem Kollaps, aber sie waren nur für Menschen sichtbar, die hinschauten. Die Nutzer, die am wenigsten verloren, waren meist diejenigen, die Aufzeichnungen führten, ihre Bestände verteilten und den Großteil ihrer Krypto irgendwo hielten, wo keine Plattform sie einfrieren konnte. Das ist keine Paranoia. Es ist die billigste Versicherung in Krypto, und sie kostet nichts als ein wenig Aufmerksamkeit.</p>
+
+      <h3>Operiert FTX noch?</h3>
+      <p>Nein. FTX kollabierte im November 2022 und durchlief Insolvenzverfahren. Seine Handelsplattform operiert nicht als normale Börse, und Kunden wurden Gläubiger im Insolvenzverfahren. Wenn du eine Seite siehst, die behauptet, ein neu gestartetes FTX zu sein, behandle sie mit extremer Vorsicht und verifiziere sie über offizielle Insolvenzkommunikation, bevor du ihr vertraust.</p>
+      <h3>Kann ich Geld von einer kollabierten Börse zurückbekommen?</h3>
+      <p>Manchmal, aber nimm es niemals an. Insolvenzverfahren können über Jahre einen Teil der Kundengelder zurückgeben, und der Betrag hängt davon ab, welche Vermögenswerte verbleiben und wie Ansprüche rangieren. Einige Fälle haben erhebliche Beträge zurückgegeben, andere sehr wenig. Behandle jedes Geld auf einer kollabierten Plattform als gefährdet, bis eine gerichtlich genehmigte Ausschüttung dich wirklich erreicht.</p>
+      <h3>Warum sprechen Menschen über Proof of Reserves?</h3>
+      <p>Proof of Reserves ist ein Weg für eine Börse zu zeigen, dass sie die Vermögenswerte hält, die sie zu halten behauptet, meist über eine Drittpartei-Attestierung. Es zählt, weil mehrere kollabierte Plattformen sich als nicht haltend herausstellten, was sie behaupteten. Aber es hat Grenzen: Es zeigt Vermögenswerte zu einem Moment, keine Verbindlichkeiten, und es ist kein Audit. Lies es als ein Signal unter mehreren, nicht als Garantie.</p>
+      <h3>Bedeutet Regulierung, dass eine Börse sicher ist?</h3>
+      <p>Regulierung reduziert einige Risiken, entfernt aber keines vollständig. Eine lizenzierte Börse unterliegt Regeln, Meldepflichten und Aufsicht, was besser ist als gar keine Aufsicht. Aber regulierte Firmen können trotzdem scheitern, Abhebungen einfrieren oder Hacks erleiden. Regulierung ist ein Faktor, der neben Reserven-Transparenz, Erfolgsbilanz und wie viel du auf der Plattform hältst, abzuwägen ist.</p>
+      <h3>Warum kann ich mich in meinem Land nicht bei einer Börse registrieren?</h3>
+      <p>Börsen beschränken Länder aus rechtlichen und lizenzrechtlichen Gründen. Zum Beispiel zeigt unsere Länderverfügbarkeitstabelle, geprüft am 30. Oktober 2026, dass Binance keine neuen Nutzer im EWR und im Vereinigten Königreich aufnimmt, Bybit die USA und Kanada nicht bedient, und Bitget in den USA, dem Vereinigten Königreich und Kanada eingeschränkt ist, mit ausstehendem EWR-Zugang. Verfügbarkeit ändert sich, also prüfe die Tabelle und die offizielle Seite, bevor du um irgendeine Börse herum planst.</p>
+      <h3>Sollte ich alle meine Krypto auf einer Börse halten?</h3>
+      <p>Für die meisten Einsteiger ist die praktische Antwort nein, nicht sobald der Betrag für dich zählt. Halte auf einer Börse nur, was du aktiv tradest, und bewege längerfristige Bestände in eine Wallet, die du kontrollierst, wo du die Seed-Phrase hältst. So sind deine langfristigen Bestände selbst dann, wenn eine Plattform scheitert, nicht in ihrer Insolvenz gefangen. Lerne Selbstverwahrung, bevor der Betrag wächst, nicht danach.</p>
+      <h2>Weiterlesen</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">Wie man Krypto für Einsteiger kauft</a></li>
+        <li><a href="is-binance-safe.html">Ist Binance sicher?</a></li>
+        <li><a href="how-to-keep-your-binance-account-safe.html">Wie man sein Binance-Konto sicher hält</a></li>
+        <li><a href="../exchanges.html#availability">Länderverfügbarkeitstabelle</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Startseite</a><a href="../airdrops.html">Tägliche Airdrops</a><a href="../exchanges.html">Börsenvergleich</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Einsteiger</b><a href="../start/step1.html">Einsteigerpfad</a><a href="index.html">Anleitungen</a><a href="../start/step5.html">Deinen ersten Coin kaufen</a></div>
+      <div class="col" style="flex:1;"><b>Testberichte</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">Watchlist-Alarme</a><a href="../tools.html#calendar">Ereigniskalender</a><a href="../exchanges.html#calculator">Gebührenrechner</a></div>
+    </div>
+    <div class="disclosure">Diese Seite enthält Affiliate-Links. Eine Registrierung über unsere Links kostet dich nichts extra. Kryptopreise sind stark volatil; nichts hier ist Anlageberatung — schätze die Risiken selbst ein.</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

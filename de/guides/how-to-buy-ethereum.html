@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Wie man Ethereum (ETH) kauft: Schritt-für-Schritt-Leitfaden für Einsteiger — TokVS</title>
+<meta name="description" content="Wie man Ethereum für Einsteiger kauft: Wähle eine Börse, verifiziere deine ID, finanziere dein Konto, platziere deine erste ETH-Spot-Order, und handhabe Gasgebühren und Netzwerkwahl ohne kostspielige Fehler.">
+<link rel="canonical" href="https://tokvs.com/de/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-ethereum">
+<meta property="og:title" content="Wie man Ethereum (ETH) für Einsteiger kauft — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Börse, Registrierung, Finanzierung, erste ETH-Order, Gasgebühren und sichere Lagerung — der vollständige Einsteigerprozess in 5 Schritten.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/de/guides/how-to-buy-ethereum">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/de/"}, {"@type": "ListItem", "position": 2, "name": "Anleitungen", "item": "https://tokvs.com/de/guides/"}, {"@type": "ListItem", "position": 3, "name": "Wie man Ethereum (ETH) kauft: Schritt-für-Schritt-Leitfaden für Einsteiger", "item": "https://tokvs.com/de/guides/how-to-buy-ethereum"}]}, {"@type": "Article", "headline": "Wie man Ethereum (ETH) kauft: Schritt-für-Schritt-Leitfaden für Einsteiger", "description": "Wie man Ethereum für Einsteiger kauft: Wähle eine Börse, verifiziere deine ID, finanziere dein Konto, platziere deine erste ETH-Spot-Order, und handhabe Gasgebühren und Netzwerkwahl ohne kostspielige Fehler.", "datePublished": "2026-10-28", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/de/guides/how-to-buy-ethereum", "dateModified": "2026-10-30"}, "inLanguage": "de"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Wie viel ETH kann ich mit 50 $ kaufen?", "acceptedAnswer": {"@type": "Answer", "text": "ETH teilt sich in winzige Bruchteile, sodass 50 $ ein kleines Stück eines ETH kaufen. Der Pro-Coin-Preis ist irrelevant — was zählt, ist die prozentuale Bewegung. Die meisten Einsteiger starten mit im Wert von 50–100 $."}}, {"@type": "Question", "name": "Zahle ich Gasgebühren, wenn ich ETH auf einer Börse kaufe?", "acceptedAnswer": {"@type": "Answer", "text": "Nein. Auf dem Spot-Markt einer Börse zu kaufen kostet nur die Handelsgebühr (etwa 0.1%). Gasgebühren gelten, wenn du ETH auf dem Ethereum-Netzwerk bewegst oder On-Chain-Apps nutzt. Abhebegebühren sind separat und werden vor dem Bestätigen gezeigt."}}, {"@type": "Question", "name": "Sollte ich ETH auf der Börse halten oder in eine Wallet bewegen?", "acceptedAnswer": {"@type": "Answer", "text": "Kleine Beträge, die du noch tradest, können mit aktivierter 2FA auf der Börse bleiben. Größere langfristige Bestände gehören in eine Wallet, die du kontrollierst, mit der Seed-Phrase auf Papier gesichert. Siehe die Wallet-Sicherheitsanleitung für die vollständige Routine."}}, {"@type": "Question", "name": "Kann ich ETH an jede Wallet-Adresse senden?", "acceptedAnswer": {"@type": "Answer", "text": "Nur an eine Adresse auf demselben Netzwerk, das du für den Transfer gewählt hast. ETH auf Ethereum-Mainnet und ETH auf einem Layer-2-Netzwerk sehen identisch aus, wechseln aber nicht ohne eine Bridge hinüber. Stimme das Netzwerk auf dem Abhebebildschirm immer mit dem Netzwerk ab, das deine Wallet erwartet, und teste zuerst mit einem kleinen Betrag."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Einsteigerpfad</a><a href="index.html" class="on">Anleitungen</a><a href="../exchanges.html">Börsen</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Tools</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de" selected>Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Startseite</a> / <a href="index.html">Anleitungen</a> / Ethereum kaufen</div>
+      <h1>Wie man Ethereum kauft: Der vollständige Einsteigerprozess</h1>
+      <p class="sub">Ethereum ist die zweitgrößte Krypto und das Rückgrat von DeFi, NFTs und Stablecoins — und dein erstes ETH zu kaufen dauert etwa eine halbe Stunde: Wähle eine Top-Börse, verifiziere deine ID, finanziere dein Konto, platziere eine Spot-Order, dann entscheide, wo du es behältst. Der einzige Teil, der Einsteiger zu Fall bringt, sind Gasgebühren und Netzwerkwahl, und dieser Leitfaden behandelt beides, bevor du einen Cent ausgibst.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Größte Börse der Welt, tiefste Liquidität</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Vollständige Produktpalette, gute Sprachunterstützung</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX-Konto erstellen</a></div>
+      </div>
+      <p class="updated">Aktualisiert Okt. 2026 · Von TokVS · 8 Min. Lesezeit</p>
+      <p class="note">Quellen &amp; Methode: <a href="../methodology.html">wie wir prüfen</a> · <a href="../exchanges.html#availability">Länderverfügbarkeitstabelle</a> · Zahlen ändern sich, prüfe vor dem Handeln auf der offiziellen Seite.</p>
+      <div class="callout good"><b>Die 5 Schritte auf einen Blick:</b> 1. Wähle eine Börse → 2. Registriere dich und verifiziere → 3. Finanziere dein Konto → 4. Platziere deine ETH-Order → 5. Lagere sie sicher. Jeder Schritt wird unten ausgeführt — folge mit, alles funktioniert von deinem Handy.</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Bevor du startest: drei Dinge vorzubereiten</h2>
+      <ul>
+        <li><strong>Ein amtlicher Ausweis.</strong> Jede legitime Börse verlangt Identitätsverifizierung (KYC), keine Ausnahmen. Jeder Kanal, der „No-ID-Kauf“ anbietet, ist eine Falle.</li>
+        <li><strong>Ein Handy und eine E-Mail, die du kontrollierst</strong> — Für Registrierung, Codes und eine Authenticator-App.</li>
+        <li><strong>Geld, dessen Verlust du dir leisten kannst.</strong> Starte klein — genug, um den Prozess zu lernen, nicht genug, um zu schmerzen.</li>
+      </ul>
+      <p>Eine Zeile dazu, was du kaufst: ETH ist der native Coin des Ethereum-Netzwerks. Er zahlt Transaktionsgebühren (genannt „Gas“) und betreibt die Apps, die auf Ethereum gebaut sind — Verleihen, Trading, NFTs und Stablecoin-Überweisungen laufen alle darauf. Diese Doppelrolle ist genau der Grund, warum ETH gefragt bleibt, und auch warum Gasgebühren für dich als Halter zählen.</p>
+
+      <h2>Schritt 1: Wähle eine Börse</h2>
+      <p>Eine Börse ist der Marktplatz, wo du kaufst. Einsteiger sollten nur aus der globalen Top-Liga wählen — groß, langjährig, mit transparenten Gebühren. Binance, OKX und Bybit listen alle tiefe ETH-Spot-Märkte. Ihre regulären Nutzer-Spot-Gebühren liegen nahe beieinander, also wähle nach App-Erfahrung und den in deinem Land verfügbaren Fiat-Schienen. Unsere <a href="choose-exchange.html">Börsenauswahlanleitung</a> Zeigt, wie man jede Plattform beurteilt, oder springe direkt zu den <a href="../exchanges.html">Gebührenvergleich mit Rechner</a>.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Börse</th><th>Spot-Maker</th><th>Spot-Taker</th><th>ETH-Hinweise</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10%</td><td>0.10%</td><td>Tiefste ETH-Liquidität, meisten ETH-Paare</td></tr>
+          <tr><td>OKX</td><td>0.08%</td><td>0.10%</td><td>Niedrigste Spot-Maker-Gebühr der drei</td></tr>
+          <tr><td>Bybit</td><td>0.10%</td><td>0.10%</td><td>Voller ETH-Spot-Markt; registriere dich via <a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Unserem Bybit-Link</a></td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Gebührentabellen ändern sich — prüfe immer die offizielle Gebührenseite der Börse, bevor du tradest.</p>
+      <p><strong>Das direkte Urteil:</strong> Die meisten Einsteiger kommen mit Binance (größte Auswahl, tiefste Liquidität) oder OKX (etwas niedrigere 0,08-%-Spot-Maker-Gebühr) gut zurecht. Eröffne zuerst ein Konto — mehr Konten bedeuten nicht mehr Profite.</p>
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">Entschieden? Ein Konto zu eröffnen dauert etwa 10 Minuten: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX-Konto erstellen</a></p>
+      <h2>Schritt 2: Registriere dich und verifiziere</h2>
+      <ol>
+        <li>Lade die App nur von der offiziellen Webseite oder dem App-Store deines Handys herunter. <strong>Installiere niemals eine App über einen Link, den dir jemand geschickt hat</strong> — Gefälschte Apps sind der Einsteigerbetrug Nummer eins.</li>
+        <li>Registriere dich mit E-Mail oder Handy und einem einzigartigen, starken Passwort.</li>
+        <li>Schließe die Identitätsverifizierung ab: Lade deinen Ausweis hoch und bestehe einen Gesichtscheck. Genehmigung dauert meist Minuten bis wenige Stunden.</li>
+        <li>Aktiviere sofort Zwei-Faktor-Authentifizierung (2FA) und den Anti-Phishing-Code. Das ist die Basisrüstung deines Kontos.</li>
+      </ol>
+      <p>Die ausführliche Anleitung steht in <a href="../start/step3.html">Schritt 3 des Einsteigerpfads: Registrieren</a>.</p>
+
+      <h2>Schritt 3: Finanziere dein Konto</h2>
+      <p>Du hast zwei Routen. Die Standardroute: Kaufe zuerst USDT, dann trade sie gegen ETH auf dem ETH/USDT-Paar — USDT-Paare haben die tiefste Liquidität und die engsten Preise. Die einfachere: Einige Börsen bieten direkte Fiat-Paare (ETH/USD, ETH/EUR) oder Sofortkartenkauf, was den USDT-Schritt überspringt, aber mehr kosten kann. So oder so starte mit einem kleinen Testbetrag und bestätige, dass er ankommt, bevor du mehr tust. Die USDT-Route wird behandelt in <a href="buy-usdt.html">USDT kaufen</a>.</p>
+
+      <h2>Schritt 4: Platziere deine ETH-Order</h2>
+      <ol>
+        <li>Im Spot-Trading öffne das <strong>ETH/USDT</strong> .</li>
+        <li>Einsteiger sollten eine <strong>Limit-Order</strong>: Setze den Preis, den du zu zahlen bereit bist, und den Betrag (sagen wir, im Wert von 100 $). Sie füllt sich, wenn der Markt deinen Preis erreicht, und Maker-Gebühren sind niedriger. In Eile? Eine Market-Order funktioniert, zu was auch immer der aktuelle Buchpreis ist.</li>
+        <li>Prüfe drei Zahlen vor dem Bestätigen: Preis, Betrag, Gebühr. Bei einer 0,10-%-Spot-Gebühr kostet ein 100-$-Kauf etwa 0,10 $. Gebührenmathematik wird behandelt in <a href="crypto-fees.html">Kryptogebühren erklärt</a>.</li>
+        <li>Sobald gefüllt, zeigt sich dein ETH unter Assets / Spot. Glückwunsch — erster Kauf erledigt.</li>
+      </ol>
+
+      <h2>Schritt 5: Entscheide, wo du sie behältst</h2>
+      <ul>
+        <li><strong>Kleine Beträge, noch tradend:</strong> Sie auf der Börse zu lassen ist in Ordnung — mit aktivierter 2FA und deinem Konto niemals geteilt.</li>
+        <li><strong>Größere Beträge, langfristiges Halten:</strong> Bewege sie in eine Wallet, die du kontrollierst, Seed-Phrase auf Papier gesichert. Siehe <a href="../start/step5.html">Schritt 5 des Pfads</a> und <a href="wallet-safety.html">Wallet- &amp; Seed-Phrase-Sicherheit</a>.</li>
+      </ul>
+
+      <h2>Gasgebühren und Netzwerkwahl: der Teil, den Einsteiger falsch machen</h2>
+      <p>ETH auf einer Börse zu kaufen kostet dich nur die Handelsgebühr. Die teuren Fehler passieren, wenn du <em>Bewegst</em> ETH — und sie laufen alle auf zwei Konzepte hinaus: Gas und Netzwerke.</p>
+      <p><strong>Was Gas ist.</strong> Jede Transaktion auf dem Ethereum-Netzwerk zahlt eine Gebühr in ETH, genannt Gas. Gaspreise steigen und fallen mit Netzwerküberlastung: Wenn alle gleichzeitig traden, steigen Gebühren; zu ruhigen Stunden fallen sie. Du setzt kein Gas, wenn du auf einer Börse kaufst, aber du zahlst es indirekt, wenn du ETH on-chain abhebst oder Ethereum-Apps nutzt — und der Abhebebildschirm zeigt die Gebühr immer vor dem Bestätigen, also lies sie statt durchzutippen.</p>
+      <p><strong>Mainnet vs. Layer-2-Netzwerke.</strong> Ethereums Hauptnetzwerk (ERC-20) ist der Standard, aber billigere „Layer-2“-Netzwerke wie Arbitrum, Optimism und Base tragen jetzt einen riesigen Anteil der Aktivität. Der Haken: ETH auf Arbitrum ist nicht derselbe Saldo wie ETH auf Mainnet. Sie sehen identisch aus, sie nutzen dasselbe Adressformat, aber sie leben auf unterschiedlichen Netzwerken und wechseln nicht ohne eine Bridge hinüber. Mainnet-ETH an eine Wallet zu senden, die nur Arbitrum beobachtet — oder über die falsche Netzwerkoption abzuheben — strandet deine Coins, bis du sie zurückbridgest, und Bridging kostet Zeit und Gebühren.</p>
+      <div class="callout warn"><b>Die ETH-Transferregeln:</b> 1. Auf dem Abhebebildschirm muss das von dir gewählte Netzwerk mit dem Netzwerk übereinstimmen, das deine empfangende Wallet oder Börseneinzahlung wirklich nutzt — lies beide Seiten, rate nicht. 2. Sende niemals ETH an eine Contract-Adresse oder eine Einzahlungsadresse, die für ein anderes Netzwerk gezeigt wird. 3. Der erste Transfer an ein neues Ziel ist immer ein kleiner Testbetrag; bewege den Rest erst, nachdem er ankommt.</div>
+      <p>Eine praktische Gewohnheit, die echtes Geld spart: Prüfe die Abhebegebühr und das Netzwerk vor jedem Transfer, und vermeide es, ETH während offensichtlicher Überlastungsspitzen zu bewegen, wenn der Transfer nicht dringend ist. Gas ist eine Gebühr, die du oft allein durch eine Stunde Warten schrumpfen kannst.</p>
+      <p>Eine weitere Unterscheidung, die es vor deiner ersten Abhebung zu kennen lohnt: Die Gebühr, die die Börse dir zeigt, ist ihre eigene Abhebegebühr, nicht der Live-Gaspreis des Netzwerks. Die beiden hängen zusammen, sind aber nicht identisch — Börsen setzen typischerweise eine pauschale oder gestaffelte Abhebegebühr, die die Gaskosten schon bündelt, sodass die Zahl, die du siehst, die Zahl ist, die du zahlst. Wenn diese Zahl im Vergleich zu dem, was Freunde berichten, hoch aussieht, prüfe, ob du Mainnet gewählt hast, als eine Layer-2-Option für dein Ziel verfügbar war, und ob der Transfer auf ein ruhigeres Fenster warten kann. Jede Anpassung kann die Kosten merklich senken, und keine verlangt technisches Können — nur die Gewohnheit, den Abhebebildschirm zweimal zu lesen.</p>
+
+      <h2>Wie viel solltest du beim ersten Mal kaufen?</h2>
+      <p>Die ehrliche Antwort: <strong>Ein Betrag, über den du nicht schlaflos würdest</strong>. Starte klein (sagen wir, 50–100 $) und fahre den gesamten Ablauf Ende zu Ende — Einzahlung, Kauf, und wenn du magst, Abhebung — mit null Fehlern. Wenn du langfristig dabei bist, erwäge, jeden Monat einen festen kleinen Betrag einzulegen, um deinen Einstiegspreis zu mitteln. Dein erster Kauf handelt nicht von Profit. Er handelt von <strong>Dem fehlerfreien Abschluss des Prozesses</strong>.</p>
+
+      <h2>Fünf Kauffehler, die Einsteiger immer wieder machen</h2>
+      <ol>
+        <li><strong>Mit geliehenem Geld oder Kredit zu kaufen</strong> — Hebel bei einem Erstkauf verwandelt normale Volatilität in eine Krise.</li>
+        <li><strong>Spitzen-Gas zu zahlen ohne zu prüfen</strong> — Abheben während Überlastung kann ein Vielfaches der Ruhestunden-Gebühr kosten.</li>
+        <li><strong>Falschnetzwerk-Transfers</strong> — Der teuerste ETH-Einsteigerfehler, und vollständig vermeidbar mit der Testbetrag-Gewohnheit.</li>
+        <li><strong>Alles auf einer Plattform zu halten</strong> — Eine Börse ist keine Bank. Bewege größere langfristige Bestände in deine eigene Wallet.</li>
+        <li><strong>„Gurus“ und Signalgruppen zu folgen</strong> — Jeder, der dir sagt, was du kaufen sollst, profitiert von deinen Gebühren und deiner Exit-Liquidität.</li>
+      </ol>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Bereit?</b> Die Registrierung dauert etwa 10 Minuten: einmal verifizieren, 2FA aktivieren, dann den Schritten oben folgen. Die Anleitungen auf dieser Seite führen dich durch den Rest.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Größte Börse der Welt, tiefste Liquidität</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Vollständige Produktpalette, gute Sprachunterstützung</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX-Konto erstellen</a></div>
+        </div>
+        <p class="note">Gleiche Gebühren wie bei direkter Registrierung — unser Link kostet dich nichts extra.</p>
+      </div>
+      <h2>FAQ</h2>
+      <h3>Wie viel ETH kann ich mit 50 $ kaufen?</h3>
+      <p>ETH teilt sich in winzige Bruchteile, sodass 50 $ ein kleines Stück eines ETH kaufen. Der Pro-Coin-Preis ist irrelevant — was zählt, ist die prozentuale Bewegung. Die meisten Einsteiger starten mit im Wert von 50–100 $.</p>
+      <h3>Zahle ich Gasgebühren, wenn ich ETH auf einer Börse kaufe?</h3>
+      <p>Nein. Auf dem Spot-Markt einer Börse zu kaufen kostet nur die Handelsgebühr (etwa 0.1%). Gasgebühren gelten, wenn du ETH auf dem Ethereum-Netzwerk bewegst oder On-Chain-Apps nutzt. Abhebegebühren sind separat und werden vor dem Bestätigen gezeigt.</p>
+      <h3>Sollte ich ETH auf der Börse halten oder in eine Wallet bewegen?</h3>
+      <p>Kleine Beträge, die du noch tradest, können mit aktivierter 2FA auf der Börse bleiben. Größere langfristige Bestände gehören in eine Wallet, die du kontrollierst, mit der Seed-Phrase auf Papier gesichert. Siehe <a href="wallet-safety.html">Wallet- &amp; Seed-Phrase-Sicherheit</a> Für die vollständige Routine.</p>
+      <h3>Kann ich ETH an jede Wallet-Adresse senden?</h3>
+      <p>Nur an eine Adresse auf demselben Netzwerk, das du für den Transfer gewählt hast. ETH auf Ethereum-Mainnet und ETH auf einem Layer-2-Netzwerk sehen identisch aus, wechseln aber nicht ohne eine Bridge hinüber. Stimme das Netzwerk auf dem Abhebebildschirm immer mit dem Netzwerk ab, das deine Wallet erwartet, und teste zuerst mit einem kleinen Betrag.</p>
+      <h2>Weiterlesen</h2>
+      <ul>
+        <li><a href="buy-usdt.html">Wie man USDT kauft: drei Methoden verglichen</a></li>
+        <li><a href="how-to-buy-bitcoin.html">Bitcoin kaufen: vollständige Anleitung</a></li>
+        <li><a href="wallet-safety.html">Wallet- &amp; Seed-Phrase-Sicherheit</a></li>
+        <li><a href="crypto-fees.html">Kryptogebühren erklärt</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Startseite</a><a href="../airdrops.html">Tägliche Airdrops</a><a href="../exchanges.html">Börsenvergleich</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Einsteiger</b><a href="../start/step1.html">Einsteigerpfad</a><a href="index.html">Anleitungen</a><a href="../start/step5.html">Deinen ersten Coin kaufen</a></div>
+      <div class="col" style="flex:1;"><b>Testberichte</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">Watchlist-Alarme</a><a href="../tools.html#calendar">Ereigniskalender</a><a href="../exchanges.html#calculator">Gebührenrechner</a></div>
+    </div>
+    <div class="disclosure">Diese Seite enthält Affiliate-Links. Eine Registrierung über unsere Links kostet dich nichts extra. Kryptopreise sind stark volatil; nichts hier ist Anlageberatung — schätze die Risiken selbst ein.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Noch kein Konto? In 3 Minuten registrieren →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Registrieren</a><button class="sx" aria-label="Schließen" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

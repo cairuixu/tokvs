@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Wie man USDT kauft: Billigste Wege per Karte, Bank &amp; P2P (2026) — TokVS</title>
+<meta name="description" content="Wie man USDT 2026 Schritt für Schritt kauft: Karte, Banküberweisung und P2P nach echten Kosten verglichen — P2P spart typischerweise 1–2 % gegenüber einem Sofortkauf per Karte, Spot-Umwandlung läuft bei etwa 0.1%. Gebühren, Premiums und Abhebenetzwerke nebeneinander.">
+<link rel="canonical" href="https://tokvs.com/de/guides/buy-usdt">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/buy-usdt">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/buy-usdt">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/buy-usdt">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/buy-usdt">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/buy-usdt">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/buy-usdt">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/buy-usdt">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/buy-usdt">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/buy-usdt">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/buy-usdt">
+<meta property="og:title" content="Wie man USDT kauft: Drei Methoden verglichen — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Sofortkauf vs. P2P vs. Umwandlung — plus Premiums und Risiken eingefrorener Gelder erklärt.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/de/guides/buy-usdt">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/de/"}, {"@type": "ListItem", "position": 2, "name": "Anleitungen", "item": "https://tokvs.com/de/guides/"}, {"@type": "ListItem", "position": 3, "name": "Wie man USDT kauft: Drei Methoden verglichen", "item": "https://tokvs.com/de/guides/buy-usdt"}]}, {"@type": "Article", "headline": "Wie man USDT kauft: Drei Methoden verglichen", "description": "Wie man USDT kauft: Sofortkauf, P2P-Trading und Spot-Umwandlung verglichen, mit Hinweisen zu Premiums, Risiko eingefrorener Gelder und Abhebenetzwerken.", "datePublished": "2026-10-12", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/de/guides/buy-usdt", "dateModified": "2026-10-30"}, "inLanguage": "de"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Sind USDT und Tether dasselbe?", "acceptedAnswer": {"@type": "Answer", "text": "Ja. USDT ist das Ticker-Symbol; Tether ist das ausgebende Unternehmen."}}, {"@type": "Question", "name": "Kostet der Kauf von USDT eine Gebühr?", "acceptedAnswer": {"@type": "Answer", "text": "In-App-Käufe berechnen meist keine separate Gebühr — die Kosten sitzen im quotierten Spread. USDT in eine externe Wallet abzuheben kostet die Überweisungsgebühr dieses Netzwerks."}}, {"@type": "Question", "name": "Wird P2P-Trading mein Bankkonto definitiv einfrieren?", "acceptedAnswer": {"@type": "Answer", "text": "Nein, aber die Wahrscheinlichkeit ist real und hängt von Beträgen ab und davon, woher die Gelder der Gegenpartei kamen. Geprüfte Händler, Treuhand und saubere Aufzeichnungen reduzieren sie erheblich — niemals auf null."}}, {"@type": "Question", "name": "Kann ich USDT einfach als Dollar halten?", "acceptedAnswer": {"@type": "Answer", "text": "Es ist ein Token, der von einem privaten Unternehmen ausgegeben wird, mit Emittenten- und Reservenrisiko — keine Bankeinlage. Für große, langfristige Bestände denke über Diversifizierung und Compliance nach; siehe USDT vs. USDC."}}, {"@type": "Question", "name": "Brauche ich eine ID-Verifizierung, um USDT zu kaufen?", "acceptedAnswer": {"@type": "Answer", "text": "Ja. Jeder legitime Fiat-On-Ramp — Sofortkauf, P2P, Banküberweisung — verlangt Identitätsverifizierung (KYC) nach Anti-Geldwäsche-Regeln. Wer „No-ID-USDT“ anbietet, betreibt Betrug oder einen Schmutzgeld-Kanal. Bleib weg."}}, {"@type": "Question", "name": "Lohnt sich der Kauf von USDT mit Apple Pay?", "acceptedAnswer": {"@type": "Answer", "text": "Für Bequemlichkeit absolut; für den Preis nicht wirklich — die Kosten entsprechen dem Kartenkauf, mit dem Spread des Anbieters in den Kurs eingebacken. In Ordnung für einen ersten kleinen Test, aber wechsle zu P2P, sobald du regelmäßig kaufst."}}, {"@type": "Question", "name": "Ich bin brandneu. In welcher Reihenfolge sollte ich das tun?", "acceptedAnswer": {"@type": "Answer", "text": "Drei Schritte: 1. Auf einer Top-Börse registrieren und verifizieren; 2. Einen kleinen Test (im Wert von 50–100 $) über Sofortkauf oder Apple Pay fahren, um den gesamten Ablauf zu lernen; 3. Sobald du dich wohlfühlst, P2P für größere Beträge zu besseren Preisen nutzen. Lerne zuerst den Ablauf, optimiere dann den Preis."}}, {"@type": "Question", "name": "Warum kostet USDT auf verschiedenen Plattformen unterschiedlich viel?", "acceptedAnswer": {"@type": "Answer", "text": "Das ist normal. P2P-Preise werden durch Angebot und Nachfrage gesetzt, sodass sie über Plattformen und Zeitfenster variieren — ein Bruchteil eines Prozents bis zu einem oder zwei Punkten ist üblich. Wenn ein Kurs absurd danebenliegt (sagen wir 3 %+ über den Rest), wechsle die Plattform oder warte."}}, {"@type": "Question", "name": "Kann USDT kollabieren?", "acceptedAnswer": {"@type": "Answer", "text": "USDT hat in der Geschichte ein paar Mal von seinem 1-$-Peg gewackelt und sich bisher immer erholt. Er bleibt der Token eines privaten Unternehmens, mit Emittentenreserven- und Regulierungsrisiko — also wandle deine Lebensersparnisse nicht in USDT um, als wäre er eine Bankeinlage. Etwas USDC daneben zu halten ist gängige Praxis."}}, {"@type": "Question", "name": "Wie kaufe ich USDT zum ersten Mal?", "acceptedAnswer": {"@type": "Answer", "text": "Registriere dich auf einer Börse, verifiziere deine Identität, dann kaufe über Sofortkauf (am schnellsten) oder P2P (meist am billigsten mit Banküberweisung). Die 5 Schritte oben auf dieser Seite gehen den gesamten Ablauf in Reihenfolge durch."}}, {"@type": "Question", "name": "Was ist der billigste Weg, USDT zu kaufen?", "acceptedAnswer": {"@type": "Answer", "text": "Meist P2P mit Banküberweisung oder Umwandlung von Krypto, die du schon auf Spot hältst (etwa 0.1% an Gebühren). Sofortkäufe per Karte sind am schnellsten, kosten aber am meisten — die Vergleichstabelle oben zeigt alle drei nebeneinander."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Einsteigerpfad</a><a href="index.html" class="on">Anleitungen</a><a href="../exchanges.html">Börsen</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Tools</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de" selected>Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Startseite</a> / <a href="index.html">Anleitungen</a> / USDT kaufen</div>
+      <h1>Wie man USDT kauft: Drei Methoden verglichen</h1>
+      <p class="sub">USDT ist Kryptos „digitaler Dollar“, und die meisten Kaufreisen starten mit ihm. Es gibt drei Wege hinein: Sofortkauf in einer Börsen-App, P2P-Trading mit verifizierten Händlern und Umwandlung aus Krypto, die du schon hältst. Einsteiger sollten bei den ersten beiden bleiben, innerhalb einer Top-Börse.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Größte Börse der Welt, tiefste Liquidität</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">Vollständige Produktpalette, gute Sprachunterstützung</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX-Konto erstellen</a></div>
+      </div>
+      <p class="updated">Aktualisiert Okt. 2026 · Von TokVS · 12 Min. Lesezeit</p>
+      <p class="note">Quellen &amp; Methode: <a href="../methodology.html">wie wir prüfen</a> · <a href="../exchanges.html#availability">Länderverfügbarkeitstabelle</a> · Zahlen ändern sich, prüfe vor dem Handeln auf der offiziellen Seite.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Zuerst: was USDT ist</h2>
+      <p>USDT (Tether) wird von Tether ausgegeben und 1:1 an den US-Dollar gebunden. Er ist der größte Stablecoin, und innerhalb einer Börse funktioniert er als dein Barguthaben — er bewegt sich nicht mit dem Markt, du nutzt ihn, um Dinge zu kaufen, die es tun. Wie er sich von USDC und anderen Stablecoins unterscheidet, wird behandelt in <a href="stablecoins.html">USDT vs. USDC</a>.</p>
+
+      <h2>Wie man USDT in 5 Schritten kauft</h2>
+      <p>Wenn du nur die Kurzversion vor den Vergleichen unten willst, hier ist der gesamte Ablauf. Jeder Schritt verlinkt zum ausführlichen Leitfaden.</p>
+      <ol>
+        <li><b>Wähle eine Börse.</b> Für die meisten Einsteiger bedeutet das Binance, OKX oder Bybit — alle drei decken Sofortkauf, P2P und Spot-Umwandlung ab. Neu im gesamten Prozess? Starte mit <a href="how-to-buy-crypto-for-beginners.html">Krypto kaufen für Einsteiger</a>.</li>
+        <li><b>Verifiziere deine Identität.</b> Jeder legitime Fiat-On-Ramp verlangt KYC. Halte deinen Ausweis bereit; Verifizierung dauert meist Minuten.</li>
+        <li><b>Wähle deine Methode.</b> Sofortkauf ist am schnellsten, P2P ist meist am billigsten für Banküberweisung, und Umwandlung von Krypto, die du schon hältst, ist am billigsten von allen, wenn du schon welche besitzt. Der Vergleich unten setzt Zahlen zu jedem.</li>
+        <li><b>Kaufe, dann prüfe das Netzwerk.</b> USDT lebt auf mehreren Netzwerken (TRC20, ERC20, BEP20 und mehr). Das Netzwerk, auf dem du abhebst, entscheidet über die Gebühr — falsch zu wählen ist der häufigste Einsteigerfehler, behandelt in „Nach dem Kauf“ unten.</li>
+        <li><b>Bewege ihn irgendwo Sicherem hin.</b> Kleine Beträge können auf der Börse liegen; größere Beträge gehören in eine Wallet, die du kontrollierst. Siehe <a href="best-crypto-wallet-for-beginners.html">Beste Krypto-Wallet für Einsteiger</a>.</li>
+      </ol>
+      <h2>Methode 1: Sofortkauf (am einfachsten)</h2>
+      <ol>
+        <li>Öffne deine Börsen-App und gehe zu „Buy Crypto / Quick Buy“.</li>
+        <li>Wähle USDT, gib den Betrag ein, und die App zeigt, wie viel du zum aktuellen Kurs erhältst.</li>
+        <li>Zahle per Karte oder einer unterstützten Zahlungsmethode; die USDT landen direkt auf deinem Konto.</li>
+      </ol>
+      <p><strong>Vorteile:</strong> Kürzester Weg, einsteigersicher. <strong>Nachteile:</strong> Der Kurs enthält den Spread des Anbieters, sodass er meist etwas teurer ist als P2P. Am besten für erste Einzahlungen und kleine Beträge.</p>
+
+      <p><strong>Karte abgelehnt?</strong> Einige Banken blockieren Kryptokäufe standardmäßig, und ein paar behandeln sie als Bargeldvorschüsse mit Zusatzgebühren. Eine Debitkarte derselben Bank geht oft durch, wo eine Kreditkarte es nicht tut. Wenn beide scheitern, ist P2P mit Banküberweisung der verlässliche Ausweg — langsamer, aber er wird fast nie blockiert.</p>
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">Sofortkauf startet mit einem Konto — richte eines in Minuten ein: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Registrieren</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Registrieren</a></p>
+      <h2>Methode 2: P2P-Trading (am häufigsten)</h2>
+      <p>P2P bedeutet, direkt mit verifizierten Händlern auf der Plattform zu handeln, wobei die Börse die Krypto treuhänderisch hält: Du zahlst, der Händler gibt frei, und keine Seite kann mitten im Trade abhauen. Für eine vollständige Anleitung mit Screenshots siehe unsere <a href="how-to-buy-usdt-on-binance-p2p.html">Schritt-für-Schritt-Binance-P2P-Anleitung</a>.</p>
+      <ol>
+        <li>Öffne „P2P / C2C Buy“, wähle USDT und filtere Händler: <strong>Bevorzuge hohe Trade-Zahlen, hohe Abschlussraten und lange Kontohistorie</strong>.</li>
+        <li>Platziere die Order und zahle über die gelisteten Methoden des Händlers, unter Befolgung lokaler Plattformregeln. Schreibe in der Zahlungsnotiz niemals etwas Krypto-Bezogenes.</li>
+        <li>Tippe auf „Paid“, warte auf die Freigabe und verifiziere, dass der genaue Betrag ankam, bevor du die Order schließt. Jeder Streit geht über den Plattform-Einspruch — kläre ihn niemals mit einer privaten Überweisung außerhalb der Plattform.</li>
+      </ol>
+      <div class="callout warn"><b>Nimm das Risiko eingefrorener Gelder ernst:</b> Wenn das Geld einer Gegenpartei aus Betrug stammte, kann das Bankkonto, das es erhielt, während Ermittlungen eingefroren werden. Reduziere das Risiko: Handle nur innerhalb von Top-Plattformen mit Treuhand, nutze ein separates Bankkonto, halte Beträge vernünftig, und wenn eine unerwartete Überzahlung ankommt, fasse sie nicht an — kontaktiere die Plattform. Das Risiko kann gemanagt, nicht eliminiert werden.</div>
+
+      <p><strong>Einen Händler wählen, die 30-Sekunden-Version:</strong> Sortiere nach Preis, dann ignoriere die obersten zwei oder drei Kurse, wenn sie zu gut aussehen — prüfe Trade-Zahl (mindestens Hunderte), Abschlussrate (über 95 %) und wie lange das Konto existiert. Lies die Bedingungen des Händlers vor dem Platzieren der Order; sie sagen dir genau, welche Zahlungsreferenz zu nutzen ist. Und storniere niemals eine Order, nachdem du gezahlt hast — wenn der Händler nicht freigibt, eröffne stattdessen einen Plattform-Einspruch mit deinem Zahlungsbeleg.</p>
+      <!-- tokvs-in-cta-2 -->
+      <p class="in-cta">P2P braucht auch ein Konto — dann wähle einen gut bewerteten Händler: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Registrieren</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Registrieren</a></p>
+      <h2>Methode 3: Krypto umwandeln, die du schon hältst</h2>
+      <p>Hältst du schon BTC oder ETH? Überspringe den Cash-On-Ramp: Verkaufe in USDT auf dem Spot-Markt oder nutze die One-Tap-Convert-Funktion der Börse. Convert ist bequem, aber etwas schlechter quotiert; für größere Beträge ist eine Spot-Limit-Order billiger.</p>
+
+      <h2>Vier Zahlungsmethoden verglichen: welche passt zu dir</h2>
+      <p>Derselbe USDT-Kauf kann je nach Zahlungsweise sehr unterschiedlich kosten und ankommen. Hier sind die vier On-Ramps, zu denen westliche Nutzer am häufigsten greifen (PayPal-Nutzer: <a href="how-to-buy-bitcoin-with-paypal.html">Hier steht, wie PayPal in den Kryptokauf passt</a>):</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Methode</th><th>Typische Kosten</th><th>Geschwindigkeit</th><th>ID-Verifizierung</th><th>Am besten für</th></tr></thead>
+        <tbody>
+          <tr><td>Sofortkauf (Debit-/Kreditkarte)</td><td>Kartenbearbeitungsgebühr auf den Kurs obendrauf — prüfe den Endpreis vor dem Bestätigen</td><td>Sofort bis wenige Minuten</td><td>Vollständiges KYC erforderlich</td><td>Erste Einzahlung, wenigster Aufwand</td></tr>
+          <tr><td>Apple Pay / Google Pay</td><td>Wie die verknüpfte Karte; achte auf Bargeldvorschussgebühren deiner Bank</td><td>Sofort</td><td>Vollständiges KYC erforderlich</td><td>Mobile-first, kleine Beträge</td></tr>
+          <tr><td>P2P-Trading</td><td>Meist keine Plattformprovision; die Kosten sitzen im Kurs des Händlers</td><td>Minuten (Warten auf Freigabe)</td><td>KYC + verifiziertes Zahlungskonto</td><td>Größere Beträge, niedrigste Kosten</td></tr>
+          <tr><td>Banküberweisung / SEPA</td><td>Deine Bank kann berechnen; die Börsenseite ist meist kostenlos</td><td>1–2 Werktage</td><td>Vollständiges KYC erforderlich</td><td>Große Beträge, keine Eile</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Gebühren ändern sich oft — gehe immer nach dem In-App-Kurs vor dem Bestätigen. Einige Banken markieren Kryptokäufe als Bargeldvorschüsse; wenn deine Karte abgelehnt wird, versuche eine Debitkarte oder eine andere Methode.</p>
+      <h2>Wohin dein Geld wirklich geht: drei Kosten</h2>
+      <p>Die Gesamtkosten des USDT-Kaufs verstecken sich an drei Stellen. <strong>Der Spread</strong> — Die Lücke zwischen quotiertem Preis und Marktpreis — ist die Hauptkosten des Sofortkaufs. <strong>Die Handelsgebühr</strong> — Berechnet auf den gehandelten Betrag, wenn du auf Spot umwandelst; etwa 0.1% für reguläre Nutzer auf großen Plattformen, und Gebührentabellen können sich ändern, also prüfe die offizielle Seite. <strong>Die Netzwerk-Abhebegebühr</strong> — An das Blockchain-Netzwerk gezahlt, wenn du USDT in eine externe Wallet bewegst; sie hat nichts mit der Börse zu tun, und TRC20 ist meist am billigsten. Wenn du Methoden vergleichst, addiere alle drei statt nur auf die „Gebühr“-Zeile zu starren.</p>
+      <div id="tokvs-usdt-calc">
+  <style>
+    #tokvs-usdt-calc label { display:block; font-weight:700; margin:12px 0 4px; }
+    #tokvs-usdt-calc input, #tokvs-usdt-calc select { width:100%; max-width:340px; padding:10px 12px; border:1.5px solid #D8DCD2; border-radius:12px; font:inherit; background:#fff; box-sizing:border-box; }
+    #tokvs-calc-result { background:#F4F6F1; border-radius:12px; padding:12px 14px; margin-top:14px; font-weight:700; }
+  </style>
+  <h2>Schätze, was du bekommst</h2>
+  <p>Gib die Zahlen ein, die du auf der Börse siehst. Das Ergebnis ist eine Schätzung, kein Kurs.</p>
+  <label for="tokvs-calc-amount">Betrag, den du ausgeben wirst (deine Fiat-Währung)</label>
+  <input type="number" id="tokvs-calc-amount" min="0" step="any" placeholder="z. B. 100">
+  <label for="tokvs-calc-price">Preis von 1 USDT in dieser Fiat-Währung, wie auf der Börse gezeigt (gib den Preis ein, den du auf der Börse siehst)</label>
+  <input type="number" id="tokvs-calc-price" min="0" step="any" placeholder="z. B. 1,00">
+  <label for="tokvs-calc-exchange">Börse (Basis-Taker-Satz, kein Kurs)</label>
+  <select id="tokvs-calc-exchange">
+    <option value="0.001">Binance, Basis-Taker-Satz 0.10 %</option>
+    <option value="0.001">OKX, Basis-Taker-Satz 0.10 %</option>
+    <option value="0.001">Bybit, Basis-Taker-Satz 0.10 %</option>
+    <option value="0.001">Bitget, Basis-Taker-Satz 0.10 %</option>
+  </select>
+  <p><button type="button" class="btn-add" id="tokvs-calc-btn">Berechnen</button></p>
+  <p id="tokvs-calc-result" aria-live="polite"></p>
+  <p class="note">Ohne Spread, Slippage und Bankgebühren. Prüfe immer die Vorschau-Gesamtsumme auf der Börse. Gebührentabellen ändern sich, sodass der Basis-Satz oben von dem abweichen kann, was die Börse dir zeigt.</p>
+</div>
+
+      <h2>Welche Methode solltest du wählen?</h2>
+      <p>Entscheide nach zwei Fragen: wie viel und wie schnell. <strong>Unter ein paar hundert Dollar und in Eile?</strong> Sofortkauf oder Apple Pay — du zahlst etwas mehr, aber bist in zwei Minuten fertig. <strong>Einen ernsthaften Betrag kaufen?</strong> P2P gewinnt fast immer beim Preis; die zusätzlichen fünf Minuten, einen guten Händler zu wählen, zahlen sich aus. <strong>Vierstellige Beträge oder mehr bewegen und nicht in Eile?</strong> Eine SEPA- oder Banküberweisung hält Kosten am niedrigsten und hinterlässt eine saubere Papierspur. Was auch immer du wählst, fahre zuerst einen kleinen Testbetrag — das tut jeder erfahrene Käufer auf einer neuen Plattform immer noch.</p>
+      <h2>Warum der Preis nicht genau 1 $ ist</h2>
+      <p>In P2P-Märkten schwimmt der Lokalwährungspreis von USDT mit Angebot und Nachfrage: Starke Kaufnachfrage treibt ein Premium, ruhige Märkte können unter Parität fallen. In P2P-lastigen Märkten zählt das lokale Playbook — siehe <a href="how-to-buy-usdt-in-india.html">USDT in Indien kaufen</a> und <a href="how-to-buy-usdt-in-nigeria.html">USDT in Nigeria kaufen</a>. <strong>Wenn das Premium absurd aussieht, erzwinge den Trade nicht</strong> — Versuche ein anderes Zeitfenster oder eine andere Plattform. Und welche Methode du auch nutzt, fahre zuerst einen kleinen Testbetrag und bestätige die Ankunft, bevor du hochskalierst.</p>
+
+      <h2>Nach dem Kauf: wähle nicht das falsche Netzwerk</h2>
+      <p>USDT lebt auf mehreren Chains (TRC20, ERC20, BEP20 und mehr). Wenn du ihn in eine Wallet oder auf eine andere Plattform abhebst, <strong>Sender und Empfänger müssen dasselbe Netzwerk nutzen</strong> — Eine Nichtübereinstimmung bedeutet meist, dass die Gelder weg sind. Netzwerkgebühren unterscheiden sich ebenfalls stark; TRC20 ist typischerweise am billigsten. Wallet-Grundlagen stehen in <a href="wallet-safety.html">Wallet- &amp; Seed-Phrase-Sicherheit</a>.</p>
+      <p>Noch kein Konto? Registriere dich zuerst, dann komm zurück:</p>
+      <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Tiefste P2P-Händlerbank</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Registrieren</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Reibungsloser P2P-Ablauf</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Registrieren</a></div>
+      </div>
+
+      <h2>P2P-Händler-Checkliste: fünf harte Kennzahlen</h2>
+      <p>Bei P2P kommt die halbe Sicherheit von der Plattform, die halbe vom Händler. Verbringe 30 Sekunden mit diesen fünf, bevor du eine Order platzierst:</p>
+      <ol>
+        <li><strong>30-Tage-Trade-Zahl</strong> — Mindestens mehrere hundert Orders. Überspringe Händler mit kaum Historie.</li>
+        <li><strong>Abschlussrate</strong> — Über 95 %. Darunter gibt es meist eine Geschichte.</li>
+        <li><strong>Kontoalter</strong> — Ältere Konten sind vertrauenswürdiger; behandle brandneue Konten, die den besten Preis bieten, mit Misstrauen.</li>
+        <li><strong>Online-Status und Antwortzeit</strong> — Händler, die als online angezeigt werden, geben typischerweise schneller frei.</li>
+        <li><strong>Händlerbedingungen</strong> — Öffne die Händlerseite und lies Zahlungsmethoden, Limits und Referenzanforderungen. Klare Bedingungen bedeuten meist einen professionellen Betrieb.</li>
+      </ol>
+      <p>Nach dem Sortieren nach Preis wähle nicht blind den billigsten — führe die fünf Prüfungen durch und nimm den besten insgesamt. Ein etwas schlechterer Kurs kauft dir schnellere Freigabe und null Streitigkeiten.</p>
+      <h2>Deine erste Abhebung: eine Checkliste</h2>
+      <p>USDT zu kaufen ist nur die halbe Reise; ihn in eine Wallet oder auf eine andere Plattform zu bewegen ist die andere Hälfte. Für deine erste Abhebung:</p>
+      <ol>
+        <li><strong>Netzwerk muss auf allen drei Seiten übereinstimmen</strong> — Sender, Empfänger und das Netzwerk, das du wählst (z. B. TRC20). Eine Nichtübereinstimmung und die Gelder sind praktisch weg.</li>
+        <li><strong>Teste zuerst mit einem winzigen Betrag</strong> — Sende immer das Minimum an eine neue Adresse, bestätige die Ankunft, dann bewege den Rest. Keine Ausnahmen.</li>
+        <li><strong>Kopiere die Adresse per Copy-Paste</strong> — Adressen per Hand zu tippen ist ein klassischer Weg, Coins zu verlieren. Nach dem Einfügen verifiziere die ersten und letzten vier Zeichen.</li>
+        <li><strong>Erlaube Bestätigungszeit</strong> — On-Chain-Bestätigungen dauern eine Weile; TRC20 dauert meist Minuten, ERC20 kann bei Überlastung länger dauern. Prüfe den Transaktions-Hash, bevor du in Panik gerätst.</li>
+        <li><strong>Behalte etwas Gas</strong> — Coins später aus einer Wallet herauszubewegen braucht native Gas-Token, also leere den Saldo nicht auf genau null.</li>
+      </ol>
+      <h2>Wähle nach Betrag: die richtige Methode für dein Budget</h2>
+      <p>Keine Methode ist universell am besten — nur am besten für deinen Betrag:</p>
+      <ul>
+        <li><strong>Unter 100 $</strong> — Sofortkauf oder Apple Pay. Die Preisdifferenz ist ein oder zwei Dollar; verbringe nicht 20 Minuten damit, P2P zu lernen, um sie zu sparen. Deine Zeit ist mehr wert.</li>
+        <li><strong>$100–$1,000</strong> — P2P beginnt zu gewinnen. Wähle einen gut bewerteten Händler und du sparst typischerweise 1–2 % gegenüber Sofortkauf — genug für ein anständiges Mittagessen.</li>
+        <li><strong>Über 1.000 $</strong> — P2P ist ein Muss. Teile in 2–3 Orders über Zeitfenster auf, um Premium-Schwankungen auszugleichen. Banküberweisung/SEPA ist die stetigere (wenn auch langsamere) Route für große Summen.</li>
+      </ul>
+      <p>Eine Faustregel: <strong>Je größer der Betrag, desto mehr zahlen sich diese 10 Minuten des Vergleichens von Händlern und Kursen aus; je kleiner der Betrag, desto mehr solltest du einfach den leichtesten Weg wählen.</strong></p>
+      <h2>Drei Wege, deine USDT zu halten</h2>
+      <ul>
+        <li><strong>Auf der Börse</strong> — Am bequemsten für Trading; Geld, das du bald brauchst, lebt hier. Trägt Plattformrisiko, also bleibe bei Top-Börsen (siehe unsere <a href="choose-exchange.html">Auswahlanleitung</a>).</li>
+        <li><strong>In deiner eigenen Wallet</strong> — Seed-Phrase in deinen Händen, maximale Plattformrisiko-Resistenz. Am besten für größere langfristige Bestände, aber jede Bewegung kostet eine Netzwerkgebühr, also ist es verschwenderisch für häufiges Hin- und Herschieben.</li>
+        <li><strong>In Renditeprodukten</strong> — Einige Plattformen bieten flexible/gesperrte USDT-Produkte mit einem APY. Du verleihst die Coins faktisch; Renditen skalieren mit Risiko. Lies die Bedingungen vor dem Einstieg.</li>
+      </ul>
+      <h2>FAQ</h2>
+      <h3>Sind USDT und Tether dasselbe?</h3>
+      <p>Ja. USDT ist das Ticker-Symbol; Tether ist das ausgebende Unternehmen.</p>
+      <h3>Kostet der Kauf von USDT eine Gebühr?</h3>
+      <p>In-App-Käufe berechnen meist keine separate Gebühr — die Kosten sitzen im quotierten Spread. USDT in eine externe Wallet abzuheben kostet die Überweisungsgebühr dieses Netzwerks.</p>
+      <h3>Wird P2P-Trading mein Bankkonto definitiv einfrieren?</h3>
+      <p>Nein, aber die Wahrscheinlichkeit ist real und hängt von Beträgen ab und davon, woher die Gelder der Gegenpartei kamen. Geprüfte Händler, Treuhand und saubere Aufzeichnungen reduzieren sie erheblich — niemals auf null.</p>
+      <h3>Kann ich USDT einfach als Dollar halten?</h3>
+      <p>Es ist ein Token, der von einem privaten Unternehmen ausgegeben wird, mit Emittenten- und Reservenrisiko — keine Bankeinlage. Für große, langfristige Bestände denke über Diversifizierung und Compliance nach; siehe <a href="stablecoins.html">USDT vs. USDC</a>.</p>
+
+      <h3>Brauche ich eine ID-Verifizierung, um USDT zu kaufen?</h3>
+      <p>Ja. Jeder legitime Fiat-On-Ramp — Sofortkauf, P2P, Banküberweisung — verlangt Identitätsverifizierung (KYC) nach Anti-Geldwäsche-Regeln. Wer „No-ID-USDT“ anbietet, betreibt Betrug oder einen Schmutzgeld-Kanal. Bleib weg.</p>
+      <h3>Lohnt sich der Kauf von USDT mit Apple Pay?</h3>
+      <p>Für Bequemlichkeit absolut; für den Preis nicht wirklich — die Kosten entsprechen dem Kartenkauf, mit dem Spread des Anbieters in den Kurs eingebacken. In Ordnung für einen ersten kleinen Test, aber wechsle zu P2P, sobald du regelmäßig kaufst.</p>
+      <h3>Ich bin brandneu. In welcher Reihenfolge sollte ich das tun?</h3>
+      <p>Drei Schritte: 1. Auf einer Top-Börse registrieren und verifizieren; 2. Einen kleinen Test (im Wert von 50–100 $) über Sofortkauf oder Apple Pay fahren, um den gesamten Ablauf zu lernen; 3. Sobald du dich wohlfühlst, P2P für größere Beträge zu besseren Preisen nutzen. Lerne zuerst den Ablauf, optimiere dann den Preis.</p>
+      <h3>Warum kostet USDT auf verschiedenen Plattformen unterschiedlich viel?</h3>
+      <p>Das ist normal. P2P-Preise werden durch Angebot und Nachfrage gesetzt, sodass sie über Plattformen und Zeitfenster variieren — ein Bruchteil eines Prozents bis zu einem oder zwei Punkten ist üblich. Wenn ein Kurs absurd danebenliegt (sagen wir 3 %+ über den Rest), wechsle die Plattform oder warte.</p>
+      <h3>Kann USDT kollabieren?</h3>
+      <p>USDT hat in der Geschichte ein paar Mal von seinem 1-$-Peg gewackelt und sich bisher immer erholt. Er bleibt der Token eines privaten Unternehmens, mit Emittentenreserven- und Regulierungsrisiko — also wandle deine Lebensersparnisse nicht in USDT um, als wäre er eine Bankeinlage. Etwas USDC daneben zu halten ist gängige Praxis.</p>
+            <h3>Wie kaufe ich USDT zum ersten Mal?</h3>
+      <p>Registriere dich auf einer Börse, verifiziere deine Identität, dann kaufe über Sofortkauf (am schnellsten) oder P2P (meist am billigsten mit Banküberweisung). Die 5 Schritte oben auf dieser Seite gehen den gesamten Ablauf in Reihenfolge durch.</p>
+      <h3>Was ist der billigste Weg, USDT zu kaufen?</h3>
+      <p>Meist P2P mit Banküberweisung oder Umwandlung von Krypto, die du schon auf Spot hältst (etwa 0.1% an Gebühren). Sofortkäufe per Karte sind am schnellsten, kosten aber am meisten — die Vergleichstabelle oben zeigt alle drei nebeneinander.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Bereit?</b> Die Registrierung dauert etwa 10 Minuten: einmal verifizieren, 2FA aktivieren, dann erste USDT via P2P kaufen. Folge den Anleitungen auf dieser Seite und alles wird gut.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Größte Börse der Welt, tiefste Liquidität</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Mit Rabatt registrieren →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">Vollständige Produktpalette, gute Sprachunterstützung</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX-Konto erstellen</a></div>
+        </div>
+        <p class="note">Die Registrierung über TokVS-Links wendet automatisch den Empfehlungsgebührenrabatt jeder Börse an — dasselbe Konto, niedrigere Gebühren. Die Registrierung über unsere Links kostet dich nicht extra — der Rabatt wird von der Börse subventioniert.</p>
+      </div>
+      <h2>Weiterlesen</h2>
+      <ul>
+        <li><a href="stablecoins.html">USDT vs. USDC: was ist der Unterschied?</a></li>
+        <li><a href="how-to-buy-bitcoin.html">Wie man Bitcoin für Einsteiger kauft</a></li>
+        <li><a href="../start/step4.html">Einsteigerpfad Schritt 4: USDT kaufen (illustriert)</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Startseite</a><a href="../airdrops.html">Tägliche Airdrops</a><a href="../exchanges.html">Börsenvergleich</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Einsteiger</b><a href="../start/step1.html">Einsteigerpfad</a><a href="index.html">Anleitungen</a><a href="../start/step5.html">Deinen ersten Coin kaufen</a></div>
+      <div class="col" style="flex:1;"><b>Testberichte</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">Watchlist-Alarme</a><a href="../tools.html#calendar">Ereigniskalender</a><a href="../exchanges.html#calculator">Gebührenrechner</a></div>
+    </div>
+    <div class="disclosure">Diese Seite enthält Affiliate-Links. Eine Registrierung über unsere Links kostet dich nichts extra. Kryptopreise sind stark volatil; nichts hier ist Anlageberatung — schätze die Risiken selbst ein.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Noch kein Konto? In 3 Minuten registrieren →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Registrieren</a><button class="sx" aria-label="Schließen" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+  <script src="/js/tokvs-widgets.js"></script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

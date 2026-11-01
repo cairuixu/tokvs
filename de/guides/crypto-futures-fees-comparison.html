@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Krypto-Futures-Gebühren im Vergleich: 4 Börsen — TokVS</title>
+<meta name="description" content="Futures-Maker-/Taker-Gebühren bei Binance, OKX, Bybit und Bitget nebeneinander verglichen — plus Funding-Sätze und Gewohnheiten, die senken, was du zahlst.">
+<link rel="canonical" href="https://tokvs.com/de/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/crypto-futures-fees-comparison">
+<meta property="og:title" content="Futures-Gebühren: Binance vs. OKX vs. Bybit vs. Bitget — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Maker-/Taker-Futures-Gebühren verglichen, Funding-Sätze erklärt und fünf Gewohnheiten, die deine Gebührenrechnung senken.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/de/guides/crypto-futures-fees-comparison">
+<meta property="og:locale" content="de_DE">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/de/"}, {"@type": "ListItem", "position": 2, "name": "Anleitungen", "item": "https://tokvs.com/de/guides/"}, {"@type": "ListItem", "position": 3, "name": "Krypto-Futures-Gebühren im Vergleich", "item": "https://tokvs.com/de/guides/crypto-futures-fees-comparison"}]}, {"@type": "Article", "headline": "Krypto-Futures-Gebühren im Vergleich: 4 Börsen", "description": "Futures-Maker-/Taker-Gebühren bei Binance, OKX, Bybit und Bitget nebeneinander verglichen — plus Funding-Sätze und Gewohnheiten, die senken, was du zahlst.", "datePublished": "2026-10-16", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/de/guides/crypto-futures-fees-comparison", "dateModified": "2026-10-30"}, "inLanguage": "de"}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Unterscheiden sich Futures-Gebühren von Spot-Gebühren?", "acceptedAnswer": {"@type": "Answer", "text": "Ja — Futures sind auf allen vier hier gezeigten Börsen günstiger. Standardstufen-Futures liegen bei etwa 0.02% Maker / 0.05% Taker, gegenüber etwa 0,08–0.10% auf Spot. Börsen bepreisen Futures aggressiv, weil die Volumen weit höher sind."}}, {"@type": "Question", "name": "Welche Börse hat die niedrigsten Futures-Gebühren?", "acceptedAnswer": {"@type": "Answer", "text": "Bei Maker-Gebühren liegen alle vier bei 0.02% gleichauf. Bei Taker-Gebühren sind Binance und OKX mit 0.05% die niedrigsten der vier. Aber Funding-Sätze und Spreads können wichtiger sein als eine 0,005–0,01-%-Taker-Lücke, also wähle nicht allein nach dieser Zahl."}}, {"@type": "Question", "name": "Was ist ein Funding-Satz?", "acceptedAnswer": {"@type": "Answer", "text": "Eine regelmäßige Zahlung zwischen Longs und Shorts bei Perpetual-Kontrakten — meist alle 8 Stunden — die den Kontraktpreis am Spot verankert. Sie wird nicht an die Börse gezahlt. Eine Position über mehrere Funding-Intervalle zu halten kann mehr kosten als die Handelsgebühr selbst."}}, {"@type": "Question", "name": "Zahlen Market-Orders immer Taker-Gebühren?", "acceptedAnswer": {"@type": "Answer", "text": "Ja. Jede Order, die sofort gegen ruhende Orders ausgeführt wird, zählt als Taker-Order. Nur Limit-Orders, die im Orderbuch liegen und später ausgeführt werden, verdienen den Maker-Satz."}}, {"@type": "Question", "name": "Können Gebühren ein kleines Futures-Konto wirklich auslöschen?", "acceptedAnswer": {"@type": "Answer", "text": "Langsam, ja. Ein 20×-Hebel-Round-Trip zu Taker-Sätzen kostet allein an Gebühren etwa 2 % deiner Margin. Zehn solcher Trades löschen etwa 20 %, bevor Preisbewegung überhaupt gezählt wird. Das ist die Rechnung, die die meisten Einsteiger nie machen."}}, {"@type": "Question", "name": "Ändern sich Futures-Gebühren mit der Zeit?", "acceptedAnswer": {"@type": "Answer", "text": "Ja — Börsen passen Gebührenstufen regelmäßig an. Betrachte jeden Artikel, inklusive dieses, als Momentaufnahme. Die offizielle Gebührenseite der Börse ist die Wahrheitsquelle; prüfe sie, bevor du größere Beträge einsetzt."}}, {"@type": "Question", "name": "Lohnt es sich, VIP-Gebührenstufen zu jagen?", "acceptedAnswer": {"@type": "Answer", "text": "Nicht für Einsteiger. VIP-Rabatte erfordern ernsthaftes Monatsvolumen. Ordertyp (Limit vs. Market) und Handelsfrequenz sparen für reguläre Trader weit mehr als das Jagen einer Stufe, die du nicht erreichen wirst."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Einsteigerpfad</a><a href="index.html" class="on">Anleitungen</a><a href="../exchanges.html">Börsen</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Tools</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de" selected>Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Startseite</a> / <a href="index.html">Anleitungen</a> / Krypto-Futures-Gebühren im Vergleich</div>
+      <h1>Krypto-Futures-Gebühren im Vergleich</h1>
+      <p class="sub">Maker- und Taker-Gebühren der vier größten Futures-Handelsplätze — nebeneinander, damit Hebel dein Konto nicht mehr leise auffrisst.</p>
+      <p class="updated">Aktualisiert Okt. 2026 · Von TokVS · 7 Min. Lesezeit</p>
+      <p class="note">Quellen &amp; Methode: <a href="../methodology.html">wie wir prüfen</a> · <a href="../exchanges.html#availability">Länderverfügbarkeitstabelle</a> · Zahlen ändern sich, prüfe vor dem Handeln auf der offiziellen Seite.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">Reibungsloser Futures-Handel, häufige Aktionen</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bei Bybit registrieren</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Größte Börse der Welt, tiefste Liquidität</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Die kurze Antwort</h2>
+      <p>Bei Maker-Gebühren <strong>Liegen alle vier Börsen bei 0.02% gleichauf</strong>. Bei Taker-Gebühren führen Binance und OKX mit 0.05%, Bybit verlangt 0.055% und Bitget 0.06%. Die Lücke pro Trade wirkt winzig — und ist es. Aber Futures-Trader machen dutzende Round-Trips, und Hebel multipliziert jede Gebühr mit deinem Hebel-Multiplikator. Deshalb existiert diese Seite: Die Gebührentabelle ist bei Futures wichtiger als sonstwo in Krypto.</p>
+      <h2>Die Gebührentabelle (Standardstufe)</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Börse</th><th>Futures-Maker</th><th>Futures-Taker</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.02%</td><td>0.05%</td></tr>
+          <tr><td>OKX</td><td>0.02%</td><td>0.05%</td></tr>
+          <tr><td>Bybit</td><td>0.02%</td><td>0.055%</td></tr>
+          <tr><td>Bitget</td><td>0.02%</td><td>0.06%</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Standardstufe (nicht VIP). Börsen passen Gebühren regelmäßig an — bestätige immer auf der offiziellen Gebührenseite der Börse, bevor du größere Beträge einsetzt.</p>
+      <h2>Was „Maker“ und „Taker“ wirklich bedeuten</h2>
+      <p>Jeder Trade ist eines von zwei Dingen. Eine <strong>Maker-</strong> Order ist eine Limit-Order, die du ins Buch legst und die auf Ausführung wartet — du „machst“ Liquidität, also zahlst du den niedrigeren Satz. Eine <strong>Taker-</strong> Order wird sofort gegen bereits im Buch liegende Orders ausgeführt — Market-Orders sind immer Taker-Orders, ebenso Limit-Orders, die aggressiv genug bepreist sind, um sofort ausgeführt zu werden. Die praktische Erkenntnis: <strong>Geduld ist buchstäblich günstiger.</strong> Wenn deine Strategie Sekunden auf eine Ausführung warten kann, senken Limit-Orders deine Gebührenrechnung bei jeder Börse oben um mehr als die Hälfte.</p>
+      <h2>Funding-Sätze: die Gebühr, die niemand nennt</h2>
+      <p>Perpetual-Futures — die Kontrakte, die die meisten traden — haben kein Verfallsdatum. Stattdessen haben sie <strong>Funding-Zahlungen</strong>, typischerweise alle 8 Stunden, die direkt zwischen Longs und Shorts fließen, um den Kontraktpreis am Spot zu verankern. Wenn Funding positiv ist, zahlen Longs an Shorts; wenn negativ, umgekehrt. Die Börse nimmt keinen Anteil — aber die Kosten sind real, und für Positionen, die tageweise gehalten werden, <strong>Kann Funding die Handelsgebühr selbst übersteigen</strong>. Bevor du eine gehebelte Position über Nacht hältst, prüfe den Funding-Satz und seine jüngste Historie auf der Börse. Eine „günstige“ 0,02-%-Maker-Gebühr bedeutet nichts, wenn du dreimal am Tag 0.1% an Funding zahlst.</p>
+      <h2>Wie Hebel deine Gebührenrechnung multipliziert</h2>
+      <p>Hier ist die Rechnung, die die meisten Einsteiger nie machen. Du stellst 1.000 $ Margin bei 10×-Hebel: Deine Position ist 10.000 $ nominal. Ein Taker-Round-Trip zu 0.05% kostet 5 $ zum Eröffnen und 5 $ zum Schließen — <strong>Insgesamt 10 $, was 1 % deiner Margin ist</strong>, weg, bevor sich der Preis um einen Cent bewegt. Bei 20×-Hebel kostet derselbe Round-Trip 2 % der Margin. Zehn solcher Trades löschen etwa 20 % des Kontos allein an Gebühren aus. Das ist der leise Killer kleiner Futures-Konten — keine schlechten Entscheidungen, sondern Tod durch tausend Gebührenschnitte. Die Verteidigungen sind einfach: niedrigerer Hebel, weniger Trades, Limit-Orders.</p>
+      <h2>Gebührenstufen: auf welcher du wirklich bist</h2>
+      <p>Die Zahlen in der Tabelle sind <strong>Standardstufen-Sätze</strong> — was jedes neue Konto zahlt. Alle vier Börsen betreiben VIP-Programme, die Gebühren bei hohem Monatsvolumen rabattieren, aber die Schwellen sind ernst (Zehner-Millionen an Volumen für die bedeutsamen Stufen). Als Einsteiger oder regulärer Trader bist du auf Standard, und das ist in Ordnung: <strong>Ordertyp und Handelsfrequenz bewegen deine Kosten weit mehr als eine VIP-Stufe, die du nicht erreichen kannst.</strong> Verbieg dein Trading nicht, um einem Rabatt hinterherzujagen.</p>
+      <h2>Fünf Gewohnheiten, die Futures-Gebühren senken</h2>
+      <ol>
+        <li><strong>Standardmäßig Limit-Orders nutzen.</strong> Maker vs. Taker ist der einzelne größte Hebel — 0.02% vs. 0,05–0.06% bei jeder Ausführung.</li>
+        <li><strong>Seltener traden.</strong> Jeder Round-Trip hat feste Gebührenkosten. Weniger Trades mit höherer Überzeugung schlagen ständiges Scalping auf einem kleinen Konto.</li>
+        <li><strong>Funding vor dem Halten prüfen.</strong> Wenn Funding stark gegen deine Seite läuft, warte entweder auf den Reset oder überdenke das Halten.</li>
+        <li><strong>Halte Gebühren unter 0.5% der Margin pro Trade.</strong> Wenn die Gebührenrechnung eines Setups das übersteigt, braucht das Setup einen größeren Vorteil — oder kleineren Hebel.</li>
+        <li><strong>Vergleiche, bevor du dich festlegst.</strong> Lass dein erwartetes Monatsvolumen durch einen Gebührenrechner laufen (unserer ist auf der <a href="../exchanges.html">Börsenseite</a>) statt zu raten.</li>
+      </ol>
+      <p class="in-cta">Tradest du regelmäßig Futures? Starte dort, wo sich Derivate-Trader sammeln: <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bei Bybit registrieren</a></p>
+      <h2>Welche Börse für welchen Futures-Trader</h2>
+      <p>Gebühren liegen nah genug beieinander, dass Passung wichtiger ist als eine 0,005-%-Taker-Lücke. <strong>Bybit</strong> Hat sich seinen Ruf mit Derivaten aufgebaut — die Futures-Oberfläche ist dort, wo es glänzt. <strong>Binance</strong> Hat die tiefste Liquidität, was die engsten Spreads bei Major-Paaren bedeutet (eine versteckte Kostenart, die die Gebührentabelle nicht zeigt). <strong>OKX</strong> Bietet starkes Tooling für aktive Trader, die Tiefe über Produkte hinweg wollen. <strong>Bitget</strong> Ist beliebt bei Tradern, die den Positionen anderer Trader folgen. Wähle den Handelsplatz, dessen Stärken dazu passen, wie du wirklich tradest; die Gebührentabelle oben verhindert nur, dass dir jemand zu viel berechnet.</p>
+      <h2>Eine Anmerkung zu „Null-Gebühren“-Aktionen</h2>
+      <p>Börsen veranstalten regelmäßig Null-Maker-Gebühren- oder Gebührenrabatt-Aktionen für ausgewählte Paare. Sie sind echt, aber vorübergehend und schließen meist die Paare aus, die Einsteiger am meisten traden. Wähle einen Handelsplatz nicht wegen einer Aktion — wähle ihn wegen der alltäglichen Gebührentabelle, die du Monat für Monat wirklich zahlen wirst.</p>
+      <h2>Funding in der Praxis: ein durchgerechnetes Beispiel</h2>
+      <p>Zahlen machen Funding konkret. Angenommen, du hältst eine 20.000-$-Long-Position auf einem Perpetual-Kontrakt und der Funding-Satz beträgt 0.01% pro 8-Stunden-Intervall — ein völlig normaler Wert in einem bullischen Markt. Jedes Intervall kostet dich 20.000 $ × 0.01% = <strong>$2</strong>. Drei Intervalle am Tag = 6 $/Tag. Eine Woche gehalten und du hast allein 42 $ an Funding gezahlt — mehr als das Vierfache der 10-$-Round-Trip-Handelsgebühr auf derselben Position zu Taker-Sätzen. Drehe es nun um: Wenn Funding negativ ist, <em>du</em> Wirst du dafür bezahlt, den Long zu halten. Erfahrene Trader prüfen Funding vor jedem mehrtägigen Halten und wählen ihre Richtung manchmal teilweise danach. Die Lektion ist nicht, Funding zu fürchten — sie ist, es <strong>Vor dem Einstieg in den Trade einzupreisen</strong>, genauso wie du den Spread prüfen würdest. Die meisten Börsen zeigen den aktuellen Funding-Satz und einen Countdown zur nächsten Zahlung direkt auf dem Futures-Handelsbildschirm; mache einen Blick darauf zu einem Teil deiner Pre-Trade-Checkliste.</p>
+      <h2>Ein letztes Wort zur Wahl allein nach Gebühren</h2>
+      <p>Es ist verlockend, die Börse mit der niedrigsten Taker-Zahl zu wählen und es dabei zu belassen. Widerstehe dem. Über diese vier Handelsplätze beträgt die maximale Taker-Lücke 0.01% — bei einer 5.000-$-Position sind das fünfzig Cent pro Trade. <strong>Deine Hebelwahl, dein Ordertyp und deine Handelsfrequenz bewegen die Nadel jeweils 10–100× mehr.</strong> Ein Trader mit 3×-Hebel, der Limit-Orders auf der „teuren“ Börse nutzt, zahlt weit weniger als ein 20×-Market-Order-Scalper auf der „günstigen“. Triff zuerst die großen Entscheidungen richtig; lass die Gebührentabelle der Tiebreaker sein, der sie ist.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Bereit, Futures zu traden?</b> Eröffne ein Konto, starte mit niedrigem Hebel (3–5×) und nutze Limit-Orders, während du die Mechanik lernst. Die Gebührenrechnung oben ist dein Geländer.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">Reibungsloser Futures-Handel, häufige Aktionen</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bei Bybit registrieren</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Größte Börse der Welt, tiefste Liquidität</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Bei Binance registrieren</a></div>
+        </div>
+        <p class="note">Gleiche Gebühren wie bei direkter Registrierung — unser Link kostet dich nichts extra.</p>
+      </div>
+
+      <h3>Unterscheiden sich Futures-Gebühren von Spot-Gebühren?</h3>
+      <p>Ja — Futures sind auf allen vier hier gezeigten Börsen günstiger. Standardstufen-Futures liegen bei etwa 0.02% Maker / 0.05% Taker, gegenüber etwa 0,08–0.10% auf Spot. Börsen bepreisen Futures aggressiv, weil die Volumen weit höher sind.</p>
+      <h3>Welche Börse hat die niedrigsten Futures-Gebühren?</h3>
+      <p>Bei Maker-Gebühren liegen alle vier bei 0.02% gleichauf. Bei Taker-Gebühren sind Binance und OKX mit 0.05% die niedrigsten der vier. Aber Funding-Sätze und Spreads können wichtiger sein als eine 0,005–0,01-%-Taker-Lücke, also wähle nicht allein nach dieser Zahl.</p>
+      <h3>Was ist ein Funding-Satz?</h3>
+      <p>Eine regelmäßige Zahlung zwischen Longs und Shorts bei Perpetual-Kontrakten — meist alle 8 Stunden — die den Kontraktpreis am Spot verankert. Sie wird nicht an die Börse gezahlt. Eine Position über mehrere Funding-Intervalle zu halten kann mehr kosten als die Handelsgebühr selbst.</p>
+      <h3>Zahlen Market-Orders immer Taker-Gebühren?</h3>
+      <p>Ja. Jede Order, die sofort gegen ruhende Orders ausgeführt wird, zählt als Taker-Order. Nur Limit-Orders, die im Orderbuch liegen und später ausgeführt werden, verdienen den Maker-Satz.</p>
+      <h3>Können Gebühren ein kleines Futures-Konto wirklich auslöschen?</h3>
+      <p>Langsam, ja. Ein 20×-Hebel-Round-Trip zu Taker-Sätzen kostet allein an Gebühren etwa 2 % deiner Margin. Zehn solcher Trades löschen etwa 20 %, bevor Preisbewegung überhaupt gezählt wird. Das ist die Rechnung, die die meisten Einsteiger nie machen.</p>
+      <h3>Ändern sich Futures-Gebühren mit der Zeit?</h3>
+      <p>Ja — Börsen passen Gebührenstufen regelmäßig an. Betrachte jeden Artikel, inklusive dieses, als Momentaufnahme. Die offizielle Gebührenseite der Börse ist die Wahrheitsquelle; prüfe sie, bevor du größere Beträge einsetzt.</p>
+      <h3>Lohnt es sich, VIP-Gebührenstufen zu jagen?</h3>
+      <p>Nicht für Einsteiger. VIP-Rabatte erfordern ernsthaftes Monatsvolumen. Ordertyp (Limit vs. Market) und Handelsfrequenz sparen für reguläre Trader weit mehr als das Jagen einer Stufe, die du nicht erreichen wirst.</p>
+      <h2>Weiterlesen</h2>
+      <ul>
+        <li><a href="leverage-guide.html">Hebel erklärt: zuerst die Risiken</a></li>
+        <li><a href="crypto-fees.html">Alle Kryptogebühren, entschlüsselt</a></li>
+        <li><a href="okx-vs-bybit.html">OKX vs. Bybit verglichen</a></li>
+        <li><a href="../reviews/bybit.html">Bybit-Testbericht: Gebühren &amp; Funktionen</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Startseite</a><a href="../airdrops.html">Tägliche Airdrops</a><a href="../exchanges.html">Börsenvergleich</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Einsteiger</b><a href="../start/step1.html">Einsteigerpfad</a><a href="index.html">Anleitungen</a><a href="../start/step5.html">Deinen ersten Coin kaufen</a></div>
+      <div class="col" style="flex:1;"><b>Testberichte</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">Watchlist-Alarme</a><a href="../tools.html#calendar">Ereigniskalender</a><a href="../exchanges.html#calculator">Gebührenrechner</a></div>
+    </div>
+    <div class="disclosure">Diese Seite enthält Affiliate-Links. Eine Registrierung über unsere Links kostet dich nichts extra. Kryptopreise sind stark volatil; nichts hier ist Anlageberatung — schätze die Risiken selbst ein.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Noch kein Konto? In 3 Minuten registrieren →</span><a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Registrieren</a><button class="sx" aria-label="Schließen" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
