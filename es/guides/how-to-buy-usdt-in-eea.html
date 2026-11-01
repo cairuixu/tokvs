@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Compra USDT en el EEE: reglas MiCA, rutas SEPA y tarjeta (2026) — TokVS</title>
+<meta name="description" content="Los residentes del EEE enfrentan un mercado USDT distinto tras MiCA: Binance solo permite retiros, OKX Europe no puede ofrecer trading de USDT, y Bybit EU da servicio al EEE.">
+<link rel="canonical" href="https://tokvs.com/es/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-eea">
+<meta property="og:title" content="Compra USDT en el EEE: reglas MiCA y rutas — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="MiCA cambió el mercado USDT del EEE: quién aún te da servicio, rutas SEPA y tarjeta, TRC20 vs ERC20, y la alternativa USDC.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/how-to-buy-usdt-in-eea">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"Compra USDT en el EEE","item":"https://tokvs.com/es/guides/how-to-buy-usdt-in-eea"}]},{"@type":"Article","headline":"Cómo comprar USDT en el EEE: reglas MiCA, rutas SEPA y tarjeta","description":"Los residentes del EEE enfrentan un mercado USDT distinto tras MiCA: quién aún te da servicio, rutas SEPA y tarjeta, TRC20 vs ERC20, y la alternativa USDC.","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/how-to-buy-usdt-in-eea","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Aún puedo comprar USDT si vivo en el EEE?","acceptedAnswer":{"@type":"Answer","text":"Depende de la plataforma. Las plataformas del EEE con licencia MiCA deben seguir las reglas de stablecoins, y algunas han eliminado por completo los pares de trading USDT, así que comprueba siempre la lista de pares en vivo en el sitio UE de la plataforma antes de depositar. Bybit EU da servicio a residentes del EEE bajo su autorización MiCA austríaca, y OKX Europe da servicio al EEE pero no ofrece trading de USDT: su opción de stablecoin en dólares es USDC. Si USDT no está listado para ti, USDC funciona igual para la mayoría de propósitos, como comprar BTC o ETH."}},{"@type":"Question","name":"¿Por qué no puedo operar USDT en OKX Europe?","acceptedAnswer":{"@type":"Answer","text":"Porque Tether, el emisor de USDT, no tiene autorización MiCA en la UE, y OKX Europe es un exchange con licencia MiCA. Bajo MiCA, un exchange con licencia solo puede ofrecer stablecoins cuyo emisor tenga la autorización UE requerida. Por eso también OKX Europe dirige a los usuarios del EEE a USDC, emitido por Circle, que sí tiene autorización UE. No deposites USDT en OKX Europe esperando operarlo: consulta primero la página oficial de OKX Europe."}},{"@type":"Question","name":"¿Binance sigue disponible en el EEE?","acceptedAnswer":{"@type":"Answer","text":"Binance ya no acepta nueva actividad de residentes del EEE: retiró su solicitud MiCA griega el 24 de junio de 2026 y solo ofrece retiros desde el 1 de julio de 2026. Si ya tienes fondos allí, retíralos a una plataforma con licencia o a una billetera que controlas, y consulta el aviso oficial de Binance para cualquier plazo. No deposites nuevos fondos esperando operar."}},{"@type":"Question","name":"¿Qué es MiCA, en lenguaje claro?","acceptedAnswer":{"@type":"Answer","text":"MiCA es el manual de reglas de criptomonedas de la UE. Desde el 1 de julio de 2026, solo los exchanges con licencia bajo MiCA pueden incorporar residentes del EEE, y una licencia de un regulador del EEE puede pasaportarse a los 30 estados del EEE: los 27 miembros de la UE más Islandia, Noruega y Liechtenstein. Para un principiante significa dos cosas: comprueba que el exchange que te da servicio tiene licencia MiCA (el registro ESMA lista empresas con licencia), y espera opciones de stablecoins más estrechas, porque solo pueden ofrecerse stablecoins autorizadas."}},{"@type":"Question","name":"¿Debería comprar USDT o USDC en el EEE?","acceptedAnswer":{"@type":"Answer","text":"Si vives en el EEE, USDC es la elección más simple en plataformas con licencia: tiene autorización MiCA, está totalmente admitido para depósito, trading y retiro en OKX Europe y otros venues con licencia, y sirve el mismo propósito que USDT: una moneda vinculada al dólar para comprar otras criptomonedas. USDT aún existe y puede guardarse en tu propia billetera, pero los exchanges con licencia del EEE pueden no ofrecerlo para trading, así que comprueba la lista de pares antes de planificar en torno a él."}},{"@type":"Question","name":"Ya tengo criptomonedas en un exchange que dejó de dar servicio a residentes del EEE, ¿qué debería hacer?","acceptedAnswer":{"@type":"Answer","text":"No entres en pánico, y no deposites más. Primero, lee el aviso oficial de la plataforma para su plazo de retiro. Luego retira a una plataforma con licencia MiCA o a una billetera que controlas, enviando primero una pequeña cantidad de prueba y haciendo coincidir la red en ambos extremos: por ejemplo, TRC20 a una dirección TRC20, nunca a una dirección ERC20. Guarda registros de cada retiro, e ignora a cualquiera que te contacte afirmando ser soporte durante una migración: el soporte real nunca pide tu contraseña ni frase semilla."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Compra USDT en el EEE</div>
+      <h1>Cómo comprar USDT en el EEE</h1>
+      <p class="sub">Tras MiCA, el EEE es un mercado distinto: Binance solo permite retiros, OKX Europe no puede operar USDT, y Bybit EU es la ruta con licencia. Aquí está quién aún te da servicio, cómo funcionan las compras SEPA y con tarjeta, y qué hacer con fondos en un exchange que dejó de darte servicio.</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 16 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">B</div><div><div class="tt">Bybit EU</div><div class="dd">Entidad UE con licencia MiCA para residentes del EEE</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Regístrate en Bybit →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX Europe</div><div class="dd">Con licencia MiCA en el EEE: USDC, no USDT</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Lee esto primero: quién realmente da servicio a residentes del EEE</h2>
+      <p>Si buscas «comprar USDT» desde dentro del EEE, la mayoría de las guías aún describen el mercado global. Ese mercado cambió el 1 de julio de 2026, cuando terminó el período de transición MiCA. Después de esa fecha, solo empresas con licencia MiCA pueden incorporar residentes del EEE, y las reglas de stablecoins remodelaron qué monedas en dólares pueden ofrecer las plataformas con licencia. La tabla abajo es la comprobación de disponibilidad por país de TokVS, fechada el 30 de octubre de 2026. Léela antes de registrarte en ningún lugar, porque registrarse en la entidad equivocada es el error de principiante del EEE más común. La tabla completa también vive en nuestra <a href="../exchanges.html#availability">página de comparación de exchanges</a>, y si quieres la imagen general de Europa en lugar de la de MiCA en general, consulta <a href="how-to-buy-usdt-in-europe.html">cómo comprar USDT en Europa</a>.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Exchange</th><th>¿Da servicio a residentes del EEE?</th><th>¿USDT para minoristas del EEE?</th><th>Qué significa para ti</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>Sin nueva actividad desde el 1 de julio de 2026</td><td>No</td><td>Solo retiros. Su solicitud MiCA griega fue retirada el 24 de junio de 2026. Si tienes fondos allí, retira: no deposites nuevos fondos esperando operar.</td></tr>
+          <tr><td><a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">Bitget</a> (sin acuerdo de reembolso con TokVS)</td><td>No ofrecido en el EEE</td><td>No</td><td>Su solicitud MiCA de Austria aún está pendiente. No planifiques en torno a ella hasta que su estado cambie: consulta la página oficial.</td></tr>
+          <tr><td>OKX</td><td>Sí: OKX Europe, licencia MiCA de Malta, enero de 2025</td><td>No: USDT no puede operarse en OKX Europe</td><td>Tether no tiene autorización MiCA, así que OKX Europe dirige a los usuarios del EEE a USDC en su lugar. No deposites USDT allí esperando operarlo.</td></tr>
+          <tr><td>Bybit</td><td>Sí: Bybit EU, autorización MiCA de Austria, mayo de 2025</td><td>Comprueba antes de depositar</td><td>Bybit EU es la ruta con licencia del EEE. Las listas de stablecoins cambiaron en todo el EEE durante 2026, así que confirma que USDT está listado para tu país en bybit.eu el día que te registres. Si no lo está, USDC es la alternativa.</td></tr>
+        </tbody>
+      </table></div>
+      <p>Una regla explica la mayor parte de esta tabla: un exchange y su entidad UE son productos distintos. La plataforma global sobre la que lees en guías internacionales no es la plataforma que te da servicio. Los residentes del EEE son atendidos por la entidad UE — bybit.eu en lugar del sitio global de Bybit, OKX Europe en lugar de OKX global — con su propia lista de productos, tarifario y soporte. Siempre que una guía te diga que te registres, comprueba con qué entidad realmente te estás registrando.</p>
+      <h2>MiCA en lenguaje claro</h2>
+      <p>MiCA es la abreviatura de Markets in Crypto-Assets Regulation, el manual de reglas de criptomonedas de la UE. Dos partes importan para un principiante. Primero, los exchanges — legalmente llamados proveedores de servicios de criptoactivos — necesitan autorización de un regulador en el EEE. Una licencia concedida en un estado del EEE puede «pasaportarse» a los 30 estados del EEE: los 27 miembros de la UE más Islandia, Noruega y Liechtenstein. Por eso ves una entidad, como Bybit EU en Austria u OKX Europe en Malta, dando servicio a usuarios en todo el EEE. Segundo, stablecoins: un token vinculado a fiat solo puede ofrecerse a usuarios minoristas del EEE si su emisor tiene la autorización UE requerida (una licencia de institución de dinero electrónico o una autorización de token referenciado a activos). Tether, el emisor de USDT, no tiene ninguna en la UE, por eso los venues con licencia del EEE no pueden ofrecer USDT para trading aunque USDT siga siendo la stablecoin más grande del mundo.</p>
+      <p>Lo que cambió el 1 de julio de 2026 fue el fin del período de transición. Las empresas que habían estado operando bajo reglas nacionales más antiguas tuvieron que tener una licencia MiCA o liquidar su negocio en el EEE. Esa es la fecha detrás de las filas de Binance y Bitget en la tabla arriba, y es por qué las gamas de productos en entidades UE son más estrechas que en plataformas globales: un producto que existe globalmente puede simplemente no ofrecerse en la entidad UE. Comprueba siempre la propia lista de productos de la entidad UE en lugar de asumir que el catálogo global aplica a ti.</p>
+      <p>¿Cómo verificas una afirmación de licencia? Dos comprobaciones toman alrededor de un minuto. Primero, la propia página legal o de entidad del exchange debería nombrar la entidad que te da servicio y su regulador: si no nombra ninguno, trátalo como señal de advertencia. Segundo, la Autoridad Europea de Valores y Mercados (ESMA) mantiene un registro de proveedores de servicios de criptoactivos con licencia; busca allí el nombre de la entidad. Una afirmación de licencia que no puede encontrarse en ninguno de los dos lugares no es una afirmación en la que valga la pena confiar tu dinero.</p>
+      <h2>Tus dos rutas de entrada: SEPA y tarjeta</h2>
+      <p>Para un residente del EEE, la rampa de entrada es tu cuenta bancaria o tu tarjeta, no los mercados P2P que dominan las guías escritas para otras regiones. El P2P en una plataforma global es un producto separado de la entidad UE que te da servicio, así que usa las opciones de depósito dentro de la propia app o sitio de la entidad UE.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Ruta</th><th>Velocidad</th><th>Coste típico</th><th>Ten cuidado con</th></tr></thead>
+        <tbody>
+          <tr><td>Transferencia bancaria SEPA</td><td>Minutos (SEPA Instant, donde se admite) a un día laborable</td><td>Normalmente la ruta de menor coste</td><td>El nombre de la cuenta bancaria debe coincidir con tu nombre de exchange verificado, o el depósito puede rechazarse</td></tr>
+          <tr><td>Tarjeta de débito o crédito</td><td>Instantáneo</td><td>Comisiones más altas que SEPA</td><td>Algunos bancos rechazan compras de criptomonedas; una tarjeta rechazada es una política bancaria, no un error del exchange</td></tr>
+        </tbody>
+      </table></div>
+      <p>Cualquiera que sea la ruta que elijas, empieza pequeño. Un primer depósito de €20–50 basta para aprender todo el flujo — depósito, compra, verificación del saldo — sin ningún error caro adjunto. La comisión que realmente pagas es la mostrada en la pantalla de vista previa antes de confirmar, no la tasa titular en un anuncio: lee siempre la vista previa, que indica exactamente cuánto USDT o USDC recibirás.</p>
+      <p class="in-cta">Prepara primero tu cuenta: <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Regístrate en Bybit</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></p>
+      <h2>Paso a paso: tu primera compra</h2>
+      <p>Los pasos abajo asumen Bybit EU, la ruta con licencia del EEE en la tabla arriba. Si eliges OKX Europe en su lugar, sigue los mismos pasos pero compra USDC, no USDT: OKX Europe no ofrece trading de USDT. Por defecto USDC en cualquier venue: los pares spot de USDT se han eliminado para minoristas del EEE en venues con licencia MiCA, así que trata USDT como la excepción que debes confirmar, no el plan.</p>
+      <ol>
+        <li><strong>Ve a bybit.eu, no al sitio global.</strong> Los residentes del EEE son atendidos por la entidad UE. Una cuenta en la plataforma global no es lo mismo, y no es la cuenta que quieres.</li>
+        <li><strong>Regístrate con correo y una contraseña fuerte y única.</strong> Usa una dirección de correo que controlas y una contraseña que no reutilizas en ningún otro lugar.</li>
+        <li><strong>Completa la verificación de identidad (KYC).</strong> Necesitarás un documento de identidad gubernamental y, normalmente, prueba de dirección. La aprobación normalmente toma minutos a unas pocas horas; las fotos borrosas de documentos causan la mayoría de los rechazos, así que vuélvelas a tomar con buena luz si se atasca.</li>
+        <li><strong>Activa la seguridad antes de depositar.</strong> Activa la autenticación de dos factores con una app de autenticador (no SMS) y establece el código antiphishing si la plataforma ofrece uno. Haz esto antes de que se mueva ningún dinero.</li>
+        <li><strong>Comprueba si USDT está listado para tu país: espera que no lo esté.</strong> Busca USDT en bybit.eu. Los venues con licencia MiCA eliminaron los pares USDT para minoristas del EEE durante 2026, así que el caso esperado es que USDT no se ofrezca para trading. Si no está listado, compra USDC en su lugar usando los mismos pasos. No deposites esperando que aparezca.</li>
+        <li><strong>Deposita euros vía SEPA.</strong> Copia los detalles de depósito del exchange exactamente desde su propia página de depósito: nunca desde un mensaje de chat o una captura que alguien te envió. Primero envía una pequeña cantidad de prueba, €20–50, y espera a que llegue.</li>
+        <li><strong>Haz la compra.</strong> Ve a Spot, abre el par USDC mostrado para tu moneda de depósito (o el par USDT solo si el paso 5 confirmó que está listado para tu país), y haz una orden de mercado. Lee la pantalla de vista previa cuidadosamente: indica el importe, la comisión y exactamente cuánto recibirás. Solo entonces confirma.</li>
+        <li><strong>Verifica y regístralo.</strong> Comprueba el saldo en tu cuenta, luego escribe la fecha, euros pagados, monedas recibidas y el ID de pedido. Ese registro es tu base de coste si alguna vez vendes, y toma diez segundos ahora versus horas de reconstrucción después.</li>
+      </ol>
+      <p>Una vez que la compra de prueba se siente aburrida, has aprendido el flujo. Repite a tu tamaño real: aburrido es el objetivo, porque aburrido significa sin sorpresas.</p>
+      <h2>Redes USDT: TRC20 vs ERC20</h2>
+      <p>USDT existe en varias blockchains, y la red importa cada vez que depositas o retiras. Las dos que encontrarás más a menudo son TRC20 y ERC20.</p>
+      <p>La regla que previene pérdidas es simple: <strong>la red debe coincidir en ambos extremos.</strong> Enviar USDT TRC20 a una dirección ERC20, o USDT ERC20 a una dirección TRC20, puede perder los fondos. Antes de cualquier transferencia, abre la página de depósito de la plataforma receptora y comprueba qué redes acepta para USDT; luego selecciona esa misma red en el lado remitente. También existen otras redes — Solana, BNB Chain y otras — pero solo usa una si ambos lados la admiten. Y como con los depósitos, primero envía una pequeña cantidad de prueba cuando muevas USDT a una dirección nueva.</p>
+      <h2>Si ya tienes fondos en un exchange que dejó de darte servicio</h2>
+      <p>Solo retiros no es lo mismo que fondos perdidos, así que no entres en pánico, pero tampoco te demores. Recorre esto en orden:</p>
+      <ol>
+        <li><strong>Lee el aviso oficial de la plataforma.</strong> Los plazos de retiro y ventanas de liquidación se indican allí, no en hilos de redes sociales. Si existe un plazo, es el único hecho que necesitas primero.</li>
+        <li><strong>Elige un destino antes de mover nada.</strong> O una plataforma con licencia MiCA que dé servicio a tu país, o una billetera que controlas (autocustodia). Moverse sin destino es como los fondos terminan estacionados en una segunda plataforma que tampoco te da servicio.</li>
+        <li><strong>Primero retira una pequeña cantidad de prueba.</strong> Haz coincidir la red en ambos extremos — TRC20 a una dirección TRC20, nunca a una dirección ERC20 — y confirma que la prueba llega antes de enviar el resto.</li>
+        <li><strong>No deposites nuevos fondos en una cuenta que se está liquidando.</strong> Los depósitos en una cuenta solo de retiros crean un segundo problema sobre el primero.</li>
+        <li><strong>Ignora a los estafadores de temporada de migración.</strong> Las liquidaciones atraen cuentas falsas de soporte que ofrecen «ayudar» a mover tus fondos. El soporte real nunca pide tu contraseña, tus códigos de dos factores ni tu frase semilla, y ningún ayudante legítimo necesita acceso remoto a tu cuenta.</li>
+        <li><strong>Si tus fondos son USDT, comprueba la vía de migración oficial de la plataforma.</strong> Algunos venues con licencia ofrecen una conversión unidireccional de USDT a USDC para usuarios del EEE; los términos y disponibilidad cambian, así que confirma la opción actual en la página oficial antes de enviar nada, y actúa temprano en lugar de cerca de un plazo.</li>
+      </ol>
+      <h2>USDC: la alternativa autorizada por MiCA</h2>
+      <p>USDC es una stablecoin vinculada al dólar emitida por Circle, y a diferencia de USDT tiene autorización UE, por eso está totalmente admitida en venues con licencia del EEE para depósito, trading y retiro. Para la mayoría de los propósitos de principiantes hace exactamente el trabajo que hace USDT: una moneda vinculada al dólar para comprar BTC o ETH, o para estacionar valor entre operaciones. El comportamiento de precio es la misma idea: una moneda que sigue un dólar estadounidense, y los pares de trading en plataformas con licencia del EEE se cotizan contra USDC en lugar de USDT.</p>
+      <p>OKX Europe es el ejemplo más claro: porque no puede ofrecer trading de USDT, dirige a los usuarios del EEE a USDC (y USDG) en su lugar. Si tienes USDT en otro lugar y quieres traer el valor a un venue con licencia del EEE, comprueba la página oficial de ese venue para su opción de conversión antes de mover nada: algunos venues ofrecen una conversión unidireccional USDT-a-USDC, y los términos difieren según la plataforma. No asumas que existe una conversión; verifícala, luego mueve primero una cantidad de prueba como cualquier otra transferencia.</p>
+      <h2>Lo que cuesta</h2>
+      <p>No confíes en una sola comisión anunciada, porque el coste de una compra se acumula desde cuatro lugares: la comisión de depósito (SEPA normalmente cuesta menos que la tarjeta), la comisión de trading (consulta el propio tarifario oficial de la entidad UE: las entidades UE pueden fijar precios distintos de sus plataformas globales, así que una tabla global de comisiones puede no aplicarte), el diferencial (la pequeña brecha entre el precio de compra y venta), y la comisión de retiro o red (mostrada en la vista previa de retiro). La pantalla de vista previa antes de confirmar es el precio real: indica exactamente cuánto USDT o USDC recibirás. Si ese número te sorprende, detente y compara rutas antes de confirmar: la vista previa está ahí para leerse, no para pulsarla sin mirar.</p>
+      <h2>Mantener tus monedas seguras</h2>
+      <p>Tres opciones, igual que en todas partes: <strong>en el exchange</strong> (conveniente para operar, conlleva riesgo de plataforma), <strong>en tu propia billetera</strong> (tienes la frase semilla: el movimiento sensato una vez que el importe te importa), o <strong>en productos de rendimiento</strong> (retorno extra, riesgo extra: lee los términos antes de tocarlos). Para una primera compra, dejarlo en el exchange mientras aprendes está perfectamente bien. Una vez que el importe crece, aprende autocustodia: nuestra <a href="best-crypto-wallet-for-beginners.html">guía de billeteras de criptomonedas para principiantes</a> cubre las frases semilla adecuadamente. Elijas lo que elijas, los no negociables son autenticación de dos factores con una app de autenticador, una contraseña única, y una frase semilla guardada sin conexión que nunca fotografíes, nunca escribas en un sitio web y nunca compartas con nadie.</p>
+      <h2>Errores que cometen los principiantes del EEE</h2>
+      <ul>
+        <li><strong>Registrarse en el sitio global en lugar de la entidad UE.</strong> La cuenta, la lista de productos y las protecciones no son las mismas. Empieza en la entidad UE.</li>
+        <li><strong>Depositar USDT en OKX Europe esperando operarlo.</strong> USDT no puede operarse allí. Comprueba la lista de pares antes de enviar nada.</li>
+        <li><strong>Enviar USDT en la red equivocada.</strong> TRC20 a una dirección ERC20, o al revés, puede perder los fondos. Haz coincidir la red en ambos extremos, primero prueba pequeño.</li>
+        <li><strong>Usar la cuenta bancaria de otro para SEPA.</strong> Las discrepancias de nombre hacen que los depósitos se rechacen. Tu cuenta, tu nombre, siempre.</li>
+        <li><strong>Saltarse la cantidad de prueba.</strong> Una compra de prueba de €20 que revela un problema es barata; una transferencia a tamaño completo que revela el mismo problema no lo es.</li>
+        <li><strong>Confiar en mensajes de «soporte» durante una migración.</strong> Los períodos de liquidación son temporada alta de estafas. El soporte nunca pide contraseñas ni frases semilla.</li>
+        <li><strong>Asumir que las comisiones globales aplican a la entidad UE.</strong> Las entidades UE fijan sus propios tarifarios. Lee la página oficial de comisiones de la entidad UE.</li>
+      </ul>
+      <h2>La lista completa de primera compra (edición EEE)</h2>
+      <ol>
+        <li>Confirma que el exchange que te da servicio tiene licencia MiCA: nombre de entidad y regulador en su página legal, y la entidad buscable en el registro ESMA.</li>
+        <li>Regístrate en la entidad UE (bybit.eu para Bybit), completa KYC, activa la autenticación de dos factores y el código antiphishing.</li>
+        <li>Comprueba que USDT está listado para tu país en la entidad UE. Si no lo está, cambia el plan a USDC antes de depositar nada.</li>
+        <li>Deposita una cantidad de prueba de €20–50 vía SEPA desde una cuenta bancaria a tu propio nombre.</li>
+        <li>Haz una pequeña compra de mercado en Spot. Lee la vista previa — importe, comisión, monedas recibidas — luego confirma.</li>
+        <li>Verifica el saldo, registra la operación (fecha, euros, monedas, ID de pedido), y solo entonces repite a tu tamaño real.</li>
+        <li>Si tienes fondos en una plataforma que dejó de dar servicio al EEE, trabaja los pasos de fondos varados arriba temprano, y nunca deposites más en ella.</li>
+      </ol>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>¿Listo?</b> Registrarte tarda unos 10 minutos: verifícate una vez, activa la 2FA y luego sigue los pasos anteriores. Las guías de este sitio te acompañan en el resto.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">B</div><div><div class="tt">Bybit EU</div><div class="dd">Entidad UE con licencia MiCA para residentes del EEE</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Regístrate en Bybit</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX Europe</div><div class="dd">Con licencia MiCA en el EEE: USDC, no USDT</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+        </div>
+        <p class="note">Las mismas comisiones que registrarte directamente: nuestro enlace no te cuesta nada extra.</p>
+      </div>
+
+      <h3>¿Aún puedo comprar USDT si vivo en el EEE?</h3>
+      <p>Depende de la plataforma. Las plataformas del EEE con licencia MiCA deben seguir las reglas de stablecoins, y algunas han eliminado por completo los pares de trading USDT, así que comprueba siempre la lista de pares en vivo en el sitio UE de la plataforma antes de depositar. Bybit EU da servicio a residentes del EEE bajo su autorización MiCA austríaca, y OKX Europe da servicio al EEE pero no ofrece trading de USDT: su opción de stablecoin en dólares es USDC. Si USDT no está listado para ti, USDC funciona igual para la mayoría de propósitos, como comprar BTC o ETH.</p>
+      <h3>¿Por qué no puedo operar USDT en OKX Europe?</h3>
+      <p>Porque Tether, el emisor de USDT, no tiene autorización MiCA en la UE, y OKX Europe es un exchange con licencia MiCA. Bajo MiCA, un exchange con licencia solo puede ofrecer stablecoins cuyo emisor tenga la autorización UE requerida. Por eso también OKX Europe dirige a los usuarios del EEE a USDC, emitido por Circle, que sí tiene autorización UE. No deposites USDT en OKX Europe esperando operarlo: consulta primero la página oficial de OKX Europe.</p>
+      <h3>¿Binance sigue disponible en el EEE?</h3>
+      <p>Binance ya no acepta nueva actividad de residentes del EEE: retiró su solicitud MiCA griega el 24 de junio de 2026 y solo ofrece retiros desde el 1 de julio de 2026. Si ya tienes fondos allí, retíralos a una plataforma con licencia o a una billetera que controlas, y consulta el aviso oficial de Binance para cualquier plazo. No deposites nuevos fondos esperando operar.</p>
+      <h3>¿Qué es MiCA, en lenguaje claro?</h3>
+      <p>MiCA es el manual de reglas de criptomonedas de la UE. Desde el 1 de julio de 2026, solo los exchanges con licencia bajo MiCA pueden incorporar residentes del EEE, y una licencia de un regulador del EEE puede pasaportarse a los 30 estados del EEE: los 27 miembros de la UE más Islandia, Noruega y Liechtenstein. Para un principiante significa dos cosas: comprueba que el exchange que te da servicio tiene licencia MiCA (el registro ESMA lista empresas con licencia), y espera opciones de stablecoins más estrechas, porque solo pueden ofrecerse stablecoins autorizadas.</p>
+      <h3>¿Debería comprar USDT o USDC en el EEE?</h3>
+      <p>Si vives en el EEE, USDC es la elección más simple en plataformas con licencia: tiene autorización MiCA, está totalmente admitido para depósito, trading y retiro en OKX Europe y otros venues con licencia, y sirve el mismo propósito que USDT: una moneda vinculada al dólar para comprar otras criptomonedas. USDT aún existe y puede guardarse en tu propia billetera, pero los exchanges con licencia del EEE pueden no ofrecerlo para trading, así que comprueba la lista de pares antes de planificar en torno a él.</p>
+      <h3>Ya tengo criptomonedas en un exchange que dejó de dar servicio a residentes del EEE, ¿qué debería hacer?</h3>
+      <p>No entres en pánico, y no deposites más. Primero, lee el aviso oficial de la plataforma para su plazo de retiro. Luego retira a una plataforma con licencia MiCA o a una billetera que controlas, enviando primero una pequeña cantidad de prueba y haciendo coincidir la red en ambos extremos: por ejemplo, TRC20 a una dirección TRC20, nunca a una dirección ERC20. Guarda registros de cada retiro, e ignora a cualquiera que te contacte afirmando ser soporte durante una migración: el soporte real nunca pide tu contraseña ni frase semilla.</p>
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="how-to-buy-usdt-in-europe.html">Cómo comprar USDT en Europa: la guía general</a></li>
+        <li><a href="how-to-sell-crypto.html">Cómo vender criptomonedas: convertir monedas de vuelta en efectivo</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">Billeteras de criptomonedas para principiantes: cómo elegir una</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>¿Aún no tienes cuenta en el EEE? Empieza en Bybit EU →</span><a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Regístrate</a><button class="sx" aria-label="Cerrar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

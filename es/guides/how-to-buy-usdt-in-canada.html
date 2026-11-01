@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Compra USDT en Canadá: guía Interac, transferencia bancaria y tarjeta - TokVS</title>
+<meta name="description" content="Cómo comprar USDT en Canadá honestamente: Binance salió de Canadá en 2023 y Bybit, OKX y Bitget no lo sirven bien, así que comprueba un exchange regulado disponible localmente">
+<link rel="canonical" href="https://tokvs.com/es/guides/how-to-buy-usdt-in-canada">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-usdt-in-canada">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-canada">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-usdt-in-canada">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-usdt-in-canada">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-usdt-in-canada">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-usdt-in-canada">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-usdt-in-canada">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-usdt-in-canada">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-usdt-in-canada">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-canada">
+<meta property="og:title" content="Compra USDT en Canadá: guía Interac y transferencia bancaria - TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="La imagen honesta de Canadá: qué grandes exchanges dan servicio a Canadá, qué comprobar en su lugar, y cómo comprar USDT con Interac, transferencia bancaria o tarjeta.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/how-to-buy-usdt-in-canada">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"Compra USDT en Canadá","item":"https://tokvs.com/es/guides/how-to-buy-usdt-in-canada"}]},{"@type":"Article","headline":"Cómo comprar USDT en Canadá: Interac, transferencia bancaria y tarjeta","description":"Compra USDT en Canadá con Interac o transferencia bancaria en un exchange regulado disponible localmente: paso a paso, comisiones, elección de red, y las comprobaciones a ejecutar antes de registrarte.","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/how-to-buy-usdt-in-canada","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Puedo usar Binance en Canadá?","acceptedAnswer":{"@type":"Answer","text":"No. Binance salió de Canadá en 2023 y no da servicio a residentes canadienses. No te registres esperando servicio. Consulta los términos oficiales del exchange para sus países admitidos actuales."}},{"@type":"Question","name":"¿Bybit, OKX o Bitget dan servicio a Canadá?","acceptedAnswer":{"@type":"Answer","text":"Según la tabla de disponibilidad de TokVS verificada el 30 de octubre de 2026, Bybit y OKX no dan servicio a Canadá y Bitget está restringido allí. La disponibilidad cambia, así que consulta los términos oficiales de cada exchange antes de confiar en ninguna lista."}},{"@type":"Question","name":"¿Qué método de pago usan normalmente los canadienses para comprar USDT?","acceptedAnswer":{"@type":"Answer","text":"Interac e-Transfer es el riel local usual en plataformas canadienses, seguido de transferencia bancaria. Las tarjetas funcionan en algunas plataformas pero cuestan más y pueden rechazarse."}},{"@type":"Question","name":"¿Cómo compruebo si un exchange realmente da servicio a Canadá?","acceptedAnswer":{"@type":"Answer","text":"Lee sus términos de servicio y página de países admitidos, confirma que indica soporte para Canadá y registro FINTRAC como negocio de servicios monetarios, y comprueba que la financiación en CAD e Interac realmente se ofrecen al registrarte. Si falta alguna de esas, trátala como señal de advertencia."}},{"@type":"Question","name":"¿Qué red USDT debería usar para retirar?","acceptedAnswer":{"@type":"Answer","text":"Haz coincidir la red con la billetera receptora o exchange exactamente. TRC20 en Tron normalmente cuesta menos que ERC20 en Ethereum, pero la comisión mostrada en la pantalla de retiro es la que cuenta. Enviar en la red equivocada puede perder tus fondos."}},{"@type":"Question","name":"¿Debo impuestos sobre USDT en Canadá?","acceptedAnswer":{"@type":"Answer","text":"Guarda registros de cada compra, venta y transferencia (fecha, importe en CAD, importe en USDT, comisiones). Cómo se gravan las ganancias depende de tu actividad, así que consulta la orientación actual de CRA o habla con un profesional fiscal. Esta página no es asesoría fiscal."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Compra USDT en Canadá</div>
+      <h1>Cómo comprar USDT en Canadá</h1>
+      <p class="sub">El punto de partida honesto: los grandes exchanges que TokVS normalmente cubre no dan servicio a Canadá bien. Aquí está lo que eso significa, qué comprobar en su lugar, y cómo</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 14 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+      <div class="callout warn"><b>Lee esto primero:</b> Binance salió de Canadá en 2023, Bybit y OKX no dan servicio a Canadá, y Bitget está restringido allí. No te registres con ninguno de ellos esperando servicio canadiense. El resto de esta página muestra qué comprobar en su lugar y cómo funciona una primera compra en una plataforma que realmente da servicio a Canadá.</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>El punto de partida honesto: disponibilidad en Canadá</h2>
+      <p>La mayoría de las guías para principiantes omiten esta parte y van directo a un botón de registro. Esa es una mala forma de empezar en Canadá, porque la respuesta a «qué exchange» es distinta aquí que en la mayoría de los países. TokVS mantiene una tabla de disponibilidad por país para los cuatro exchanges que normalmente recomienda, y se verificó el 30 de octubre de 2026. Para Canadá, la tabla dice:</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Exchange</th><th>Estado en Canadá</th><th>Qué significa para ti</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>Salió de Canadá en 2023</td><td>No disponible para residentes canadienses</td></tr>
+          <tr><td>Bybit</td><td>No da servicio a Canadá</td><td>No te registres esperando servicio</td></tr>
+          <tr><td>OKX</td><td>No da servicio a Canadá</td><td>No te registres esperando servicio</td></tr>
+          <tr><td>Bitget</td><td>Restringido en Canadá</td><td>No confíes en él para acceso canadiense</td></tr>
+        </tbody>
+      </table></div>
+      <p>La disponibilidad cambia con el tiempo, así que trata cualquier tabla, incluida esta, como instantánea. Las comprobaciones más adelante en esta página muestran cómo confirmar la posición actual en los propios términos de un exchange antes de entregar documentos personales. La consecuencia práctica es simple: un comprador canadiense necesita una plataforma que realmente esté configurada para dar servicio a Canadá, con financiación en dólares canadienses y soporte local, en lugar de uno de los cuatro nombres arriba.</p>
+      <h2>Qué usar en su lugar: un exchange regulado disponible localmente</h2>
+      <p>Canadá tiene sus propias plataformas de criptomonedas, y varias plataformas internacionales también dan servicio a Canadá adecuadamente. Lo que importa no es el nombre de marca sino la configuración. Una plataforma que genuinamente da servicio a Canadá normalmente mostrará todo lo siguiente: Canadá listado en su página de países admitidos, una declaración de que está registrada con FINTRAC como negocio de servicios monetarios, depósitos y retiros en dólares canadienses, Interac e-Transfer como opción de financiación, y un tarifario y centro de ayuda que mencionan Canadá explícitamente. Si no puedes encontrar esas cosas, la plataforma probablemente no está configurada para ti, sin importar cuán grande sea en otros lugares.</p>
+      <p>Hay también una razón práctica para preferir una plataforma lista para Canadá más allá del papeleo. La financiación es más fluida cuando la plataforma habla tus rieles: los depósitos Interac llegan rápido, los retiros vuelven a una cuenta bancaria canadiense sin desvíos, y el soporte entiende peculiaridades bancarias canadienses, como límites Interac y retenciones bancarias. Una plataforma que bloquea tu país a mitad de verificación, o congela un depósito porque tu banco marcó un receptor desconocido, cuesta mucho más tiempo que cualquier pequeña diferencia de comisiones entre plataformas.</p>
+      <h2>Cómo verificar disponibilidad antes de registrarte</h2>
+      <p>Haz esta comprobación de cinco minutos antes de crear una cuenta en ningún lugar. Salva el error de principiante canadiense más común, que es completar la verificación en una plataforma que luego rechaza el servicio.</p>
+      <ol>
+        <li><strong>Lee los términos de servicio.</strong> Busca en la página «Canadá» y «restringido» o «jurisdicciones prohibidas». Si Canadá aparece en una lista restringida, detente ahí.</li>
+        <li><strong>Comprueba la página de países admitidos.</strong> Muchos exchanges publican una en su centro de ayuda. Confirma que Canadá está listado como admitido, no meramente sin mencionar.</li>
+        <li><strong>Busca la declaración FINTRAC.</strong> Una plataforma que da servicio a Canadá debería declarar que está registrada con FINTRAC como negocio de servicios monetarios. El propio registro es información pública que puedes buscar.</li>
+        <li><strong>Prueba la página de financiación.</strong> Antes de verificar, comprueba si CAD e Interac e-Transfer aparecen como opciones de depósito para tu región. Algunas plataformas solo revelan la restricción después de subir documentos.</li>
+        <li><strong>Lee los términos de retiro.</strong> Confirma que se ofrecen retiros en CAD a una cuenta bancaria canadiense, y anota cualquier retención o límite que aplique a cuentas nuevas.</li>
+      </ol>
+      <p>Si algún paso falla, sigue adelante. Hay suficientes plataformas listas para Canadá para que nunca necesites forzar una que no quiere tu negocio. Guarda una nota de la fecha en que comprobaste, porque la disponibilidad sí cambia, y una plataforma que dio servicio a Canadá el año pasado puede no darlo hoy.</p>
+      <h2>Métodos de pago en Canadá</h2>
+      <p><strong>Interac e-Transfer es el riel local usual.</strong> Mueve dólares canadienses desde tu cuenta bancaria a la plataforma, normalmente en minutos, y es el método de financiación en torno al que se construyen la mayoría de las plataformas canadienses. Envías desde tu propia cuenta bancaria, a tu propio nombre, a los detalles de receptor que la plataforma te da. Los límites diarios y semanales de Interac varían según el banco, así que comprueba los límites de tu banco antes de planificar una primera compra grande. Una regla estricta: la cuenta bancaria debe estar al mismo nombre que tu cuenta de plataforma verificada. Los pagos desde la cuenta de otro se retienen o devuelven, y pueden activar una revisión de tu cuenta.</p>
+      <p><strong>La transferencia bancaria (EFT o wire) conviene para importes mayores.</strong> Las transferencias electrónicas de fondos son más lentas que Interac, a menudo un día laborable, y los wires pueden conllevar una comisión bancaria de tu lado. La ventaja es un rastro documental limpio y límites más altos, lo que importa una vez que tus compras crecen más allá de los límites Interac. Algunas plataformas también aceptan pago de facturas a través de tu banco, que se comporta como una transferencia con número de referencia. Cualquiera que sea el riel bancario que uses, guarda la confirmación o número de referencia hasta que el depósito aparezca en la plataforma.</p>
+      <p><strong>Las tarjetas de débito y crédito son el respaldo, no el valor por defecto.</strong> Las compras con tarjeta son instantáneas, lo que es conveniente para una primera prueba pequeña, pero cuestan más: la plataforma normalmente añade una comisión de procesamiento de tarjeta sobre la operación, y algunos bancos canadienses rechazan pagos con tarjeta a plataformas de criptomonedas. Si tu tarjeta es rechazada, no sigas reintentándola. Cambia a Interac o transferencia bancaria en su lugar, y consulta con tu banco si las compras de criptomonedas están restringidas en tu tarjeta.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Método</th><th>Velocidad</th><th>Coste típico</th><th>Bueno para</th></tr></thead>
+        <tbody>
+          <tr><td>Interac e-Transfer</td><td>Minutos</td><td>Normalmente baja o ninguna comisión de plataforma; consulta tu banco</td><td>La mayoría de las compras</td></tr>
+          <tr><td>Transferencia bancaria (EFT/wire)</td><td>Un día laborable o más</td><td>Posible comisión bancaria de wire</td><td>Importes mayores</td></tr>
+          <tr><td>Tarjeta de débito/crédito</td><td>Instantáneo</td><td>Comisión de procesamiento de tarjeta sobre la operación</td><td>Primera prueba pequeña</td></tr>
+        </tbody>
+      </table></div>
+      <h2>Paso a paso: tu primera compra de USDT en Canadá</h2>
+      <p>Los botones exactos difieren según la plataforma, pero el flujo abajo es el mismo en cualquier exchange listo para Canadá. Síguelo una vez con una cantidad pequeña antes de comprar a tamaño completo.</p>
+      <ol>
+        <li><strong>Elige una plataforma usando las comprobaciones arriba.</strong> Confirma soporte para Canadá, registro FINTRAC, y financiación Interac antes de registrarte.</li>
+        <li><strong>Crea la cuenta con una dirección de correo dedicada</strong> y una contraseña fuerte y única. Usa un correo que controlas y revisas regularmente, ya que las confirmaciones de retiro van allí.</li>
+        <li><strong>Completa la verificación de identidad (KYC).</strong> Espera un documento de identidad gubernamental y una comprobación facial en vivo. Algunas plataformas también piden prueba de dirección. La aprobación normalmente toma minutos a unas pocas horas; las fotos borrosas son la causa más común de retrasos.</li>
+        <li><strong>Activa la autenticación de dos factores (2FA)</strong> con una app de autenticador, no SMS, y establece un código antiphishing si la plataforma ofrece uno. Haz esto antes de depositar nada.</li>
+        <li><strong>Deposita dólares canadienses con Interac e-Transfer.</strong> En la plataforma, abre Depósito, elige CAD, y elige Interac. La plataforma te da un receptor y una referencia o memo. Envía exactamente esa referencia desde tu propia cuenta bancaria, y guarda la pantalla de confirmación.</li>
+        <li><strong>Espera a que el depósito se liquide.</strong> Los depósitos Interac normalmente llegan en minutos. Si tarda más, comprueba si tu banco puso una retención, luego contacta con el soporte de la plataforma con tu número de referencia.</li>
+        <li><strong>Compra USDT.</strong> Si la plataforma lista un par USDT/CAD, compra en ese par. Si solo lista USDT contra USD u otra moneda, comprueba lo que cuesta la conversión antes de confirmar. Para una primera compra, una simple compra de mercado de una cantidad pequeña basta para aprender el flujo.</li>
+        <li><strong>Confirma que el USDT llegó a tu billetera de cuenta</strong> y escribe la operación: fecha, CAD pagado, USDT recibido, y comisiones. Ese registro es la base de tus registros fiscales después.</li>
+      </ol>
+      <p>Empieza pequeño a propósito. Una primera compra de un importe modesto te enseña el timing del depósito, la pantalla de cotización, y el flujo de retiro sin mucho en juego. Una vez que todo el bucle se siente rutinario, repítelo a tu tamaño normal.</p>
+      <h2>Lo que cuesta</h2>
+      <p>Tres costes componen una compra canadiense de USDT, y son fáciles de confundir. Primero, el <strong>coste de financiación</strong>: los depósitos Interac normalmente son de bajo coste o gratis en el lado de la plataforma, mientras que los wires pueden conllevar una comisión bancaria. Segundo, el <strong>coste de operación</strong>: en un libro de órdenes spot pagas la comisión de trading de la plataforma, que deberías leer en su página oficial de comisiones antes de operar, mientras que una función de compra instantánea o conversión normalmente integra su margen en la cotización en su lugar. Compara siempre el CAD final que pagas contra el USDT que recibes, porque ese número total es lo que importa. Tercero, el <strong>coste de retiro</strong>: mover USDT fuera de la plataforma cuesta una comisión de red que depende de la red que elijas, cubierta en la siguiente sección.</p>
+      <p>Un detalle canadiense: si la plataforma fija el precio de USDT en USD en lugar de CAD, tu banco o proveedor de tarjeta puede añadir un margen de conversión de moneda sobre todo lo demás. Por eso un par USDT/CAD, o una plataforma que te permite mantener un saldo CAD, vale la pena preferir cuando está disponible. Comprueba la moneda de cotización en la pantalla de pedido antes de confirmar, cada vez, porque un precio de USDT con buena pinta en USD no es lo mismo que un buen precio en CAD.</p>
+      <h2>Elección de red USDT: TRC20, ERC20, y el resto</h2>
+      <p>USDT existe en varias blockchains, y la red que elijas para un retiro importa más que la diferencia de comisión. Las opciones comunes son <strong>TRC20</strong> (USDT en Tron), <strong>ERC20</strong> (USDT en Ethereum), y USDT en Solana. Las transferencias TRC20 normalmente cuestan menos que las transferencias ERC20, y las transferencias Solana también suelen ser de bajo coste, pero la comisión exacta se muestra en la pantalla de retiro en el momento en que retiras, y ese número en vivo es el que cuenta. Las comisiones cambian con la congestión de la red, así que no confíes en una comisión que leíste el mes pasado.</p>
+      <p>La regla que previene pérdidas es simple: <strong>la red de retiro debe coincidir exactamente con la billetera o exchange receptor.</strong> Si el destino muestra una dirección Tron, retira en TRC20. Si muestra una dirección Ethereum, retira en ERC20. Enviar USDT en la red equivocada puede perder tus fondos permanentemente, y los equipos de soporte a menudo no pueden recuperarlos. Antes de un primer retiro a un destino nuevo, envía una pequeña cantidad de prueba, confirma que llega, y solo entonces envía el resto.</p>
+      <h2>Qué comprobar antes de registrarte: la lista completa</h2>
+      <ul>
+        <li><strong>Soporte para Canadá por escrito:</strong> la página de países admitidos lista Canadá, y los términos no ponen Canadá en una lista restringida.</li>
+        <li><strong>Registro FINTRAC:</strong> la plataforma declara que está registrada con FINTRAC como negocio de servicios monetarios.</li>
+        <li><strong>Financiación en CAD que funciona:</strong> Interac e-Transfer y retiros en CAD a una cuenta bancaria canadiense realmente se ofrecen.</li>
+        <li><strong>Comisiones que puedes leer:</strong> las comisiones de trading, depósito y retiro se publican en una página oficial de comisiones, no ocultas hasta el pago.</li>
+        <li><strong>Básicos de seguridad:</strong> 2FA con app de autenticador, lista blanca de direcciones de retiro, y un código antiphishing están disponibles.</li>
+        <li><strong>Soporte que responde:</strong> un centro de ayuda con artículos específicos de Canadá, y un canal de soporte que responde antes de depositar, no solo después.</li>
+        <li><strong>La posición de tu banco:</strong> confirma que tu banco permite transferencias Interac a la plataforma y no bloquea pagos relacionados con criptomonedas en tu cuenta.</li>
+      </ul>
+      <p>Recorre esta lista una vez, por escrito, para cualquier plataforma que consideres. Toma diez minutos y es la diferencia entre una primera compra fluida y un depósito congelado en una plataforma que nunca quiso clientes canadienses.</p>
+      <h2>Después de comprar: dónde guardar tu USDT</h2>
+      <p>Tres opciones, en orden de esfuerzo. <strong>En el exchange</strong> es conveniente para operar y está bien para una primera compra pequeña, pero conlleva riesgo de plataforma: si la plataforma tiene problemas, tu acceso se va con ella. <strong>En tu propia billetera</strong> significa que tienes la frase semilla tú mismo, que es el movimiento correcto una vez que el importe te importa, pero también significa que no hay restablecimiento de contraseña si pierdes la frase. <strong>En productos de rendimiento o ganancia</strong> ofrece retorno extra con riesgo extra, y los términos merecen una lectura completa antes de bloquear nada. Para una primera compra, dejar USDT en la plataforma mientras aprendes es razonable. Muévete a autocustodia una vez que el importe sea lo bastante grande para que perder acceso doliera, y lee nuestra <a href="wallet-safety.html">guía de seguridad de billeteras</a> antes de moverlo.</p>
+      <h2>Errores comunes que cometen los principiantes canadienses</h2>
+      <ul>
+        <li><strong>Registrarse con un exchange que bloquea Canadá.</strong> Este es el error número uno, y es totalmente evitable con la comprobación de cinco minutos arriba.</li>
+        <li><strong>Enviar Interac desde la cuenta de otro.</strong> Las discrepancias de nombre hacen que los depósitos se retengan o devuelvan y pueden activar una revisión de cuenta.</li>
+        <li><strong>Retirar en la red equivocada.</strong> TRC20 a una dirección ERC20, o al revés, es el error de principiante más caro en criptomonedas. Haz coincidir la red exactamente, cada vez.</li>
+        <li><strong>Juzgar una cotización sin el número total en CAD.</strong> Un precio de USDT con buena pinta en USD, más un margen de conversión, más una comisión de tarjeta, a menudo es peor que una simple compra spot financiada con Interac en CAD.</li>
+        <li><strong>No guardar registros.</strong> Sin un registro de fechas, importes en CAD, importes en USDT y comisiones, la época fiscal se convierte en conjeturas. Escríbelo a medida que avanzas.</li>
+      </ul>
+      <h2>Registros e impuestos: la versión corta</h2>
+      <p>Guarda un registro de cada compra, venta y transferencia: fecha, importe en CAD, importe en USDT, comisiones, y cualquier referencia de transacción o pedido. Cómo se gravan las ganancias de criptomonedas en Canadá depende de tu actividad, y las reglas tienen detalles que importan, así que consulta la orientación actual de CRA o habla con un profesional fiscal antes de declarar. Esta página no es asesoría fiscal. El hábito que importa es el propio registro: los traders que luchan en época de declaración rara vez son los que más operaron, son los que menos escribieron.</p>
+      <h2>Sobre los enlaces de exchanges en esta página</h2>
+      <p>TokVS normalmente recomienda Binance, OKX, Bybit y Bitget a lectores en países donde esos exchanges operan, y los enlaces de recomendación del sitio para ellos se listan aquí para esos lectores. No son una recomendación para Canadá, porque ninguno de los cuatro da servicio a Canadá bien, como muestra la tabla en la parte superior de esta página. Si vives en un país donde estos exchanges operan, los enlaces funcionan como usual. Si estás en Canadá, no te registres a través de ellos esperando servicio. Usa las comprobaciones en esta página para encontrar una plataforma que dé servicio a Canadá en su lugar.</p>
+      <p><a href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Enlace de recomendación Binance</a> · <a href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Enlace de recomendación OKX</a> · <a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Enlace de recomendación Bybit</a> · <a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">Bitget (sin acuerdo de reembolso vía TokVS)</a></p>
+      <p class="note">Este sitio contiene enlaces de afiliados. Registrarte a través de nuestros enlaces no te costará extra. Los precios de las criptomonedas son altamente volátiles; nada aquí es asesoría de inversión. Juzga los riesgos tú mismo.</p>
+      <h3>¿Puedo usar Binance en Canadá?</h3>
+      <p>No. Binance salió de Canadá en 2023 y no da servicio a residentes canadienses. No te registres esperando servicio. Consulta los términos oficiales del exchange para sus países admitidos actuales.</p>
+      <h3>¿Bybit, OKX o Bitget dan servicio a Canadá?</h3>
+      <p>Según la tabla de disponibilidad de TokVS verificada el 30 de octubre de 2026, Bybit y OKX no dan servicio a Canadá y Bitget está restringido allí. La disponibilidad cambia, así que consulta los términos oficiales de cada exchange antes de confiar en ninguna lista.</p>
+      <h3>¿Qué método de pago usan normalmente los canadienses para comprar USDT?</h3>
+      <p>Interac e-Transfer es el riel local usual en plataformas canadienses, seguido de transferencia bancaria. Las tarjetas funcionan en algunas plataformas pero cuestan más y pueden rechazarse.</p>
+      <h3>¿Cómo compruebo si un exchange realmente da servicio a Canadá?</h3>
+      <p>Lee sus términos de servicio y página de países admitidos, confirma que indica soporte para Canadá y registro FINTRAC como negocio de servicios monetarios, y comprueba que la financiación en CAD e Interac realmente se ofrecen al registrarte. Si falta alguna de esas, trátala como señal de advertencia.</p>
+      <h3>¿Qué red USDT debería usar para retirar?</h3>
+      <p>Haz coincidir la red con la billetera receptora o exchange exactamente. TRC20 en Tron normalmente cuesta menos que ERC20 en Ethereum, pero la comisión mostrada en la pantalla de retiro es la que cuenta. Enviar en la red equivocada puede perder tus fondos.</p>
+      <h3>¿Debo impuestos sobre USDT en Canadá?</h3>
+      <p>Guarda registros de cada compra, venta y transferencia (fecha, importe en CAD, importe en USDT, comisiones). Cómo se gravan las ganancias depende de tu actividad, así que consulta la orientación actual de CRA o habla con un profesional fiscal. Esta página no es asesoría fiscal.</p>
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="buy-usdt.html">Cómo comprar USDT: todos los métodos comparados</a></li>
+        <li><a href="how-to-buy-bitcoin.html">Cómo comprar bitcoin: guía completa</a></li>
+        <li><a href="how-to-buy-usdt-in-usa.html">Cómo comprar USDT en EE. UU.</a></li>
+        <li><a href="avoid-scams.html">¿Las criptomonedas son una estafa? 8 fraudes que hay que conocer</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

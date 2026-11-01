@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Cómo comprar XRP: guía paso a paso para principiantes — TokVS</title>
+<meta name="description" content="Cómo comprar XRP para principiantes: elige un exchange, verifica tu ID, financia tu cuenta, haz tu primer pedido spot XRP, y acierta la etiqueta de destino, más el mosaico regulatorio a comprobar primero.">
+<link rel="canonical" href="https://tokvs.com/es/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-xrp">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-xrp">
+<meta property="og:title" content="Cómo comprar XRP para principiantes — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Exchange, registro, financiación, primer pedido XRP, etiquetas de destino y almacenamiento seguro: el proceso completo para principiantes en 5 pasos.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/how-to-buy-xrp">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"Cómo comprar XRP: guía paso a paso para principiantes","item":"https://tokvs.com/es/guides/how-to-buy-xrp"}]},{"@type":"Article","headline":"Cómo comprar XRP: guía paso a paso para principiantes","description":"Cómo comprar XRP para principiantes: elige un exchange, verifica tu ID, financia tu cuenta, haz tu primer pedido spot XRP, y acierta la etiqueta de destino, más el mosaico regulatorio a comprobar primero.","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/how-to-buy-xrp","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Qué es una etiqueta de destino, y siempre la necesito?","acceptedAnswer":{"@type":"Answer","text":"Una etiqueta de destino (también llamada memo) le dice al exchange a qué cuenta de cliente acreditar, porque muchos usuarios comparten una dirección de depósito. Los depósitos XRP de exchanges casi siempre la requieren; las transferencias billetera a billetera normalmente no. Olvida la etiqueta y tu depósito puede quedar sin acreditar hasta que el soporte lo recupere manualmente: lento, y a veces con comisión."}},{"@type":"Question","name":"¿XRP es lo mismo que Ripple?","acceptedAnswer":{"@type":"Answer","text":"No. Ripple es una compañía privada que construye software de pagos; XRP es el activo digital independiente del XRP Ledger. Comprar XRP no compra acciones en Ripple, y Ripple no controla el ledger."}},{"@type":"Question","name":"¿Puedo comprar menos de un XRP?","acceptedAnswer":{"@type":"Answer","text":"Sí. XRP se divide hasta seis decimales (la unidad más pequeña se llama drop), así que $50 compran bastante XRP. El precio por moneda es irrelevante: solo importa el movimiento porcentual."}},{"@type":"Question","name":"¿Por qué mi exchange no lista XRP?","acceptedAnswer":{"@type":"Answer","text":"La disponibilidad de XRP varía por exchange y región debido a su historia regulatoria. Si tu exchange no lo lista, usa otro exchange importante en lugar de una plataforma oscura, y comprueba tus reglas locales antes de comprar."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Comprar XRP</div>
+      <h1>Cómo comprar XRP: el proceso completo para principiantes</h1>
+      <p class="sub">XRP está construido para pagos transfronterizos rápidos y baratos y opera en todo exchange importante: comprar tu primer XRP toma alrededor de media hora: elige un exchange de primer nivel, verifica tu ID, financia tu cuenta, haz un pedido spot, luego guárdalo. Dos cosas hacen tropezar a principiantes: la etiqueta de destino en transferencias, y el hecho de que la disponibilidad varía por región. Ambas están cubiertas abajo.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Línea de productos completa, buen soporte de idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+      </div>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 8 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+      <div class="callout good"><b>Los 5 pasos de un vistazo:</b> 1. Elige un exchange → 2. Regístrate y verifica → 3. Financia tu cuenta → 4. Haz tu pedido XRP → 5. Guárdalo de forma segura. Cada paso está expandido abajo: sigue, todo funciona desde tu teléfono.</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Antes de empezar: tres cosas que preparar</h2>
+      <ul>
+        <li><strong>Un documento de identidad gubernamental.</strong> Cada exchange legítimo requiere verificación de identidad (KYC), sin excepciones. Cualquier canal que ofrezca «compra sin DNI» es una trampa.</li>
+        <li><strong>Un teléfono y un correo que controlas</strong> — para registro, códigos y una app de autenticador.</li>
+        <li><strong>Dinero que puedes permitirte perder.</strong> Empieza pequeño: suficiente para aprender el proceso, no suficiente para doler.</li>
+      </ul>
+      <p>Una línea sobre qué estás comprando: XRP es el activo nativo del XRP Ledger, una red enfocada en pagos donde las transacciones se liquidan en segundos con comisiones diminutas en el ledger. Y una confusión a aclarar inmediatamente: XRP no es Ripple. Ripple es una compañía privada que construye software de pagos; XRP es el activo independiente del ledger. Comprar XRP no compra acciones en Ripple.</p>
+
+      <h2>Paso 1: Elige un exchange</h2>
+      <p>Un exchange es el mercado donde compras. Los principiantes solo deben elegir del primer nivel global: grandes, de larga trayectoria, con comisiones transparentes. Binance, OKX, y Bybit listan todos mercados spot XRP profundos. Sus comisiones spot de usuario regular son cercanas, así que elige por experiencia de app y los rieles fiat disponibles en tu país. Una nota específica de XRP: la disponibilidad varía por exchange y región debido a la historia regulatoria de XRP, así que si tu exchange de primera elección no lo lista, comprueba otro exchange importante en lugar de derivar a uno oscuro. Nuestra <a href="choose-exchange.html">guía de selección de exchange</a> muestra cómo juzgar cualquier plataforma, o salta directamente a la <a href="../exchanges.html">comparación de comisiones con calculadora</a>.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Exchange</th><th>Comisión maker spot</th><th>Comisión taker spot</th><th>notas XRP</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10%</td><td>0.10%</td><td>La liquidez XRP más profunda, la mayoría de pares XRP</td></tr>
+          <tr><td>OKX</td><td>0.08%</td><td>0.10%</td><td>Comisión maker spot más baja de las tres</td></tr>
+          <tr><td>Bybit</td><td>0.10%</td><td>0.10%</td><td>Mercado spot XRP completo; regístrate vía <a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">nuestro enlace Bybit</a></td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Los tarifarios cambian: consulta siempre la página oficial de comisiones del exchange antes de operar.</p>
+      <p><strong>El veredicto directo:</strong> la mayoría de los principiantes estarán bien con Binance (mayor selección, liquidez más profunda) u OKX (comisión maker spot ligeramente menor del 0.08%). Abre primero una cuenta: más cuentas no significan más ganancias.</p>
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">¿Decidido? Abrir una cuenta toma unos 10 minutos: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></p>
+      <h2>Paso 2: Regístrate y verifica</h2>
+      <ol>
+        <li>Descarga la app solo desde el sitio web oficial o la tienda de apps de tu teléfono. <strong>Nunca instales una app desde un enlace que alguien te envió</strong> — las apps falsas son la estafa número uno para principiantes.</li>
+        <li>Regístrate con correo o teléfono y una contraseña única y fuerte.</li>
+        <li>Completa la verificación de identidad: sube tu DNI y pasa una comprobación facial. La aprobación normalmente toma minutos a unas pocas horas.</li>
+        <li>Activa inmediatamente la autenticación de dos factores (2FA) y el código antiphishing. Esta es la armadura básica de tu cuenta.</li>
+      </ol>
+      <p>El recorrido detallado está en <a href="../start/step3.html">Paso 3 del camino para principiantes: Regístrate</a>.</p>
+
+      <h2>Paso 3: Financia tu cuenta</h2>
+      <p>Tienes dos rutas. La estándar: compra USDT primero, luego opéralo por XRP en el par XRP/USDT: los pares USDT tienen la liquidez más profunda y los precios más ajustados. La más simple: algunos exchanges ofrecen pares fiat directos o compra instantánea con tarjeta, que salta el paso USDT pero puede costar más. De cualquier forma, empieza con un pequeño importe de prueba y confirma que llegue antes de hacer más. La ruta USDT está cubierta en <a href="buy-usdt.html">Cómo comprar USDT</a>.</p>
+
+      <h2>Paso 4: Haz tu pedido XRP</h2>
+      <ol>
+        <li>En trading spot, abre el <strong>XRP/USDT</strong> par.</li>
+        <li>Los principiantes deberían usar una <strong>orden limit</strong>: establece el precio que estás dispuesto a pagar y el importe (digamos, $100). Se llena cuando el mercado alcanza tu precio, y las comisiones maker son más bajas. ¿Con prisa? Una orden de mercado funciona, a cualquier precio que tenga el libro actual.</li>
+        <li>Comprueba tres números antes de confirmar: precio, importe, comisión. Con una comisión spot del 0.10%, una compra de $100 cuesta unos $0.10. La matemática de comisiones se cubre en <a href="crypto-fees.html">Comisiones de criptomonedas explicadas</a>.</li>
+        <li>Una vez llenado, tu XRP se muestra bajo Assets / Spot. Felicitaciones: primera compra hecha.</li>
+      </ol>
+
+      <h2>Paso 5: Decide dónde guardarlo</h2>
+      <ul>
+        <li><strong>Cantidades pequeñas, aún operando:</strong> dejarlo en el exchange está bien, con 2FA activado y tu cuenta nunca compartida.</li>
+        <li><strong>Cantidades mayores, tenencia a largo plazo:</strong> muévelo a una billetera que controlas, con la clave secreta respaldada en papel. Usa una billetera que soporte el XRP Ledger (como Xaman o una billetera hardware): las billeteras multi-moneda genéricas varían en soporte XRP, así que verifica antes de enviar. Nota que activar una nueva billetera XRP Ledger requiere una pequeña reserva mínima que queda bloqueada en la cuenta, así que comprueba la reserva actual antes de tu primera transferencia. Ver <a href="../start/step5.html">Paso 5 del camino</a> y <a href="wallet-safety.html">Seguridad de billeteras y frases semilla</a>.</li>
+      </ul>
+
+      <h2>Etiquetas de destino y regulación: la parte específica de XRP</h2>
+      <p><strong>La etiqueta de destino es la trampa número uno para principiantes de XRP.</strong> Cuando depositas XRP a un exchange, el exchange te muestra dos cosas: una dirección de depósito y una etiqueta de destino (a veces llamada memo). Muchos usuarios comparten la misma dirección de depósito, así que la etiqueta es cómo el exchange sabe que el depósito es tuyo. Olvida la etiqueta y tu XRP llega al exchange pero queda sin acreditar: recuperarlo significa contactar al soporte con el hash de transacción y esperar, a veces por semanas, y algunas plataformas cobran una comisión de recuperación. Las reglas son simples: copia la etiqueta exactamente como se muestra, nunca reutilices una etiqueta vieja de un depósito diferente, y haz que tu primer depósito a un exchange nuevo sea un pequeño importe de prueba. Las transferencias billetera a billetera normalmente no necesitan etiqueta en absoluto: es la pantalla de depósito del exchange la que exige una.</p>
+      <p><strong>La regulación es la segunda cosa a comprobar antes de comprar.</strong> XRP ha sido sujeto de una disputa regulatoria de larga duración en Estados Unidos, y su disponibilidad ha variado por exchange y región a medida que esa disputa evolucionó. Las reglas también difieren por país y siguen cambiando, así que trátalo como un ítem de tarea permanente, no una comprobación única: confirma que tu exchange liste XRP en tu región, y confirma tus reglas locales, antes de comprometer fondos. Lo que no cambia: el activo en sí es el mismo en todo exchange que lo liste, así que nunca hay buena razón para comprarlo en una plataforma oscura solo porque esté listado allí.</p>
+      <div class="callout warn"><b>Las reglas de transferencia XRP:</b> 1. Depósito en exchange = dirección más etiqueta de destino, ambas copiadas exactamente. 2. Primer depósito a un exchange nuevo es siempre un pequeño importe de prueba. 3. Si un depósito no aparece, no reenvíes: encuentra el hash de transacción y contacta al soporte con él. 4. Nunca compres «acciones Ripple»: ningún producto minorista tal existe; quien lo venda está montando una estafa.</div>
+      <p>Un último hábito que paga en toda moneda: guarda un simple registro de cada compra: fecha, plataforma, importe, precio. Si la regulación o reglas fiscales cambian luego, los traders que guardaron registros son los que se adaptan en una tarde en lugar de reconstruir un año desde la memoria.</p>
+
+      <h2>¿Cuánto deberías comprar la primera vez?</h2>
+      <p>La respuesta honesta: <strong>un importe con el que no perderías el sueño</strong>. Empieza pequeño (digamos, $50–100) y ejecuta todo el flujo de principio a fin — depósito, compra, y si quieres, retiro — sin errores. Si estás en esto a largo plazo, considera poner una pequeña suma fija cada mes para promediar tu precio de entrada. Tu primera compra no trata de ganancias. Trata de <strong>completar el proceso sin fallos</strong>.</p>
+
+      <h2>Cinco errores de compra que los principiantes siguen cometiendo</h2>
+      <ol>
+        <li><strong>Olvidar la etiqueta de destino</strong> : el error clásico de depósito XRP, totalmente evitable con el hábito del importe de prueba.</li>
+        <li><strong>Comprar XRP pensando que son acciones Ripple</strong> : Ripple es una compañía; XRP es el activo del ledger. No son lo mismo.</li>
+        <li><strong>Comprar con dinero prestado o crédito</strong> — el apalancamiento en una primera compra convierte la volatilidad normal en crisis.</li>
+        <li><strong>Guardar todo en una plataforma</strong> — un exchange no es un banco. Mueve las tenencias mayores a largo plazo a tu propia billetera.</li>
+        <li><strong>Seguir «gurús» y grupos de señales</strong> — cualquiera que te diga qué comprar se beneficia de tus comisiones y tu liquidez de salida.</li>
+      </ol>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>¿Listo?</b> Registrarte tarda unos 10 minutos: verifícate una vez, activa la 2FA y luego sigue los pasos anteriores. Las guías de este sitio te acompañan en el resto.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Línea de productos completa, buen soporte de idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+        </div>
+        <p class="note">Las mismas comisiones que registrarte directamente: nuestro enlace no te cuesta nada extra.</p>
+      </div>
+      <h2>Preguntas frecuentes</h2>
+      <h3>¿Qué es una etiqueta de destino, y siempre la necesito?</h3>
+      <p>Una etiqueta de destino (también llamada memo) le dice al exchange a qué cuenta de cliente acreditar, porque muchos usuarios comparten una dirección de depósito. Los depósitos XRP de exchanges casi siempre la requieren; las transferencias billetera a billetera normalmente no. Olvida la etiqueta y tu depósito puede quedar sin acreditar hasta que el soporte lo recupere manualmente: lento, y a veces con comisión.</p>
+      <h3>¿XRP es lo mismo que Ripple?</h3>
+      <p>No. Ripple es una compañía privada que construye software de pagos; XRP es el activo digital independiente del XRP Ledger. Comprar XRP no compra acciones en Ripple, y Ripple no controla el ledger.</p>
+      <h3>¿Puedo comprar menos de un XRP?</h3>
+      <p>Sí. XRP se divide hasta seis decimales (la unidad más pequeña se llama drop), así que $50 compran bastante XRP. El precio por moneda es irrelevante: solo importa el movimiento porcentual.</p>
+      <h3>¿Por qué mi exchange no lista XRP?</h3>
+      <p>La disponibilidad de XRP varía por exchange y región debido a su historia regulatoria. Si tu exchange no lo lista, usa otro exchange importante en lugar de una plataforma oscura, y comprueba tus reglas locales antes de comprar.</p>
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="buy-usdt.html">Cómo comprar USDT: tres métodos comparados</a></li>
+        <li><a href="how-to-buy-bitcoin.html">Cómo comprar bitcoin: guía completa</a></li>
+        <li><a href="how-to-buy-ethereum.html">Cómo comprar Ethereum: recorrido completo</a></li>
+        <li><a href="wallet-safety.html">Seguridad de billeteras y frases semilla</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>¿Aún no tienes cuenta? Regístrate en 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate</a><button class="sx" aria-label="Cerrar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

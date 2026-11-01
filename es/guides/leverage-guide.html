@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>¿Qué es el apalancamiento en criptomonedas? Liquidación explicada — TokVS</title>
+<meta name="description" content="¿Qué es el apalancamiento en criptomonedas? Futuros perpetuos, margen y liquidación explicados en inglés claro con un ejemplo trabajado. Aprende el riesgo primero.">
+<link rel="canonical" href="https://tokvs.com/es/guides/leverage-guide">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/leverage-guide">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/leverage-guide">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/leverage-guide">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/leverage-guide">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/leverage-guide">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/leverage-guide">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/leverage-guide">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/leverage-guide">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/leverage-guide">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/leverage-guide">
+<meta property="og:title" content="¿Qué es el apalancamiento en criptomonedas? — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Apalancamiento, margen y liquidación en inglés claro, con la matemática que importa.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/leverage-guide">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"¿Qué es el apalancamiento en criptomonedas? Liquidación explicada","item":"https://tokvs.com/es/guides/leverage-guide"}]},{"@type":"Article","headline":"¿Qué es el apalancamiento en criptomonedas? Liquidación explicada","description":"¿Qué es el apalancamiento en criptomonedas? Futuros perpetuos, margen y liquidación explicados en inglés claro con un ejemplo trabajado. Aprende el riesgo primero.","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/leverage-guide","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Apalancamiento y futuros</div>
+      <h1>Apalancamiento y futuros: entiende la liquidación antes que cualquier otra cosa</h1>
+      <p class="sub">Apalancamiento significa pedir prestado para manejar una posición mayor. Con apalancamiento 10×, un movimiento de aproximadamente 10% en tu contra puede borrar todo tu margen: eso es liquidación. Nuestra posición es clara: los principiantes no deben operar futuros. Esta página existe para que entiendas el riesgo, no como un cómo para abrir operaciones.</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 4 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <div class="callout warn"><b>Advertencia de riesgo fuerte, por adelantado:</b> Los futuros son derivados apalancados de alto riesgo, y la gran mayoría de participantes pierde dinero. Picos de mecha, slippage y tasas de financiación rutinariamente hacen que las pérdidas reales sean peores que la matemática en papel. Este artículo es educación de riesgo, no una recomendación de trading. Si eliges probar de todos modos, las pérdidas son tuyas, y solo con dinero que puedas permitirte perder por completo.</div>
+
+      <h2>¿Qué es un contrato de futuros?</h2>
+      <p>Spot significa que compras la moneda en sí. Un contrato no compra moneda: es <strong>una apuesta sobre dirección</strong>: ve largo si esperas una subida, corto si esperas una caída, y cada movimiento del 1% se multiplica por tu apalancamiento. El producto más común es el <strong>futuro perpetuo</strong>: sin fecha de vencimiento, mantenible indefinidamente, con tasas de financiación manteniendo su precio cerca del spot (financiación explicada en <a href="crypto-fees.html">Comisiones de criptomonedas explicadas</a>)</p>
+      <div class="table-wrap">
+        <table class="fee num">
+          <thead><tr><th></th><th>Spot</th><th>Futuros perpetuos</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Qué tienes</td><td>La moneda real; retirable</td><td>Un contrato; nada que retirar</td></tr>
+            <tr><td class="name">P&amp;L</td><td>1× el movimiento de precio</td><td>Multiplicado por apalancamiento, p. ej. 10×</td></tr>
+            <tr><td class="name">Peor caso</td><td>El precio cae; tienes una moneda más barata</td><td>Liquidación; margen ido</td></tr>
+            <tr><td class="name">Costes extra</td><td>Solo comisiones de trading</td><td>Comisiones + tasas de financiación</td></tr>
+            <tr><td class="name">Para quién es</td><td>El punto de partida de todo principiante</td><td>Solo traders experimentados y disciplinados</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Qué es el apalancamiento: un ejemplo trabajado</h2>
+      <p>Publicas $1,000 de margen y abres un largo 10× en BTC: una posición de $10,000:</p>
+      <ul>
+        <li>BTC sube 5% → ganancia = 10,000 × 5% = <strong>$500</strong> (50% de tu margen)</li>
+        <li>BTC cae 5% → pérdida = <strong>$500</strong> (mitad de tu margen)</li>
+        <li>BTC cae ~10% → la pérdida se acerca a $1,000 → <strong>liquidación</strong>, margen ido</li>
+      </ul>
+      <p>Ahora la parte incómoda: BTC moviéndose 5–10% en un día es completamente ordinario. Con apalancamiento 10×, <strong>un día normal de volatilidad puede terminar tu posición</strong>. Mayor apalancamiento no demanda más habilidad: demanda más suerte. Eso no es un problema de trading; es aritmética.</p>
+
+      <h2>Cómo ocurre la liquidación</h2>
+      <p>Cuando las pérdidas no realizadas comen tanto de tu margen que ya no puede soportar la posición, el exchange la cierra forzosamente: liquidación. Dos modos importan. <strong>Margen aislado:</strong> cada posición tiene su propio cubo de margen: una liquidación cuesta solo ese cubo. <strong>Margen cruzado:</strong> todo tu saldo de futuros respalda cada posición: una mala operación puede drenar la cuenta. Y en movimientos violentos, las «mechas» de precio pueden atravesar directamente tu precio de liquidación y rebotar segundos después. La recuperación no importa; tu posición ya se fue.</p>
+
+      <h2>Las 4 formas en que los principiantes explotan</h2>
+      <ol>
+        <li><strong>All-ins de apalancamiento máximo.</strong> Con 50× o 100×, un movimiento del 1–2% te liquida. Eso no es trading; es un lanzamiento de moneda con comisiones.</li>
+        <li><strong>Sin stop-loss, promediando a la baja.</strong> Añadir margen a una posición perdedora hasta que una mecha se lleve todo.</li>
+        <li><strong>Sobreoperar.</strong> Docenas de viajes de ida y vuelta al día: comisiones más financiación muelen lentamente la cuenta a cero mientras la plataforma gana de cualquier forma.</li>
+        <li><strong>Seguir a llamadores de señales.</strong> El «mentor» gana de tus comisiones y suscripciones de grupo. Tu liquidación no le cuesta nada. Aprende a detectar este patrón en <a href="avoid-scams.html">¿Las criptomonedas son una estafa?</a></li>
+      </ol>
+
+      <div class="callout warn"><b>Nuestro consejo explícito:</b> termina el <a href="../start/step1.html">Ruta para principiantes</a>, opera solo spot por al menos unos pocos meses, y prueba que puedes mantenerte sin emociones a través de caídas reales antes de siquiera considerar una diminuta posición de futuros. Hasta entonces, cualquiera que te diga «los futuros imprimen dinero rápido» va directo a la lista de bloqueo.</div>
+
+      <h2>Si pruebas de todos modos</h2>
+      <p>Bajo tu propio riesgo, las reglas de reducción de daño son solo cuatro: solo margen aislado, apalancamiento en o por debajo de 3×, establece el stop-loss antes de abrir, y dimensiona posiciones para que una pérdida total no cambie nada sobre tu vida. ¿No puedes comprometerte a las cuatro? No hagas la primera operación. Y costéalo primero con el <a href="../exchanges.html#calculator">calculadora de comisiones</a>.</p>
+
+      <h2>Preguntas frecuentes</h2>
+      <h3>¿Puede el apalancamiento hacerme deber dinero al exchange?</h3>
+      <p>Con margen aislado, tu pérdida máxima es el margen de esa posición: generalmente no puedes ir a negativo. El margen cruzado puede consumir todo tu saldo de futuros. Las reglas exactas varían por plataforma, por lo que los principiantes que insisten en probar solo deben usar margen aislado.</p>
+      <h3>¿Qué apalancamiento es «seguro» para principiantes?</h3>
+      <p>No hay uno. Si debe nombrarse un techo: 3× o menos, aislado, tamaño diminuto. Cada duplicación del apalancamiento reduce a la mitad la distancia a la liquidación: pregúntate cuántas llamadas incorrectas seguidas puedes sobrevivir.</p>
+      <h3>¿Los futuros ganan más dinero que el spot?</h3>
+      <p>Los futuros son un amplificador, no una ventaja. Multiplican ganancias, pérdidas y la velocidad de eliminación por el mismo factor. Los datos de resultados consistentemente muestran que los traders de futuros pierden a tasas mucho mayores que los tenedores spot.</p>
+      <h3>¿Qué es la tasa de financiación, y afecta el apalancamiento a ella?</h3>
+      <p>Es un pago periódico entre largos y cortos en perpetuos. Cuanto más mantengas y mayor sea tu posición nocional — que el apalancamiento infla — más pagas o recibes. Explicación completa en <a href="crypto-fees.html">Comisiones de criptomonedas explicadas</a>.</p>
+
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="crypto-fees.html">Comisiones de criptomonedas explicadas: qué cuestan realmente los futuros</a></li>
+        <li><a href="../start/step1.html">El camino del principiante: acierta el spot primero</a></li>
+        <li><a href="avoid-scams.html">¿Las criptomonedas son una estafa? Detectar trampas de grupos de señales</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>¿Aún no tienes cuenta? Regístrate en 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate</a><button class="sx" aria-label="Cerrar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

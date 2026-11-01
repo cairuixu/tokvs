@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Cómo comprar USDT en EE. UU.: ACH, transferencia, tarjeta y P2P — TokVS</title>
+<meta name="description" content="Compra USDT en EE. UU. con ACH, transferencia bancaria, tarjeta de débito, o P2P: velocidad, coste, KYC, y disponibilidad estatal comparados en inglés claro. Empieza con un pequeño importe de prueba.">
+<link rel="canonical" href="https://tokvs.com/es/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-usdt-in-usa">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-usa">
+<meta property="og:title" content="Cómo comprar USDT en EE. UU.: ACH, transferencia, tarjeta y P2P — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Rutas ACH, transferencia, tarjeta de débito, y P2P para comprar USDT en EE. UU., más notas de KYC y disponibilidad estatal.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/how-to-buy-usdt-in-usa">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"Compra USDT en EE. UU.","item":"https://tokvs.com/es/guides/how-to-buy-usdt-in-usa"}]},{"@type":"Article","headline":"Cómo comprar USDT en EE. UU.: ACH, transferencia, tarjeta y P2P","description":"Compra USDT en EE. UU. con ACH, transferencia bancaria, tarjeta de débito, o P2P: paso a paso, costes, KYC, y disponibilidad estatal. Empieza con un pequeño importe de prueba.","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/how-to-buy-usdt-in-usa","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Puedo comprar USDT con USD directamente desde mi cuenta bancaria?","acceptedAnswer":{"@type":"Answer","text":"Sí, en exchanges que soportan depósitos USD. Depositas dólares por ACH o transferencia bancaria, luego compras USDT en el par spot USD/USDT. Si tu exchange no ofrece depósitos USD, el P2P es la alternativa habitual."}},{"@type":"Question","name":"¿Cuánto tarda un depósito ACH?","acceptedAnswer":{"@type":"Answer","text":"Las transferencias ACH normalmente tardan de uno a tres días hábiles en liquidarse por completo, aunque algunos exchanges te dejan operar contra un depósito pendiente antes. Comprueba la pantalla de depósito antes de enviar: muestra la disponibilidad esperada para tu cuenta."}},{"@type":"Question","name":"¿Por qué se rechazó mi tarjeta de débito?","acceptedAnswer":{"@type":"Answer","text":"Los bancos rechazan compras de criptomonedas cuando sus sistemas de fraude marcan la transacción, cuando la dirección de facturación no coincide, o cuando la tarjeta no está habilitada para compras en línea. Confirma los detalles, intenta una vez más, y si aún falla, llama a tu banco o cambia a ACH o P2P."}},{"@type":"Question","name":"¿Es legal comprar USDT en EE. UU.?","acceptedAnswer":{"@type":"Answer","text":"Comprar USDT es legal en Estados Unidos, pero la disponibilidad de exchanges varía por estado debido a reglas de licencia estatal. Comprueba que el exchange que elijas sirva a tu estado antes de verificar, y guarda registros de cada compra."}},{"@type":"Question","name":"¿Tengo que verificar mi identidad primero?","acceptedAnswer":{"@type":"Answer","text":"Sí. Los exchanges estadounidenses requieren verificación de identidad antes de poder depositar u operar. Espera un ID con foto emitido por el gobierno y una comprobación facial en vivo, y asegúrate de que tu cuenta bancaria esté al mismo nombre que tu cuenta verificada."}},{"@type":"Question","name":"¿Qué método es más barato para una primera compra?","acceptedAnswer":{"@type":"Answer","text":"El depósito ACH seguido de una compra spot es normalmente la ruta de menor coste, porque los depósitos ACH a menudo son gratis y las comisiones de trading spot son menores que las comisiones de compra instantánea con tarjeta. Confirma las comisiones actuales en la página oficial de comisiones del exchange antes de comprometerte: las comisiones cambian."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Compra USDT en EE. UU.</div>
+      <h1>Cómo comprar USDT en EE. UU.</h1>
+      <p class="sub">ACH, transferencia bancaria, tarjeta de débito, o P2P: cuatro formas para estadounidenses de comprar USDT, con notas honestas sobre velocidad, coste, y la letra pequeña estado por estado.</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 13 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Línea de productos completa, buen soporte de idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>El panorama: cómo los estadounidenses realmente compran USDT</h2>
+      <p>No hay una única forma oficial de comprar USDT en Estados Unidos, porque USDT es una stablecoin emitida por una compañía privada y operada en exchanges, no vendida por una ventanilla gubernamental. En la práctica, los estadounidenses la compran por una de cuatro rutas: depositar dólares en un exchange por ACH y comprar en el mercado spot, enviar una transferencia bancaria para importes mayores, pagar instantáneamente con tarjeta de débito, u operar peer-to-peer con otra persona dentro de una app de exchange. Qué ruta está abierta para ti depende del exchange, tu estado, y cuánta paciencia tengas. Esta guía recorre las cuatro, para que puedas elegir la que se ajuste a tu primera compra en lugar de descubrir sus límites a mitad de camino.</p>
+      <p>Una cosa a resolver primero: USDT está diseñado para seguir al dólar estadounidense, un token a aproximadamente un dólar, pero el precio que pagas en un día dado lo fija el mercado en ese exchange, no un mostrador fijo. Pequeñas diferencias respecto a exactamente un dólar son normales. Tu trabajo no es encontrar un precio mágico: es evitar pagar de más en comisiones y spreads, y evitar las trampas de principiante que cuestan mucho más que cualquier comisión.</p>
+      <h2>Qué necesitas antes de empezar</h2>
+      <ul>
+        <li><strong>Una cuenta de exchange verificada.</strong> Los exchanges estadounidenses requieren verificación de identidad antes de depósitos o trading. Ten un ID con foto emitido por el gobierno listo y espera una comprobación facial en vivo.</li>
+        <li><strong>Una cuenta bancaria o tarjeta de débito a tu propio nombre.</strong> El nombre debe coincidir con tu cuenta de exchange verificada. Los pagos de terceros se rechazan y pueden congelar una operación.</li>
+        <li><strong>Autenticación de dos factores activada.</strong> Usa una app de autenticador, no SMS, y establece un código antiphishing antes de depositar nada.</li>
+        <li><strong>Un pequeño importe de prueba en mente.</strong> Tu primera compra debe ser lo bastante pequeña para que un error sea una lección, no una pérdida.</li>
+      </ul>
+      <p class="in-cta">Prepara primero tu cuenta: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></p>
+      <h2>Método 1: depósito ACH, luego compra spot (normalmente lo más barato)</h2>
+      <p>ACH es el sistema de transferencia banco a banco de EE. UU., y es la ruta de trabajo para compradores estadounidenses de criptomonedas. El flujo es simple: enlaza tu cuenta bancaria al exchange, deposita dólares, espera a que el depósito se liquide, luego compra USDT en el par spot USD/USDT. Enlazar normalmente implica verificación instantánea a través de tu login de banca en línea o un par de pequeños depósitos de prueba que tardan un día o dos en aparecer.</p>
+      <ol>
+        <li>Completa la verificación de identidad y activa 2FA en tu cuenta de exchange.</li>
+        <li>Ve a Depósito, elige USD, y selecciona ACH como método. Enlaza tu cuenta corriente.</li>
+        <li>Introduce el importe y confirma. La pantalla de depósito muestra la disponibilidad esperada: léela antes de enviar.</li>
+        <li>Una vez que los dólares lleguen, ve al mercado spot, abre el par USDT/USD, y haz tu orden de compra. Una orden de mercado se llena inmediatamente al precio actual; una orden limit te deja fijar tu precio y esperar.</li>
+        <li>Comprueba que el USDT aparezca en tu billetera spot, y registra la operación: fecha, dólares pagados, USDT recibido, ID de pedido.</li>
+      </ol>
+      <p>Las transferencias ACH normalmente tardan de uno a tres días hábiles en liquidarse por completo, aunque algunos exchanges te dejan operar contra un depósito pendiente antes, con retiros retenidos hasta que la liquidación complete. Los depósitos ACH a menudo son gratis del lado del exchange, por lo que esta ruta normalmente gana en coste, pero confirma las comisiones actuales en la página oficial de comisiones del exchange antes de comprometerte, porque los calendarios de comisiones cambian. El contra es la velocidad: si necesitas USDT hoy, ACH es la herramienta equivocada.</p>
+      <h2>Método 2: transferencia bancaria (mejor para importes mayores)</h2>
+      <p>Una transferencia bancaria mueve dólares de tu banco a la cuenta bancaria del exchange, normalmente el mismo día si la envías antes de la hora límite de tu banco. El exchange te da sus datos bancarios más un código de referencia o memo que vincula la transferencia a tu cuenta: esa referencia es el campo más importante en toda la transferencia. Si la equivocas, tu depósito puede quedar en limbo por días mientras el soporte lo empareja manualmente.</p>
+      <p>Las transferencias tienen sentido cuando el importe es lo bastante grande para que una comisión bancaria plana de transferencia se convierta en un pequeño porcentaje del total. Tu banco puede cobrar por enviar una transferencia, así que comprueba primero con tu banco; el lado del exchange normalmente cobra poco o nada por recibirla, sujeto a su página oficial de comisiones. Las transferencias son también la ruta donde una transferencia de prueba se paga sola: envía primero un pequeño importe, confirma que llegue y se acredite correctamente, luego envía el resto. Para cualquier cosa por encima de unos pocos miles de dólares, dividir la transferencia en dos envíos es cautela sensata, no paranoia.</p>
+      <h2>Método 3: compra instantánea con tarjeta de débito (más rápida, más cara)</h2>
+      <p>La compra instantánea con tarjeta de débito es la ruta más rápida: introduce los datos de tu tarjeta, confirma la compra, y el USDT normalmente aparece en minutos. Esa velocidad tiene un precio: las compras con tarjeta conllevan las comisiones más altas de los métodos comunes, porque el procesamiento de tarjetas cuesta más que las transferencias bancarias y los exchanges trasladan ese coste. Para una primera compra diminuta de prueba la comisión apenas importa; para compras regulares o grandes se acumula rápido, así que trata la tarjeta como tu ruta de inicio y gradúate a ACH una vez que el flujo se sienta familiar.</p>
+      <p>Dos realidades de tarjeta que los principiantes topan rápidamente. Primero, los rechazos son comunes: los bancos marcan compras de criptomonedas, las direcciones de facturación deben coincidir exactamente, y algunas tarjetas no están habilitadas para compras en línea en absoluto. Confirma los detalles, intenta una vez más, y si aún falla, llama a tu banco o cambia de método en lugar de machacar la misma tarjeta. Segundo, usa una tarjeta de débito, no una tarjeta de crédito: muchos bancos bloquean criptomonedas en tarjetas de crédito o la tratan como adelanto de efectivo con cargos extra. Y nunca uses la tarjeta de otro: la tarjeta debe estar al mismo nombre que tu cuenta verificada.</p>
+      <h2>Método 4: P2P (el respaldo cuando los depósitos son limitados)</h2>
+      <p>El trading peer-to-peer significa comprar USDT directamente de otra persona dentro de la app del exchange, con el exchange reteniendo el USDT del vendedor en garantía hasta que pagas. En EE. UU., el P2P en dólares es más delgado que en países donde es la rampa principal, así que espera menos comerciantes y cotizaciones más amplias que las que verías en otro lugar, pero sigue siendo un respaldo útil cuando los depósitos directos no están disponibles, o cuando quieres pagar con un método específico que un comerciante acepta.</p>
+      <ol>
+        <li>Abre P2P en la app, elige Comprar, USDT, y USD, luego filtra por tu método de pago.</li>
+        <li>Elige un comerciante por historial: muchos pedidos completados, una alta tasa de finalización, y una cuenta antigua. Lee sus términos antes de hacer el pedido.</li>
+        <li>Haz el pedido. El USDT del vendedor se bloquea en garantía y tu temporizador de pago empieza.</li>
+        <li>Paga exactamente como se instruye, usando solo el número de pedido como referencia de pago: nunca escribas palabras relacionadas con criptomonedas en un memo bancario.</li>
+        <li>Toca que has pagado, espera la liberación, y verifica el USDT en tu billetera antes de cerrar la app.</li>
+      </ol>
+      <p>Si algo sale mal, no liberes el pago temprano, no pagues fuera de la plataforma, y usa el proceso de apelación con capturas de tu prueba de pago. Cualquiera que ofrezca un mejor precio fuera de plataforma te está vendiendo una cuenta congelada o peor.</p>
+      <h2>Cuatro métodos comparados</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Método</th><th>Velocidad</th><th>Coste típico</th><th>Ideal para</th></tr></thead>
+        <tbody>
+          <tr><td>ACH + compra spot</td><td>1–3 días hábiles</td><td>A menudo depósito gratis + comisión spot</td><td>La mayoría de compras, menor coste</td></tr>
+          <tr><td>Transferencia bancaria</td><td>Mismo día si antes de la hora límite</td><td>Posible comisión bancaria de wire</td><td>Importes mayores</td></tr>
+          <tr><td>Compra instantánea con tarjeta de débito</td><td>Minutos</td><td>Las comisiones más altas de los cuatro</td><td>Primera prueba pequeña, compras urgentes</td></tr>
+          <tr><td>P2P</td><td>Minutos una vez emparejado</td><td>Cotización del comerciante vs. mercado</td><td>Cuando los depósitos son limitados</td></tr>
+        </tbody>
+      </table></div>
+      <p>Las cifras de comisiones arriba son solo orientativas. Confirma siempre las comisiones actuales en la página oficial de comisiones del exchange antes de comprar: los calendarios de comisiones cambian, y la página que estás leyendo ahora no puede rastrearlos por ti.</p>
+      <h2>KYC y disponibilidad estatal: la letra pequeña de EE. UU.</h2>
+      <p>Los exchanges estadounidenses operan bajo un mosaico de reglas federales y estatales, y ese mosaico alcanza tu pantalla de registro. Los efectos prácticos son tres. Primero, la verificación de identidad es obligatoria e innegociable: no hay ruta anónima que termine bien. Segundo, algunos exchanges no sirven a cada estado, porque la licencia estatal de transmisión de dinero difiere; una plataforma que funciona para un amigo en Texas puede no incorporarte en Nueva York, o puede ofrecer un conjunto de productos reducido. Comprueba la disponibilidad para tu estado antes de gastar tiempo verificando. Tercero, tu cuenta bancaria, tarjeta, y cuenta de exchange deben llevar todas el mismo nombre legal: las discrepancias son la razón individual más común por la que los depósitos se retienen.</p>
+      <p>La verificación en sí es normalmente rápida: un ID con foto emitido por el gobierno, una comprobación facial en vivo, y a veces prueba de dirección. Si se atasca, la causa es casi siempre una foto borrosa: vuelve a tomar las imágenes con buena luz, con el documento plano y totalmente visible. Una vez aprobado, activa 2FA y el código antiphishing inmediatamente, antes de cualquier depósito. Estos dos ajustes tardan tres minutos y previenen las historias más comunes de toma de cuenta.</p>
+      <h2>Qué cuesta realmente</h2>
+      <p>Piensa en coste todo incluido, no comisiones titulares. Una compra tiene hasta tres capas de coste: el coste de depósito (a menudo cero para ACH, posiblemente una comisión bancaria para transferencias, más alto para tarjetas), la comisión de trading en el par spot o el markup de compra instantánea, y el spread: la brecha entre el precio que pagas y el precio de mercado. La compra instantánea agrupa la comisión de trading y el spread en un precio cotizado, que es conveniente y normalmente más caro que hacer una orden spot tú mismo. El coste P2P es la cotización del comerciante versus el precio de mercado. Ninguno de estos números es fijo: confírmalos en la página oficial de comisiones del exchange en el momento en que compras, y compara el USDT final que recibes, no la comisión anunciada.</p>
+      <div class="callout warn"><b>Trampas específicas de EE. UU.:</b> 1. cualquiera que venda USDT fuera de plataforma con descuento es una estafa hasta que se demuestre lo contrario; 2. nunca compartas contraseñas, códigos 2FA, ni códigos SMS: ningún agente de soporte legítimo pide jamás; 3. cuidado con cuentas falsas de soporte de exchanges en redes sociales y apps de mensajería.</div>
+      <h2>Después de comprar: dónde guardar tu USDT</h2>
+      <p>Tres opciones, igual que en todas partes: <strong>en el exchange</strong> (conveniente para operar, conlleva riesgo de plataforma), <strong>en tu propia billetera</strong> (tú tienes la frase de recuperación: mejor para tenencias mayores a largo plazo), o <strong>en productos de rendimiento</strong> (retorno extra, riesgo extra: lee los términos antes de tocarlos). Para tu primera compra, dejarlo en el exchange mientras aprendes está perfectamente bien. Muévete a autocustodia una vez que el importe te importe: nuestra <a href="best-crypto-wallet-for-beginners.html">guía de billeteras para principiantes</a> explica las frases de recuperación adecuadamente.</p>
+      <h2>Errores comunes que cometen los principiantes estadounidenses</h2>
+      <ul>
+        <li><strong>Usar la cuenta bancaria o tarjeta de otro.</strong> Las discrepancias de nombre hacen que los depósitos se rechacen y pueden activar una revisión de seguridad. Tu cuenta, tu nombre, siempre.</li>
+        <li><strong>Ignorar los tiempos de retención ACH.</strong> Comprar contra un depósito pendiente y luego intentar retirar inmediatamente es cómo los principiantes descubren las retenciones. Lee el aviso de disponibilidad antes de enviar.</li>
+        <li><strong>Machacar una tarjeta rechazada.</strong> Los rechazos repetidos parecen fraude a tu banco. Un reintento, luego llama al banco o cambia de método.</li>
+        <li><strong>Saltarse registros.</strong> Las disposiciones de criptomonedas pueden ser eventos imponibles en EE. UU. Registra cada operación: fecha, dólares, USDT, ID de pedido, y habla con un profesional fiscal antes de la temporada de declaración, no durante ella.</li>
+        <li><strong>Guardar todo en un exchange para siempre.</strong> Bien para empezar; una vez que tus tenencias crecen, aprende autocustodia.</li>
+      </ul>
+      <h2>Impuestos: guarda registros desde el día uno</h2>
+      <p>Esto es un aviso, no asesoría fiscal. En EE. UU., vender o gastar criptomonedas puede crear un evento imponible, y los registros que hacen posible la declaración son los que guardas en el momento de la operación: fecha, importe en dólares, USDT recibido, e ID de pedido. Una app de notas funciona; una hoja de cálculo es mejor. Las reglas fiscales cambian y las situaciones personales difieren, así que comprueba las reglas actuales o consulta un profesional fiscal antes de operar con tamaño. Los traders que se queman en temporada de declaración nunca son los que más operaron: son los que menos escribieron.</p>
+      <h2>Graduarse: de USDT a una cartera</h2>
+      <p>USDT es la rampa de entrada, no el destino. Una vez cómodo, mueve USDT de tu billetera de fondos a spot si es necesario, compra BTC o ETH en los pares USDT, y lee nuestra <a href="how-to-buy-crypto-for-beginners.html">guía de compra para principiantes</a> para la mecánica. Mantén los hábitos estadounidenses — registros, cuentas con nombre coincidente, 2FA — sin importar qué compres después.</p>
+      <h2>La lista completa de primera compra (edición EE. UU.)</h2>
+      <ol>
+        <li>Confirma que el exchange sirva a tu estado, luego verifica: ID con foto, comprobación facial, 2FA, código antiphishing.</li>
+        <li>Enlaza una cuenta bancaria o tarjeta a tu propio nombre. Para una primera compra, una tarjeta de débito es más rápida; para el menor coste, enlaza ACH.</li>
+        <li>Haz un pequeño pedido de prueba. Para ACH, deposita primero y espera la liquidación; para tarjeta, compra directamente y verifica que el USDT llegue.</li>
+        <li>Registra la operación: fecha, dólares pagados, USDT recibido, ID de pedido.</li>
+        <li>Repite a tu tamaño real una vez que el flujo se sienta aburrido. Aburrido significa que lo has aprendido.</li>
+        <li>Una vez que el importe importe, mueve las tenencias a largo plazo a tu propia billetera.</li>
+      </ol>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>¿Listo?</b> Registrarte tarda unos 10 minutos: verifícate una vez, activa la 2FA y luego sigue los pasos anteriores. Las guías de este sitio te acompañan en el resto.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Línea de productos completa, buen soporte de idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">Y</div><div><div class="tt">Bybit</div><div class="dd">Derivados y trading spot</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Crea una cuenta en Bybit</a></div>
+        </div>
+        <p class="note">Mismas comisiones que registrarse directamente: nuestros enlaces no te cuestan nada extra. Bitget está enlazado aquí sin acuerdo de recomendación (<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">bitget.com</a>) — ningún reembolso aplica a través de ese enlace.</p>
+      </div>
+
+      <h3>¿Puedo comprar USDT con USD directamente desde mi cuenta bancaria?</h3>
+      <p>Sí, en exchanges que soportan depósitos USD. Depositas dólares por ACH o transferencia bancaria, luego compras USDT en el par spot USD/USDT. Si tu exchange no ofrece depósitos USD, el P2P es la alternativa habitual.</p>
+      <h3>¿Cuánto tarda un depósito ACH?</h3>
+      <p>Las transferencias ACH normalmente tardan de uno a tres días hábiles en liquidarse por completo, aunque algunos exchanges te dejan operar contra un depósito pendiente antes. Comprueba la pantalla de depósito antes de enviar: muestra la disponibilidad esperada para tu cuenta.</p>
+      <h3>¿Por qué se rechazó mi tarjeta de débito?</h3>
+      <p>Los bancos rechazan compras de criptomonedas cuando sus sistemas de fraude marcan la transacción, cuando la dirección de facturación no coincide, o cuando la tarjeta no está habilitada para compras en línea. Confirma los detalles, intenta una vez más, y si aún falla, llama a tu banco o cambia a ACH o P2P.</p>
+
+      <h3>¿Es legal comprar USDT en EE. UU.?</h3>
+      <p>Comprar USDT es legal en Estados Unidos, pero la disponibilidad de exchanges varía por estado debido a reglas de licencia estatal. Comprueba que el exchange que elijas sirva a tu estado antes de verificar, y guarda registros de cada compra.</p>
+      <h3>¿Tengo que verificar mi identidad primero?</h3>
+      <p>Sí. Los exchanges estadounidenses requieren verificación de identidad antes de poder depositar u operar. Espera un ID con foto emitido por el gobierno y una comprobación facial en vivo, y asegúrate de que tu cuenta bancaria esté al mismo nombre que tu cuenta verificada.</p>
+
+      <h3>¿Qué método es más barato para una primera compra?</h3>
+      <p>El depósito ACH seguido de una compra spot es normalmente la ruta de menor coste, porque los depósitos ACH a menudo son gratis y las comisiones de trading spot son menores que las comisiones de compra instantánea con tarjeta. Confirma las comisiones actuales en la página oficial de comisiones del exchange antes de comprometerte: las comisiones cambian.</p>
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">Cómo comprar criptomonedas para principiantes: el recorrido completo</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">La mejor billetera de criptomonedas para principiantes</a></li>
+        <li><a href="buy-usdt.html">Cómo comprar USDT: todos los métodos comparados</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>¿Aún no tienes cuenta? Regístrate en 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate</a><button class="sx" aria-label="Cerrar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

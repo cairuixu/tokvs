@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Cómo comprar USDT en Binance P2P (paso a paso) — TokVS</title>
+<meta name="description" content="Compra USDT en Binance P2P: encuentra comerciantes de confianza, haz pedidos, paga de forma segura y esquiva el riesgo de fondos congelados. Recorrido completo con lista de comerciantes.">
+<link rel="canonical" href="https://tokvs.com/es/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-usdt-on-binance-p2p">
+<meta property="og:title" content="Compra USDT en Binance P2P: recorrido completo — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Garantía, lista de comerciantes, seguridad de pago y proceso de apelación: compra P2P de USDT hecha bien.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/how-to-buy-usdt-on-binance-p2p">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"Compra USDT en Binance P2P","item":"https://tokvs.com/es/guides/how-to-buy-usdt-on-binance-p2p"}]},{"@type":"Article","headline":"Cómo comprar USDT en Binance P2P (paso a paso)","description":"Compra USDT en Binance P2P: encuentra comerciantes de confianza, haz pedidos, paga de forma segura y esquiva el riesgo de fondos congelados. Recorrido completo con lista de comerciantes.","datePublished":"2026-10-16","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/how-to-buy-usdt-on-binance-p2p","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Puedo vender USDT en Binance P2P también?","acceptedAnswer":{"@type":"Answer","text":"Sí: el mismo mercado funciona en reverso. Cambia a la pestaña Vender, elige USDT y tu moneda fiat, elige un comerciante comprador, y sigue el flujo espejo: liberas criptomonedas solo después de confirmar el fiat en tu cuenta."}},{"@type":"Question","name":"¿Tengo que completar KYC para P2P?","acceptedAnswer":{"@type":"Answer","text":"Sí. Binance requiere verificación de identidad antes de poder usar P2P, en ambos lados de compra y venta. Es un requisito anti-lavado de dinero, no opcional."}},{"@type":"Question","name":"¿Por qué los comerciantes piden ID o selfies a veces?","acceptedAnswer":{"@type":"Answer","text":"Algunos comerciantes añaden su propia verificación para pedidos grandes como protección contra fraude. Es su regla de negocio, no de Binance. Si te incomoda, elige un comerciante diferente: muchos no pedirán."}},{"@type":"Question","name":"¿Cuál es la diferencia entre C2P y P2P en Binance?","acceptedAnswer":{"@type":"Answer","text":"Nada que deba importarte: C2C (cliente a cliente) y P2P (peer-to-peer) son dos nombres para el mismo mercado de garantía. Binance lo etiqueta P2P; la mecánica es idéntica."}},{"@type":"Question","name":"¿Pueden los comerciantes ver mis datos personales?","acceptedAnswer":{"@type":"Answer","text":"Ven tu nombre de visualización verificado y lo que el pago requiera (p. ej. tu nombre de cuenta bancaria para la transferencia). No ven tus documentos de ID, correo, ni teléfono. Mantenlo así: nunca compartas más de lo que la operación requiera."}},{"@type":"Question","name":"¿Por qué se canceló mi pedido P2P automáticamente?","acceptedAnswer":{"@type":"Answer","text":"Normalmente una de tres: el temporizador de pago expiró, el comerciante se desconectó y el sistema liberó la garantía, o una discrepancia de nombre/importe activó una auto-cancelación. En los tres, no se movieron fondos: comprueba el estado del pedido, luego haz uno nuevo."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Compra USDT en Binance P2P</div>
+      <h1>Cómo comprar USDT en Binance P2P</h1>
+      <p class="sub">Binance P2P es la forma más barata en que la mayoría compra USDT: sin comisión de plataforma, operaciones protegidas por garantía, y métodos de pago para cada región. Aquí está el proceso completo, hecho bien.</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 8 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Qué es realmente Binance P2P</h2>
+      <p>Binance P2P es un mercado dentro de la app de Binance donde operas directamente con otros usuarios, no con Binance mismo. Quieres USDT, un comerciante verificado tiene USDT; le pagas en tu moneda local, libera las criptomonedas. El papel de Binance es <strong>garantía</strong>: el USDT del comerciante se bloquea por la plataforma en el momento en que haces el pedido, y solo se libera cuando la operación completa. Ningún lado puede huir a mitad de operación. Ese es todo el modelo de seguridad, y es por lo que el P2P dentro de un exchange top vence a dealers aleatorios de Telegram cada vez.</p>
+      <h2>Antes de empezar: qué necesitas</h2>
+      <ul>
+        <li><strong>Una cuenta Binance verificada.</strong> El P2P requiere verificación de identidad (KYC): sin excepciones en plataformas legítimas.</li>
+        <li><strong>Un método de pago a tu propio nombre.</strong> El nombre en tu cuenta bancaria o billetera debe coincidir con tu nombre verificado de Binance, o los comerciantes cancelarán tus pedidos.</li>
+        <li><strong>La app Binance, descargada desde el sitio oficial o tu tienda de apps.</strong> Nunca desde un enlace que alguien te envió.</li>
+      </ul>
+      <p class="in-cta">¿Aún no tienes cuenta Binance? <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></p>
+      <h2>Paso a paso: comprar USDT en Binance P2P</h2>
+      <ol>
+        <li><strong>Abre P2P.</strong> En la app Binance, ve a Trade → P2P (en escritorio: Buy Crypto → P2P Trading).</li>
+        <li><strong>Establece los filtros.</strong> Pestaña: <em>Comprar</em>. Cripto: <em>USDT</em>. Fiat: tu moneda local. Pago: elige tu método (transferencia bancaria, UPI, SEPA, etc., lo que esté disponible en tu región).</li>
+        <li><strong>Elige un comerciante.</strong> Verás una lista ordenada por precio. No tomes la más barata a ciegas: comprueba la tarjeta del comerciante: número de pedidos completados, tasa de finalización, y antigüedad de cuenta. Favorece cientos de pedidos, 95%+ de finalización, y una cuenta que lleve un tiempo.</li>
+        <li><strong>Introduce el importe y haz el pedido.</strong> Escribe cuánto fiat quieres gastar (o cuánto USDT quieres). El USDT del comerciante ahora está bloqueado en garantía. Empieza una cuenta atrás: paga dentro de ella.</li>
+        <li><strong>Paga al comerciante.</strong> Verás sus datos de pago exactos. Transfiere el importe exacto desde <em>tu propia</em> cuenta. En la referencia de pago, <strong>nunca escribas nada relacionado con criptomonedas</strong> : ni «BTC», ni «USDT», ni «cripto». Usa el número de pedido si el comerciante pide una referencia, o déjala en blanco.</li>
+        <li><strong>Toca «Transferido / Pagado».</strong> Esto notifica al comerciante. Luego espera: no cierres la app en pánico. La mayoría de liberaciones llegan en minutos.</li>
+        <li><strong>Confirma la recepción.</strong> Comprueba que el importe exacto de USDT llegó a tu billetera Funding antes de cerrar el pedido. Hecho: esa es tu primera compra P2P.</li>
+      </ol>
+      <h2>La lista de comerciantes (30 segundos que ahorran horas)</h2>
+      <ul>
+        <li><strong>Recuento de operaciones:</strong> varios cientos mínimo. Historial delgado = confianza delgada.</li>
+        <li><strong>Tasa de finalización:</strong> por encima del 95%. Por debajo de eso, normalmente hay una historia.</li>
+        <li><strong>Antigüedad de cuenta:</strong> más antigua es mejor. Una cuenta de una semana con el mejor precio de la lista es una bandera roja, no una ganga.</li>
+        <li><strong>Términos:</strong> abre la página del comerciante y léelos: ventana de pago, referencias aceptadas, límites. Términos claros señalan un profesional.</li>
+        <li><strong>En línea ahora:</strong> los comerciantes mostrados como en línea liberan más rápido. Si nadie está en línea, tu pedido simplemente queda ahí.</li>
+      </ul>
+      <h2>¿Qué cuesta el P2P?</h2>
+      <p>Aquí está la agradable sorpresa: las propias operaciones P2P normalmente conllevan <strong>ninguna comisión de plataforma</strong> para el comprador: Binance no toma un corte de tu pedido. El coste real está en la cotización del comerciante: su precio USDT vs. el precio de mercado. Esa brecha (la prima) es lo que estás pagando por el servicio, y es normalmente mucho menor que las comisiones de compra con tarjeta. Compara las cotizaciones todo incluido de dos o tres comerciantes y verás el precio verdadero instantáneamente. Los calendarios de comisiones pueden cambiar, así que comprueba la página oficial de comisiones P2P de Binance si quieres los términos actuales.</p>
+      <h2>Riesgo de fondos congelados: la versión honesta</h2>
+      <p>El único riesgo real del P2P no tiene nada que ver con Binance: si el dinero de tu contraparte vino de fraude, la cuenta bancaria receptora puede congelarse durante una investigación. Es raro, pero es real. Redúcelo como lo hacen los traders experimentados: opera solo dentro de la garantía de la plataforma (nunca «resolvamos esto en WhatsApp»), usa una cuenta bancaria dedicada para flujos de criptomonedas, mantén importes sensatos, y si un extraño alguna vez te sobrepaga por «error», no lo toques: contacta al soporte. El riesgo puede gestionarse. No puede ponerse a cero.</p>
+      <div class="callout warn"><b>Nunca hagas esto en P2P:</b> 1. liberar criptomonedas antes de confirmar que realmente recibiste el dinero; 2. cancelar un pedido después de haber pagado ya (abre una apelación con tu recibo en su lugar); 3. operar con cualquiera que te contacte <em>fuera</em> de la plataforma ofreciendo una «mejor tasa».</div>
+      <h2>¿Qué si el comerciante no libera?</h2>
+      <p>No entres en pánico y no canceles. Tu dinero está protegido por garantía: el USDT está bloqueado y no puede ir a ningún lado sin la implicación de la plataforma. Abre una <strong>apelación</strong> desde la página del pedido, sube tu recibo de pago (captura con el importe, fecha, y referencia visibles), y el soporte de Binance adjudica. Este es exactamente el escenario para el que existe la garantía, y con un recibo, los compradores ganan estos rutinariamente.</p>
+      <h2>P2P vs. las otras formas de comprar USDT</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>P2P</th><th>Compra instantánea (tarjeta)</th><th>Transferencia bancaria</th></tr></thead>
+        <tbody>
+          <tr><td>Coste típico</td><td>Prima del comerciante, normalmente la más baja</td><td>Comisión de procesamiento de tarjeta, la más alta</td><td>Baja, pero lenta</td></tr>
+          <tr><td>Velocidad</td><td>Minutos</td><td>Instantáneo</td><td>1–2 días laborables</td></tr>
+          <tr><td>Disponibilidad</td><td>Casi todos los países</td><td>Las tarjetas se rechazan en algunas regiones</td><td>Regiones seleccionadas</td></tr>
+          <tr><td>Ideal para</td><td>Compras regulares, importes mayores</td><td>Primer depósito diminuto</td><td>Importes grandes, sin prisa</td></tr>
+        </tbody>
+      </table></div>
+      <h2>Leer el libro de órdenes de comerciantes</h2>
+      <p>La lista P2P <em>es</em> es un mercado. Los precios se mueven durante el día: cuando bitcoin repunta, todos se apresuran a comprar USDT y las primas se amplían; en horas tranquilas se comprimen. Dos hábitos de compradores experimentados: 1. comprueba la lista en dos momentos diferentes antes de una compra grande: una oscilación del 0.5% en $5,000 son $25 por esperar una hora; 2. compara las cotizaciones <em>todo incluido</em> de los tres mejores comerciantes en lugar de fijarte en el más barato único, porque el más barato a menudo tiene la liberación más lenta.</p>
+      <h2>Errores comunes y qué significan realmente</h2>
+      <ul>
+        <li><strong>«Discrepancia de nombre del método de pago»</strong> : el nombre en tu cuenta de pago no coincide con tu nombre verificado de Binance. Corrige el nombre o usa una cuenta coincidente; los comerciantes auto-cancelan discrepancias.</li>
+        <li><strong>«Pedido expirado»</strong> : se te acabó el temporizador de pago. La garantía se liberó automáticamente y nada se perdió. Solo haz un pedido nuevo.</li>
+        <li><strong>«Comerciante desconectado»</strong> : se desconectó a mitad de operación. No canceles en pánico; si ya pagaste, abre una apelación. Si no has pagado, cancela libremente y elige un comerciante en línea.</li>
+        <li><strong>«Apelación en revisión»</strong> : el soporte está adjudicando. Normalmente se resuelve en horas con un recibo claro. No hagas un pedido duplicado por el mismo importe mientras esperas.</li>
+      </ul>
+      <h2>Sube de nivel: publicar tus propios anuncios</h2>
+      <p>Una vez que has hecho una docena de compras, notarás algo: los comerciantes fijan sus propios precios. Publicar tu propio <strong>anuncio de compra</strong> invierte la dinámica: nombras el precio y método de pago, y los vendedores vienen a ti. Los requisitos son más estrictos (mayor verificación, a veces un depósito de seguridad), y tu anuncio compite en precio con comerciantes profesionales, así que tus cotizaciones deben ser realistas. La mayoría de usuarios casuales nunca necesitan esto. Pero si compras regularmente y en tamaño, publicar anuncios con un ligero descuento respecto a las mejores cotizaciones de comerciantes puede recortar la prima significativamente con los meses. Empieza como comprador, gradúate a anuncios solo cuando la matemática claramente lo favorezca.</p>
+      <h2>P2P e impuestos: guarda registros desde la operación uno</h2>
+      <p>Cada operación P2P es un evento imponible en muchas jurisdicciones en el momento en que luego vendes o intercambias las criptomonedas, y el precio de compra es tu base de coste. Captura o exporta los detalles de cada pedido (fecha, importe, fiat pagado) en una simple hoja de cálculo. Cinco minutos por operación ahorran horas de reconstrucción en época fiscal, y «perdí los registros» no es una defensa en ningún lugar.</p>
+      <h2>Límites P2P y niveles de verificación</h2>
+      <p>Mayor verificación desbloquea mayores límites P2P: esa es toda la relación. La verificación básica cubre importes casuales; la verificación avanzada (más documentos) eleva el techo sustancialmente. Si un pedido grande se bloquea, casi siempre es un problema de límite, no un bug: comprueba tu nivel de verificación en la sección de cuenta antes de asumir lo peor. Los límites se reinician en ventanas móviles, y los números exactos viven en la página oficial de límites de Binance ya que cambian.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>¿Listo?</b> Registrarte tarda unos 10 minutos: verifícate una vez, activa la 2FA y luego sigue los pasos anteriores. Las guías de este sitio te acompañan en el resto.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+        </div>
+        <p class="note">Las mismas comisiones que registrarte directamente: nuestro enlace no te cuesta nada extra.</p>
+      </div>
+      
+      <h3>¿Puedo vender USDT en Binance P2P también?</h3>
+      <p>Sí: el mismo mercado funciona en reverso. Cambia a la pestaña Vender, elige USDT y tu moneda fiat, elige un comerciante comprador, y sigue el flujo espejo: liberas criptomonedas solo después de confirmar el fiat en tu cuenta.</p>
+      <h3>¿Tengo que completar KYC para P2P?</h3>
+      <p>Sí. Binance requiere verificación de identidad antes de poder usar P2P, en ambos lados de compra y venta. Es un requisito anti-lavado de dinero, no opcional.</p>
+      <h3>¿Por qué los comerciantes piden ID o selfies a veces?</h3>
+      <p>Algunos comerciantes añaden su propia verificación para pedidos grandes como protección contra fraude. Es su regla de negocio, no de Binance. Si te incomoda, elige un comerciante diferente: muchos no pedirán.</p>
+      
+      <h3>¿Cuál es la diferencia entre C2P y P2P en Binance?</h3>
+      <p>Nada que deba importarte: C2C (cliente a cliente) y P2P (peer-to-peer) son dos nombres para el mismo mercado de garantía. Binance lo etiqueta P2P; la mecánica es idéntica.</p>
+      <h3>¿Pueden los comerciantes ver mis datos personales?</h3>
+      <p>Ven tu nombre de visualización verificado y lo que el pago requiera (p. ej. tu nombre de cuenta bancaria para la transferencia). No ven tus documentos de ID, correo, ni teléfono. Mantenlo así: nunca compartas más de lo que la operación requiera.</p>
+      
+      <h3>¿Por qué se canceló mi pedido P2P automáticamente?</h3>
+      <p>Normalmente una de tres: el temporizador de pago expiró, el comerciante se desconectó y el sistema liberó la garantía, o una discrepancia de nombre/importe activó una auto-cancelación. En los tres, no se movieron fondos: comprueba el estado del pedido, luego haz uno nuevo.</p>
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="buy-usdt.html">Cómo comprar USDT: todos los métodos comparados</a></li>
+        <li><a href="choose-exchange.html">Cómo elegir un exchange: 6 comprobaciones</a></li>
+        <li><a href="wallet-safety.html">Seguridad de billeteras y frases semilla</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>¿Aún no tienes cuenta? Regístrate en 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate</a><button class="sx" aria-label="Cerrar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

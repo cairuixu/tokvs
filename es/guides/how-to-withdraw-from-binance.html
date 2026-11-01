@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Cómo retirar de Binance: banco, P2P y billetera — comisiones, tiempos y arreglos — TokVS</title>
+<meta name="description" content="Cómo retirar de Binance de tres formas: a tu banco, vendiendo en P2P, o a tu propia billetera. Elección de red, comisiones, tiempos de llegada, y por qué los retiros se atascan.">
+<link rel="canonical" href="https://tokvs.com/es/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-withdraw-from-binance">
+<meta property="og:title" content="Cómo retirar de Binance — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Retiro de Binance a banco, P2P, o billetera: pasos, elección de red, comisiones, tiempos, y arreglos de retiros atascados.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/how-to-withdraw-from-binance">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"Retira de Binance","item":"https://tokvs.com/es/guides/how-to-withdraw-from-binance"}]},{"@type":"Article","headline":"Cómo retirar de Binance","description":"Cómo retirar de Binance de tres formas: a tu banco, vendiendo en P2P, o a tu propia billetera. Elección de red, comisiones, tiempos de llegada, y retiros atascados.","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/how-to-withdraw-from-binance","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Cuánto tarda un retiro de Binance?","acceptedAnswer":{"@type":"Answer","text":"Depende de la ruta. Los retiros de criptomonedas normalmente llegan en minutos a una hora una vez que la red los confirma, aunque las redes congestionadas tardan más. Los retiros bancarios dependen de los rieles de pago de tu país y pueden tardar de minutos a varios días hábiles. Las ventas P2P se liquidan tan rápido como el comprador paga, a menudo en minutos."}},{"@type":"Question","name":"¿Por qué mi retiro de Binance está atascado en procesamiento?","acceptedAnswer":{"@type":"Answer","text":"Las causas habituales son un bloqueo de seguridad después de un cambio de contraseña o 2FA, una nueva dirección de retiro aún dentro de su periodo de espera, congestión de red, mantenimiento de billetera en esa moneda, o un paso de verificación incompleto. Comprueba primero la página de estado de retiros, luego tu correo para un aviso de seguridad, antes de contactar al soporte."}},{"@type":"Question","name":"¿Qué pasa si elijo la red incorrecta para un retiro?","acceptedAnswer":{"@type":"Answer","text":"Enviar criptomonedas en una red que la billetera receptora no soporta puede significar que los fondos se pierdan o sean muy difíciles de recuperar. Siempre empareja la red en ambos lados: si tu billetera muestra una dirección TRON, retira en TRON, no Ethereum. Cuando dudes, envía primero un diminuto importe de prueba."}},{"@type":"Question","name":"¿Necesito un memo o etiqueta al retirar?","acceptedAnswer":{"@type":"Answer","text":"Algunas monedas, como XRP y XLM, requieren un memo o etiqueta de destino además de la dirección cuando se envían a un exchange. Si el lado receptor muestra un campo memo, debes rellenarlo exactamente: los retiros enviados sin un memo requerido pueden retrasarse por semanas o perderse. Las transferencias billetera a billetera de esas monedas normalmente no necesitan memo."}},{"@type":"Question","name":"¿Hay un importe mínimo de retiro en Binance?","acceptedAnswer":{"@type":"Answer","text":"Sí, cada moneda y red tiene su propio importe mínimo de retiro, mostrado en la página de retiro antes de confirmar. Si tu saldo está por debajo del mínimo para tu red elegida, cambia a una red con un mínimo menor o una ruta diferente como P2P."}},{"@type":"Question","name":"¿Puedo retirar USDT de Binance a mi cuenta bancaria?","acceptedAnswer":{"@type":"Answer","text":"No directamente: los bancos no aceptan USDT. Primero conviertes USDT a tu moneda local, ya sea vendiéndolo en el mercado spot y retirando fiat, o vendiéndolo a un comprador P2P que te paga por transferencia bancaria. Ambas rutas terminan con dinero regular en tu cuenta bancaria."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / Retira de Binance</div>
+      <h1>Cómo retirar de Binance</h1>
+      <p class="sub">Tres formas de salir — banco, P2P, o tu propia billetera — más la elección de red que los principiantes equivocan, las comisiones y tiempos a esperar, y qué hacer cuando un retiro se atasca.</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 11 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Línea de productos completa, buen soporte de idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Primero: qué significa «retirar» en Binance</h2>
+      <p>Los principiantes a menudo tropiezan con una distinción, así que aclarémosla primero. En Binance, «retirar» cubre dos cosas diferentes. Un <strong>retiro fiat</strong> envía dinero regular (dólares, euros, o tu moneda local) a tu cuenta bancaria. Un <strong>retiro de criptomonedas</strong> envía monedas o tokens a una dirección de billetera en una blockchain. Cuál necesitas depende de qué quieres al final: dinero gastable en tu banco, o criptomonedas bajo tu propio control. Hay también una tercera ruta que difumina la línea — vender en P2P, donde un comprador te paga directamente por transferencia bancaria — y para muchos países es la forma más práctica de retirar. Esta guía cubre las tres, luego los errores que causan la mayoría de retiros atascados.</p>
+      <p>Antes de cualquier retiro, una nota de orden: tus fondos viven en diferentes billeteras dentro de Binance (Spot, Funding, Earn, Futures), y solo puedes retirar desde la correcta. Si el botón de retiro se ve gris o tu saldo muestra cero, probablemente necesitas transferir fondos internamente primero — por ejemplo, de Funding a Spot. Las transferencias internas son gratis e instantáneas, y confunden a casi todo principiante exactamente una vez.</p>
+      <h2>Ruta 1: retira fiat a tu cuenta bancaria</h2>
+      <p>Esta es la ruta más limpia cuando está disponible en tu país. Los pasos: vende tus criptomonedas por tu moneda local en el mercado spot (por ejemplo, vende USDT por USD o EUR), luego ve a Wallet, elige Withdraw, selecciona Fiat, elige tu moneda y tu cuenta bancaria enlazada, introduce el importe, y confirma. Tu cuenta bancaria debe estar al mismo nombre que tu cuenta Binance verificada, o el retiro será rechazado o congelado para revisión.</p>
+      <p>El timing depende enteramente de los rieles de pago de tu país. Los sistemas bancarios instantáneos pueden liquidarse en minutos; las transferencias tradicionales pueden tardar de uno a varios días hábiles, y fines de semana y festivos añaden retrasos. Las comisiones también varían por moneda y riel: Binance muestra la comisión exacta en la pantalla de retiro antes de confirmar, y esa pantalla es la autoridad: los calendarios de comisiones cambian, así que nunca confíes en un número recordado. Si el retiro fiat no se ofrece para tu moneda en absoluto, salta a la Ruta 2: esa es exactamente la situación para la que existe el P2P.</p>
+      <p class="in-cta">¿Aún no tienes cuenta? <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></p>
+      <h2>Ruta 2: vende en P2P y recibe pago por transferencia bancaria</h2>
+      <p>El P2P es la ruta de retiro para la mayor parte del mundo, y funciona como el flujo de compra en reverso. Vas a P2P, eliges Vender, eliges la moneda (normalmente USDT) y tu moneda, y navegas compradores. Elige un comprador con larga historia, cientos de operaciones completadas, y una alta tasa de finalización: la misma lista que al comprar, porque los mismos estafadores trabajan ambos lados. Introduce el importe, haz el pedido, y tus criptomonedas se bloquean en garantía del exchange.</p>
+      <p>Luego el comprador te envía una transferencia bancaria (o pago de dinero móvil) por el importe acordado. Cuando el dinero llegue a tu cuenta — verificado en tu propia app bancaria, no desde una captura que el comprador te envíe — liberas las criptomonedas desde garantía. Ese orden importa: nunca liberes antes de que el dinero esté realmente en tu cuenta. Dos reglas de seguridad completan el panorama. Primero, el pago debe venir de una cuenta al nombre propio del comprador, coincidente con su identidad P2P; los pagos de terceros son un patrón clásico de fraude y una razón para apelar. Segundo, mantén toda comunicación dentro del chat P2P: si un comprador pide moverse a WhatsApp o Telegram, eso es una bandera roja, porque el chat fuera de plataforma elimina tu evidencia si necesitas apelar.</p>
+      <p>La fijación de precios P2P merece una nota honesta: los compradores cotizan ligeramente por debajo de la tasa de mercado, y esa brecha es su margen. En monedas líquidas la brecha es pequeña; en menos comunes se amplía. Compara tres o cuatro compradores antes de aceptar, y trata una oferta muy por encima del mercado como cebo, no suerte. Nuestra <a href="how-to-sell-crypto.html">guía de cómo vender criptomonedas</a> cubre la mentalidad de venta con más detalle.</p>
+      <h2>Ruta 3: retira criptomonedas a tu propia billetera</h2>
+      <p>Esta ruta es para mover criptomonedas a autocustodia, no para retirar: y es donde ocurren los errores caros. Los pasos: en tu app de billetera, copia la dirección receptora para la moneda; en Binance, ve a Withdraw, selecciona Crypto, elige la moneda, pega la dirección, selecciona la red, introduce el importe, y confirma con 2FA. Luego viene la parte que los principiantes apresuran: la red.</p>
+      <h2>La elección de red: el desplegable más caro en Binance</h2>
+      <p>Muchas monedas existen en varias blockchains a la vez. USDT, por ejemplo, corre en Ethereum (ERC20), Tron (TRC20), BNB Chain (BEP20), y otras. Estas no son intercambiables. Si tu billetera te muestra una dirección Tron y retiras USDT en Ethereum, los fondos van a una dirección que tu billetera puede no controlar en esa cadena, y la recuperación va de dolorosa a imposible.</p>
+      <p>La regla es absoluta: <strong>la red que seleccionas en Binance debe coincidir con la red que tu billetera o exchange receptor soporta para esa moneda.</strong> Comprueba ambos lados antes de confirmar. Si tu billetera soporta varias redes, elige la de menor comisión mostrada en la pantalla de retiro de Binance: las comisiones difieren bruscamente por red, y la pantalla de retiro muestra la comisión exacta por red antes de confirmar. Para un primer retiro a una dirección nueva, envía un diminuto importe de prueba, confirma que llegue, y solo entonces envía el resto. La prueba cuesta una comisión extra; saltarla ha costado a principiantes todo su retiro.</p>
+      <div class="callout warn"><b>Dos trampas de dirección:</b> 1. nunca escribas una dirección a mano: copia y pégala, luego comprueba que los primeros y últimos cuatro caracteres coincidan; existe malware que intercambia direcciones del portapapeles. 2. algunas monedas (XRP, XLM, y algunas otras) necesitan un memo o etiqueta de destino además de la dirección cuando se envían a un exchange: si el lado receptor muestra un campo memo, rellénalo exactamente, o el depósito puede retrasarse por semanas.</div>
+      <h2>Comisiones y tiempos de un vistazo</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Ruta</th><th>Comisión típica</th><th>Tiempo típico</th><th>Ten cuidado con</th></tr></thead>
+        <tbody>
+          <tr><td>Fiat a banco</td><td>Mostrado en pantalla de retiro; varía por moneda y riel</td><td>Minutos a varios días hábiles</td><td>El nombre del banco debe coincidir con el nombre KYC</td></tr>
+          <tr><td>Venta P2P</td><td>Sin comisión de plataforma; cotización del comprador por debajo del mercado</td><td>Minutos una vez que el comprador paga</td><td>Libera solo después de que el dinero esté en tu banco</td></tr>
+          <tr><td>Criptomonedas a billetera</td><td>Comisión de red, mostrada por red antes de confirmar</td><td>Minutos a una hora normalmente</td><td>Red incorrecta o memo faltante</td></tr>
+        </tbody>
+      </table></div>
+      <p>Un coste que los principiantes subestiman: retirar importes diminutos. Cada retiro de criptomonedas conlleva una comisión de red plana sin importar el tamaño, así que retirar 10 dólares de una moneda con una comisión de red de 5 dólares es un recorte del 50%. Si el importe es pequeño, ya sea elige la red más barata disponible, acumula un importe mayor antes de retirar, o usa P2P en su lugar. Las comisiones y mínimos se muestran en la página de retiro antes de confirmar: trata esa página como la palabra final, ya que las redes y calendarios de comisiones cambian.</p>
+      <h2>Por qué los retiros se atascan (y qué hacer)</h2>
+      <ul>
+        <li><strong>Bloqueo de seguridad después de cambios de cuenta.</strong> Cambiar tu contraseña, restablecer 2FA, o añadir una nueva dirección de retiro normalmente activa una retención de retiro de 24 horas. Esto es protección, no un bug: espera, y no intentes «arreglarlo» cambiando más ajustes, lo que puede reiniciar el reloj.</li>
+        <li><strong>Congestión de red o mantenimiento de billetera.</strong> Si la blockchain está congestionada o Binance ha pausado retiros para el mantenimiento de esa moneda, tu retiro se pone en cola. Comprueba la página de estado de retiros y cualquier aviso de mantenimiento antes de entrar en pánico.</li>
+        <li><strong>Red incorrecta o memo faltante.</strong> Si enviaste en una red no soportada u olvidaste un memo requerido, contacta al soporte inmediatamente con el ID de transacción: la recuperación es a veces posible pero lenta, y nunca garantizada. Por eso existe el importe de prueba.</li>
+        <li><strong>Verificación incompleta o límites.</strong> Las cuentas no verificadas o parcialmente verificadas tienen límites de retiro; un retiro por encima de tu límite se bloqueará hasta que la verificación complete. Comprueba tu nivel de verificación en ajustes de cuenta.</li>
+        <li><strong>Confirmación por correo pendiente.</strong> Algunos retiros requieren hacer clic en un enlace de confirmación enviado a tu correo. Comprueba tu bandeja (y carpeta de spam), y confirma que el correo lleve tu código antiphishing, como se cubre en nuestra <a href="how-to-keep-your-binance-account-safe.html">lista de seguridad de cuenta</a>, antes de hacer clic.</li>
+      </ul>
+      <p>Si un retiro está genuinamente atascado más allá de la ventana esperada, reúne tres cosas antes de contactar al soporte: el registro de retiro (moneda, importe, red, hora), el ID de transacción si se generó uno, y la dirección receptora. El soporte solo puede rastrear lo que puedes mostrarles. Y nunca pagues a un tercero que prometa «desbloquear» tu retiro: esa es una estafa de seguimiento dirigida a personas ya ansiosas por fondos atascados.</p>
+      <h2>Una ruta más: transferencias exchange a exchange</h2>
+      <p>A veces el destino no es tu banco o tu billetera sino otro exchange: por ejemplo, mover USDT a una plataforma que lista una moneda que Binance no lista, o consolidar fondos. La mecánica es idéntica a la Ruta 3: copia la dirección de depósito del exchange receptor, empareja la red exactamente, atiende al memo si la moneda requiere uno, y envía primero un importe de prueba. La trampa extra aquí es asumir que dos exchanges soportan las mismas redes para una moneda; a menudo no lo hacen, y la página de depósito del exchange receptor — no tu memoria — es la autoridad sobre qué redes acepta. Trata un depósito en exchange exactamente como un retiro de billetera: misma lista, mismo importe de prueba, misma irreversibilidad si equivocas la red. Otros exchanges importantes como <a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit</a> funcionan de la misma forma, y las mismas reglas te protegen allí.</p>
+      <h2>Lista de seguridad de retiro</h2>
+      <ol>
+        <li>Fondos movidos a la billetera interna correcta (Spot o Funding según se requiera).</li>
+        <li>Dirección receptora copiada, no escrita; primeros y últimos cuatro caracteres comprobados.</li>
+        <li>Red emparejada en ambos lados; memo o etiqueta rellenado si se requiere.</li>
+        <li>Importe de prueba enviado primero para cualquier dirección o red nueva.</li>
+        <li>Comisión y mínimo comprobados en la pantalla de retiro antes de confirmar.</li>
+        <li>Para P2P: dinero verificado en tu propia app bancaria antes de liberar garantía.</li>
+        <li>Para banco: nombre de cuenta coincide con tu nombre Binance verificado.</li>
+        <li>Lista blanca de retiros activada, para que una cuenta comprometida no pueda redirigir tus fondos.</li>
+      </ol>
+      <p>Los retiros se sienten estresantes la primera vez porque son irreversibles: no hay botón «deshacer» en una transferencia blockchain. Exactamente por eso existe la lista. Síguela mecánicamente, y el proceso se vuelve aburrido. Aburrido es el objetivo: un retiro en el que apenas pensaste es un retiro hecho bien.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>¿Listo?</b> Registrarte tarda unos 10 minutos: verifícate una vez, activa la 2FA y luego sigue los pasos anteriores. Las guías de este sitio te acompañan en el resto.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Línea de productos completa, buen soporte de idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea una cuenta en OKX</a></div>
+        </div>
+        <p class="note">Las mismas comisiones que registrarte directamente: nuestro enlace no te cuesta nada extra. Bitget (<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">bitget.com</a>) también está disponible; ten en cuenta que actualmente no tenemos acuerdo de reembolso con Bitget.</p>
+      </div>
+
+      <h3>¿Cuánto tarda un retiro de Binance?</h3>
+      <p>Depende de la ruta. Los retiros de criptomonedas normalmente llegan en minutos a una hora una vez que la red los confirma, aunque las redes congestionadas tardan más. Los retiros bancarios dependen de los rieles de pago de tu país y pueden tardar de minutos a varios días hábiles. Las ventas P2P se liquidan tan rápido como el comprador paga, a menudo en minutos.</p>
+      <h3>¿Por qué mi retiro de Binance está atascado en procesamiento?</h3>
+      <p>Las causas habituales son un bloqueo de seguridad después de un cambio de contraseña o 2FA, una nueva dirección de retiro aún dentro de su periodo de espera, congestión de red, mantenimiento de billetera en esa moneda, o un paso de verificación incompleto. Comprueba primero la página de estado de retiros, luego tu correo para un aviso de seguridad, antes de contactar al soporte.</p>
+      <h3>¿Qué pasa si elijo la red incorrecta para un retiro?</h3>
+      <p>Enviar criptomonedas en una red que la billetera receptora no soporta puede significar que los fondos se pierdan o sean muy difíciles de recuperar. Siempre empareja la red en ambos lados: si tu billetera muestra una dirección TRON, retira en TRON, no Ethereum. Cuando dudes, envía primero un diminuto importe de prueba.</p>
+      <h3>¿Necesito un memo o etiqueta al retirar?</h3>
+      <p>Algunas monedas, como XRP y XLM, requieren un memo o etiqueta de destino además de la dirección cuando se envían a un exchange. Si el lado receptor muestra un campo memo, debes rellenarlo exactamente: los retiros enviados sin un memo requerido pueden retrasarse por semanas o perderse. Las transferencias billetera a billetera de esas monedas normalmente no necesitan memo.</p>
+      <h3>¿Hay un importe mínimo de retiro en Binance?</h3>
+      <p>Sí, cada moneda y red tiene su propio importe mínimo de retiro, mostrado en la página de retiro antes de confirmar. Si tu saldo está por debajo del mínimo para tu red elegida, cambia a una red con un mínimo menor o una ruta diferente como P2P.</p>
+      <h3>¿Puedo retirar USDT de Binance a mi cuenta bancaria?</h3>
+      <p>No directamente: los bancos no aceptan USDT. Primero conviertes USDT a tu moneda local, ya sea vendiéndolo en el mercado spot y retirando fiat, o vendiéndolo a un comprador P2P que te paga por transferencia bancaria. Ambas rutas terminan con dinero regular en tu cuenta bancaria.</p>
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="how-to-sell-crypto.html">Cómo vender criptomonedas</a></li>
+        <li><a href="how-to-keep-your-binance-account-safe.html">Cómo mantener segura tu cuenta de Binance</a></li>
+        <li><a href="buy-usdt.html">Cómo comprar USDT: todos los métodos comparados</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">La mejor billetera de criptomonedas para principiantes</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>¿Aún no tienes cuenta? Regístrate en 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate</a><button class="sx" aria-label="Cerrar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>¿Es seguro Binance? Funciones de seguridad, SAFU y lista de seguridad — TokVS</title>
+<meta name="description" content="Seguridad de Binance explicada: fondo SAFU, prueba de reservas, lista de seguridad de cuenta, y qué no cubren. Respuesta basada en evidencia, luego decides tú.">
+<link rel="canonical" href="https://tokvs.com/es/guides/is-binance-safe">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/is-binance-safe">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/is-binance-safe">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/is-binance-safe">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/is-binance-safe">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/is-binance-safe">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/is-binance-safe">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/is-binance-safe">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/is-binance-safe">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/is-binance-safe">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/is-binance-safe">
+<meta property="og:title" content="¿Es seguro Binance? La evidencia — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="SAFU, prueba de reservas, historial de 9 años, y las advertencias honestas.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/es/guides/is-binance-safe">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/es/"},{"@type":"ListItem","position":2,"name":"Guías","item":"https://tokvs.com/es/guides/"},{"@type":"ListItem","position":3,"name":"¿Es seguro Binance?","item":"https://tokvs.com/es/guides/is-binance-safe"}]},{"@type":"Article","headline":"¿Es seguro Binance? Seguridad y SAFU explicados","description":"Seguridad de Binance explicada: fondo SAFU, prueba de reservas, lista de seguridad de cuenta, y qué no cubren. Respuesta basada en evidencia, luego decides tú.","datePublished":"2026-10-16","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/es/guides/is-binance-safe","dateModified":"2026-10-30"},"inLanguage":"es"}]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Debo mantener todas mis criptomonedas en Binance?","acceptedAnswer":{"@type":"Answer","text":"Para importes de trading activo, sí: para eso es. Para tenencias grandes a largo plazo, aprende autocustodia: una billetera hardware elimina el riesgo de plataforma por completo. Mucha gente hace ambas."}},{"@type":"Question","name":"¿Realmente importa tanto el 2FA?","acceptedAnswer":{"@type":"Answer","text":"Más que todo lo demás combinado. La abrumadora mayoría de historias de «cuenta de exchange hackeada» son reutilización de contraseña + sin 2FA. Una app de autenticador cierra ese agujero por completo."}},{"@type":"Question","name":"¿Binance está regulado?","acceptedAnswer":{"@type":"Answer","text":"Binance opera bajo varias licencias y registros globalmente, y la disponibilidad difiere por país: algunas regiones tienen servicios completos, otras restringidos. Comprueba el sitio oficial para el estado actual de tu jurisdicción en lugar de confiar en artículos."}},{"@type":"Question","name":"¿Binance es más seguro que Coinbase?","acceptedAnswer":{"@type":"Answer","text":"Fortalezas diferentes: Coinbase está listado en EE. UU. con claridad regulatoria estadounidense; Binance es más grande globalmente con el historial SAFU. Ambos son de primer nivel. Para la mayoría de usuarios no estadounidenses la diferencia práctica es funciones y comisiones, no seguridad."}},{"@type":"Question","name":"¿Qué pasa con mis criptomonedas si Binance cierra en mi país?","acceptedAnswer":{"@type":"Answer","text":"El patrón histórico a través de jurisdicciones: los servicios se retiran con aviso y los retiros permanecen disponibles durante la ventana de salida. No esperes a la fecha límite: mueve fondos a la primera señal creíble."}},{"@type":"Question","name":"¿Binance tiene seguro como SAFU para todos los usuarios automáticamente?","acceptedAnswer":{"@type":"Answer","text":"Sí: SAFU cubre a todos los usuarios por defecto; no hay nada a lo que optar. Está financiado con comisiones de trading y se ha usado públicamente una vez (el hackeo de 2019), cubriendo todas las pérdidas de usuarios en su totalidad."}},{"@type":"Question","name":"¿Binance es seguro para principiantes?","acceptedAnswer":{"@type":"Answer","text":"Para un principiante, el lado de la plataforma es sólido — SAFU, prueba de reservas y un largo historial — pero la mayoría de pérdidas de principiantes vienen del lado de la cuenta: contraseñas reutilizadas, sin 2FA y enlaces de phishing. Haz la configuración de 10 minutos abajo y los mayores riesgos están cubiertos."}},{"@type":"Question","name":"¿Cómo hago mi cuenta Binance más segura?","acceptedAnswer":{"@type":"Answer","text":"Activa 2FA de app de autenticador, establece un código antiphishing, activa la lista blanca de direcciones de retiro, y nunca inicies sesión desde un enlace en un correo o mensaje de chat. El paso a paso está en «Tu configuración de seguridad de 10 minutos» arriba."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Ruta para principiantes</a><a href="index.html" class="on">Guías</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Herramientas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es" selected>Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Inicio</a> / <a href="index.html">Guías</a> / ¿Es seguro Binance?</div>
+      <h1>¿Es seguro Binance?</h1>
+      <p class="sub">Tan seguro como llegan los exchanges centralizados, con advertencias honestas. Aquí está la evidencia sobre SAFU, reservas e historial, más qué no está cubierto.</p>
+      <p class="updated">Actualizado en octubre de 2026 · Por TokVS · 10 min de lectura</p>
+      <p class="note">Fuentes y método: <a href="../methodology.html">cómo comprobamos</a> · <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> · las cifras cambian, verifícalas en la página oficial antes de actuar.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>La respuesta corta</h2>
+      <p><strong>Sí: Binance es tan seguro como llegan los exchanges centralizados, con una advertencia honesta:</strong> ningún exchange es un banco, y «seguro» nunca significa «sin riesgo». Lo que sigue es la evidencia: los fondos de protección, las pruebas de reserva, el historial, y qué <em>no</em> cubren. Luego decides tú. Esa advertencia tiene dientes: en noviembre de 2023 Binance se declaró culpable de violaciones estadounidenses anti-lavado de dinero y sanciones y acordó pagar alrededor de $4.3 mil millones: el registro de cumplimiento es parte del panorama de seguridad, no una nota al pie.</p>
+      <h2>SAFU: el fondo de emergencia con nombre</h2>
+      <p>SAFU: el <strong>Fondo de Activos Seguros para Usuarios</strong> : es el fondo de seguro de emergencia de Binance, y es público y verificable. Binance asigna una parte de las comisiones de trading a SAFU, mantenido en criptomonedas (históricamente BTC, BNB y stablecoins), para cubrir pérdidas de usuarios en incidentes de seguridad extremos. Realmente se ha usado: cuando Binance fue hackeado en 2019 (~7,000 BTC tomados), <strong>los fondos de usuarios fueron cubiertos en su totalidad por SAFU</strong> : nadie perdió un satoshi por el propio hackeo. Se ha reportado SAFU en alrededor de $1 mil millones (principios de 2026). Es un fondo discrecional, no un seguro: la propia redacción de Binance limita la cobertura a pérdidas por fallos en sus propios sistemas que exponen credenciales de inicio, y Binance retiene plena discreción sobre pagos: no cubre pérdidas por el propio phishing o errores del usuario. Un exchange que paga de su propio fondo de seguro después de una brecha se está comportando exactamente como quieres.</p>
+      <h2>Prueba de reservas: verifica, no confíes</h2>
+      <p>Binance publica <strong>prueba de reservas (PoR)</strong> : evidencia criptográfica de que los activos de clientes existen 1:1 en cadena en lugar de prestarse o apostarse. La página PoR es pública y se actualiza regularmente. El hábito correcto: compruébala tú mismo en el dominio oficial de vez en cuando, en lugar de confiar en la captura de nadie. PoR no es perfecto (muestra activos, no pasivos), pero un exchange que lo publica es estrictamente más transparente que uno que no lo hace.</p>
+      <h2>La seguridad que controlas (la mayor parte, honestamente)</h2>
+      <p>Aquí está la verdad incómoda: la mayoría de «hackeos de exchanges» en las noticias son realmente <strong>tomas de cuenta</strong> : phishing, SIM swaps, contraseñas filtradas. El exchange estaba bien; el usuario no. Binance te da las herramientas: 2FA (usa una app de autenticador, no SMS), códigos antiphishing en correos, lista blanca de direcciones de retiro, y gestión de dispositivos. <strong>Activa los cuatro en 10 minutos desde el registro.</strong> El fondo SAFU te protege de los fallos de Binance, no de los tuyos.</p>
+      <p class="in-cta">La seguridad empieza con una cuenta real: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></p>
+      <h2>Historial: nueve años, ciclos completos</h2>
+      <p>Fundado en 2017, Binance ha operado a través de múltiples ciclos alcistas-bajistas completos, incluyendo la caída 2021–2022 que mató a plataformas menores. Es el exchange más grande por volumen por un amplio margen, lo que corta en ambos sentidos (mayor objetivo), pero la escala también financia el presupuesto de seguridad que exchanges más pequeños no pueden permitirse. La longevidad no es prueba de seguridad futura, pero nueve años sin perder fondos de clientes por un incidente no cubierto es la mejor evidencia que esta industria ofrece.</p>
+      <h2>Qué no cubre SAFU (lee esta parte)</h2>
+      <ul>
+        <li><strong>Tus propios errores.</strong> Credenciales phisheadas, apps falsas, frases semilla filtradas: ningún fondo en la tierra cubre esto.</li>
+        <li><strong>Pérdidas de mercado.</strong> SAFU es seguro de seguridad, no seguro de inversión. Si tus monedas caen 50%, eso es el mercado.</li>
+        <li><strong>Acción regulatoria.</strong> Disponibilidad y funciones varían por país; comprueba el sitio oficial de Binance para el estado de tu región.</li>
+      </ul>
+      <h2>La comparación con el banco, honestamente</h2>
+      <p>Tus depósitos bancarios pueden llevar seguro gubernamental (FDIC en EE. UU., por ejemplo). <strong>Los exchanges de criptomonedas no tienen equivalente.</strong> SAFU es un fondo de compañía, no un respaldo gubernamental. El encuadre honesto: Binance está entre los más seguros <em>exchanges de criptomonedas</em>, y los exchanges de criptomonedas como categoría conllevan riesgos que los bancos no tienen. Dimensiona tu exposición en consecuencia, y para tenencias grandes a largo plazo, aprende autocustodia (ver nuestra <a href="wallet-safety.html">guía de seguridad de billeteras</a>)</p>
+      <h2>Cómo Binance almacena las criptomonedas (hechos públicos)</h2>
+      <p>Como todos los exchanges importantes, Binance mantiene la mayor parte de los activos de clientes en <strong>almacenamiento en frío</strong> : billeteras cuyas claves nunca tocan internet, con solo flotantes operativos en billeteras calientes. Los retiros salen del flotante caliente; las reservas frías quedan fuera de línea. Esta arquitectura es estándar de la industria y descrita públicamente. El almacenamiento en frío no hace imposible el robo, pero mueve la superficie de ataque de «internet» a «instalaciones físicas de alta seguridad», lo que es una mejora significativa.</p>
+      <h2>Funciones de seguridad de Binance de un vistazo</h2>
+      <p>La seguridad de Binance funciona en dos mitades: lo que la plataforma ejecuta, y lo que tú activas. Esta lista es la mitad de la plataforma; la sección de configuración abajo es la tuya.</p>
+      <ul>
+        <li><b>Autenticación de dos factores (2FA):</b> un código de app de autenticador sobre tu contraseña. Este ajuste único detiene la mayoría de tomas de cuenta.</li>
+        <li><b>Lista blanca de direcciones de retiro:</b> los retiros solo pueden ir a direcciones que aprobaste de antemano.</li>
+        <li><b>Código antiphishing:</b> una palabra que eliges que aparece en cada correo genuino de Binance, para que los correos falsos destaquen.</li>
+        <li><b>Gestión de dispositivos y sesiones:</b> ve cada dispositivo conectado y elimina sesiones que no reconozcas.</li>
+        <li><b>Fondo de emergencia SAFU:</b> una reserva de plataforma financiada con comisiones de trading, usada públicamente una vez en 2019 para cubrir todas las pérdidas de usuarios de un hackeo en su totalidad.</li>
+        <li><b>Inicio con passkey:</b> una opción de inicio vinculada a dispositivo junto a 2FA de app de autenticador, donde esté disponible en tu cuenta.</li>
+        <li><b>Prueba de reservas:</b> instantáneas de billetera publicadas que puedes verificar tú mismo en lugar de tomar la palabra de la plataforma.</li>
+      </ul>
+      <h2>Tu configuración de seguridad de 10 minutos (haz esto primero)</h2>
+      <ol>
+        <li><strong>2FA de app de autenticador.</strong> No SMS: los SIM swaps derrotan códigos SMS. Google/Microsoft Authenticator o una llave hardware.</li>
+        <li><strong>Código antiphishing.</strong> Una palabra que eliges, incrustada en cada correo genuino de Binance. Sin código = no es de Binance. Elimínalo.</li>
+        <li><strong>Lista blanca de retiros.</strong> Bloquea retiros a direcciones que pre-apruebas. Incluso con tu contraseña, un atacante no puede enviar fondos a su propia billetera.</li>
+        <li><strong>Contraseña única + correo dedicado.</strong> Un gestor de contraseñas hace esto indoloro. Nunca reutilices la contraseña del exchange en ningún lugar.</li>
+      </ol>
+      <p>Estos cuatro vencen a cualquier otro consejo de seguridad combinado. La mayoría de víctimas de tomas tenían cero de ellos activados.</p>
+      <h2>Banderas rojas que no tienen nada que ver con Binance</h2>
+      <ul>
+        <li><strong>Apps falsas.</strong> Apps Binance clonadas en tiendas de apps no oficiales cosechan tus credenciales en el primer inicio. Sitio oficial o tienda de apps oficial, nombre de desarrollador verificado, siempre.</li>
+        <li><strong>DMs de «soporte».</strong> El soporte real de Binance nunca envía DM primero en Telegram/WhatsApp. Quien lo haga está cosechando.</li>
+        <li><strong>Envenenamiento de direcciones.</strong> Los estafadores envían transacciones de polvo desde direcciones parecidas esperando que copies-pegues la incorrecta la próxima vez. Siempre verifica la dirección completa, y usa la lista blanca.</li>
+        <li><strong>Ayuda con pantalla compartida.</strong> Nadie legítimo necesita ver tu pantalla. Jamás.</li>
+      </ul>
+      <h2>Qué pasa si Binance mismo tiene un mal día</h2>
+      <p>Dos escenarios que la gente realmente teme: <strong>una brecha de seguridad</strong> : cubierto arriba: SAFU existe precisamente para esto, y el precedente de 2019 es reembolso completo al usuario. <strong>Acción regulatoria en tu país</strong> : las funciones se restringen, los retiros normalmente permanecen disponibles durante los retiros graduales; esto se ha desarrollado en varias jurisdicciones y el patrón es consistente: saca tus fondos temprano cuando veas la escritura en la pared, no esperes a la fecha límite. Ningún escenario es agradable; ambos son sobrevivibles con higiene básica.</p>
+      <h2>Binance vs. otros exchanges top en seguridad</h2>
+      <p>¿Cómo se compara Binance con OKX, Bybit y Bitget en el eje de seguridad? Honestamente: <strong>están en el mismo nivel.</strong> Todos publican prueba de reservas, todos soportan 2FA/antiphishing/listas blancas, todos sobrevivieron ciclos de mercado completos. Los diferenciadores de Binance son escala (mayor presupuesto de seguridad) y el historial público del fondo SAFU de realmente pagar. Ningún exchange importante tiene una historia de seguridad <em>estructural</em> significativamente mejor, lo que es buena noticia: significa que la decisión puede descansar en comisiones y funciones en su lugar.</p>
+      <h2>Historial de incidentes: la línea de tiempo honesta</h2>
+      <ul>
+        <li><strong>2019:</strong> ~7,000 BTC robados en un hackeo sofisticado. SAFU cubrió todas las pérdidas de usuarios en su totalidad. El hackeo mejor manejado de la industria.</li>
+        <li><strong>2022:</strong> Exploit del puente BNB Chain: un incidente a nivel de cadena, distinto de una brecha de billetera caliente de exchange; las cuentas de usuarios del exchange no fueron drenadas.</li>
+        <li><strong>2023:</strong> Binance se declaró culpable en EE. UU. de violaciones anti-lavado de dinero y sanciones y acordó pagar alrededor de $4.316 mil millones (alrededor de $2.511 mil millones de decomiso más alrededor de $1.805 mil millones de multa criminal), con una monitorización de cumplimiento multi-anual. Doloroso para la compañía, pero los fondos de usuarios nunca fueron el problema, y esa es la métrica relevante para <em>tu</em> la pregunta de seguridad.</li>
+        <li><strong>En curso:</strong> publicación de prueba de reservas, reportes de seguridad regulares. Aburrido, que es exactamente lo que quieres de la página de seguridad de un exchange.</li>
+      </ul>
+      <h2>La única pregunta que realmente importa</h2>
+      <p>La gente pregunta «¿es seguro Binance?» pero la pregunta que decide resultados es <strong>«¿es segura mi configuración?»</strong> : 2FA en autenticador, lista blanca activada, contraseña única, app desde la fuente oficial, frase semilla fuera de línea si haces autocustodia. Un exchange inexpugnable con un usuario phisheado pierde dinero; un exchange meramente bueno con un usuario disciplinado no. Gasta tu presupuesto de seguridad en la lista, no en comprar exchanges.</p>
+      <h2>Cómo leer prueba de reservas tú mismo</h2>
+      <p>La página PoR de Binance permite a cualquiera verificar tenencias criptográficamente: aquí está la versión de 2 minutos: abre la página PoR oficial (solo dominio oficial), comprueba que los activos importantes muestren ratios en o por encima del 100%, y nota la marca de tiempo de auditoría. Qué prueba PoR: los activos existen. Qué no prueba: que los pasivos no los excedan, o que los fondos no puedan moverse mañana. Es una instantánea, no una garantía, pero una plataforma que publica instantáneas es estrictamente más responsable que una que no publica nada. Hazlo un hábito trimestral de 2 minutos.</p>
+      <h2>Binance y tu país: la comprobación práctica</h2>
+      <p>Antes de comprometerte: abre el sitio oficial de Binance y comprueba el estado de servicio de tu país: completo, restringido, o no disponible. Las restricciones normalmente golpean derivados y rieles fiat primero; spot y retiros son normalmente los últimos afectados. Si tu región está restringida, no luches con VPNs (eso es una violación de términos de servicio que puede congelar retiros cuando más los necesites): usa un exchange totalmente disponible donde vives en su lugar. Nuestra página de comparación de exchanges tiene una <a href="../exchanges.html#availability">tabla de disponibilidad por país</a> (Estados Unidos, Unión Europea, Canadá, Reino Unido, Australia), comprobada el 30 de octubre de 2026. El mejor exchange es el que legalmente te sirve.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>¿Listo?</b> Registrarte tarda unos 10 minutos: verifícate una vez, activa la 2FA y luego sigue los pasos anteriores. Las guías de este sitio te acompañan en el resto.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">El más grande del mundo, la mayor liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate en Binance</a></div>
+        </div>
+        <p class="note">Las mismas comisiones que registrarte directamente: nuestro enlace no te cuesta nada extra.</p>
+      </div>
+      
+      <h3>¿Debo mantener todas mis criptomonedas en Binance?</h3>
+      <p>Para importes de trading activo, sí: para eso es. Para tenencias grandes a largo plazo, aprende autocustodia: una billetera hardware elimina el riesgo de plataforma por completo. Mucha gente hace ambas.</p>
+      <h3>¿Realmente importa tanto el 2FA?</h3>
+      <p>Más que todo lo demás combinado. La abrumadora mayoría de historias de «cuenta de exchange hackeada» son reutilización de contraseña + sin 2FA. Una app de autenticador cierra ese agujero por completo.</p>
+      <h3>¿Binance está regulado?</h3>
+      <p>Binance opera bajo varias licencias y registros globalmente, y la disponibilidad difiere por país: algunas regiones tienen servicios completos, otras restringidos. Comprueba el sitio oficial para el estado actual de tu jurisdicción en lugar de confiar en artículos.</p>
+      
+      <h3>¿Binance es más seguro que Coinbase?</h3>
+      <p>Fortalezas diferentes: Coinbase está listado en EE. UU. con claridad regulatoria estadounidense; Binance es más grande globalmente con el historial SAFU. Ambos son de primer nivel. Para la mayoría de usuarios no estadounidenses la diferencia práctica es funciones y comisiones, no seguridad.</p>
+      <h3>¿Qué pasa con mis criptomonedas si Binance cierra en mi país?</h3>
+      <p>El patrón histórico a través de jurisdicciones: los servicios se retiran con aviso y los retiros permanecen disponibles durante la ventana de salida. No esperes a la fecha límite: mueve fondos a la primera señal creíble.</p>
+      
+      <h3>¿Binance tiene seguro como SAFU para todos los usuarios automáticamente?</h3>
+      <p>Sí: SAFU cubre a todos los usuarios por defecto; no hay nada a lo que optar. Está financiado con comisiones de trading y se ha usado públicamente una vez (el hackeo de 2019), cubriendo todas las pérdidas de usuarios en su totalidad.</p>
+      <h3>¿Binance es seguro para principiantes?</h3>
+      <p>Para un principiante, el lado de la plataforma es sólido — SAFU, prueba de reservas y un largo historial — pero la mayoría de pérdidas de principiantes vienen del lado de la cuenta: contraseñas reutilizadas, sin 2FA y enlaces de phishing. Haz la configuración de 10 minutos abajo y los mayores riesgos están cubiertos.</p>
+      <h3>¿Cómo hago mi cuenta Binance más segura?</h3>
+      <p>Activa 2FA de app de autenticador, establece un código antiphishing, activa la lista blanca de direcciones de retiro, y nunca inicies sesión desde un enlace en un correo o mensaje de chat. El paso a paso está en «Tu configuración de seguridad de 10 minutos» arriba.</p>
+      <h2>Sigue leyendo</h2>
+      <ul>
+        <li><a href="../reviews/binance.html">Reseña de Binance: comisiones y reembolsos</a></li>
+        <li><a href="choose-exchange.html">Cómo elegir un exchange: 6 comprobaciones</a></li>
+        <li><a href="wallet-safety.html">Seguridad de billeteras y frases semilla</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Inicio</a><a href="../airdrops.html">Airdrops diarios</a><a href="../exchanges.html">Comparación de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principiantes</b><a href="../start/step1.html">Ruta para principiantes</a><a href="index.html">Guías</a><a href="../start/step5.html">Compra tu primera moneda</a></div>
+      <div class="col" style="flex:1;"><b>Reseñas</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Herramientas</b><a href="../tools.html#watchlist">Alertas de lista de seguimiento</a><a href="../tools.html#calendar">Calendario de eventos</a><a href="../exchanges.html#calculator">Calculadora de comisiones</a></div>
+    </div>
+    <div class="disclosure">Este sitio contiene enlaces de afiliado. Registrarte a través de nuestros enlaces no te costará nada extra. Los precios de las criptomonedas son muy volátiles; nada de lo publicado aquí es consejo de inversión: valora tú mismo los riesgos.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>¿Aún no tienes cuenta? Regístrate en 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Regístrate</a><button class="sx" aria-label="Cerrar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
