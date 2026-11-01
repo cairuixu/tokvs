@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>피해야 할 암호화폐 거래소(그리고 그 이유) — TokVS</title>
+<meta name="description" content="어떤 암호화폐 거래소가 붕괴했는지, FTX, Celsius, Voyager, BlockFi, Mt. Gox, QuadrigaCX에서 무엇이 잘못되었는지, 현재 주요 서구 시장을 서비스하지 않는 거래소는 어디인지 — 그리고 모든 플랫폼을 신뢰하기 전에 확인할 위험 신호 포함.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/exchanges-to-avoid">
+<meta property="og:title" content="피해야 할 암호화폐 거래소(그리고 그 이유) — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="공개 기록에 있는 붕괴한 거래소, 현재 시장 제한, 모든 초보자가 플랫폼을 신뢰하기 전에 확인해야 할 위험 신호.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/exchanges-to-avoid">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"피해야 할 거래소","item":"https://tokvs.com/ko/guides/exchanges-to-avoid"}]},{"@type":"Article","headline":"피해야 할 암호화폐 거래소(그리고 그 이유)","description":"어떤 암호화폐 거래소가 붕괴했는지, FTX, Celsius, Voyager, BlockFi, Mt. Gox, QuadrigaCX에서 무엇이 잘못되었는지, 그리고 현재 주요 서구 시장을 서비스하지 않는 거래소는 어디인지.","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/exchanges-to-avoid","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"FTX는 아직 운영 중인가요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. FTX는 2022년 11월에 붕괴했고 파산 절차를 거쳤습니다. 거래 플랫폼은 일반적인 거래소로서 운영되지 않으며, 고객은 파산 절차에서 채권자가 되었습니다. 재출시된 FTX라고 주장하는 사이트를 본다면 극도로 주의하고, 신뢰하기 전에 공식 파산 관련 소통을 통해 확인하세요."}},{"@type":"Question","name":"붕괴한 거래소에서 돈을 되찾을 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"때로는 가능하지만, 절대 그렇게 된다고 가정하지 마세요. 파산 절차는 수년에 걸쳐 고객 자금의 일부를 반환할 수 있으며, 금액은 남은 자산과 청구 순위에 따라 달라집니다. 일부 사례는 상당한 금액을 반환했고, 다른 사례는 매우 적었습니다. 법원이 승인한 분배가 실제로 도달할 때까지 붕괴한 플랫폼에 있는 모든 돈은 위험에 처한 것으로 취급하세요."}},{"@type":"Question","name":"사람들이 왜 준비금 증명을 이야기하나요?","acceptedAnswer":{"@type":"Answer","text":"준비금 증명은 거래소가 보유한다고 주장하는 자산을 보유하고 있음을 보통 제3자 증명을 통해 보여주는 방법입니다. 중요합니다. 붕괴한 여러 플랫폼이 주장한 것을 보유하지 않았던 것으로 드러났기 때문입니다. 하지만 한계가 있습니다. 한 순간의 자산을 보여줄 뿐 부채를 보여주지 않으며, 감사가 아닙니다. 보장으로가 아니라 여러 신호 중 하나로 읽으세요."}},{"@type":"Question","name":"규제가 거래소가 안전하다는 뜻인가요?","acceptedAnswer":{"@type":"Answer","text":"규제는 일부 위험을 줄이지만 어느 위험도 완전히 제거하지는 않습니다. 라이선스를 받은 거래소는 규칙, 보고, 감독의 적용을 받으며, 이는 감독이 전혀 없는 것보다 낫습니다. 하지만 규제 대상 기업도 여전히 실패하거나, 출금을 동결하거나, 해킹을 당할 수 있습니다. 규제는 준비금 투명성, 실적, 플랫폼에 보관하는 금액과 함께 저울질할 하나의 요소입니다."}},{"@type":"Question","name":"왜 내 국가에서는 거래소에 가입할 수 없나요?","acceptedAnswer":{"@type":"Answer","text":"거래소는 법률 및 라이선스 이유로 국가를 제한합니다. 예를 들어 2026년 10월 30일에 확인한 당사 국가별 이용 가능 여부 표는 Binance가 EEA와 영국에서 신규 사용자를 받지 않고, Bybit가 미국과 캐나다를 서비스하지 않으며, Bitget이 미국, 영국, 캐나다에서 제한되고 EEA 접근이 계류 중임을 보여줍니다. 이용 가능 여부는 변경되므로, 어떤 거래소를 중심으로 계획하기 전에 표와 공식 페이지를 확인하세요."}},{"@type":"Question","name":"모든 암호화폐를 거래소에 보관해야 하나요?","acceptedAnswer":{"@type":"Answer","text":"대부분의 초보자에게 실용적인 답변은 아닙니다. 금액이 중요해지면 더 이상 그렇지 않습니다. 활발히 거래하는 것만 거래소에 두고, 장기 보유분은 시드 문구를 보유한 자신이 통제하는 지갑으로 옮기세요. 그렇게 하면 플랫폼이 실패해도 장기 보유분이 파산 절차에 갇히지 않습니다. 금액이 커지기 전에 자기 수탁을 배우세요. 커진 뒤가 아닙니다."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / 피해야 할 거래소</div>
+      <h1>피해야 할 암호화폐 거래소(그리고 그 이유)</h1>
+      <p class="sub">일부 거래소는 붕괴했기 때문에 사라졌습니다. 다른 거래소는 괜찮은 회사이지만 단순히 거주 국가를 서비스하지 않습니다. 두 종류 모두 맹목적으로 선택하면 시간을 낭비하거나 돈을 가둘 것입니다. 공개 기록만을 이용해 구분하는 방법은 다음과 같습니다.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 11분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표(2026년 10월 30일 확인)</a> · 이용 가능 여부는 변경되므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <div class="callout warn"><b>Before you sign up anywhere:</b><a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a>를 먼저 확인하세요. 거주 국가에서 사용자를 받지 않는 거래소는 백업 계획이 아니라 막다른 길이며, 입금한 뒤에 알아내는 것이 가장 나쁜 시점입니다.</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>붕괴한 거래소: 공개 기록이 보여주는 것</h2>
+      <p>아래의 모든 거래소는 이미 공개 기록인 사건 — 파산, 법원 절차, 당시 보도된 해킹 — 때문에 포함되어 있습니다. 어느 것도 소문이 아닙니다. 이를 나열하는 목적은 암호화폐에서 여러분을 겁주어 멀어지게 하는 것이 아닙니다. 정확한 실패 패턴을 보여주어, 다른 곳에서 나타날 경우 경고 신호를 인식할 수 있게 하는 것입니다.</p>
+      <h3>FTX — 2022년 11월 붕괴</h3>
+      <p>FTX는 2022년 11월에 붕괴할 때까지 세계에서 가장 큰 암호화폐 거래소 중 하나였습니다. 고객 자금이 계열 트레이딩 회사를 지원하는 데 사용되었다는 보도가 나온 뒤 며칠 만에 붕괴했습니다. 파산 신청을 했고, 설립자는 나중에 미국에서 사기 혐의로 유죄 판결을 받았으며, 고객은 수년간 이어진 파산 절차에서 채권자가 되었습니다. <strong>교훈:</strong> 규모와 유명인 지지는 건전한 수탁의 증거가 아닙니다. 플랫폼이 고객 자금을 자체 거래와 분리하여 보관하고 있음을 명확히 보여줄 수 없다면, 그것은 무시할 세부 사항이 아니라 떠날 이유입니다.</p>
+      <h3>Celsius — 2022년 붕괴</h3>
+      <p>Celsius는 암호화폐 예금에 대해 높은 수익을 제공했고, 2022년 6월에 출금을 동결했으며, 다음 달에 파산을 신청했습니다. 그 사업은 고객 예금을 위험한 전략에 대출하는 데 의존했고, 시장이 하락하자 예금자에게 빚진 금액과 보유한 금액 사이의 격차를 메울 수 없게 되었습니다. <strong>교훈:</strong> 시장 수익률보다 훨씬 높아 보이는 수익은 공짜 돈이 아닙니다. 위험에 대한 보상이며, 그 위험은 플랫폼이 예금을 반환할 수 없다는 것입니다. 예금하기 전에 수익 상품이 실제로 여러분의 자금으로 무엇을 하는지 읽어보세요.</p>
+      <h3>Voyager — 2022년 붕괴</h3>
+      <p>Voyager는 2022년 7월에 주요 차입자가 대규모 대출을 상환하지 못한 뒤 파산을 신청한 암호화폐 중개업체였습니다. 단순한 중개업체에 자산을 보유하고 있다고 믿었던 고객은 자금이 다시 대출되었음을 발견했고, 회수는 계좌 잔액이 아니라 파산 법원에 달려 있었습니다. <strong>교훈:</strong> 여러분을 위해 보유되는 자산과 여러분을 대신해 대출되는 자산의 차이를 이해하세요. 플랫폼이 고객 자산을 대출한다면 여러분의 위험은 차입자의 위험이기도 합니다.</p>
+      <h3>BlockFi — 2022년 붕괴</h3>
+      <p>BlockFi는 상당한 익스포저를 가지고 있던 FTX 붕괴 몇 주 뒤인 2022년 11월에 파산을 신청한 암호화폐 대출업체였습니다. 많은 사용자가 저축 계좌로 취급했던 이자 지급 계좌를 제공했지만, 그 계좌는 회사에 대한 무담보 대출이었으며, 고객은 다시 파산 채권자가 되었습니다. <strong>교훈:</strong> 암호화폐 이자 계좌는 은행 계좌가 아닙니다. 많은 국가에서 은행 예금은 예금 보험이 적용되지만, 암호화폐 대출 상품은 일반적으로 그렇지 않으며, '이자 계좌' 마케팅을 '보험 적용 저축'으로 읽어서는 절대 안 됩니다.</p>
+      <h3>Mt. Gox — 2014년 해킹 및 붕괴</h3>
+      <p>Mt. Gox는 2014년에 붕괴할 때까지 세계 비트코인 거래의 대부분을 처리했던 한때 지배적인 비트코인 거래소였습니다. 수년에 걸쳐 고객 비트코인의 상당 부분을 도난당한 뒤였습니다. 손실은 늦게 발견되었고, 회사는 파산을 신청했으며, 채권자를 위한 회생 절차는 10년간 이어졌습니다. <strong>교훈:</strong> 보안 관행과 투명성은 시장 점유율보다 중요합니다. 거래를 지배하는 플랫폼도 여전히 내부 통제가 약할 수 있으며, 초기 암호화폐 역사는 문제가 표면화되기 전에 오랫동안 숨겨져 있을 수 있음을 보여줍니다.</p>
+      <h3>QuadrigaCX — 2019년 붕괴</h3>
+      <p>QuadrigaCX는 2019년에 설립자가 사망한 뒤 붕괴한 캐나다 거래소였습니다. 설립자는 고객 자금을 보관한 지갑의 비밀번호를 보유한 유일한 사람으로 알려졌습니다. 조사관들은 나중에 고객 자금의 상당 부분을 찾을 수 없었으며, 플랫폼이 심각한 부족 상태로 운영되어 왔음을 발견했습니다. <strong>교훈:</strong> 단일 실패 지점 — 키를 보유한 한 사람, 자금을 보유한 하나의 지갑, 이름을 댈 수 없는 한 명의 감사인 — 을 가진 플랫폼은 설계상 취약합니다. 누가 또 돈을 통제하는지, 그 사람이 사라지면 어떻게 되는지 물어보세요.</p>
+      <h2>이러한 붕괴의 공통점</h2>
+      <p>시대도, 사업 모델도 다르지만 동일한 세 가지 패턴이 반복됩니다. 첫째, <strong>고객 자금이 진정으로 분리되지 않았습니다</strong>. 회사의 자체 자금이나 자체 거래 베팅으로부터. 플랫폼이 자체 손실을 메우기 위해 고객 예금에 손을 댈 수 있을 때, 모든 고객은 깨닫지 못한 채 무담보 대출자가 됩니다. 둘째, <strong>불투명성이 문제가 너무 늦을 때까지 숨겼습니다</strong>. 대차대조표는 공개되지 않았고, 감사는 없거나 피상적이었으며, 사용자는 들은 내용을 검증할 방법이 없었습니다. 셋째, <strong>성장이 통제를 앞질렀습니다</strong>. 플랫폼은 리스크 관리, 수탁, 컴플라이언스가 따라갈 수 있는 속도보다 빠르게 대출, 자사 거래, 신제품으로 확장했습니다.</p>
+      <p>그래서 초보자들이 듣는 세 가지 방어가 실제로 중요하며, 단독이 아니라 함께 중요하다는 것입니다. <strong>준비금 증명</strong>은 플랫폼이 제3자 증명을 통해 보유한다고 주장하는 자산을 보유하고 있음을 보여주는 것입니다. 유용하지만 제한적입니다. 한 순간의 모습을 포착할 뿐, 그 자체로는 부채를 증명하지 않으며, 완전한 감사가 아닙니다. 보장으로가 아니라 하나의 신호로 읽으세요. <strong>규제</strong>는 플랫폼이 라이선스를 받은 관할 지역에서 규칙, 보고, 감독 하에 운영됨을 의미하며, 일부 위험을 줄이지만 어느 위험도 완전히 제거하지 않습니다. 규제 대상 기업도 여전히 실패할 수 있습니다. <strong>자기 수탁</strong>은 시드 문구를 통제하는 지갑에 자신의 자산을 보유하는 것을 의미하므로, 어떤 플랫폼의 실패도 이를 가둘 수 없습니다. 어느 것도 단독으로는 충분하지 않습니다. 함께라면 실용적인 도구 상자입니다. 투명하고 감독받는 플랫폼을 선호하고, 그래도 장기 보유분을 어느 플랫폼에도 그대로 두지 마세요.</p>
+      <h2>현재 제한됨: 시장을 서비스하지 않는 거래소</h2>
+      <p>두 번째 종류의 '피해야 할 대상'은 붕괴와 무관합니다. 일부 운영 중인 거래소는 법률 및 라이선스 이유로 특정 국가에서 사용자를 받지 않습니다. 제한 국가에서 이들 중 하나에 가입하면 시간을 낭비합니다. 인증이 실패하거나 계정이 나중에 제한될 것입니다. 더 나쁜 경우, 일부 사용자는 거짓 위치 정보로 제한을 우회하는데, 이는 계정 동결과 접근 상실로 이어질 수 있습니다. 절대 그렇게 하지 마세요. 아래 사실은 2026년 10월 30일에 확인한 TokVS의 <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a>에서 가져온 것입니다. 이용 가능 여부는 변경되므로, 어떤 거래소를 중심으로 계획하기 전에 공식 페이지에서 확인하세요.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>거래소</th><th>현재 서비스하지 않음</th><th>대신 해야 할 일</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>EEA와 영국에서 신규 사용자 없음</td><td>거주 국가에서 사용자를 받는 플랫폼에 대해 이용 가능 여부 표를 확인하세요</td></tr>
+          <tr><td>Bybit</td><td>미국과 캐나다를 서비스하지 않음</td><td>거주 국가에서 사용자를 받는 플랫폼에 대해 이용 가능 여부 표를 확인하세요</td></tr>
+          <tr><td>초보자 강점</td><td>미국, 영국, 캐나다에서 제한됨, EEA 접근 계류 중</td><td>거주 국가에서 사용자를 받는 플랫폼에 대해 이용 가능 여부 표를 확인하세요</td></tr>
+        </tbody>
+      </table></div>
+      <p>주목할 만한 두 가지가 있습니다. 첫째, '제한됨'은 비난이 아닙니다. 이는 시장별로 라이선스 결정을 내리는 운영 중인 거래소이며, 특정 국가에서의 지위는 라이선스가 부여되거나 철회됨에 따라 변경될 수 있습니다. 둘째, 제한 목록은 대칭적이지 않습니다. 거래소는 현물 거래에 대해서는 거주 국가를 서비스하지만 파생상품에 대해서는 서비스하지 않을 수 있으며, 신규 사용자에게는 문을 닫으면서 기존 사용자는 계속 받을 수 있습니다. 그래서 어떤 단일 글보다 이용 가능 여부 표가 올바른 첫 확인인 이유입니다. 이러한 구분이 추적되는 하나의 장소로 유지됩니다.</p>
+      <h2>모든 거래소를 신뢰하기 전에 확인할 위험 신호</h2>
+      <p>새 플랫폼이든 기존 플랫폼이든, 테스트 금액 이상을 입금하기 전에 이 체크리스트를 사용하세요. <strong>익명이거나 검증할 수 없는 경영진:</strong> 플랫폼을 운영하는 사람을 식별할 수 없으면 실적을 평가할 수 없습니다. <strong>라이선스나 회사 정보 없음:</strong> 합법적인 플랫폼은 설립된 곳과 어떤 규제 기관이 감독하는지 명시합니다. 여기서의 모호함은 실수가 아니라 선택입니다. <strong>보장된 수익 약속:</strong> 어떤 정직한 플랫폼도 투자 수익을 보장할 수 없으며, 그 약속 자체가 전형적인 사기 신호입니다. <strong>출금 동결이나 설명되지 않은 지연:</strong> 가끔의 유지보수는 정상이지만, 반복되거나 설명되지 않는 출금 문제는 문제의 가장 신뢰할 수 있는 조기 경고입니다. <strong>불투명한 준비금:</strong> 플랫폼이 준비금 정보나 신뢰할 수 있는 증명을 공개하지 않으면, 여러분은 그 말만을 신뢰하는 것입니다. <strong>빠른 입금 압박:</strong> 카운트다운 타이머, '한정 배정' 주장, 더 큰 입금을 촉구하는 지원 담당자는 판매 전술이지 보안 기능이 아닙니다.</p>
+      <p>이 목록에 속하는 또 하나의 습관: 입금 전에 플랫폼 이름과 함께 '출금 문제', '규제 경고', '파산' 같은 단어를 검색하세요. 10분의 검색으로 마케팅 페이지가 절대 언급하지 않는 문제를 드러내며, 비용이 들지 않습니다. 결과가 규제 경고나 해결되지 않은 출금 불만으로 지배된다면, 웹사이트가 아무리 세련되어 보여도 그것이 답입니다.</p>
+      <h2>대신 해야 할 일</h2>
+      <p>실용적인 루틴은 짧습니다. 첫째, <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a>를 확인해 실제로 거주 지역에서 사용자를 받는 플랫폼을 찾으세요. 둘째, 준비금 정보를 공개하고 라이선스를 명확히 밝히는 플랫폼을 선호하고, 둘 다 보장보다는 신호로 취급하세요. 셋째, 큰 금액을 투입하기 전에 소액 테스트 입금과 소액 테스트 출금으로 시작하세요. 소액 출금을 신속히 처리하는 플랫폼은 중요한 유일한 테스트를 통과한 것입니다. 넷째, 잃으면 아플 금액을 보유하게 되면 자기 수탁을 배우세요. 장기 보유분을 자신이 통제하는 지갑으로 옮기고, 시드 문구를 오프라인으로 비공개로 보관하며, 활발한 거래 자금만 거래소에 두세요. 마지막으로, 이용 가능 여부, 라이선스, 준비금 공개는 모두 시간이 지나면 바뀌므로 선택을 주기적으로 다시 검토하세요.</p>
+      <p>이 페이지의 붕괴가 공유하는 마지막 교훈은 놓치기 쉽습니다. 모든 경우에 경고 신호는 붕괴 전에 존재했지만, 살펴본 사람에게만 보였습니다. 가장 적게 잃은 사용자는 보통 기록을 보관하고, 보유분을 분산하고, 대부분의 암호화폐를 어떤 플랫폼도 동결할 수 없는 곳에 둔 사람들이었습니다. 그것은 편집증이 아닙니다. 암호화폐에서 가장 저렴한 보험이며, 약간의 주의 외에는 비용이 들지 않습니다.</p>
+
+      <h3>FTX는 아직 운영 중인가요?</h3>
+      <p>아닙니다. FTX는 2022년 11월에 붕괴했고 파산 절차를 거쳤습니다. 거래 플랫폼은 일반적인 거래소로서 운영되지 않으며, 고객은 파산 절차에서 채권자가 되었습니다. 재출시된 FTX라고 주장하는 사이트를 본다면 극도로 주의하고, 신뢰하기 전에 공식 파산 관련 소통을 통해 확인하세요.</p>
+      <h3>붕괴한 거래소에서 돈을 되찾을 수 있나요?</h3>
+      <p>때로는 가능하지만, 절대 그렇게 된다고 가정하지 마세요. 파산 절차는 수년에 걸쳐 고객 자금의 일부를 반환할 수 있으며, 금액은 남은 자산과 청구 순위에 따라 달라집니다. 일부 사례는 상당한 금액을 반환했고, 다른 사례는 매우 적었습니다. 법원이 승인한 분배가 실제로 도달할 때까지 붕괴한 플랫폼에 있는 모든 돈은 위험에 처한 것으로 취급하세요.</p>
+      <h3>사람들이 왜 준비금 증명을 이야기하나요?</h3>
+      <p>준비금 증명은 거래소가 보유한다고 주장하는 자산을 보유하고 있음을 보통 제3자 증명을 통해 보여주는 방법입니다. 중요합니다. 붕괴한 여러 플랫폼이 주장한 것을 보유하지 않았던 것으로 드러났기 때문입니다. 하지만 한계가 있습니다. 한 순간의 자산을 보여줄 뿐 부채를 보여주지 않으며, 감사가 아닙니다. 보장으로가 아니라 여러 신호 중 하나로 읽으세요.</p>
+      <h3>규제가 거래소가 안전하다는 뜻인가요?</h3>
+      <p>규제는 일부 위험을 줄이지만 어느 위험도 완전히 제거하지는 않습니다. 라이선스를 받은 거래소는 규칙, 보고, 감독의 적용을 받으며, 이는 감독이 전혀 없는 것보다 낫습니다. 하지만 규제 대상 기업도 여전히 실패하거나, 출금을 동결하거나, 해킹을 당할 수 있습니다. 규제는 준비금 투명성, 실적, 플랫폼에 보관하는 금액과 함께 저울질할 하나의 요소입니다.</p>
+      <h3>왜 내 국가에서는 거래소에 가입할 수 없나요?</h3>
+      <p>거래소는 법률 및 라이선스 이유로 국가를 제한합니다. 예를 들어 2026년 10월 30일에 확인한 당사 국가별 이용 가능 여부 표는 Binance가 EEA와 영국에서 신규 사용자를 받지 않고, Bybit가 미국과 캐나다를 서비스하지 않으며, Bitget이 미국, 영국, 캐나다에서 제한되고 EEA 접근이 계류 중임을 보여줍니다. 이용 가능 여부는 변경되므로, 어떤 거래소를 중심으로 계획하기 전에 표와 공식 페이지를 확인하세요.</p>
+      <h3>모든 암호화폐를 거래소에 보관해야 하나요?</h3>
+      <p>대부분의 초보자에게 실용적인 답변은 아닙니다. 금액이 중요해지면 더 이상 그렇지 않습니다. 활발히 거래하는 것만 거래소에 두고, 장기 보유분은 시드 문구를 보유한 자신이 통제하는 지갑으로 옮기세요. 그렇게 하면 플랫폼이 실패해도 장기 보유분이 파산 절차에 갇히지 않습니다. 금액이 커지기 전에 자기 수탁을 배우세요. 커진 뒤가 아닙니다.</p>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">초보자를 위한 암호화폐 구매 방법</a></li>
+        <li><a href="is-binance-safe.html">Binance는 안전한가요?</a></li>
+        <li><a href="how-to-keep-your-binance-account-safe.html">Binance 계정을 안전하게 유지하는 방법</a></li>
+        <li><a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

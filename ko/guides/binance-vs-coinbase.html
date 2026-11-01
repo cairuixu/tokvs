@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>초보자를 위한 Binance vs Coinbase: 어느 쪽으로 시작해야 할까요? — TokVS</title>
+<meta name="description" content="초보자를 위한 Binance vs Coinbase를 솔직하게 비교: 수수료, 입금 방법, 사용 편의성, 코인, 안전성. 판정: 미국 외 대부분의 초보자에게는 Binance, 단순함을 원하는 미국 초보자에게는 Coinbase.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/binance-vs-coinbase">
+<meta property="og:title" content="초보자를 위한 Binance vs Coinbase — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="수수료, 입금, 사용 편의성, 코인, 안전성 — 동점이 아닌 초보자를 위한 명확한 판정.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/binance-vs-coinbase">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"Binance vs Coinbase","item":"https://tokvs.com/ko/guides/binance-vs-coinbase"}]},{"@type":"Article","headline":"초보자를 위한 Binance vs Coinbase","description":"초보자를 위한 Binance vs Coinbase를 솔직하게 비교: 수수료, 입금 방법, 사용 편의성, 코인, 안전성, 명확한 판정 포함.","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/binance-vs-coinbase","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"완전 초보자에게 Binance와 Coinbase 중 어느 쪽이 더 좋은가요?","acceptedAnswer":{"@type":"Answer","text":"미국 외 지역에서는 대부분의 초보자에게 Binance가 더 좋은 시작입니다. 거래 수수료가 낮고, 코인이 많으며, 현지 결제 수단으로 구매할 수 있는 P2P 시장이 더 깊습니다. 미국에서는 Coinbase가 더 좋은 시작입니다. Binance의 메인 플랫폼은 미국 거주자에게 제공되지 않으며, Coinbase의 간단한 인터페이스가 가장 쉬운 첫 단계이기 때문입니다."}},{"@type":"Question","name":"Binance와 Coinbase 중 어느 쪽이 더 저렴한가요?","acceptedAnswer":{"@type":"Answer","text":"거래는 Binance가 더 저렴합니다. 공개된 표준 현물 수수료는 거래량 할인 전 메이커와 테이커 모두 0.10%입니다. Coinbase의 간편 구매 인터페이스는 거래당 비용이 눈에 띄게 더 들지만, Advanced Trade 인터페이스는 Binance에 훨씬 가깝습니다. 수수료는 변동하므로 거래 전에 항상 공식 수수료표를 확인하세요."}},{"@type":"Question","name":"미국인이 Binance를 이용할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"미국 거주자는 Binance의 메인 글로벌 플랫폼을 이용할 수 없습니다. 코인과 기능이 더 적은 별도의 플랫폼인 Binance.US로 안내됩니다. 미국에 거주한다면 Coinbase가 간단한 선택지이며, Binance 생태계를 특별히 원한다면 Binance.US가 대안입니다."}},{"@type":"Question","name":"Coinbase가 Binance보다 안전한가요?","acceptedAnswer":{"@type":"Answer","text":"둘 다 보안 면에서 최상위권이며, 어느 쪽도 무위험은 아닙니다. Coinbase는 미국 상장 기업이며, 보유한 USD 현금 잔액은 제휴 은행을 통해 최대 250,000달러까지 FDIC 보험이 적용됩니다. 다만 암호화폐 자체는 어디에서도 FDIC 보험이 적용되지 않습니다. Binance는 훨씬 큰 규모와 SAFU 긴급 자금으로 대응합니다. 2019년 해킹 이후 모든 사용자 손실을 전액 보상했습니다. 대부분의 초보자에게 실질적인 안전성 차이는 작습니다. 자신의 2FA와 피싱 습관이 더 중요합니다."}},{"@type":"Question","name":"Binance와 Coinbase를 모두 이용할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"예, 많은 경험 사용자가 정확히 그렇게 합니다. 간단한 달러-암호화폐 구매에는 Coinbase, 더 저렴한 거래와 더 넓은 코인 선택에는 Binance를 이용합니다. 다만 하나로 시작하는 것이 더 간단합니다. 먼저 거주 국가에 맞는 것을 선택하고, 한계에 부딪히면 나중에 두 번째를 추가하세요."}},{"@type":"Question","name":"어느 쪽이 구매할 수 있는 코인이 더 많나요?","acceptedAnswer":{"@type":"Answer","text":"Binance는 Coinbase보다 훨씬 많은 코인을 상장하며, Coinbase에 절대 도달하지 않는 작은 토큰도 많이 포함합니다. Bitcoin, Ethereum, 주요 코인을 구매하는 초보자에게는 차이가 중요하지 않습니다. 둘 다 주요 코인을 다룹니다. 작은 알트코인을 찾기 시작할 때야 비로소 중요해집니다."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / Binance vs Coinbase</div>
+      <h1>초보자를 위한 Binance vs Coinbase</h1>
+      <p class="sub">동점도, 중립도 없습니다. 미국 외 대부분의 초보자에게는 Binance가 승리하고, 미국 내 초보자에게는 Coinbase가 승리합니다. 카테고리별로 정확히 그 이유를 설명합니다.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 10분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기 →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>결론부터</h2>
+      <p>미국 외에 거주한다면 Binance로 시작하세요. 거래당 수수료가 적고, 코인 상장 수가 훨씬 많으며, 현지 결제 수단으로 암호화폐를 구매할 수 있는 가장 깊은 P2P 시장을 운영합니다. 시작할 때 모든 수수료가 부담스러운 조합에서 가장 중요한 요소들입니다. 미국에 거주한다면 Coinbase로 시작하세요. Binance의 메인 글로벌 플랫폼은 미국 거주자에게 제공되지 않습니다(대신 별도의 더 작은 Binance.US가 제공됩니다). 반면 Coinbase의 간편 구매 화면은 암호화폐에서 가장 쉬운 첫 구매이며, 미국 규제와 상장 기업 지위는 신중한 초보자에게 추가적인 안심을 줍니다.</p>
+      <p>전체 답은 한 단락으로 끝납니다. 이 가이드의 나머지는 카테고리별로 이를 증명하므로, 자신의 상황이 예외에 해당하는지 확인할 수 있습니다. 그렇지 않습니다. 일반적인 초보자에게는 국가 문제가 결정하고, 나머지는 세부 사항입니다. 읽은 뒤에도 여전히 고민된다면, 거주 국가를 가장 잘 지원하는 것을 선택하고 소액 테스트 금액으로 시작하세요. 나중에 다른 하나를 항상 열 수 있으며, 많은 경험 사용자가 결국 둘 다 계정을 보유합니다.</p>
+      <h2>수수료: Binance가 승리하며, 접전이 아닙니다</h2>
+      <p>수수료는 초보자가 알아차리지 못한 채 돈을 잃는 부분입니다. 작아 보이는 퍼센트로 표시되어 모든 거래에 걸쳐 누적되기 때문입니다. Binance의 공개 표준 현물 수수료는 거래량 할인 전 메이커와 테이커 모두 0.10%입니다. 당사 사이트가 기준으로 사용하는 수수료율이며, 거래소가 수수료율과 등급을 시간이 지나면 조정하므로 공식 수수료표와 대조해 확인해야 합니다. 100달러 거래에서는 약 10센트입니다.</p>
+      <p>Coinbase는 두 단계 이야기이며, 어느 단계에 속하는지가 매우 중요합니다. 대부분의 초보자가 누르는 크고 친근한 버튼인 간편 구매 화면은 스프레드와 거래 수수료를 하나의 편리한 가격에 묶으므로 거래 인터페이스보다 거래당 비용이 눈에 띄게 더 듭니다. 반면 Coinbase의 Advanced Trade 인터페이스는 Binance식 거래소 수수료에 훨씬 가깝게 책정됩니다. Coinbase 초보자를 위한 실용적인 조언: 편해지면 곧바로 Advanced Trade를 배우거나, 편의성이 거래당 몇 배 더 비싸다는 것을 받아들이세요. 어느 쪽이든, 규모 있는 거래 전에 사용하는 플랫폼의 공식 수수료표를 항상 확인하세요. 수수료 페이지는 바뀌며, 이 가이드는 이를 대체하지 않습니다.</p>
+      <p class="in-cta">먼저 저수수료 경로를 비교하세요. <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a><a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></p>
+      <h2>사용 편의성: 첫날은 Coinbase가 승리</h2>
+      <p>Coinbase의 간편 인터페이스는 암호화폐에서 최고의 첫 한 시간입니다. 코인을 선택하고, 달러 금액을 입력하고, 구매를 누르면 소유하게 됩니다. 호가창도, 지정가 주문도, 현물 지갑 대 펀딩 지갑도 헷갈리게 하지 않습니다. 암호화폐를 구매해 본 적이 없고 약간 긴장하는 사람에게 그 단순함은 실제 돈만큼 가치가 있습니다. 그것이 Coinbase가 미국 초보자의 기본 추천이 된 이유입니다.</p>
+      <p>Binance 앱은 더 강력하고 더 복잡합니다. 메뉴가 더 많고, 상품이 더 많으며(현물, 선물, Earn, P2P 등), 잘못 누를 방법이 더 많습니다. 초보자도 충분히 배울 수 있습니다. 수백만 명이 그렇게 했습니다. 다만 첫 한 시간은 더 많은 인내가 필요하며, 특히 선물 섹션은 현물 거래를 잘 이해할 때까지 완전히 무시해야 합니다. 가장 부드러운 시작을 원하고 미국에 거주한다면, 이 라운드에서는 Coinbase의 단순함이 단연 승리합니다. 미국 외에 거주하고 앱을 배우는 데 20분을 투자할 의향이 있다면, Binance의 깊이는 곧 부담이 아니라 장점이 됩니다.</p>
+      <h2>입금 방법: 미국 외에서는 Binance가 승리</h2>
+      <p>자금을 어떻게 넣는지는 거래 수수료만큼 중요합니다. Coinbase는 지원 지역에서 은행 송금, 직불카드, PayPal에 의존합니다. 미국과 유럽 일부에서 잘 작동하는 깔끔하고 친숙한 결제 수단입니다. Binance는 많은 지역에서 이에 필적한 뒤, 대부분의 세계에서 이 카테고리를 결정짓는 기능을 추가합니다. 바로 P2P 거래입니다. 암호화폐 카드 구매가 차단되거나 비싼 국가에서는 Binance의 P2P 시장을 통해 현지 결제 수단 — 은행 송금, 모바일 머니, 지역별 앱 — 으로 현지 상인으로부터 시장 가격에 USDT와 다른 코인을 구매할 수 있습니다.</p>
+      <p>그래서 지리적 구분이 이토록 중요합니다. 나이지리아, 베트남, 브라질, 터키의 초보자는 Binance의 자금 조달 옵션이 Coinbase보다 극적으로 더 유용하다고 느낄 것입니다. P2P가 현지 결제 현실에 부합하기 때문입니다. 당사의 지역 가이드 — <a href="how-to-buy-usdt-in-europe.html">유럽에서 USDT 구매하기</a> 포함 — 는 국가별로 현지 결제 수단을 안내합니다. 반면 미국의 초보자는 Coinbase의 은행 연결이 완벽히 충분하다고 느끼고 P2P가 전혀 필요 없을 수 있습니다.</p>
+      <h2>이용 가능한 코인: Binance가 큰 차이로 승리</h2>
+      <p>Binance는 Coinbase보다 훨씬 많은 암호화폐를 상장합니다. Coinbase의 더 엄격한 상장 절차를 절대 통과하지 못하는 작은 프로젝트를 포함해 수백 개의 추가 토큰이 있습니다. Bitcoin, Ethereum, 기타 주요 코인을 구매하는 초보자에게는 이 차이가 무관합니다. 두 플랫폼 모두 주요 코인을 깊은 유동성과 함께 다룹니다. 온라인에서 들은 작은 알트코인을 찾기 시작하는 순간 중요해집니다. Coinbase에서는 종종 상장되어 있지 않음을 알게 됩니다. Binance에서는 보통 상장되어 있습니다.</p>
+      <p>이 섹션에 속하는 주의사항: 더 큰 코인 목록은 양날의 검입니다. 작은 토큰은 변동성이 더 크고 나쁜 투자일 가능성이 더 높으며, 'Binance에 상장되었다'는 품질 보증이 아닙니다. 초보자는 처음 몇 달간 주요 코인을 기본으로 삼아야 하며, 더 작은 것은 팁이 아니라 연구 과제로 취급해야 합니다. 당사 <a href="how-to-buy-crypto-for-beginners.html">초보자 구매 가이드</a>는 첫 구매 규모를 합리적으로 정하는 방법을 설명합니다.</p>
+      <h2>안전성: 강점이 다른 무승부</h2>
+      <p>두 거래소 모두 보안 면에서 최상위권이며, 완전한 시장 사이클을 모두 견뎌냈습니다. 다만 안전성 이야기는 다르게 구축되었습니다. Coinbase는 미국 상장 기업으로, 감사받은 재무제표와 미국의 규제 감독을 받으며, Coinbase에 보유한 USD 현금 잔액은 제휴 은행을 통해 최대 250,000달러까지 FDIC 보험이 적용됩니다. 그 보호의 한계에 주목하세요. 현금을 대상으로 하며 암호화폐를 대상으로 하지 않습니다. 어느 플랫폼에서도 거래소의 암호화폐 보유분은 FDIC 보험이 적용되지 않습니다.</p>
+      <p>Binance는 규모와 공개 실적 기록으로 대응합니다. 거래 수수료로 조성된 SAFU 긴급 자금은 2019년 해킹 이후 모든 사용자 손실을 전액 보상했습니다. 당사 <a href="is-binance-safe.html">Binance는 안전한가</a> 분석에서 자세히 검토하는 선례입니다. 그리고 준비금 증명을 공개하므로 사용자가 신뢰가 아닌 검증으로 뒷받침을 확인할 수 있습니다. Binance는 수년에 걸쳐 여러 관할 지역에서 규제 압박을 받기도 했으며, 대규모 미국 합의를 포함합니다. 그 사건들에서 사용자 자금은 문제가 되지 않았지만, 그 역사는 솔직한 그림의 일부입니다.</p>
+      <p>초보자를 위한 실용적인 결론: 두 거래소 간의 안전성 격차는 자신의 습관이 만드는 격차에 비해 작습니다. 인증 앱 2FA, 고유한 비밀번호, 피싱 방지 코드, 출금 화이트리스트 — 당사 <a href="how-to-keep-your-binance-account-safe.html">Binance 계정 안전 체크리스트</a>에서 다룹니다 — 는 두 거래소 중 어느 쪽을 선택하든 여러분을 더 보호합니다. 거주 국가에 맞는 거래소를 선택한 뒤 체크리스트를 실행하세요.</p>
+      <h2>한눈에 보는 비교</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>카테고리</th><th>Binance</th><th>Coinbase</th><th>승자</th></tr></thead>
+        <tbody>
+          <tr><td>거래 수수료</td><td>낮은 표준 현물 수수료(메이커/테이커 0.10%, 공식 수수료표 확인)</td><td>간편 구매 비용이 더 높음, Advanced Trade는 훨씬 가까움</td><td>Binance</td></tr>
+          <tr><td>첫 사용의 편의성</td><td>강력하지만 복잡한 앱</td><td>암호화폐에서 가장 간단한 구매 화면</td><td>Coinbase</td></tr>
+          <tr><td>입금 방법</td><td>카드, 은행, 깊은 P2P 시장 포함</td><td>지원 지역의 은행, 카드, PayPal</td><td>Binance(미국 외)</td></tr>
+          <tr><td>상장 코인</td><td>훨씬 넓은 선택지</td><td>엄선된 주요 코인 중심</td><td>Binance</td></tr>
+          <tr><td>안전성 이야기</td><td>SAFU 자금, 준비금 증명, 거대한 규모</td><td>미국 상장 기업, 현금 최대 250,000달러 FDIC 보험 적용</td><td>무승부</td></tr>
+          <tr><td>미국 이용 가능 여부</td><td>메인 플랫폼 이용 불가, 대신 Binance.US</td><td>완전 이용 가능</td><td>Coinbase</td></tr>
+        </tbody>
+      </table></div>
+      <h2>어느 쪽을 선택해야 하는가</h2>
+      <ul>
+        <li><strong>Binance를 선택하세요.</strong> 미국 외에 거주하는 경우, 낮은 수수료를 중시하는 경우, P2P나 현지 결제 수단이 필요한 경우, 나중에 작은 코인에 접근하고 싶은 경우.</li>
+        <li><strong>Coinbase를 선택하세요.</strong> 미국에 거주하는 경우, 가능한 가장 간단한 첫 구매를 원하는 경우, 미국 상장 기업을 선호하는 경우, 주로 주요 코인을 구매해 보유할 경우.</li>
+        <li><strong>나중에 둘 다 선택하세요.</strong> 하나의 한계에 부딪히기 시작하는 경우 — 예를 들어 Coinbase에서 간단히 구매하지만 더 저렴한 거래나 상장되지 않은 코인을 원하는 경우. 좋은 문제이며, 초보자 단계를 졸업했다는 뜻입니다.</li>
+      </ul>
+      <h2>어느 쪽도 맞지 않는 경우: 솔직한 대안</h2>
+      <p>Binance와 Coinbase가 이 비교를 지배하는 이유는 초보자가 이미 알고 있는 두 이름이기 때문이지만, 유일하게 진지한 선택지는 아닙니다. OKX는 수수료와 코인 선택 면에서 Binance와 거의 비슷하며, P2P 시장이 깊은 곳에서는 특히 미국 외 초보자에게 강력한 대안입니다. <a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit</a>는 트레이더에게 인기 있는 또 다른 주요 거래소로, 경쟁력 있는 수수료와 완전한 상품 범위를 갖추고 있습니다. 어느 쪽도 위의 핵심 판정을 바꾸지 않습니다. 거주 국가가 여전히 후보 목록을 결정합니다. 하지만 첫 선택 거래소가 거주 지역이나 결제 수단을 지원하지 않는다면, 유동성이 얇고 지원이 약한 작은 플랫폼에 정착하기 전에 이 두 곳을 확인하세요. 어디에서나 동일한 규칙이 적용됩니다. 공식 도메인을 확인하고, 2FA를 활성화하고, 소액으로 시작하세요.</p>
+      <h2>어느 쪽을 선택하든 하지 말아야 할 것</h2>
+      <p>세 가지 초보자 함정은 두 플랫폼 모두에 동일하게 적용됩니다. 첫째, 선물이나 레버리지 토큰으로 시작하지 마세요. 빠른 시장 움직임에서 초보자의 계정을 청산할 수 있으며, 어느 플랫폼의 초보자 인터페이스도 그 위험을 충분히 명확히 보여주지 않습니다. 둘째, 보유분 전체를 어느 하나의 거래소에도 영원히 두지 마세요. 잃으면 진정으로 아플 금액이 되면 당사 <a href="best-crypto-wallet-for-beginners.html">초보자 지갑 가이드</a>로 자기 수탁을 배우세요. 셋째, 화면 공유나 메시징 앱을 통해 계정 설정을 '도와주겠다'는 사람을 허락하지 마세요. 진짜 지원은 어느 플랫폼에서도 비밀번호, 2FA 코드, 시드 문구를 절대 요구하지 않습니다.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Ready?</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">가입은 약 10분이 걸립니다. 한 번 인증하고, 2FA를 활성화한 뒤, 위 단계를 따르세요. 이 사이트의 가이드가 나머지를 안내합니다. B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+        </div>
+        <p class="note">직접 가입할 때와 동일한 수수료 — 당사 링크는 추가 비용이 들지 않습니다. Bitget(<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">bitget.com</a>)도 이용할 수 있습니다. 현재 Bitget과는 리베이트 계약이 없음을 참고하세요.</p>
+      </div>
+
+      <h3>완전 초보자에게 Binance와 Coinbase 중 어느 쪽이 더 좋은가요?</h3>
+      <p>미국 외 지역에서는 대부분의 초보자에게 Binance가 더 좋은 시작입니다. 거래 수수료가 낮고, 코인이 많으며, 현지 결제 수단으로 구매할 수 있는 P2P 시장이 더 깊습니다. 미국에서는 Coinbase가 더 좋은 시작입니다. Binance의 메인 플랫폼은 미국 거주자에게 제공되지 않으며, Coinbase의 간단한 인터페이스가 가장 쉬운 첫 단계이기 때문입니다.</p>
+      <h3>Binance와 Coinbase 중 어느 쪽이 더 저렴한가요?</h3>
+      <p>거래는 Binance가 더 저렴합니다. 공개된 표준 현물 수수료는 거래량 할인 전 메이커와 테이커 모두 0.10%입니다. Coinbase의 간편 구매 인터페이스는 거래당 비용이 눈에 띄게 더 들지만, Advanced Trade 인터페이스는 Binance에 훨씬 가깝습니다. 수수료는 변동하므로 거래 전에 항상 공식 수수료표를 확인하세요.</p>
+      <h3>미국인이 Binance를 이용할 수 있나요?</h3>
+      <p>미국 거주자는 Binance의 메인 글로벌 플랫폼을 이용할 수 없습니다. 코인과 기능이 더 적은 별도의 플랫폼인 Binance.US로 안내됩니다. 미국에 거주한다면 Coinbase가 간단한 선택지이며, Binance 생태계를 특별히 원한다면 Binance.US가 대안입니다.</p>
+      <h3>Coinbase가 Binance보다 안전한가요?</h3>
+      <p>둘 다 보안 면에서 최상위권이며, 어느 쪽도 무위험은 아닙니다. Coinbase는 미국 상장 기업이며, 보유한 USD 현금 잔액은 제휴 은행을 통해 최대 250,000달러까지 FDIC 보험이 적용됩니다. 다만 암호화폐 자체는 어디에서도 FDIC 보험이 적용되지 않습니다. Binance는 훨씬 큰 규모와 SAFU 긴급 자금으로 대응합니다. 2019년 해킹 이후 모든 사용자 손실을 전액 보상했습니다. 대부분의 초보자에게 실질적인 안전성 차이는 작습니다. 자신의 2FA와 피싱 습관이 더 중요합니다.</p>
+      <h3>Binance와 Coinbase를 모두 이용할 수 있나요?</h3>
+      <p>예, 많은 경험 사용자가 정확히 그렇게 합니다. 간단한 달러-암호화폐 구매에는 Coinbase, 더 저렴한 거래와 더 넓은 코인 선택에는 Binance를 이용합니다. 다만 하나로 시작하는 것이 더 간단합니다. 먼저 거주 국가에 맞는 것을 선택하고, 한계에 부딪히면 나중에 두 번째를 추가하세요.</p>
+      <h3>어느 쪽이 구매할 수 있는 코인이 더 많나요?</h3>
+      <p>Binance는 Coinbase보다 훨씬 많은 코인을 상장하며, Coinbase에 절대 도달하지 않는 작은 토큰도 많이 포함합니다. Bitcoin, Ethereum, 주요 코인을 구매하는 초보자에게는 차이가 중요하지 않습니다. 둘 다 주요 코인을 다룹니다. 작은 알트코인을 찾기 시작할 때야 비로소 중요해집니다.</p>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">초보자를 위한 암호화폐 구매 방법</a></li>
+        <li><a href="is-binance-safe.html">Binance는 안전한가요? SAFU, 준비금, 솔직한 주의사항</a></li>
+        <li><a href="buy-usdt.html">USDT 구매 방법: 모든 방법 비교</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">초보자를 위한 최고의 암호화폐 지갑</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

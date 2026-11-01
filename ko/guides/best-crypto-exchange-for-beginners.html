@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>초보자를 위한 최고의 암호화폐 거래소(2026) — TokVS</title>
+<meta name="description" content="초보자를 위한 최고의 암호화폐 거래소: 온보딩, 지원, 수수료 기준으로 OKX, Binance, Bitget 비교 — 첫 주 일별 계획 포함.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/best-crypto-exchange-for-beginners">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/best-crypto-exchange-for-beginners">
+<meta property="og:title" content="초보자를 위한 최고의 거래소(2026) — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="초보자를 위한 세 가지 선택지 비교와 첫 주 계획.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/best-crypto-exchange-for-beginners">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"초보자를 위한 최고의 거래소","item":"https://tokvs.com/ko/guides/best-crypto-exchange-for-beginners"}]},{"@type":"Article","headline":"초보자를 위한 최고의 암호화폐 거래소(2026)","description":"초보자를 위한 최고의 암호화폐 거래소: 온보딩, 지원, 수수료 기준으로 OKX, Binance, Bitget 비교 — 첫 주 일별 계획 포함.","datePublished":"2026-10-16","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/best-crypto-exchange-for-beginners","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"1. OKX — 가장 쉬운 입구","acceptedAnswer":{"@type":"Answer","text":"'거래해 본 적 없음'에서 '첫 구매 완료'까지 가장 짧은 경로: 깔끔한 온보딩, 눈에 띄는 간편 구매 절차, 실제로 도움이 되는 언어 지원. 현물 메이커 수수료 0.08%는 주요 거래소 중 최저이기도 합니다. 거래가 늘어나면 보너스가 됩니다. 계정 하나만 원하고 숙제가 필요 없다면 여기서 시작하세요."}},{"@type":"Question","name":"2. Binance — 종합 상점","acceptedAnswer":{"@type":"Answer","text":"압도적인 최대 거래소: 가장 많은 코인, 가장 깊은 유동성, 어떤 플랫폼에 대해서도 가장 많은 제3자 튜토리얼 — 구글링하는 모든 질문에 이미 답이 있다는 뜻입니다. 인터페이스가 약간 복잡하지만 일주일 사용하면 해결됩니다. 선택지를 최대한 원한다면 기본 선택지입니다."}},{"@type":"Question","name":"3. Bitget — 보면서 배우기","acceptedAnswer":{"@type":"Answer","text":"Bitget의 특징은 카피 트레이딩입니다. 시장 움직임을 배우는 동안 숙련된 트레이더의 포지션을 자동으로 따라하세요. 초보자에게 실제 결정을 지켜보는 것(실제 돈으로, 소액으로)은 어떤 가이드보다 빠르게 가르쳐줍니다. 솔직한 주의사항: 과거 성과는 아무것도 예측하지 못합니다. 소액으로 카피하고, 수입이 아닌 수업료로 여기세요."}},{"@type":"Question","name":"시작하려면 본인 인증이 필요한가요?","acceptedAnswer":{"@type":"Answer","text":"예 — 모든 합법적인 거래소는 법정화폐 입금이나 의미 있는 거래 전에 KYC를 요구합니다. 자금 세탁 방지법 때문이며 선택 사항이 아닙니다. '신분증 불필요' 플랫폼은 피해야 할 대상입니다."}},{"@type":"Question","name":"초보자로서 암호화폐를 보관하는 가장 안전한 방법은 무엇인가요?","acceptedAnswer":{"@type":"Answer","text":"금액이 작고 배우는 중에는 거래소에서 시작하세요. 보유량이 중요해지면 자신의 지갑으로 옮기고 시드 문구를 집 열쇠처럼 지키세요. 실제로 그것이기 때문입니다."}},{"@type":"Question","name":"두 번째 거래소를 이용할 준비가 되었는지 어떻게 알 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"두 번째 거래소가 주는 구체적인 것(상장 종목, 기능, 수수료 등급)을 말할 수 있을 때입니다. '다각화'라는 느낌 때문이 아닙니다. 잘 보호된 계정 하나가 허술한 계정 세 개보다 낫습니다."}},{"@type":"Question","name":"초보자에게 암호화폐는 너무 늦었거나 너무 이른가요?","acceptedAnswer":{"@type":"Answer","text":"둘 다 아닙니다. 그것은 타이밍 문제로 포장된 가격 문제입니다. 올바른 초보자 질문은 '소액의 돈으로, 레버리지 없이 배울 여유가 있는가?'입니다. 그렇다면 어떤 시장에서도 배우기 시작하기에 좋습니다."}},{"@type":"Question","name":"은행에 암호화폐를 구매한다고 알려야 하나요?","acceptedAnswer":{"@type":"Answer","text":"허락을 받을 필요는 없지만, 암호화폐 흐름에는 전용 계좌/카드를 사용하세요. 기록이 깔끔해지고, 은행이 거래에 대해 물어보면 답이 한 문장으로 끝납니다."}},{"@type":"Question","name":"초보자가 아닌 상태가 되려면 얼마나 걸리나요?","acceptedAnswer":{"@type":"Answer","text":"대략 3–6개월의 활발한 학습, 또는 한 번의 완전한 시장 사이클에 대한 감정 교육 중 먼저 오는 쪽입니다. 수료증은 없습니다. 위의 졸업 기준이 솔직한 버전입니다."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / 초보자를 위한 최고의 거래소</div>
+      <h1>초보자를 위한 최고의 암호화폐 거래소</h1>
+      <p class="sub">'가장 낮은 수수료'는 첫 달에는 잊으세요. 초보자에게 필요한 것은 원활한 온보딩, 연락 가능한 지원, 합리적인 기본 설정입니다. 세 가지 선택지, 솔직한 비교.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 8분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>초보자가 실제로 필요로 하는 것(가장 낮은 수수료가 아닙니다)</h2>
+      <p>초보자는 수수료에 집착합니다. 경험 많은 트레이더는 첫 달의 우선순위가 다르다고 말할 것입니다.</p>
+      <ul>
+        <li><strong>마찰 없는 온보딩</strong> — 첫 시도에 통과하는 인증, 설명서가 필요 없는 구매 절차.</li>
+        <li><strong>답변하는 지원</strong> — 첫 입금 문제는 발생합니다. 중요한 것은 사람에게 연락할 수 있는지 여부입니다.</li>
+        <li><strong>내장된 교육</strong> — 가이드, 데모, 지식을 전제하지 않고 스스로 설명하는 UI.</li>
+        <li><strong>합리적인 기본 설정</strong> — 미리 활성화된 레버리지 없음, 혼란스러운 주문 유형을 강요하지 않음.</li>
+      </ul>
+      <p>수수료는 두 번째 달부터 중요합니다. 첫 달에는 <em>비싼 실수를 하지 않는 것</em>에 최적화하세요.</p>
+      <h2>세 가지 선택지</h2>
+      <h3>1. OKX — 가장 쉬운 입구</h3>
+      <p>'거래해 본 적 없음'에서 '첫 구매 완료'까지 가장 짧은 경로: 깔끔한 온보딩, 눈에 띄는 간편 구매 절차, 실제로 도움이 되는 언어 지원. 현물 메이커 수수료 0.08%는 주요 거래소 중 최저이기도 합니다. 거래가 늘어나면 보너스가 됩니다. 계정 하나만 원하고 숙제가 필요 없다면 여기서 시작하세요.</p>
+      <p class="in-cta">가장 쉬운 시작: <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></p>
+      <h3>2. Binance — 종합 상점</h3>
+      <p>압도적인 최대 거래소: 가장 많은 코인, 가장 깊은 유동성, 어떤 플랫폼에 대해서도 가장 많은 제3자 튜토리얼 — 구글링하는 모든 질문에 이미 답이 있다는 뜻입니다. 인터페이스가 약간 복잡하지만 일주일 사용하면 해결됩니다. 선택지를 최대한 원한다면 기본 선택지입니다.</p>
+      <p class="in-cta">최대한의 선택지: <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></p>
+      <h3>3. Bitget — 보면서 배우기</h3>
+      <p>Bitget의 특징은 <strong>카피 트레이딩</strong>입니다. 시장 움직임을 배우는 동안 숙련된 트레이더의 포지션을 자동으로 따라하세요. 초보자에게 실제 결정을 지켜보는 것(실제 돈으로, 소액으로)은 어떤 가이드보다 빠르게 가르쳐줍니다. 솔직한 주의사항: 과거 성과는 아무것도 예측하지 못합니다. 소액으로 카피하고, 수입이 아닌 수업료로 여기세요.</p>
+      <h2>나란히 비교</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>OKX</th><th>Binance</th><th>초보자 강점</th></tr></thead>
+        <tbody>
+          <tr><td>가장 쉬운 온보딩</td><td>가장 많은 가이드와 코인</td><td>카피 트레이딩</td><td>현물 메이커 / 테이커</td></tr>
+          <tr><td>0.08% / 0.10%</td><td>0.10% / 0.10%</td><td>간편 구매 절차</td><td>간편 구매 절차</td></tr>
+          <tr><td>우수함</td><td>양호함</td><td>좋은 언어 지원</td><td>좋은 언어 지원</td></tr>
+          <tr><td>지원</td><td>막대한 거래량, 편차 있음</td><td>일반 등급 수수료이며, 수수료표는 변경됩니다. 공식 사이트를 확인하세요.</td><td>막대한 거래량, 편차 있음</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">첫 주, 하루하루</p>
+      <h2>1일차: 가입, 인증, 2FA + 피싱 방지 코드 활성화. 10분, 가장 중요한 10분.</h2>
+      <ol>
+        <li><strong>2일차:</strong> 소액 입금($50–100), USDT를 조금 구매하고 둘러보세요. 아직 거래하지 마세요.</li>
+        <li><strong>3–4일차:</strong> 지정가 주문으로 아주 작은 BTC를 처음 구매하세요. 체결되는 것을 지켜보세요. 메커니즘을 느껴보세요.</li>
+        <li><strong>5–7일차:</strong> 자신의 지갑으로 소액 출금을 시도하고 시드 문구를 백업하세요. 이제 대부분의 '암호화폐 투자자'보다 더 많이 이해하게 됩니다.</li>
+        <li>레버리지 없음, 선물 없음, '전문가' 그룹 없음, 아직 두 번째 계정 없음. 지루함이 전략입니다.</li>
+      </ol>
+      <div class="callout warn"><b>First-week don&#x27;ts:</b>초보자가 실제로 지불하는 수수료(실제 계산 포함)</div>
+      <h2>잠시 수수료표 경쟁을 잊으세요. $500 상당의 BTC를 구매하는 초보자:</h2>
+      <p>OKX 지정가 주문(메이커 0.08%): $0.40</p>
+      <ul>
+        <li>Binance/Bitget 지정가 주문(0.10%): <strong>$0.50</strong></li>
+        <li>시장가 주문이 가능한 곳: 약 $0.50 + 가능한 슬리피지</li>
+        <li>'최고'와 '최악'의 차이는 10센트입니다. 첫 달의 실제 비용은 다음과 같습니다. 빠른 구매 시 스프레드(대신 지정가 주문을 사용하세요), 자기 수탁을 연습할 때 한 번의 출금 네트워크 수수료(TRC20 기준 약 $1), 조급함으로 잃는 금액. 플랫폼이 아니라 행동을 최적화하세요.</li>
+      </ul>
+      <p>위험 신호: 초보자가 도망쳐야 할 거래소</p>
+      <h2>검증 가능한 회사가 뒤에 없음. 실제 주소, 실제 라이선스, 실제 준비금 증명 페이지 — 없으면 떠나세요.</h2>
+      <ul>
+        <li><strong>'보장된' 수익.</strong> 보장된 수익은 거짓말이거나 폰지 수학입니다. 항상 그렇습니다.</li>
+        <li><strong>DM을 통한 다운로드 링크.</strong> 앱은 공식 사이트나 앱 스토어에서 받습니다. 그뿐입니다.</li>
+        <li><strong>압박 전술.</strong> '한 시간 안에 입금하면 보너스'는 거래소가 아니라 카지노의 말입니다.</li>
+        <li>거래소를 직접 평가하는 방법(5분 버전)</li>
+      </ul>
+      <h2>준비금 증명을 공개하나요? (아니오 → 끝, 다음.)</h2>
+      <ol>
+        <li>수수료표가 공개되어 있고 1분 안에 읽을 수 있나요? (숨겨져 있거나 없으면 → 끝.)</li>
+        <li>거주 국가에서 작동하는 P2P/은행/카드 옵션이 있나요? (가정하지 말고 확인하세요.)</li>
+        <li>지금 5분 안에 지원에 연락할 수 있나요? (테스트하세요. 나중에 생명줄이 됩니다.)</li>
+        <li>'[거래소 이름] + 해킹 + 2024/2025'를 검색하세요. 무슨 일이 있었고 어떻게 처리했나요?</li>
+        <li>다섯 가지 모두를 통과하는 거래소는 초보자에게 괜찮습니다. 빅4는 모두 통과합니다.</li>
+      </ol>
+      <p>2–3개월차: 현명하게 레벨업하기</p>
+      <h2>지정가 주문을 제대로 배우세요. 그리고 주문 유형에 대한 생각을 영원히 멈추세요.</h2>
+      <ul>
+        <li><strong>완전한 자기 수탁 사이클을 한 번 실행하세요</strong>. 거래소 → 자신의 지갑 → 다시 거래소. 소액으로. 이 기술은 어떤 거래 팁보다 중요합니다.</li>
+        <li><strong>수수료표를 끝까지 한 번 읽어보세요.</strong> 10분이면 '메이커/테이커/펀딩 수수료'가 다시는 헷갈리지 않을 것입니다.</li>
+        <li><strong>두 번째 거래소를 고려하세요</strong>. 단, 구체적인 이유(코인, 기능)가 있을 때만 — 지루해서가 아닙니다.</li>
+        <li>목록에 없는 것들에 주목하세요. 레버리지, 선물, 밈코인, '거래 전략'. 아무리 빨라도 6개월차 — 그리고 불태워도 되는 돈으로만.</li>
+      </ul>
+      <p>첫 달을 위한 10계명</p>
+      <h2>거래소 하나. 세 개가 아닙니다.</h2>
+      <ol>
+        <li>첫날 2FA. SMS가 아닌 인증 앱.</li>
+        <li>$50–100으로 시작하세요. 수업료입니다.</li>
+        <li>지정가 주문만. 시장가 주문은 조급함에 대한 세금입니다.</li>
+        <li>모든 거래를 기록하세요. 날짜, 금액, 가격.</li>
+        <li>'고객센터'와 화면을 절대 공유하지 마세요.</li>
+        <li>공식 출처에서만 앱을 다운로드하세요.</li>
+        <li>레버리지 금지. 선물 금지. 예외 없음.</li>
+        <li>첫 달에는 가격 알림을 무시하세요. 진심입니다.</li>
+        <li>무엇이든 '최적화'하기 전에 30일 계획을 마치세요.</li>
+        <li>소음을 무시해야 할 때</li>
+      </ol>
+      <h2>첫 달은 어떤 시장 드라마와 겹칠 것입니다. 폭락, 랠리, '일생일대의 기회'. 항상 무언가가 있습니다. 소음은 거래를 유도하도록 설계되었습니다. 초보자로서의 강점은 배우는 동안 거래하지 않는 것입니다. 알림을 끄고, 하루하루 계획을 따르고, 시장이 다른 사람을 위해 공연하도록 두세요. 코인은 두 번째 달에도 여전히 있을 것이며, FOMO가 아닌 실무 지식으로 코인을 만나게 될 것입니다.</h2>
+      <p>실제 돈이 드는 초보자 실수(순위별)</p>
+      <h2>잘못된 네트워크 출금 — 초보자의 되돌릴 수 없는 손실 1위. 세 번 확인하고 소액으로 테스트하세요.</h2>
+      <ol>
+        <li><strong>가짜 앱 / 피싱</strong> — 조기에 발견하면 되돌릴 수 있는 손실 1위. 공식 출처만 이용하세요.</li>
+        <li><strong>'한 번만 해보는' 레버리지</strong> — 청산은 처음이라는 것을 신경 쓰지 않습니다.</li>
+        <li><strong>2FA 없이 모든 것을 하나의 거래소에 보관</strong> — 계정 탈취 시작 패키지.</li>
+        <li><strong>낯선 사람이 흥분했다는 이유로 구매</strong> — 흥분은 실사가 아닙니다.</li>
+        <li>'초보자 친화적'이 실제로 어떻게 보이는지(테스트)</li>
+      </ol>
+      <h2>마케팅은 모든 거래소가 초보자 친화적이라고 말합니다. 5분 테스트는 다음과 같습니다. 앱을 열고, 검색 없이 구매 버튼을 찾고, 데모 모드에서 구매 절차를 완료하고, 출금 페이지를 찾고, 지원 채팅을 여세요. 다섯 가지 모두 5분 안에 끝나면 진정으로 초보자 친화적입니다. OKX는 이 테스트를 가장 깔끔하게 통과합니다. Binance는 약간 더 복잡하지만 통과합니다. Bitget은 카피 트레이딩 우회로 통과합니다. 직접 테스트하세요. 여러분의 엄지손가락만이 중요한 리뷰어입니다.</h2>
+      <p>졸업 기준: 더 이상 초보자가 아닌 때</p>
+      <h2>불안 없이 완전한 자기 수탁 사이클(거래소 → 지갑 → 거래소)을 완료했습니다.</h2>
+      <ul>
+        <li>친구에게 메이커 대 테이커를 한 문장으로 설명할 수 있습니다.</li>
+        <li>패닉 매도 없이 20% 하락을 견뎌냈습니다. (시장은 이 시험을 여러분을 위해 마련할 것입니다.)</li>
+        <li>아무리 간단해도 포지션 규모에 대한 서면 규칙이 있습니다.</li>
+        <li>그때까지는 거래소 하나, 현물만, 소액, 지루한 절차. '고급'은 그저 흉터와 스프레드시트를 가진 '초보자'일 뿐입니다.</li>
+      </ul>
+      <p>오늘 시작하고, 소액으로 시작하세요</p>
+      <h2>완벽한 거래소는 존재하지 않지만, 완벽한 시작은 존재합니다. 평판 좋은 플랫폼 하나, 인증된 계정 하나, 소액 입금 하나, 지정가 주문 하나. 이 가이드의 모든 것은 그 첫 번째 지루하고 신중한 거래에서 복합적으로 쌓입니다. 위에서 거래소를 선택하고, 첫 주 전체를 온전히 보내고, 암호화폐에서 실제로 재미있는 부분, 즉 무엇을 하고 있는지 이해하는 부분에 오신 것을 환영합니다.</h2>
+      <p>가입은 약 10분이 걸립니다. 한 번 인증하고, 2FA를 활성화한 뒤, 위 단계를 따르세요. 이 사이트의 가이드가 나머지를 안내합니다. O</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Ready?</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#12150F;">비트코인 구매 방법: 전체 안내</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+        </div>
+        <p class="note">직접 가입할 때와 동일한 수수료 — 당사 링크는 추가 비용이 들지 않습니다.</p>
+      </div>
+      
+      <h3>시작하려면 본인 인증이 필요한가요?</h3>
+      <p>예 — 모든 합법적인 거래소는 법정화폐 입금이나 의미 있는 거래 전에 KYC를 요구합니다. 자금 세탁 방지법 때문이며 선택 사항이 아닙니다. '신분증 불필요' 플랫폼은 피해야 할 대상입니다.</p>
+      <h3>초보자로서 암호화폐를 보관하는 가장 안전한 방법은 무엇인가요?</h3>
+      <p>금액이 작고 배우는 중에는 거래소에서 시작하세요. 보유량이 중요해지면 자신의 지갑으로 옮기고 시드 문구를 집 열쇠처럼 지키세요. 실제로 그것이기 때문입니다.</p>
+      <h3>두 번째 거래소를 이용할 준비가 되었는지 어떻게 알 수 있나요?</h3>
+      <p>두 번째 거래소가 주는 구체적인 것(상장 종목, 기능, 수수료 등급)을 말할 수 있을 때입니다. '다각화'라는 느낌 때문이 아닙니다. 잘 보호된 계정 하나가 허술한 계정 세 개보다 낫습니다.</p>
+      
+      <h3>초보자에게 암호화폐는 너무 늦었거나 너무 이른가요?</h3>
+      <p>둘 다 아닙니다. 그것은 타이밍 문제로 포장된 가격 문제입니다. 올바른 초보자 질문은 '소액의 돈으로, 레버리지 없이 배울 여유가 있는가?'입니다. 그렇다면 어떤 시장에서도 배우기 시작하기에 좋습니다.</p>
+      <h3>은행에 암호화폐를 구매한다고 알려야 하나요?</h3>
+      <p>허락을 받을 필요는 없지만, 암호화폐 흐름에는 전용 계좌/카드를 사용하세요. 기록이 깔끔해지고, 은행이 거래에 대해 물어보면 답이 한 문장으로 끝납니다.</p>
+      
+      <h3>초보자가 아닌 상태가 되려면 얼마나 걸리나요?</h3>
+      <p>대략 3–6개월의 활발한 학습, 또는 한 번의 완전한 시장 사이클에 대한 감정 교육 중 먼저 오는 쪽입니다. 수료증은 없습니다. 위의 졸업 기준이 솔직한 버전입니다.</p>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">입문 가이드: 여기서 시작하세요</a></li>
+        <li><a href="choose-exchange.html">거래소 선택 방법: 6가지 확인 사항</a></li>
+        <li><a href="../start/step1.html">입문 가이드: 여기서 시작하세요</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

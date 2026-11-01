@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>비트코인 구매 방법: 초보자 단계별 가이드 — TokVS</title>
+<meta name="description" content="초보자를 위한 비트코인 구매 방법: 거래소 선택, 본인 인증, USDT 구매, 첫 BTC 주문, 안전한 보관.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-bitcoin">
+<meta property="og:title" content="초보자를 위한 비트코인 구매 방법 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="거래소, 가입, USDT, 첫 주문, 안전한 보관 — 5단계로 완성하는 초보자 과정.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/how-to-buy-bitcoin">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"비트코인 구매 방법: 초보자 단계별 가이드","item":"https://tokvs.com/ko/guides/how-to-buy-bitcoin"}]},{"@type":"Article","headline":"비트코인 구매 방법: 초보자 단계별 가이드","description":"초보자를 위한 비트코인 구매 방법: 거래소 선택, 본인 인증, USDT 구매, 첫 BTC 주문, 안전한 보관.","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/how-to-buy-bitcoin","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"비트코인을 구매하는 최소 금액은 얼마인가요?","acceptedAnswer":{"@type":"Answer","text":"비트코인은 1억 단위로 나뉘므로 몇 달러어치라도 구매할 수 있습니다. 장벽은 돈이 아니라 과정을 이해하고 위험을 먼저 아는 것입니다."}},{"@type":"Question","name":"암호화폐 구매 자체가 안전한가요?","acceptedAnswer":{"@type":"Answer","text":"위험은 가격 변동성과 플랫폼/운영 보안입니다. 첫 번째는 잃어도 되는 돈으로 소량씩 구매하며 처리하고, 두 번째는 최상위 플랫폼, 2FA, 시드 문구를 절대 공유하지 않는 것으로 처리하세요. 규칙은 국가마다 다릅니다. 현지 규정을 확인하세요."}},{"@type":"Question","name":"현물과 선물 중 어느 것을 구매해야 하나요?","acceptedAnswer":{"@type":"Answer","text":"현물은 실제 코인을 소유한다는 뜻입니다. 선물은 손실이 확대되고 증거금이 0으로 청산될 수 있는 레버리지 파생상품입니다. 초보자는 현물만 구매합니다. 이유는 레버리지와 청산을 참조하세요."}},{"@type":"Question","name":"세금을 신고해야 하나요?","acceptedAnswer":{"@type":"Answer","text":"세금 취급은 관할 지역마다 크게 다르며, 이 사이트는 세무 조언을 제공하지 않습니다. 의미 있는 금액에 대해서는 거래 기록을 보관하고 현지 전문가와 상담하세요."}},{"@type":"Question","name":"비트코인이 비싸 보여요. 너무 늦은 건가요?","acceptedAnswer":{"@type":"Answer","text":"'비싸다'는 착각입니다. 비트코인은 1억 조각으로 나뉘므로 $10어치라도 구매할 수 있습니다. 중요한 것은 코인당 가격이 아니라 퍼센트 움직임입니다. 진짜 질문은 항상 다음과 같습니다. 그것이 무엇인지 이해하나요, 그리고 얼마나 큰 변동성을 견딜 수 있나요? 소액으로 시작한 뒤 관점을 형성하세요."}},{"@type":"Question","name":"은행 계좌에서 자금을 조달해야 하나요, 결제 앱에서 조달해야 하나요?","acceptedAnswer":{"@type":"Answer","text":"거래소 법정화폐 온램프는 일반적으로 은행 카드나 송금을 사용합니다. P2P는 판매자가 받아들이는 방법을 따릅니다. 전문가 습관은 급여와 일상 지출과 분리된 암호화폐 흐름 전용 계좌나 카드입니다. 위험 관리와 장부 정리 모두에 더 깔끔합니다."}},{"@type":"Question","name":"달러 비용 평균법이 수익을 보장하나요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. DCA는 진입 비용을 평균화할 뿐 수익을 만들어내지 않습니다. 수년간의 하락에 매수하면 계좌는 여전히 적자를 보입니다. 그 가치는 규율입니다. 고점을 쫓지 않고, 저점을 패닉 매도하지 않는 것입니다."}},{"@type":"Question","name":"비트코인 한 개 미만을 구매할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"물론입니다. 비트코인은 1억 조각('사토시')으로 나뉩니다. 대부분의 초보자는 $50–100어치로 시작합니다. 단위 가격은 무관합니다. 퍼센트 움직임만이 중요합니다."}},{"@type":"Question","name":"비트코인을 잘못된 주소로 보내면 어떻게 되나요?","acceptedAnswer":{"@type":"Answer","text":"사라집니다. 비트코인 거래는 되돌릴 수 없으며, 되돌려줄 고객 지원도 없습니다. 그래서 체크리스트가 중요합니다. 주소를 복사해 붙여넣고, 처음과 마지막 문자를 확인하고, 새 목적지에는 아주 작은 금액으로 테스트하세요. 이 하나의 습관이 암호화폐에서 가장 비싼 초보자 실수를 막습니다."}},{"@type":"Question","name":"거래 화면에서 보이는 매수-매도 호가 스프레드란 무엇인가요?","acceptedAnswer":{"@type":"Answer","text":"호가창은 녹색 매수 주문과 적색 매도 주문을 보여줍니다. 최적 매수가와 최적 매도가 사이의 격차가 스프레드입니다. 스프레드가 좁을수록 유동성이 건강합니다. 스프레드가 넓어 보이면 유동성이 얇고 시장가 주문이 더 미끄러집니다. 초보자가 기본적으로 지정가 주문을 사용해야 하는 또 다른 이유입니다."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / 비트코인 구매하기</div>
+      <h1>비트코인 구매 방법: 완전한 초보자 과정</h1>
+      <p class="sub">짧은 답변: 비트코인 구매는 다섯 단계입니다. 최상위 거래소를 선택하고, 가입해 신분증을 인증하고, 먼저 USDT를 구매하고, BTC로 교환한 뒤, 보관 장소를 결정하세요. 전체 과정은 휴대폰으로 진행되며 약 30분이 걸립니다.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기 →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+      </div>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 10분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <div class="callout good"><b>The 5 steps at a glance:</b>1. 거래소 선택 → 2. 가입 및 인증 → 3. 먼저 USDT 구매 → 4. BTC 주문 실행 → 5. 보관 장소 결정. 각 단계는 아래에서 자세히 설명합니다. 따라오세요. 모든 것이 휴대폰에서 작동합니다.</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>시작하기 전에 준비할 세 가지</h2>
+      <ul>
+        <li><strong>정부 발급 신분증.</strong> 모든 합법적인 거래소는 본인 인증(KYC)을 요구하며 예외가 없습니다. '신분증 불필요 구매'를 제공하는 채널은 함정입니다.</li>
+        <li><strong>본인이 통제하는 휴대폰과 이메일</strong> — 가입, 코드, 인증 앱용입니다.</li>
+        <li><strong>잃어도 되는 돈.</strong> 소액으로 시작하세요. 과정을 배우기에 충분하고, 아플 정도는 아닌 금액으로.</li>
+      </ul>
+      <p>비트코인이 실제로 무엇인지 아직 잘 모르겠나요? <a href="../start/step1.html">입문 가이드 1단계: 비트코인 만나기</a>에서 5분을 보낸 뒤 돌아오세요.</p>
+
+      <h2>1단계: 거래소 선택</h2>
+      <p>거래소는 구매하는 시장입니다. 초보자는 글로벌 최상위권에서만 선택해야 합니다. 크고 오래 운영되며 수수료가 투명합니다. Binance, OKX, Bybit, Bitget이 4대 주류 선택지입니다. 현물 수수료는 모두 0.1% 수준이며, 주로 상품 중점과 앱 경험이 다릅니다. 당사 <a href="choose-exchange.html">거래소 선택 가이드</a>는 모든 플랫폼을 평가하는 방법을 보여주며, <a href="../exchanges.html">4개 거래소 수수료 및 리베이트 비교</a>로 바로 이동할 수도 있습니다.</p>
+      <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">전 세계 최대, 가장 많은 코인</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">더 낮은 현물 메이커 수수료</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">가입하기</a></div>
+      </div>
+
+      <p><strong>직접적인 판정:</strong> 대부분의 초보자는 Binance(가장 많은 선택지, 가장 깊은 유동성)나 OKX(더 원활한 경험, 약간 낮은 0.08% 현물 메이커 수수료)로 괜찮을 것입니다. 선물을 진지하게 거래할 계획이라면 Bybit를 살펴보세요. 먼저 계정 하나를 여세요. 계정이 많다고 수익이 많아지는 것은 아닙니다.</p>
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">결정하셨나요? 계정 개설은 약 10분이 걸립니다. <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">가입하기</a></p>
+      <h2>2단계: 가입 및 인증</h2>
+      <ol>
+        <li>공식 웹사이트나 휴대폰 앱 스토어에서만 앱을 다운로드하세요. <strong>누군가 보낸 링크에서 앱을 절대 설치하지 마세요</strong>. 가짜 앱은 초보자 사기 1위입니다.</li>
+        <li>이메일이나 전화번호와 고유하고 강력한 비밀번호로 가입하세요.</li>
+        <li>본인 인증을 완료하세요. 신분증을 업로드하고 얼굴 확인을 통과하세요. 승인은 보통 몇 분에서 몇 시간이 걸립니다.</li>
+        <li>즉시 2단계 인증(2FA)과 피싱 방지 코드를 활성화하세요. 이것이 계좌의 기본 방어입니다.</li>
+      </ol>
+      <p>자세한 안내는 <a href="../start/step3.html">입문 가이드 3단계: 가입하기</a>에 있습니다.</p>
+
+      <h2>3단계: 먼저 USDT 구매하기</h2>
+      <p>왜 현금으로 직접 BTC를 구매하지 않나요? 대부분의 거래 페어가 USDT(달러 연동 스테이블코인)로 표시되기 때문입니다. 먼저 USDT를 구매하면 더 좋은 가격과 원하는 모든 페어를 얻을 수 있습니다. 거래소의 즉시 구매나 P2P 기능을 이용하고 앱 내 절차를 따르세요. 프리미엄과 자금 동결 위험은 <a href="buy-usdt.html">USDT 구매 방법</a>을 참조하세요. 처음에는 소액을 구매하고 더 진행하기 전에 도착을 확인하세요.</p>
+
+      <h2>4단계: BTC 구매하기</h2>
+      <ol>
+        <li>현물 거래에서 <strong>BTC/USDT</strong> 페어를 여세요.</li>
+        <li>초보자는 <strong>지정가 주문</strong>을 사용해야 합니다. 지불할 의사가 있는 가격과 금액(예: $100 상당)을 설정하세요. 시장이 가격에 도달하면 체결되며, 메이커 수수료가 더 낮습니다. 서두른다면? 시장가 주문이 되며, 현재 호가 가격으로 체결됩니다.</li>
+        <li>확인 전에 세 가지 숫자를 확인하세요. 가격, 금액, 수수료. 현물 수수료 0.1%에서는 $100 구매에 약 $0.10가 듭니다. 수수료 계산은 <a href="crypto-fees.html">암호화폐 수수료 설명</a>에서 다룹니다.</li>
+        <li>체결되면 BTC가 자산 / 현물 아래에 표시됩니다. 축하합니다. 첫 구매가 완료되었습니다.</li>
+      </ol>
+
+      <h2>5단계: 보관 장소 결정하기</h2>
+      <ul>
+        <li><strong>소액, 계속 거래 중:</strong> 거래소에 두어도 괜찮습니다. 2FA가 켜져 있고 계좌를 절대 공유하지 않는 조건으로.</li>
+        <li><strong>큰 금액, 장기 보유:</strong> 직접 통제하는 지갑으로 옮기고, 시드 문구를 종이에 백업하세요. <a href="../start/step5.html">경로의 5단계</a>와 <a href="wallet-safety.html">지갑 및 시드 문구 보안</a>을 참조하세요.</li>
+      </ul>
+
+      <div class="callout warn"><b>The 4 most common beginner mistakes:</b>1. 빌린 돈이나 신용으로 구매하기. 2. 급등을 쫓고 급락을 패닉 매도하는 것을 반복하기. 3. '멘토'나 시그널 그룹이 대신 결정하게 하기. 4. 아무도 들어본 적 없는 무명 플랫폼에 코인을 장기간 두기. 이 네 가지를 피하면 이미 대부분의 초보자보다 앞서 있습니다.</div>
+
+      <h2>구매하는 네 가지 방법: 거래소가 유일한 길은 아닙니다</h2>
+      <p>대부분의 사람들은 거래소의 현물 시장에서 비트코인을 구매하지만, 상황에 맞는 것을 선택할 수 있도록 다른 세 가지 경로를 아는 것이 가치가 있습니다.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>채널</th><th>장점</th><th>단점</th><th>추천 대상</th></tr></thead>
+        <tbody>
+          <tr><td>거래소 현물 시장</td><td>가장 낮은 수수료(일반 사용자 기준 약 0.1%), 모든 코인, 언제든 거래 가능</td><td>본인 인증 필요, 작은 학습 곡선</td><td>거의 모든 사람</td></tr>
+          <tr><td>현물 ETF(미국 주식)</td><td>중개 계좌 안에서 구매, 간단하고 규제됨</td><td>관리 수수료, 주식을 보유할 뿐 실제 비트코인이 아님 — 출금할 수 없음</td><td>지갑 관리 없이 노출을 원하는 사람</td></tr>
+          <tr><td>P2P</td><td>직접 법정화폐 온램프, 유연한 결제 옵션</td><td>판매자를 검증해야 함, 자금 동결 위험 존재</td><td>카드 구매가 어려운 지역</td></tr>
+          <tr><td>비트코인 ATM</td><td>가입 불필요, 현금 사용 가능</td><td>보통 높은 수수료, 기기가 드묾</td><td>소액 긴급 금액</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">수수료표는 변경됩니다. 채널을 확정하기 전에 공식 사이트를 확인하세요.</p>
+      <h2>처음에 얼마를 구매해야 하나요?</h2>
+      <p>솔직한 답변: <strong>잠을 설치지 않을 금액</strong>. 초보자는 두 극단으로 치우치는 경향이 있습니다. 아무것도 가르쳐주지 않는 '그냥 시도해보는' 토큰 금액, 또는 도박으로 올인하는 것. 더 합리적인 경로: 소액으로 시작하세요(예: $50–100). 입금, 구매, 원한다면 출금까지 전체 절차를 실수 없이 끝까지 실행하세요. 장기적으로 투자한다면 매달 고정된 소액을 넣어 진입 가격을 평균화하는 것을 고려하세요. 첫 구매는 수익에 관한 것이 아닙니다. <strong>과정을 완벽하게 완료하는 것</strong>에 관한 것입니다.</p>
+      <h2>현물 ETF 대 실제 비트코인: 실제로 원하는 것은 어느 쪽인가요?</h2>
+      <p>이것은 많은 신규 사용자를 혼란스럽게 합니다. 현물 ETF(2024년부터 미국 중개업체를 통해 이용 가능)는 일반 주식 계좌 안에서 비트코인 가격을 추적합니다. 편리하고, 관리할 지갑이 없지만, 실제 BTC를 절대 출금하거나 온체인에서 사용할 수 없으며, 연간 관리 수수료를 지불합니다. 거래소에서 구매하면 완전히 통제하는 실제 코인을 얻습니다. 그리고 그에 따른 완전한 책임도 함께 옵니다. 목표가 '비트코인 소유'라면 코인을 구매하세요. 목표가 '은퇴 계좌에서 가격 노출'이라면 ETF가 더 간단한 수단입니다.</p>
+      <h2>주문 실행: 지정가 대 시장가</h2>
+      <p>4단계에서 두 가지 주문 유형을 만나게 됩니다. 초보자는 그 차이를 알아야 합니다.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>지정가 주문</th><th>시장가 주문</th></tr></thead>
+        <tbody>
+          <tr><td>체결 방식</td><td>가격을 정합니다. 시장이 도달해야만 체결됩니다</td><td>현재 호가 가격으로 즉시 체결됩니다</td></tr>
+          <tr><td>수수료</td><td>메이커 수수료율 — 더 낮음</td><td>테이커 수수료율 — 약간 더 높음</td></tr>
+          <tr><td>위험</td><td>가격이 달아나면 절대 체결되지 않을 수 있음</td><td>체결은 보장되지만 변동성이 큰 순간에는 가격이 미끄러질 수 있음</td></tr>
+          <tr><td>사용 시기</td><td>서두르지 않는 초보자의 기본 선택</td><td>서두를 때, 소액</td></tr>
+        </tbody>
+      </table></div>
+      <p>기본적으로 지정가 주문을 사용하세요. BTC가 $97,000이라면 $96,800에 매수 주문을 넣고 하락이 체결되도록 두세요. 메이커/테이커 수수료 차이도 챙길 수 있습니다. 정확한 숫자에 대해 고민하지 마세요. 첫 목표는 절차를 완료하는 것이지 바닥을 맞히는 것이 아닙니다.</p>
+      <h2>처음 30일: 계획</h2>
+      <ol>
+        <li><strong>1주차</strong> — 가입, 인증, 2FA 활성화, 소액의 USDT를 구매해 입금과 출금을 배우기 위해 이동시켜 보세요.</li>
+        <li><strong>2주차</strong> — 첫 BTC 구매(소액)를 하세요. 지정가 주문을 연습하세요. 코인을 자신의 지갑으로 한 번 이동시켜 보고 시드 문구를 백업하세요.</li>
+        <li><strong>3–4주차</strong> — 검토: 수수료가 얼마 들었는지, 무엇이 거의 잘못되었는지, 장기 보유할지 아니면 더 추가하기 전에 계속 배울지 결정하세요. 이 30일 동안 선물이나 레버리지를 건드리지 마세요. 전혀.</li>
+      </ol>
+      <p>이 30일을 견디면 초보자의 80%보다 '암호화폐 구매'를 더 잘 이해하게 될 것입니다. 나머지는 인내와 규율입니다.</p>
+      <h2>초보자가 계속 저지르는 다섯 가지 구매 실수</h2>
+      <ol>
+        <li><strong>'떨어질 때 사겠다'</strong> — 초보자는 절대 바닥을 잡지 못합니다. 결국 랠리를 쫓게 됩니다. 타이밍이 유혹한다면 대신 달러 비용 평균법을 사용하세요.</li>
+        <li><strong>전체 금액을 시장가 주문하기</strong> — 대규모 시장가 주문은 유동성이 얇을 때 슬리피지에 먹힙니다. 지정가 주문이 초보자 기본값입니다.</li>
+        <li><strong>모든 것을 하나의 플랫폼에 두기</strong> — 거래소는 은행이 아닙니다. 큰 장기 보유분은 자신의 지갑으로 옮기세요.</li>
+        <li><strong>거래 자체를 위한 거래</strong> — 모든 거래는 수수료를 지불합니다. 한 달간의 조바심은 이익보다 수수료로 더 많은 비용이 들 수 있습니다.</li>
+        <li><strong>'전문가'와 시그널 그룹 따르기</strong> — 무엇을 사라고 말하는 사람은 여러분의 수수료와 여러분의 출구 유동성으로 이익을 얻습니다. 확실한 것이 있었다면 이미 조용히 부자가 되어 있을 것입니다.</li>
+      </ol>
+      <h2>레벨업: 달러 비용 평균법이란 무엇인가</h2>
+      <p>DCA는 가격과 관계없이 고정된 일정에 고정된 금액을 구매하는 것을 의미합니다. 예를 들어 매월 1일에 $100씩. 논리는 간단합니다. 절대 바닥을 잡지 못하겠지만, 시간이 지남에 따라 분할 매수하면 비용이 평균 쪽으로 수렴합니다. 많은 거래소 앱에는 내장된 정기 구매 기능이 있습니다. 한 번 설정하고 잊어버리세요. 차트를 볼 시간도 없고 감정에 휘둘리고 싶지도 않은 사람에게 좋습니다. DCA는 수익을 보장하지 않습니다. 수익이 아니라 <em>타이밍 불안</em>을 완화합니다. 장기 하락에서는 DCA 계좌도 출혈을 보입니다.</p>
+      <h2>FAQ</h2>
+      <h3>비트코인을 구매하는 최소 금액은 얼마인가요?</h3>
+      <p>비트코인은 1억 단위로 나뉘므로 몇 달러어치라도 구매할 수 있습니다. 장벽은 돈이 아니라 과정을 이해하고 위험을 먼저 아는 것입니다.</p>
+      <h3>암호화폐 구매 자체가 안전한가요?</h3>
+      <p>위험은 가격 변동성과 플랫폼/운영 보안입니다. 첫 번째는 잃어도 되는 돈으로 소량씩 구매하며 처리하고, 두 번째는 최상위 플랫폼, 2FA, 시드 문구를 절대 공유하지 않는 것으로 처리하세요. 규칙은 국가마다 다릅니다. 현지 규정을 확인하세요.</p>
+      <h3>현물과 선물 중 어느 것을 구매해야 하나요?</h3>
+      <p>현물은 실제 코인을 소유한다는 뜻입니다. 선물은 손실이 확대되고 증거금이 0으로 청산될 수 있는 레버리지 파생상품입니다. 초보자는 현물만 구매합니다. 이유는 <a href="leverage-guide.html">레버리지와 청산</a>에서 확인하세요.</p>
+      <h3>세금을 신고해야 하나요?</h3>
+      <p>세금 취급은 관할 지역마다 크게 다르며, 이 사이트는 세무 조언을 제공하지 않습니다. 의미 있는 금액에 대해서는 거래 기록을 보관하고 현지 전문가와 상담하세요.</p>
+
+      <h3>비트코인이 비싸 보여요. 너무 늦은 건가요?</h3>
+      <p>'비싸다'는 착각입니다. 비트코인은 1억 조각으로 나뉘므로 $10어치라도 구매할 수 있습니다. 중요한 것은 코인당 가격이 아니라 퍼센트 움직임입니다. 진짜 질문은 항상 다음과 같습니다. 그것이 무엇인지 이해하나요, 그리고 얼마나 큰 변동성을 견딜 수 있나요? 소액으로 시작한 뒤 관점을 형성하세요.</p>
+      <h3>은행 계좌에서 자금을 조달해야 하나요, 결제 앱에서 조달해야 하나요?</h3>
+      <p>거래소 법정화폐 온램프는 일반적으로 은행 카드나 송금을 사용합니다. P2P는 판매자가 받아들이는 방법을 따릅니다. 전문가 습관은 급여와 일상 지출과 분리된 암호화폐 흐름 전용 계좌나 카드입니다. 위험 관리와 장부 정리 모두에 더 깔끔합니다.</p>
+      <h3>달러 비용 평균법이 수익을 보장하나요?</h3>
+      <p>아닙니다. DCA는 진입 비용을 평균화할 뿐 수익을 만들어내지 않습니다. 수년간의 하락에 매수하면 계좌는 여전히 적자를 보입니다. 그 가치는 규율입니다. 고점을 쫓지 않고, 저점을 패닉 매도하지 않는 것입니다.</p>
+      <h3>비트코인 한 개 미만을 구매할 수 있나요?</h3>
+      <p>물론입니다. 비트코인은 1억 조각('사토시')으로 나뉩니다. 대부분의 초보자는 $50–100어치로 시작합니다. 단위 가격은 무관합니다. 퍼센트 움직임만이 중요합니다.</p>
+      <h3>비트코인을 잘못된 주소로 보내면 어떻게 되나요?</h3>
+      <p>사라집니다. 비트코인 거래는 되돌릴 수 없으며, 되돌려줄 고객 지원도 없습니다. 그래서 체크리스트가 중요합니다. 주소를 복사해 붙여넣고, 처음과 마지막 문자를 확인하고, 새 목적지에는 아주 작은 금액으로 테스트하세요. 이 하나의 습관이 암호화폐에서 가장 비싼 초보자 실수를 막습니다.</p>
+      <h3>거래 화면에서 보이는 매수-매도 호가 스프레드란 무엇인가요?</h3>
+      <p>호가창은 녹색 매수 주문과 적색 매도 주문을 보여줍니다. 최적 매수가와 최적 매도가 사이의 격차가 스프레드입니다. 스프레드가 좁을수록 유동성이 건강합니다. 스프레드가 넓어 보이면 유동성이 얇고 시장가 주문이 더 미끄러집니다. 초보자가 기본적으로 지정가 주문을 사용해야 하는 또 다른 이유입니다.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Ready?</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">가입은 약 10분이 걸립니다. 한 번 인증하고, 2FA를 활성화한 뒤, P2P로 첫 USDT를 구매하세요. 이 사이트의 가이드를 따르면 문제없습니다. B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+        </div>
+        <p class="note">직접 가입할 때와 동일한 수수료 — 당사 링크는 추가 비용이 들지 않습니다.</p>
+      </div>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="buy-usdt.html">USDT 구매 방법: 세 가지 방법 비교</a></li>
+        <li><a href="../exchanges.html">거래소 수수료 및 리베이트 비교(계산기 포함)</a></li>
+        <li><a href="wallet-safety.html">지갑 및 시드 문구 보안</a></li>
+        <li><a href="../start/step1.html">입문 가이드, 1단계부터</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

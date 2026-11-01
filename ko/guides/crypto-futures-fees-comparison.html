@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>암호화폐 선물 수수료 비교: 4개 거래소 — TokVS</title>
+<meta name="description" content="Binance, OKX, Bybit, Bitget의 선물 메이커/테이커 수수료를 나란히 비교 — 펀딩 수수료와 지출을 줄이는 습관 포함.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/crypto-futures-fees-comparison">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/crypto-futures-fees-comparison">
+<meta property="og:title" content="선물 수수료: Binance vs OKX vs Bybit vs Bitget — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="메이커/테이커 선물 수수료 비교, 펀딩 수수료 설명, 수수료 청구서를 줄이는 다섯 가지 습관.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/crypto-futures-fees-comparison">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"암호화폐 선물 수수료 비교","item":"https://tokvs.com/ko/guides/crypto-futures-fees-comparison"}]},{"@type":"Article","headline":"암호화폐 선물 수수료 비교: 4개 거래소","description":"Binance, OKX, Bybit, Bitget의 선물 메이커/테이커 수수료를 나란히 비교 — 펀딩 수수료와 지출을 줄이는 습관 포함.","datePublished":"2026-10-16","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/crypto-futures-fees-comparison","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"선물 수수료는 현물 수수료와 다른가요?","acceptedAnswer":{"@type":"Answer","text":"예 — 선물은 이곳에 표시된 4개 거래소 모두에서 더 저렴합니다. 표준 등급 선물은 메이커 0.02% / 테이커 0.05% 수준인 반면 현물은 대략 0.08–0.10%입니다. 거래소는 거래량이 훨씬 높기 때문에 선물을 공격적으로 책정합니다."}},{"@type":"Question","name":"어느 거래소의 선물 수수료가 가장 낮은가요?","acceptedAnswer":{"@type":"Answer","text":"메이커 수수료는 4개 모두 0.02%로 동점입니다. 테이커 수수료는 Binance와 OKX가 0.05%로 4개 중 최저입니다. 다만 펀딩 수수료와 스프레드가 0.005–0.01%의 테이커 격차보다 더 중요할 수 있으므로, 이 숫자만으로 선택하지 마세요."}},{"@type":"Question","name":"펀딩 수수료율이란 무엇인가요?","acceptedAnswer":{"@type":"Answer","text":"무기한 계약에서 롱과 숏 사이의 주기적인 지급 — 보통 8시간마다 — 으로 계약 가격을 현물에 고정합니다. 거래소에 지불되는 것이 아닙니다. 여러 펀딩 구간을 거치며 포지션을 보유하면 거래 수수료 자체보다 더 많은 비용이 들 수 있습니다."}},{"@type":"Question","name":"시장가 주문은 항상 테이커 수수료를 지불하나요?","acceptedAnswer":{"@type":"Answer","text":"예. 기존 주문에 대해 즉시 체결되는 모든 주문은 테이커 주문으로 계산됩니다. 호가에 머물렀다가 나중에 체결되는 지정가 주문만이 메이커 수수료율을 얻습니다."}},{"@type":"Question","name":"수수료가 정말 작은 선물 계좌를 잠식할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"천천히, 그렇습니다. 테이커 수수료율로 20배 레버리지 왕복 거래는 수수료만으로 증거금의 약 2%가 듭니다. 그런 거래 열 번은 가격 변동이 계산되기도 전에 대략 20%를 지웁니다. 대부분의 초보자가 절대 하지 않는 계산입니다."}},{"@type":"Question","name":"선물 수수료는 시간이 지나면 바뀌나요?","acceptedAnswer":{"@type":"Answer","text":"예 — 거래소는 수수료 등급을 주기적으로 조정합니다. 이 글을 포함해 모든 글을 스냅샷으로 취급하세요. 거래소의 공식 수수료 페이지가 진실의 원천입니다. 규모 있는 거래를 하기 전에 확인하세요."}},{"@type":"Question","name":"VIP 수수료 등급을 쫓을 가치가 있나요?","acceptedAnswer":{"@type":"Answer","text":"초보자에게는 아닙니다. VIP 할인은 상당한 월간 거래량을 요구합니다. 주문 유형(지정가 대 시장가)과 거래 빈도는 도달할 수 없는 등급을 쫓는 것보다 일반 트레이더에게 훨씬 더 많은 비용을 절약해 줍니다."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / 암호화폐 선물 수수료 비교</div>
+      <h1>암호화폐 선물 수수료 비교</h1>
+      <p class="sub">4대 선물 거래소의 메이커와 테이커 수수료를 나란히 비교하므로 레버리지가 조용히 계좌를 잠식하지 못합니다.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 7분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">부드러운 선물 거래, 잦은 프로모션</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit 가입하기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>짧은 답변</h2>
+      <p>메이커 수수료는 <strong>4개 거래소 모두 0.02%로 동점</strong>입니다. 테이커 수수료는 Binance와 OKX가 0.05%로 선두이고, Bybit는 0.055%, Bitget은 0.06%입니다. 거래당 격차는 작아 보입니다. 그리고 실제로 작습니다. 하지만 선물 트레이더는 수십 번의 왕복 거래를 하며, 레버리지는 모든 수수료에 레버리지 배수를 곱합니다. 그래서 이 페이지가 존재합니다. 수수료표는 암호화폐의 어느 곳보다 선물에서 더 중요합니다.</p>
+      <h2>수수료표(표준 등급)</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>거래소</th><th>선물 메이커</th><th>선물 테이커</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.02%</td><td>0.05%</td></tr>
+          <tr><td>OKX</td><td>0.02%</td><td>0.05%</td></tr>
+          <tr><td>Bybit</td><td>0.02%</td><td>0.055%</td></tr>
+          <tr><td>초보자 강점</td><td>0.02%</td><td>0.06%</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">표준(VIP가 아닌) 등급. 거래소는 수수료를 주기적으로 조정합니다. 규모 있는 거래를 하기 전에 항상 거래소의 공식 수수료 페이지에서 확인하세요.</p>
+      <h2>'메이커'와 '테이커'가 실제로 의미하는 것</h2>
+      <p>모든 거래는 두 가지 중 하나입니다. <strong>메이커</strong> 주문은 체결을 기다리며 호가에 올리는 지정가 주문입니다. 유동성을 '만들므로' 더 낮은 수수료율을 지불합니다. <strong>테이커</strong> 주문은 이미 호가에 있는 주문에 대해 즉시 체결됩니다. 시장가 주문은 항상 테이커 주문이며, 즉시 체결될 만큼 공격적으로 가격이 책정된 지정가 주문도 마찬가지입니다. 실용적인 결론: <strong>인내는 말 그대로 더 저렴합니다.</strong> 전략이 체결을 위해 몇 초를 기다릴 수 있다면, 지정가 주문은 위의 모든 거래소에서 모든 체결마다 수수료 청구서를 절반 이상 줄여줍니다.</p>
+      <h2>펀딩 수수료: 아무도 인용하지 않는 수수료</h2>
+      <p>무기한 선물 — 대부분의 사람들이 거래하는 계약 — 은 만료가 없습니다. 대신 <strong>펀딩 지급</strong>이 있으며, 보통 8시간마다 롱과 숏 사이에서 직접 흘러 계약 가격을 현물에 고정합니다. 펀딩이 양수일 때는 롱이 숏에게 지불하고, 음수일 때는 반대입니다. 거래소는 수수료를 가져가지 않습니다. 하지만 비용은 실제로 존재하며, 며칠간 보유한 포지션의 경우 <strong>펀딩이 거래 수수료 자체를 초과할 수 있습니다</strong>. 레버리지 포지션을 하룻밤 보유하기 전에 거래소에서 펀딩 수수료율과 최근 이력을 확인하세요. 하루에 세 번 0.1%의 펀딩을 지불하고 있다면 '저렴한' 0.02% 메이커 수수료는 아무 의미가 없습니다.</p>
+      <h2>레버리지가 수수료 청구서를 곱하는 방식</h2>
+      <p>대부분의 초보자가 절대 하지 않는 계산입니다. $1,000 증거금에 10배 레버리지를 적용합니다. 포지션은 $10,000 명목 가치입니다. 0.05% 테이커 왕복 거래는 진입에 $5, 청산에 $5가 듭니다. <strong>합계 $10, 증거금의 1%</strong>가 가격이 1센트도 움직이기 전에 사라집니다. 20배 레버리지에서는 동일한 왕복 거래가 증거금의 2%가 듭니다. 그런 거래 열 번은 수수료만으로 계좌의 대략 20%를 지웁니다. 이것이 작은 선물 계좌의 조용한 살인자입니다. 나쁜 판단이 아니라 수수료로 인한 천 번의 상처입니다. 방어책은 간단합니다. 낮은 레버리지, 적은 거래, 지정가 주문.</p>
+      <h2>수수료 등급: 실제로 적용되는 등급</h2>
+      <p>표의 숫자는 <strong>표준 등급 수수료율</strong>입니다. 모든 신규 계정이 지불하는 것입니다. 4개 거래소 모두 높은 월간 거래량에 대해 수수료를 할인하는 VIP 프로그램을 운영하지만, 임계값은 심각합니다(의미 있는 등급에는 수천만 달러의 거래량이 필요합니다). 초보자나 일반 트레이더로서 여러분은 표준 등급에 있으며, 그것으로 괜찮습니다. <strong>주문 유형과 거래 빈도는 도달할 수 없는 VIP 등급보다 비용을 훨씬 더 움직입니다.</strong> 할인을 쫓기 위해 거래를 왜곡하지 마세요.</p>
+      <h2>선물 수수료를 줄이는 다섯 가지 습관</h2>
+      <ol>
+        <li><strong>기본적으로 지정가 주문을 사용하세요.</strong> 메이커 대 테이커는 가장 큰 지렛대입니다. 모든 체결마다 0.02% 대 0.05–0.06%입니다.</li>
+        <li><strong>거래 빈도를 줄이세요.</strong> 모든 왕복 거래에는 고정된 수수료 비용이 있습니다. 소액 계좌에서는 끊임없는 스캘핑보다 적고 확신이 높은 거래가 낫습니다.</li>
+        <li><strong>보유 전에 펀딩을 확인하세요.</strong> 펀딩이 여러분의 방향에 크게 불리하다면, 리셋을 기다리거나 보유를 재고하세요.</li>
+        <li><strong>거래당 수수료를 증거금의 0.5% 미만으로 유지하세요.</strong> 설정의 수수료 계산이 이를 초과하면, 설정은 더 큰 우위 — 또는 더 작은 레버리지 — 가 필요합니다.</li>
+        <li><strong>확정하기 전에 비교하세요.</strong> 예상 월간 거래량을 수수료 계산기(당사 <a href="../exchanges.html">거래소 페이지</a>에 있습니다)에 입력하고 추측하지 마세요.</li>
+      </ol>
+      <p class="in-cta">정기적으로 선물을 거래하시나요? 파생상품 트레이더가 모이는 곳에서 시작하세요. <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit 가입하기</a></p>
+      <h2>어느 선물 트레이더에게 어느 거래소인가</h2>
+      <p>수수료가 충분히 비슷하므로 0.005%의 테이커 격차보다 적합성이 더 중요합니다. <strong>Bybit</strong>는 파생상품으로 명성을 쌓았습니다. 선물 인터페이스가 빛나는 곳입니다. <strong>Binance</strong>는 가장 깊은 유동성을 가지고 있어 주요 페어에서 가장 좁은 스프레드를 의미합니다(수수료표가 보여주지 않는 숨은 비용입니다). <strong>OKX</strong>는 다양한 상품에 걸쳐 깊이를 원하는 활발한 트레이더에게 강력한 도구를 제공합니다. <strong>Bitget</strong>은 다른 트레이더의 포지션을 따라하는 트레이더에게 인기가 있습니다. 실제로 거래하는 방식과 강점이 맞는 거래소를 선택하세요. 위의 수수료표는 누구도 과도하게 부과하지 못하도록 할 뿐입니다.</p>
+      <h2>'수수료 제로' 프로모션에 대한 참고</h2>
+      <p>거래소는 주기적으로 특정 페어에 대해 메이커 수수료 제로 또는 수수료 리베이트 프로모션을 운영합니다. 실제로 존재하지만 일시적이며, 보통 초보자가 가장 많이 거래하는 페어를 제외합니다. 프로모션을 위해 거래소를 선택하지 마세요. 매달 실제로 지불하게 될 일상 수수료표로 선택하세요.</p>
+      <h2>실무에서의 펀딩: 실제 예시</h2>
+      <p>숫자는 펀딩을 구체적으로 만듭니다. 무기한 계약에서 $20,000 롱 포지션을 보유하고 있고 펀딩 수수료율이 8시간 구간당 0.01%라고 가정하세요. 강세장에서 완전히 일반적인 수치입니다. 각 구간 비용은 $20,000 × 0.01% = <strong>$2</strong>입니다. 하루 세 구간 = 하루 $6. 일주일 보유하면 펀딩만으로 $42를 지불했습니다. 동일한 포지션에 대한 테이커 수수료율 왕복 거래 수수료 $10의 네 배 이상입니다. 이제 뒤집어보세요. 펀딩이 음수일 때는 <em>여러분이</em> 롱을 보유하는 대가를 받습니다. 정교한 트레이더는 며칠간의 보유 전에 매번 펀딩을 확인하고, 때로는 부분적으로 펀딩에 근거해 방향을 선택합니다. 교훈은 펀딩을 두려워하는 것이 아닙니다. 진입 전에 <strong>거래에 가격을 반영하는 것</strong>이며, 스프레드를 확인하는 것과 같습니다. 대부분의 거래소는 선물 거래 화면에 현재 펀딩 수수료율과 다음 지급까지의 카운트다운을 바로 표시합니다. 이를 거래 전 체크리스트의 일부로 삼으세요.</p>
+      <h2>수수료만으로 선택하는 것에 대한 마지막 말</h2>
+      <p>가장 낮은 테이커 숫자를 가진 거래소를 선택하고 그걸로 끝내는 것이 유혹적입니다. 저항하세요. 이 4개 거래소에서 최대 테이커 격차는 0.01%입니다. $5,000 포지션에서는 거래당 50센트입니다. <strong>여러분의 레버리지 선택, 주문 유형, 거래 빈도는 각각 바늘을 10–100배 더 움직입니다.</strong> '비싼' 거래소에서 지정가 주문을 사용하는 3배 레버리지 트레이더는 '저렴한' 거래소에서 20배 시장가 주문 스캘핑을 하는 트레이더보다 훨씬 적게 지불합니다. 먼저 큰 결정을 제대로 하세요. 수수료표는 그것이 가진 동점 해소자 역할로 두세요.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Ready to trade futures?</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#C99612;">계정을 열고, 낮은 레버리지(3–5배)로 시작하고, 메커니즘을 배우는 동안 지정가 주문을 사용하세요. 위의 수수료 계산이 여러분의 가드레일입니다. B</div><div><div class="tt">Bybit</div><div class="dd">부드러운 선물 거래, 잦은 프로모션</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit 가입하기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+        </div>
+        <p class="note">직접 가입할 때와 동일한 수수료 — 당사 링크는 추가 비용이 들지 않습니다.</p>
+      </div>
+
+      <h3>선물 수수료는 현물 수수료와 다른가요?</h3>
+      <p>예 — 선물은 이곳에 표시된 4개 거래소 모두에서 더 저렴합니다. 표준 등급 선물은 메이커 0.02% / 테이커 0.05% 수준인 반면 현물은 대략 0.08–0.10%입니다. 거래소는 거래량이 훨씬 높기 때문에 선물을 공격적으로 책정합니다.</p>
+      <h3>어느 거래소의 선물 수수료가 가장 낮은가요?</h3>
+      <p>메이커 수수료는 4개 모두 0.02%로 동점입니다. 테이커 수수료는 Binance와 OKX가 0.05%로 4개 중 최저입니다. 다만 펀딩 수수료와 스프레드가 0.005–0.01%의 테이커 격차보다 더 중요할 수 있으므로, 이 숫자만으로 선택하지 마세요.</p>
+      <h3>펀딩 수수료율이란 무엇인가요?</h3>
+      <p>무기한 계약에서 롱과 숏 사이의 주기적인 지급 — 보통 8시간마다 — 으로 계약 가격을 현물에 고정합니다. 거래소에 지불되는 것이 아닙니다. 여러 펀딩 구간을 거치며 포지션을 보유하면 거래 수수료 자체보다 더 많은 비용이 들 수 있습니다.</p>
+      <h3>시장가 주문은 항상 테이커 수수료를 지불하나요?</h3>
+      <p>예. 기존 주문에 대해 즉시 체결되는 모든 주문은 테이커 주문으로 계산됩니다. 호가에 머물렀다가 나중에 체결되는 지정가 주문만이 메이커 수수료율을 얻습니다.</p>
+      <h3>수수료가 정말 작은 선물 계좌를 잠식할 수 있나요?</h3>
+      <p>천천히, 그렇습니다. 테이커 수수료율로 20배 레버리지 왕복 거래는 수수료만으로 증거금의 약 2%가 듭니다. 그런 거래 열 번은 가격 변동이 계산되기도 전에 대략 20%를 지웁니다. 대부분의 초보자가 절대 하지 않는 계산입니다.</p>
+      <h3>선물 수수료는 시간이 지나면 바뀌나요?</h3>
+      <p>예 — 거래소는 수수료 등급을 주기적으로 조정합니다. 이 글을 포함해 모든 글을 스냅샷으로 취급하세요. 거래소의 공식 수수료 페이지가 진실의 원천입니다. 규모 있는 거래를 하기 전에 확인하세요.</p>
+      <h3>VIP 수수료 등급을 쫓을 가치가 있나요?</h3>
+      <p>초보자에게는 아닙니다. VIP 할인은 상당한 월간 거래량을 요구합니다. 주문 유형(지정가 대 시장가)과 거래 빈도는 도달할 수 없는 등급을 쫓는 것보다 일반 트레이더에게 훨씬 더 많은 비용을 절약해 줍니다.</p>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="leverage-guide.html">레버리지 설명: 위험을 먼저</a></li>
+        <li><a href="crypto-fees.html">모든 암호화폐 수수료, 풀이</a></li>
+        <li><a href="okx-vs-bybit.html">OKX vs Bybit 비교</a></li>
+        <li><a href="../reviews/bybit.html">Bybit 리뷰: 수수료 및 기능</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

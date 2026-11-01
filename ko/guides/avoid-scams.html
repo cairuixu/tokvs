@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>암호화폐는 사기인가요? 흔한 암호화폐 사기 8가지와 대처 방법 — TokVS</title>
+<meta name="description" content="암호화폐는 사기인가요? 기술은 아닙니다. 사기는 가짜 거래소, 시그널 전문가, 수익 보장 사기 수법입니다. 흔한 사기 8가지를 식별하고 대처 방법을 알아보세요.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/avoid-scams">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/avoid-scams">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/avoid-scams">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/avoid-scams">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/avoid-scams">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/avoid-scams">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/avoid-scams">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/avoid-scams">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/avoid-scams">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/avoid-scams">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/avoid-scams">
+<meta property="og:title" content="암호화폐는 사기인가요? 알아야 할 8가지 수법 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="흔한 암호화폐 사기 8가지를 식별하는 방법과 이미 당했을 경우의 손실 중단 및 증거 보전 단계.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/avoid-scams">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"암호화폐는 사기인가요? 흔한 암호화폐 사기 8가지와 대처 방법","item":"https://tokvs.com/ko/guides/avoid-scams"}]},{"@type":"Article","headline":"암호화폐는 사기인가요? 흔한 암호화폐 사기 8가지와 대처 방법","description":"암호화폐는 사기인가요? 기술은 아닙니다. 사기는 가짜 거래소, 시그널 전문가, 수익 보장 사기 수법입니다. 흔한 사기 8가지를 식별하고 대처 방법을 알아보세요.","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/avoid-scams","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / 사기 예방</div>
+      <h1>사기 예방: 사기는 기술이 아니라 사람에게 있습니다</h1>
+      <p class="sub">제목의 질문에 직접 답합니다. 비트코인과 블록체인 기술은 사기가 아닙니다. 사기는 암호화폐의 이름을 빌린 사람들이 저지릅니다. 대부분의 사기를 처리하는 하나의 핵심 규칙이 있습니다. 보장되고 안전하며 높은 수익을 약속하는 사람은 사기꾼입니다. 이를 절대적인 기준으로 삼으면 열 가지 함정 중 아홉 가지를 피할 수 있습니다.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 4분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>흔한 암호화폐 사기 8가지</h2>
+      <h3>1. 가짜 거래소와 가짜 앱</h3>
+      <p>픽셀 단위까지 똑같은 복사본이며, 다운로드 링크는 '친구'나 그룹 구성원이 보냅니다. 입금은 되지만 가격은 움직이고 출금은 절대 되지 않습니다. <strong>식별 방법:</strong> 공식 웹사이트와 앱 스토어에서만 다운로드하고, 도메인을 문자 하나하나 철자 확인하세요. 당사 <a href="../exchanges.html">비교 페이지</a>의 모든 진입점은 공식 도메인으로 연결됩니다.</p>
+      <h3>2. 시그널 전문가와 유료 그룹</h3>
+      <p>'멘토'가 스크린샷 수익을 과시하며 선물이나 소형주 추천으로 이끕니다. 그의 실제 수입은 사용자의 수수료와 손실에 대한 리베이트와 구독료입니다. <strong>식별 방법:</strong> '확실한 돈 버는 방법'을 열심히 가르쳐주는 낯선 사람은 선생님이 아니라 영업사원입니다.</p>
+      <h3>3. 돼지 도살(로맨스 투자 사기)</h3>
+      <p>먼저 수 주간 관계를 쌓은 뒤, 오르기만 하는 투자 플랫폼을 우연히 소개합니다. 입금액이 커지면 돈과 사람 모두 사라집니다. <strong>식별 방법:</strong> 온라인 지인이 소개한 채널, 특히 작은 앱 안에만 존재하는 곳을 통해서는 절대 투자하지 마세요.</p>
+      <h3>4. 시드 문구를 요구하는 가짜 에어드롭</h3>
+      <p>프로젝트를 사칭한 페이지가 '클레임'을 발표하고, 클레임하려면 시드 문구나 개인 키를 입력해야 합니다. 지갑은 몇 분 만에 비워집니다. <strong>식별 방법:</strong> 개인 키나 시드 문구를 요구하는 것은 예외 없이 사기입니다. 자세한 내용은 <a href="airdrop-guide.html">암호화폐 에어드롭이란?</a>을 참조하세요.</p>
+      <h3>5. 사칭 고객센터</h3>
+      <p>'고객센터'를 사칭한 DM이 계정이 flagged되어 인증이 필요하다며, 그들의 페이지에서 '잠금 해제'를 위해 송금하라고 합니다. <strong>식별 방법:</strong> 진짜 고객센터는 먼저 DM을 보내지 않으며 송금을 요구하지 않습니다. 모든 일은 앱 내 티켓 시스템에서 이루어집니다.</p>
+      <h3>6. 폰지 '수익' 사기</h3>
+      <p>'AI 차익거래'나 '퀀트 봇'으로 포장되어 월 두 자릿수 수익을 약속합니다. 초기의 소액 출금은 가능합니다. 신규 입금에서 지급되기 때문입니다. 큰 엑시트가 있을 때까지 말입니다. <strong>식별 방법:</strong> 약속된 수익이 높고 안정적일수록 붕괴가 빠릅니다. 수익의 출처를 간단히 설명할 수 없다면 제외하세요.</p>
+      <h3>7. P2P 거래의 가짜 결제 증명</h3>
+      <p>상대방이 조작된 결제 스크린샷을 보내고 코인을 해제하라고 압박합니다. 돈은 절대 도착하지 않습니다. <strong>식별 방법:</strong> 실제로 계좌에 정산된 자금에 대해서만 해제하세요. 스크린샷과 문자는 위조 가능합니다. 안전한 USDT 절차: <a href="buy-usdt.html">USDT 구매 방법</a>.</p>
+      <h3>8. 피싱 링크와 악성 승인</h3>
+      <p>실제 사이트와 한 글자만 다른 링크입니다. 지갑을 연결하고 공격자가 나중에 토큰을 빼갈 수 있는 승인을 서명합니다. <strong>식별 방법:</strong> 자신의 북마크를 통해서만 사이트에 접속하고, 낯선 사이트는 먼저 버너 지갑으로 연결하고, 인식하지 못하는 승인은 주기적으로 검토하고 취소하세요. 습관은 <a href="wallet-safety.html">지갑 및 시드 문구 보안</a>에 있습니다.</p>
+
+      <div class="callout good"><b>The safety checklist (follow it and you beat 90% of users):</b>최상위 거래소와 공식 도메인만 이용하세요. 가입 당일에 2FA와 피싱 방지 코드를 활성화하세요. 시드 문구는 종이에만 적고 어떤 전자 기기에도 저장하지 마세요. 대규모 송금 전에 소액으로 테스트하세요. 낯선 사람이 보낸 링크는 절대 클릭하지 마세요. '수익 보장'이라는 말이 나오는 순간 대화를 끝내세요.</div>
+
+      <h2>이미 당했다면</h2>
+      <ol>
+        <li><strong>즉시 중단하세요.</strong> '잠금 해제 수수료'나 '보증금'을 보내지 마세요. 그것이 두 번째 수확입니다.</li>
+        <li><strong>증거를 보전하세요.</strong> 채팅, 송금 기록, 상대방 주소, URL, 앱 설치 파일 — 모든 것을 스크린샷으로 찍어 저장하세요.</li>
+        <li><strong>즉시 경찰에 신고하세요</strong>. 증거와 함께, 그리고 국가 사기 신고 채널에도 신고하세요. 온체인 송금은 되돌리기가 극히 어렵습니다. 속도가 유일한 수단입니다.</li>
+        <li><strong>관련 거래소에 알리세요.</strong> 자금이 아직 거래소 계좌를 통해 이동 중이라면, 경찰 신고 접수 번호와 함께 해당 거래소의 리스크 팀에 연락해 동결을 요청하세요.</li>
+        <li><strong>후속 사기를 예상하세요.</strong> 이후에 찾아오는 '복구 해커'와 '손실 복구 업체'는 보통 같은 조직의 두 번째 칼날입니다. 선불로 비용을 청구하는 사람은 거짓말을 하고 있습니다.</li>
+      </ol>
+
+      <h2>FAQ</h2>
+      <h3>암호화폐 자체가 불법이거나 사기인가요?</h3>
+      <p>기술과 사기는 다른 것입니다. 암호화폐 거래와 채굴에 대한 규제는 국가마다 다르며 시간이 지나면 바뀝니다. 현지 규칙을 확인하고 따르세요. 이 페이지는 위험 교육이지 법률 조언이 아닙니다.</p>
+      <h3>누군가 대신 거래해주고 '손실을 보전해주겠다'고 제안했습니다. 믿을 만한가요?</h3>
+      <p>아닙니다. 보장은 영업 문구입니다. 손실이 발생하면 그 사람은 사라지거나 '만회하기 위해' 추가 입금을 요구합니다. 실제로 돈을 찍어낼 수 있는 사람은 낯선 사람을 모집하며 하루를 보내지 않습니다.</p>
+      <h3>사기당한 돈을 되찾을 수 있나요?</h3>
+      <p>솔직히 말하면 매우 어렵습니다. 특히 자금이 온체인 주소로 이동한 뒤에는 더욱 그렇습니다. 신고하고, 증거를 보전하고, 동결을 시도하세요. 결과는 사례에 따라 다릅니다. 유일하게 믿을 만한 '복구'는 첫 송금을 절대 하지 않는 것입니다.</p>
+      <h3>거래소가 진짜인지 어떻게 확인하나요?</h3>
+      <p>세 단계: 독립적인 공개 출처에서 공식 도메인을 확인하세요. 공식 앱 스토어에서만 설치하세요. 규모를 키우기 전에 소액을 입금하고 소액 출금을 완료하세요. 전체 체크리스트는 <a href="choose-exchange.html">거래소 선택 방법</a>에 있습니다.</p>
+
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="wallet-safety.html">지갑 및 시드 문구 보안</a></li>
+        <li><a href="choose-exchange.html">거래소 선택 방법: 6가지 확인 사항</a></li>
+        <li><a href="airdrop-guide.html">암호화폐 에어드롭이란? 레드라인</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

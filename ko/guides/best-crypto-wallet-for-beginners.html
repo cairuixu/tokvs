@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>초보자를 위한 최고의 암호화폐 지갑: 핫, 콜드, 선택 방법 — TokVS</title>
+<meta name="description" content="Best crypto wallet for beginners: hot vs cold wallets, MetaMask, Trust Wallet, Ledger and Trezor compared by features — plus seed phrase safety and the "not your keys" rule.">
+<link rel="canonical" href="https://tokvs.com/ko/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/best-crypto-wallet-for-beginners">
+<meta property="og:title" content="초보자를 위한 최고의 암호화폐 지갑: 핫, 콜드, 선택 방법 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="초보자를 위한 핫 지갑 대 콜드 지갑 비교, 설정 단계, 시드 문구 보안.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ko/guides/best-crypto-wallet-for-beginners">
+<meta property="og:locale" content="ko_KR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ko/"},{"@type":"ListItem","position":2,"name":"가이드","item":"https://tokvs.com/ko/guides/"},{"@type":"ListItem","position":3,"name":"초보자를 위한 최고의 암호화폐 지갑","item":"https://tokvs.com/ko/guides/best-crypto-wallet-for-beginners"}]},{"@type":"Article","headline":"초보자를 위한 최고의 암호화폐 지갑: 핫, 콜드, 선택 방법","description":"핫 지갑 대 콜드 지갑, MetaMask, Trust Wallet, Ledger, Trezor를 기능별로 비교하고, 시드 문구 보안과 초보자를 위한 간단한 결정 경로를 제공합니다.","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ko/guides/best-crypto-wallet-for-beginners","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"핫 지갑과 콜드 지갑의 차이는 무엇인가요?","acceptedAnswer":{"@type":"Answer","text":"핫 지갑은 인터넷에 연결됩니다(휴대폰 앱이나 브라우저 확장 프로그램). 일상 사용에 편리합니다. 콜드 지갑은 하드웨어 기기에 키를 오프라인으로 보관하며, 거의 건드리지 않는 장기 보유분에 더 적합합니다."}},{"@type":"Question","name":"MetaMask는 초보자에게 안전한가요?","acceptedAnswer":{"@type":"Answer","text":"MetaMask는 널리 사용되며 EVM 체인에 대해서는 좋은 습관을 실천하면 괜찮습니다. 공식 출처에서만 다운로드하고, 시드 문구를 절대 공유하지 않으며, 모든 연결 및 서명 요청을 승인 전에 검토하세요."}},{"@type":"Question","name":"소액만 보유하는데 하드웨어 지갑이 필요한가요?","acceptedAnswer":{"@type":"Answer","text":"반드시 그렇지는 않습니다. 배우는 동안 수백 달러 정도라면 평판 좋은 핫 지갑이 합리적입니다. 잃으면 아쉬울 정도의 금액이 되면 하드웨어 지갑을 고려하세요."}},{"@type":"Question","name":"시드 문구를 잃어버리면 어떻게 되나요?","acceptedAnswer":{"@type":"Answer","text":"시드 문구가 없으면 지갑을 복원할 방법이 없습니다. 코인은 사실상 사라집니다. 그래서 안전한 장소에 종이 백업을 보관하는 것이 선택하는 앱이나 기기보다 중요합니다."}},{"@type":"Question","name":"MetaMask에 비트코인을 보관할 수 있나요?","acceptedAnswer":{"@type":"Answer","text":"아닙니다. MetaMask는 EVM 호환 체인용으로 만들어졌으며 비트코인을 기본 지원하지 않습니다. BTC에는 Trust Wallet이나 하드웨어 지갑처럼 비트코인을 지원하는 지갑을 사용하세요."}},{"@type":"Question","name":"지갑 회사가 문을 닫으면 어떻게 되나요?","acceptedAnswer":{"@type":"Answer","text":"코인은 회사가 아니라 블록체인에 존재합니다. 시드 문구만 있으면 다른 호환 앱이나 기기에서 동일한 지갑을 복원할 수 있습니다."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">입문 가이드</a><a href="index.html" class="on">가이드</a><a href="../exchanges.html">거래소</a><a href="../airdrops.html">에어드롭</a><a href="../tools.html">도구</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko" selected>한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">홈</a>/ <a href="index.html">가이드</a> / 초보자를 위한 최고의 암호화폐 지갑</div>
+      <h1>초보자를 위한 최고의 암호화폐 지갑</h1>
+      <p class="sub">핫 대 콜드, MetaMask 대 하드웨어, 그리고 브랜드보다 중요한 시드 문구 규칙. 보유량과 거래 빈도로 선택하세요.</p>
+      <p class="updated">2026년 10월 업데이트 · TokVS · 12분 읽기</p>
+      <p class="note">출처 및 방법: <a href="../methodology.html">확인 방법</a> · <a href="../exchanges.html#availability">국가별 이용 가능 여부 표</a> · 수치는 변동하므로 행동 전에 공식 페이지에서 확인하세요.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">깔끔한 앱으로 현물 및 선물 거래</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit 계정 만들기</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>먼저, 암호화폐 지갑이 실제로 무엇인지</h2>
+      <p>암호화폐 지갑은 가죽 지갑이 지폐를 보관하는 방식으로 코인을 보관하지 않습니다. 코인은 블록체인에 존재합니다. 지갑은 소유권을 증명하고 이동을 가능하게 하는 <strong>개인 키</strong>를 보관합니다. 키를 통제하는 사람이 코인을 통제합니다. 이 하나의 사실이 앞으로 내릴 거의 모든 지갑 결정을 설명합니다. 질문은 '어떤 앱이 가장 예쁜가'가 아니라 '누가 내 키를 보유하고 있으며, 훔치기가 얼마나 어려운가'입니다.</p>
+      <p>거래소가 키를 보유하면, 그 거래소의 보안, 지급 능력, 정직성을 신뢰하는 것입니다. 직접 키를 보유하면 자신을 신뢰하는 것입니다. 기기, 백업 습관, 사기를 식별하는 능력 말입니다. 어느 쪽도 추상적으로 '안전'하지 않습니다. 올바른 선택은 보유량, 거래 빈도, 얼마나 조심하려고 하는지에 달려 있습니다. 이 가이드는 양쪽을 모두 살펴보며 눈을 뜨고 결정할 수 있도록 돕습니다.</p>
+      <h2>핫 지갑 대 콜드 지갑: 중요한 단 하나의 구분</h2>
+      <p>지갑은 두 계열로 나뉩니다. <strong>핫 지갑</strong>은 인터넷에 연결됩니다. 휴대폰 앱과 브라우저 확장 프로그램입니다. 무료, 빠르고 편리합니다. 그리고 멀웨어부터 피싱 사이트까지 온라인상의 모든 것과 같은 위험에 노출됩니다. <strong>콜드 지갑</strong>은 전용 하드웨어 기기에 키를 오프라인으로 보관합니다. 비용이 들고 모든 거래에 마찰이 추가되지만, 원격 공격자의 손이 닿지 않는 곳으로 키를 완전히 옮깁니다.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>핫 지갑</th><th>콜드 지갑</th></tr></thead>
+        <tbody>
+          <tr><td>인터넷 연결</td><td>예, 항상</td><td>아니요 — 키는 오프라인 유지</td></tr>
+          <tr><td>일반적인 비용</td><td>무료</td><td>기기 가격(공식 스토어 확인)</td></tr>
+          <tr><td>추천 대상</td><td>일상 사용, 소액, DeFi, NFT</td><td>거의 건드리지 않는 장기 보유분</td></tr>
+          <tr><td>주요 위험</td><td>멀웨어, 피싱, 악성 사이트</td><td>기기와 백업을 함께 잃는 것, 변조된 기기 구매</td></tr>
+          <tr><td>기기를 잃었을 때 복구</td><td>다시 설치하고 시드 문구로 복원</td><td>새 기기를 구매하고 시드 문구로 복원</td></tr>
+        </tbody>
+      </table></div>
+      <p>경험 많은 사용자가 정착하는 표준 설정은 혼합형입니다. 지출용 돈이 있는 핫 지갑과 저축용 돈이 있는 콜드 지갑. 거기서 시작할 필요는 없습니다. 핫 지갑과 소액으로 시작하고, 메커니즘을 배우고, 보유량이 중요해지기 시작하면 하드웨어 기기를 추가하세요.</p>
+      <h2>초보자가 실제로 사용하는 핫 지갑</h2>
+      <h3>MetaMask: 브라우저 지갑</h3>
+      <p>MetaMask는 브라우저 확장 프로그램(모바일 앱 포함)이며 Ethereum 및 기타 EVM 호환 체인 — Ethereum, BNB Chain, Polygon, Arbitrum 및 유사 네트워크 — 의 기본 지갑입니다. DeFi 앱, NFT 마켓플레이스, 온체인 도구를 이용할 계획이라면 조만간 MetaMask를 만나게 됩니다. 대부분의 웹 앱은 직접 대화하는 '지갑 연결' 버튼을 제공합니다.</p>
+      <p>설치 전에 알아야 할 두 가지가 있습니다. 첫째, MetaMask는 비트코인을 <strong>기본</strong> 지원하지 않습니다. EVM 체인용으로 만들어졌으므로 BTC에는 다른 지갑이 필요합니다. 둘째, 브라우저에 존재하므로 브라우징 습관만큼만 안전합니다. 연결을 승인하면 악성 사이트에도 기꺼이 연결됩니다. 모든 연결 요청을 반사가 아닌 결정으로 취급하세요.</p>
+      <h3>Trust Wallet: 멀티체인 휴대폰 지갑</h3>
+      <p>Trust Wallet은 Bitcoin, Ethereum, BNB Chain, Solana, Dogecoin을 포함해 다양한 체인을 한곳에서 지원하는 모바일 앱입니다. 여러 코인을 위한 하나의 앱을 원하는 초보자에게 그 폭이 매력입니다. 하나의 시드 문구, 많은 네트워크, 기본 온체인 활동을 위한 내장 스왑 및 dApp 브라우저.</p>
+      <p>트레이드오프는 모든 핫 지갑과 동일합니다. 키는 하루 종일 온라인 상태인 휴대폰에 존재합니다. 깨끗한 휴대폰, 공식 앱 스토어 다운로드, 백업된 시드 문구가 선택하는 브랜드보다 중요합니다. 메시지나 광고의 링크에서 지갑 앱을 절대 설치하지 마세요. 공식 앱 스토어에서 직접 검색하고 개발자 이름을 확인하세요.</p>
+      <h2>콜드 지갑: Ledger와 Trezor</h2>
+      <p>하드웨어 지갑은 키를 오프라인으로 생성하고 보관하며 기기 자체에서 거래에 서명하는 작은 전용 기기입니다. 손상된 컴퓨터에 연결해도 키는 기기를 떠나지 않습니다. 컴퓨터는 서명된 결과만 봅니다. 그것이 전체 보안 모델이며 강력한 모델입니다.</p>
+      <h3>Ledger</h3>
+      <p>Ledger 기기(Nano 시리즈와 새로운 Stax 라인 등)는 코인 관리와 체인별 앱 설치를 위해 Ledger Live 앱과 함께 사용합니다. Ledger는 매우 다양한 코인을 지원하며 널리 이용 가능합니다. Ledger나 모든 하드웨어 지갑에 대한 상시 규칙은 <strong>공식 스토어에서만 구매</strong>하는 것입니다. 마켓플레이스에서 할인된 기기는 변조되었을 수 있으며, 이는 전체 목적을 무너뜨립니다.</p>
+      <h3>Trezor</h3>
+      <p>Trezor 기기(Model One, Model T, Safe 라인 등)는 Trezor Suite와 함께 사용하며 오픈소스 펌웨어로 알려져 있어 독립 연구자가 코드를 감사할 수 있습니다. Ledger와 마찬가지로 Trezor는 주요 코인을 지원하고 동일한 시드 문구 백업 모델을 사용합니다. 12단어 또는 24단어 복구 문구가 진짜 지갑이며, 기기는 교체 가능합니다.</p>
+      <p>어느 브랜드도 절대적인 의미에서 '최고'가 아니며, 이 사이트는 순위를 매기지 않습니다. 보유한 코인, 선호하는 동반 앱, 거주 지역에서 공식적으로 이용 가능한지를 기준으로 선택하세요. 브랜드보다 훨씬 중요한 것은 정품을 구매하고, 직접 설정하고, 시드 문구를 지키는 것입니다.</p>
+      <h2>선택 방법: 간단한 결정 경로</h2>
+      <ol>
+        <li><strong>수백 달러 미만, 요령을 배우는 중:</strong> 평판 좋은 핫 지갑이면 충분합니다. 위험에 처한 금액이 작고 연습이 필요합니다.</li>
+        <li><strong>자주 거래하거나 DeFi/NFT를 이용:</strong> 핫 지갑이 실용적인 도구입니다. EVM 체인에는 MetaMask, 멀티체인 모바일 사용에는 Trust Wallet.</li>
+        <li><strong>잃으면 아쉬울 금액을 보유하고 거의 거래하지 않음:</strong> 하드웨어 지갑을 구하세요. 마찰이 곧 기능입니다.</li>
+        <li><strong>양쪽 혼합:</strong> 지출용 돈은 핫하게, 저축용 돈은 콜드하게 유지하세요. 충동이 아니라 일정에 따라 수익을 콜드 스토리지로 옮기세요.</li>
+      </ol>
+      <p>한 가지 더 고려할 점: 체인 지원. 지갑을 확정하기 전에 보유한 특정 코인을 지원하는지 확인하세요. 코인을 지원하지 않는 지갑은 받을 수 없으며, 지원되지 않는 지갑으로 코인을 보내는 것은 가장 흔하고 보통 되돌릴 수 없는 초보자 손실 중 하나입니다.</p>
+      <div id="tokvs-wallet-picker">
+  <style>
+    #tokvs-wallet-picker .tokvs-opt { background:#fff; border:1.5px solid #D8DCD2; font:inherit; font-weight:700; padding:9px 16px; border-radius:999px; cursor:pointer; margin:0 8px 8px 0; }
+    #tokvs-wallet-picker .tokvs-opt.tokvs-picked { background:#12150F; color:#fff; border-color:#12150F; }
+    #tokvs-picker-result { background:#F4F6F1; border-radius:12px; padding:12px 14px; margin-top:12px; }
+    #tokvs-picker-result:empty { display:none; }
+  </style>
+  <h2>3가지 질문으로 지갑 유형 선택하기</h2>
+  <p><strong>얼마를 보유할 예정인가요?</strong></p>
+  <p><button type="button" class="tokvs-opt" data-q="amount" data-v="small" aria-pressed="false">소액의 시작 금액</button>
+    <button type="button" class="tokvs-opt" data-q="amount" data-v="serious" aria-pressed="false">상당한 금액</button>
+  </p>
+  <p><strong>얼마나 자주 거래할 예정인가요?</strong></p>
+  <p><button type="button" class="tokvs-opt" data-q="freq" data-v="daily" aria-pressed="false">매일</button>
+    <button type="button" class="tokvs-opt" data-q="freq" data-v="rarely" aria-pressed="false">거의 안 함</button>
+  </p>
+  <p><strong>시드 문구에 얼마나 익숙하신가요?</strong></p>
+  <p><button type="button" class="tokvs-opt" data-q="seed" data-v="fine" aria-pressed="false">괜찮습니다</button>
+    <button type="button" class="tokvs-opt" data-q="seed" data-v="nervous" aria-pressed="false">불안합니다</button>
+  </p>
+  <p id="tokvs-picker-hint">추천을 보려면 3가지 질문에 모두 답하세요.</p>
+  <div id="tokvs-picker-result" aria-live="polite"></div>
+  <p class="note">이것은 단일 제품이 아니라 지갑 유형을 가리킵니다. 아래에 언급된 브랜드는 예시이며 추천이 아닙니다.</p>
+</div>
+
+      <h2>실수 없이 첫 지갑 설정하기</h2>
+      <ol>
+        <li>공식 웹사이트나 공식 앱 스토어 목록에서만 다운로드하세요. 개발자 이름과 URL을 다시 확인하세요.</li>
+        <li>새 지갑을 만드세요(누군가 준 시드 문구를 가져오지 마세요. 그 문구는 다른 사람의 지갑 것이거나 사기꾼의 것입니다).</li>
+        <li>앱이 시드 문구(보통 12단어 또는 24단어)를 표시하면 종이에 손으로 순서대로 적으세요. 스크린샷으로 찍지 말고, 메모나 클라우드 스토리지에 붙여넣지 말고, 자신에게 이메일로 보내지 마세요.</li>
+        <li>앱이 다시 입력하라고 요구할 때 문구를 확인하세요. 이렇게 하면 수정 가능한 동안 전사 실수를 잡을 수 있습니다.</li>
+        <li>강력한 앱 비밀번호나 PIN을 설정하고, 앱이 제공하는 추가 잠금(생체 인식, 자동 잠금)을 활성화한 뒤, 심각한 금액을 옮기기 전에 아주 작은 테스트 금액을 보내세요.</li>
+      </ol>
+      <h2>시드 문구 보안: 건너뛸 수 없는 부분</h2>
+      <p>시드 문구는 <em>곧</em> 지갑입니다. 그 단어를 가진 사람은 누구나 자신의 기기에서 지갑을 복원해 모든 것을 가져갈 수 있으며, 어떤 지원팀도 되돌릴 수 없습니다. 자기 수탁에는 '비밀번호 찾기'가 없습니다. 합법적인 지원은 시드 문구를 <strong>절대</strong> 요구하지 않습니다. 요구하는 사람은 예외 없이 훔치고 있는 것입니다.</p>
+      <p>실용적인 규칙: 종이가 휴대폰보다 낫습니다(스크린샷은 클라우드에 백업되어 대량으로 도난당합니다). 두 곳의 안전한 장소에 두 개의 사본을 보관하는 것이 하나의 사본보다 낫습니다. 거주 지역에 화재나 홍수 위험이 실제로 있다면 금속 백업 플레이트가 종이보다 낫습니다. 그리고 어떤 웹사이트, 양식, '검증기' 도구에도 시드 문구를 절대 입력하지 마세요. 인터넷에 닿는 순간 손상된 것으로 간주하고 코인을 새 지갑으로 옮기세요. 당사 <a href="wallet-safety.html">지갑 보안 가이드</a>는 보관, 상속, 문구 유출 시 대처 방법을 더 깊이 다룹니다.</p>
+      <h2>'내 키가 아니면 내 코인이 아니다' — 진짜 의미</h2>
+      <p>이 말은 이유가 있어 직설적입니다. 거래소에 있는 코인은 그 거래소의 차용증(IOU)입니다. 거래소가 해킹당하거나, 동결되거나, 파산하면 접근은 다른 사람의 위기 관리에 달려 있습니다. 역사는 고통스러운 사례를 제공했으며, 그래서 경험 많은 보유자들이 이 문구를 반복합니다.</p>
+      <p>그러나 반대도 사실입니다. 자기 수탁은 모든 책임을 사용자에게 이전합니다. 시드 문구를 잃으면 코인은 거래소 실패 때와 마찬가지로 완전히 사라집니다. 도움말 데스크는 없습니다. 따라서 이 말을 명령이 아니라 생각하라는 촉구로 받아들이세요. 양쪽 위험을 모두 이해하고, 보유량을 합리적으로 나누고, 어느 곳에도 깊이 생각하지 않은 금액을 두지 마세요.</p>
+      <h2>먼저 암호화폐를 구매한 뒤 지갑으로 옮기세요</h2>
+      <p>대부분의 초보자는 먼저 거래소에서 구매합니다. 법정화폐 온램프, 깊은 유동성, 간단한 인터페이스가 있는 곳입니다. 그리고 두 번째로 코인을 자신의 지갑으로 옮깁니다. 절차는 다음과 같습니다. 거래소에서 인증하고, USDT나 원하는 코인을 구매한 뒤, 지갑 주소로 출금하세요. 항상 소액 테스트 출금을 먼저 보내고, 도착을 확인한 뒤 나머지를 보내세요. 전체 금액 송금 시 잘못된 주소나 잘못된 네트워크는 암호화폐에서 가장 비싼 오타입니다.</p>
+      <p class="in-cta">거래소 계정으로 시작하세요. <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a><a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a><a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit 계정 만들기</a></p>
+      <p>선호한다면 Bitget도 이용할 수 있습니다. 링크는 <a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">Bitget 홈페이지</a>로만 연결되며, TokVS를 통한 리베이트는 없습니다. 어느 거래소를 선택하든 구매 후 지갑 단계는 동일합니다. 지갑 앱 자체에서 지갑 수신 주소를 복사하세요(메시지나 스크린샷에서 절대 복사하지 마세요). 네트워크가 일치하는지 다시 확인하고 소액으로 테스트하세요.</p>
+      <h2>초보자에게 실제 돈이 드는 흔한 실수</h2>
+      <ul>
+        <li><strong>시드 문구를 사진 찍기.</strong> 휴대폰 백업은 클라우드에 동기화됩니다. 클라우드는 침해됩니다. 종이는 어디에도 동기화되지 않습니다.</li>
+        <li><strong>가짜 지갑 앱 설치.</strong> 모방 앱이 검색 결과와 광고 상위를 차지합니다. 공식 스토어 + 검증된 개발자 이름, 매번 그렇습니다.</li>
+        <li><strong>무작정 거래 서명.</strong> 사이트가 이해하지 못하는 것에 서명하라고 요구하면 거절하세요. 승인도 거래입니다.</li>
+        <li><strong>잘못된 네트워크 출금.</strong> USDT는 많은 네트워크에 존재합니다. 잘못된 네트워크로 보내면 자금이 묶이거나 사라질 수 있습니다. 매번 양쪽 네트워크를 맞추세요.</li>
+        <li><strong>모든 것을 한곳에 보관.</strong> 거래소 하나, 지갑 하나, 시드 사본 하나 — 모든 단일 실패 지점은 미래의 이야기가 됩니다. 위험을 분산하세요.</li>
+      </ul>
+      <h2>멀티시그와 소셜 복구: 기초를 넘어서</h2>
+      <p><strong>멀티시그</strong>는 거래 승인을 위해 두 개 이상의 별도 키를 요구합니다. 예를 들어 세 기기 중 두 기기가 서명해야 합니다. 단일 실패 지점을 제거하지만 실제 복잡성을 더합니다. 키를 너무 많이 잃으면 하나의 시드 문구를 잃은 것과 마찬가지로 완전히 잠깁니다. 대부분의 초보자에게 멀티시그는 시작할 것이 아니라 나중에 배울 것입니다.</p>
+      <p><strong>소셜 복구</strong>는 더 친근하게 들리는 아이디어입니다. 신뢰할 수 있는 연락처가 키를 잃었을 때 접근 복원을 돕습니다. 문제는 신뢰할 수 있는 제3자를 다시 도입한다는 것입니다. 자기 수탁이 제거하는 바로 그 것입니다. 그리고 구현 방식은 보안 면에서 크게 다릅니다. 어느 쪽도 틀리지 않았습니다. 둘 다 한 위험을 다른 위험과 교환합니다. 고려하기 적절한 시기는 보유량이 추가 설정 비용보다 단일 분실 문구의 위험보다 커질 때입니다.</p>
+      <h2>구매 자체: 거래 비용</h2>
+      <p>지갑으로 옮기기 전에 거래소에서 암호화폐를 구매하는 비용은 표준 현물 수수료입니다. Binance 0.10% / 0.10%, OKX 0.08% / 0.10%, Bybit 0.10% / 0.10% 메이커/테이커. 수수료표는 변경되고 프로모션은 왔다 갔다 하므로, 거래 전에 항상 거래소의 공식 수수료 페이지에서 확인하세요.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Ready?</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">가입은 약 10분이 걸립니다. 한 번 인증하고, 2FA를 활성화한 뒤, 위 단계를 따르세요. 이 사이트의 가이드가 나머지를 안내합니다. B</div><div><div class="tt">Binance</div><div class="dd">세계 최대, 가장 깊은 유동성</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binance 가입하기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">가장 폭넓은 상품 라인업, 우수한 언어 지원</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKX 계정 만들기</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">깔끔한 앱으로 현물 및 선물 거래</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit 계정 만들기</a></div>
+        </div>
+        <p class="note">직접 가입할 때와 동일한 수수료 — 당사 링크는 추가 비용이 들지 않습니다.</p>
+      </div>
+
+      <h3>핫 지갑과 콜드 지갑의 차이는 무엇인가요?</h3>
+      <p>핫 지갑은 인터넷에 연결됩니다(휴대폰 앱이나 브라우저 확장 프로그램). 일상 사용에 편리합니다. 콜드 지갑은 하드웨어 기기에 키를 오프라인으로 보관하며, 거의 건드리지 않는 장기 보유분에 더 적합합니다.</p>
+      <h3>MetaMask는 초보자에게 안전한가요?</h3>
+      <p>MetaMask는 널리 사용되며 EVM 체인에 대해서는 좋은 습관을 실천하면 괜찮습니다. 공식 출처에서만 다운로드하고, 시드 문구를 절대 공유하지 않으며, 모든 연결 및 서명 요청을 승인 전에 검토하세요.</p>
+      <h3>소액만 보유하는데 하드웨어 지갑이 필요한가요?</h3>
+      <p>반드시 그렇지는 않습니다. 배우는 동안 수백 달러 정도라면 평판 좋은 핫 지갑이 합리적입니다. 잃으면 아쉬울 정도의 금액이 되면 하드웨어 지갑을 고려하세요.</p>
+      <h3>시드 문구를 잃어버리면 어떻게 되나요?</h3>
+      <p>시드 문구가 없으면 지갑을 복원할 방법이 없습니다. 코인은 사실상 사라집니다. 그래서 안전한 장소에 종이 백업을 보관하는 것이 선택하는 앱이나 기기보다 중요합니다.</p>
+      <h3>MetaMask에 비트코인을 보관할 수 있나요?</h3>
+      <p>아닙니다. MetaMask는 EVM 호환 체인용으로 만들어졌으며 비트코인을 기본 지원하지 않습니다. BTC에는 Trust Wallet이나 하드웨어 지갑처럼 비트코인을 지원하는 지갑을 사용하세요.</p>
+      <h3>지갑 회사가 문을 닫으면 어떻게 되나요?</h3>
+      <p>코인은 회사가 아니라 블록체인에 존재합니다. 시드 문구만 있으면 다른 호환 앱이나 기기에서 동일한 지갑을 복원할 수 있습니다.</p>
+      <h2>계속 읽기</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">입문 가이드: 여기서 시작하세요</a></li>
+        <li><a href="wallet-safety.html">지갑 및 시드 문구 보안</a></li>
+        <li><a href="buy-usdt.html">USDT 구매 방법: 모든 방법 비교</a></li>
+        <li><a href="avoid-scams.html">암호화폐는 사기인가요? 알아야 할 8가지 사기</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">홈</a><a href="../airdrops.html">일일 에어드롭</a><a href="../exchanges.html">거래소 비교</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Beginners</b><a href="../start/step1.html">입문 가이드</a><a href="index.html">가이드</a><a href="../start/step5.html">첫 코인 구매</a></div>
+      <div class="col" style="flex:1;"><b>Reviews</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Tools</b><a href="../tools.html#watchlist">관심 종목 알림</a><a href="../tools.html#calendar">이벤트 캘린더</a><a href="../exchanges.html#calculator">수수료 계산기</a></div>
+    </div>
+    <div class="disclosure">이 사이트에는 제휴 링크가 포함되어 있습니다. 제휴 링크를 통한 가입은 추가 비용이 들지 않습니다. 암호화폐 가격은 변동성이 매우 크며, 이곳의 어떤 내용도 투자 조언이 아닙니다. 위험은 스스로 판단하세요.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>아직 계정이 없으신가요? 3분 만에 가입하기 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">가입하기</a><button class="sx" aria-label="닫기" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+  <script src="/js/tokvs-widgets.js"></script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
