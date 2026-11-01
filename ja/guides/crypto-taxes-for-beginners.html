@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>初心者のための暗号税：何が重要か、何を追跡するか— TokVS</title>
+<meta name="description" content="暗号税は、課税対象イベントとしてカウントされるもの、スワップが現金化されなくても課税される理由、米国、英国、EUのルールが一般的にどのように異なっているか、そしてすべての初心者が必要とする記録保持テンプレートなど、わかりやすい言葉で説明されています。税務上のアドバイスではなく、一般的な情報のみを提供します。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/crypto-taxes-for-beginners">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/crypto-taxes-for-beginners">
+<meta property="og:title" content="初心者のための暗号税— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="課税対象イベントとしてカウントされるもの、現金化せずにスワップに課税できる理由、すべての初心者が必要とする記録保持テンプレート。 税務上のアドバイスではなく、一般的な情報のみを提供します。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/crypto-taxes-for-beginners">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"初心者のための暗号資産の税金","item":"https://tokvs.com/ja/guides/crypto-taxes-for-beginners"}]},{"@type":"Article","headline":"初心者のための暗号資産の税金","description":"課税対象イベントとしてカウントされるもの、スワップが現金化されなくても課税される理由、米国、英国、EUのルールが一般的にどのように異なっているか、そしてすべての初心者が必要とする記録保持テンプレート。","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/crypto-taxes-for-beginners","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"暗号通貨を保有しているだけで税金を払う必要がありますか？","acceptedAnswer":{"@type":"Answer","text":"ほとんどの国では、単に暗号を保持することは課税対象ではありません。税金は通常、売却、交換、または使用することで廃棄するときに有効になります。一般的に、購入と保有だけでは税金の請求書は作成されませんが、規則は居住地によって異なりますので、地域の規則を確認してください。"}},{"@type":"Question","name":"USDTをBTCに交換することは課税対象イベントですか？","acceptedAnswer":{"@type":"Answer","text":"一部の法域では、そうです。 1つの暗号を別の暗号に交換することは、あなたの銀行口座にフィアットマネーが触れていなくても、最初の資産の処分としてカウントされます。 それは多くの初心者を驚かせます。 他の法域ではスワップを異なる方法で扱っているため、スワップが免税であると見なす前に、あなたの国が暗号から暗号への取引をどのように扱っているかを確認してください。"}},{"@type":"Question","name":"小規模な取引を報告する必要がありますか？","acceptedAnswer":{"@type":"Answer","text":"小規模な取引はまだ取引です。一部の国では少額の申告基準や免除が設定されていますが、多くの国ではそうではなく、規則は頻繁に変更されます。安全な習慣は、どんなに小さくてもすべての取引を記録することです。そのため、後で推測ではなく証拠を使って質問に答えることができます。"}},{"@type":"Question","name":"取引ごとにどのような記録を保管する必要がありますか？","acceptedAnswer":{"@type":"Answer","text":"すべての取引について、取引時の日付、使用されたプラットフォーム、取引の種類、資産と金額、出てくる資産と金額、支払われた手数料、および法定価値を記録します。 取引明細書とウォレットの履歴も保持します。 良い記録とは、穏やかなファイリングシーズンと痛みを伴うファイリングシーズンの違いです。"}},{"@type":"Question","name":"米国、英国、EUの規則はどのように異なりますか？","acceptedAnswer":{"@type":"Answer","text":"細部だけでなく、構造も異なります。米国は一般的に暗号を財産として扱い、英国は独自のキャピタルゲインフレームワークを持ち、EU加盟国はそれぞれ独自のルールを設定しているため、EUの暗号税はありません。料金、しきい値、締め切りは変更されるため、このページには意図的に数字が記載されていません。地域のルールを確認するか、地域のプロフェッショナルを確認してください。"}},{"@type":"Question","name":"暗号税ソフトウェアを使用する必要がありますか、それともプロフェッショナルを使用する必要がありますか","acceptedAnswer":{"@type":"Answer","text":"ソフトウェアは、取引所の履歴をインポートし、利益を計算するため、複数のプラットフォームで多くの取引を行っている場合に役立ちます。 しかし、ソフトウェアはあなたが提供するレコードと同じくらい優れているだけであり、個人的なアドバイスを与えることはできません。 ステーキング、事業収入、または多額の金額が必要な場合は、現地の税務専門家に相談してください。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/初心者のための暗号税</div>
+      <h1>初心者のための暗号資産の税金</h1>
+      <p class="sub">ほとんどの国は何らかの形で暗号に課税していますが、ルールは暗号を所有することではなく、暗号で何をするかにかかっています。ここでは、何が重要か、なぜスワップが人々を驚かせるのか、そしてあなたをトラブルから守る1つの習慣について説明します。</p>
+      <p class="updated">2026年10月更新· By TokVS · 15分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <p class="note">ソースと方法：<a href="../methodology.html">私たちがどのようにチェックするか</a>・フィギュアとルールの変更、あなたが行動する前に公式ページで確認してください。</p>
+      <div class="callout warn"><b>まずこれを読む：</b>このページは一般的な情報のみであり、税務上のアドバイスではありません。 税法は頻繁に変更され、居住地や個人的な状況によって異なります。 ご自身の税金に関する決定については、地域の税務専門家にお問い合わせください。</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>ほとんどすべてを説明する1つのアイデア</h2>
+      <p>世界のほぼすべての暗号税制は、<strong>保有対処分</strong>という単一の区別に基づいて構築されています。ほとんどの国で、暗号通貨を購入してアカウントに残しておくことは、それ自体が課税対象ではありません。税制の目にはまだ何も起こっていません—あなたはまだ同じ資産を所有しており、利益または損失は実現されていません。税金の問題は、資産を<strong>処分</strong>するときに始まります。資産を売却するとき、資産を他のものと交換するとき、または資産を消費するときです。それはほとんどのシステムが測定する瞬間です—あなたがそれのために支払ったもの、あなたがそれのために得たもの、そして両者の違い。</p>
+      <p>これが、同じポートフォリオを持つ2人の初心者がまったく異なる税務状況を持つ可能性がある理由です。 1人は3年前にビットコインを購入し、決して手を触れませんでした。もう1人は毎週やり取りしていました。 最初の人は、その年の間、税金イベントを全く持っていない可能性があります。 2人目は、銀行口座に1ドルも引き出さなかったとしても、何百ドルも持っているかもしれません。 所有権ではなく活動が書類作成を生み出します。 このページの文章を1つしか覚えていない場合は、次のようにしてください。<strong>通常、税イベントを作成するのは保留ではなく取引です</strong>。</p>
+      <p>例外や地域の違いがあり、一部の国では特定の種類の収入を販売なしでも課税対象として扱っています。これについては以下で説明します。 しかし、保持対処分の枠組みは、後で出会うほぼすべてのルールを理解するのに役立ちます。 取引について疑問があるときは、自分自身に尋ねてください：私は資産を放棄し、見返りに他の何かを受け取りましたか？ 答えが「はい」の場合は、記録と報告が必要になる可能性があると仮定します。</p>
+      <p>このページは一般的な情報に過ぎず、税務上のアドバイスではありません。規則は変更され、居住地によって異なります。現地の税務専門家に状況を相談してください。</p>
+      <h2>税金を引き起こす可能性のある4つのアクティビティ</h2>
+      <p><strong> 1.仮想通貨を法定通貨に売る。</strong>これは最も明白なものです。ある価格でビットコインを購入し、別の価格でドル、ポンド、またはユーロで売却しました。支払った金額を超えて売却した場合、ほとんどの国で差額はキャピタルゲインとして扱われます。あなたがより少ない価格で売却した場合、それは資本損失である可能性があり、一部のシステムでは利益を相殺することができます。いずれにせよ、販売自体が重要なイベントであり、必要な記録は取引の両側の価格です。</p>
+      <p><strong> 2. 1つの暗号を別の暗号と交換します。</strong>ビットコインをイーサリアムに、またはUSDTをソラナに交換すると、暗号の中にいるような気分になります。銀行口座には何も届かないので、収入のように感じることはありません。しかし、いくつかの主要な管轄区域では、スワップはあなたがそれを売却したかのように、最初の資産の処分としてカウントされます。利益または損失は、受け取ったものの価値に対して測定されます。これは初心者にとって最も一般的な驚きであり、現金化せずに積極的に取引した人々が、まだ税金を払っていないことがわかるのはそのためです。これについては、以下のUSDT - to - BTCセクションで詳しく説明します。</p>
+      <p><strong> 3.暗号通貨の使用。</strong>多くの国では、暗号通貨で商品やサービスを支払うことも処分されています。あなたは資産を放棄し、見返りに何かを受け取ったので、同じ損益計算が適用されます。ビットコインでコーヒーを購入することは、購入してから2倍になっていますが、たとえ金額がわずかであっても、技術的には課税対象となる可能性があります。これは、暗号通貨をこのように扱う国では日常の購入にほとんど使用されない理由の1つです。記録保持の負担は現実のものです。</p>
+      <p><strong> 4.暗号を獲得する。</strong>ステーキング報酬、貸出プラットフォームからの利息、エアドロップ、マイニング報酬、仕事のために暗号で支払われることはすべて、あなたがそれを受け取ったときの暗号の価値で、いくつかの場所で収入として扱うことができます。詳細は大きく異なります。一部の国では、受け取った時点での税金の報奨、販売された時点での税金の報奨、少額の免除が適用される国もあります。一貫しているのは、収益は取引とは別の問題であるということです。何も売らなくても、収益から税イベントを得ることができます。</p>
+      <p>このページは一般的な情報に過ぎず、税務上のアドバイスではありません。規則は変更され、居住地によって異なります。現地の税務専門家に状況を相談してください。</p>
+      <h2>国によってルールが変わる理由</h2>
+      <p>世界的な暗号税はありません。各国は独自の既存のシステムに暗号を適合させており、適合度は各地で異なります。自分の国のアプローチの一般的な形を理解することは、他の人の数字を暗記することよりも重要です。料金、しきい値、締め切りが変更され、後で変更される数字を公開することは誰にも役立たないため、数字はこのページではまさに提供されません。</p>
+      <p><strong>米国、一般的に言えば。</strong>米国は一般的に、税務上、通貨ではなく財産として仮想通貨を扱っています。つまり、キャピタルゲインフレームワークは処分に適用されます。売却、スワップ、支出はそれぞれ課税対象となる可能性があり、資産を保有している期間は利益の処理方法に影響を与える可能性があります。取引所と個人には報告義務があり、ステーキングリワードとエアドロップに関するルールは進化しています。米国居住者の場合、実用的なポイントは、積極的な取引は多数の報告義務のあるイベントを生み出し、良好な記録は任意ではないということです。</p>
+      <p><strong>一般的に、英国。</strong>英国はまた、独自の年間免除額と、どの処分がカウントされ、どのように利益がプールされるかについての独自の規則を備えたキャピタルゲインフレームワークを暗号資産の処分に適用しています。暗号通貨を暗号通貨に交換することは、一般的に廃棄物として扱われます。収入待遇は、状況に応じてステーキングリワードや同様の収入に適用できます。英国の制度には特定の記録保持の期待があり、免除額と料金は近年変更されています。これはまさに、記事の数字に頼るのではなく、現在のポジションを確認する必要がある理由です。</p>
+      <p><strong>一般的に、欧州連合。</strong>単一のEU暗号税はありません。各加盟国は独自のルールを設定しており、それらは大きく異なります。いくつかは資本収入としての暗号利得、その他は雑所得としてのもの、そしていくつかは歴史的に長く保有されてきた暗号をより寛大に扱ってきました。さらに、暗号プラットフォームのEUレベルの報告規則が拡大しているため、取引所は、あなた自身が何かを提出するかどうかにかかわらず、あなたの活動を地元の税務当局に報告することができます。EUにお住まいの場合は、居住国のみが重要なルールブックです。ドイツ向けのガイドはフランスでは役に立ちません。その逆も同様です。</p>
+      <p>完全に別の場所に住んでいる場合、同じ原則が当てはまります。現在のバージョンで自分の国の枠組みを見つけ、他の管轄区域に書かれた規則を無視します。 暗号は数秒で国境を越えますが、税法はそうではありません。</p>
+      <p>このページは一般的な情報に過ぎず、税務上のアドバイスではありません。規則は変更され、居住地によって異なります。現地の税務専門家に状況を相談してください。</p>
+      <h2>USDTからBTCへの罠：現金化せずに課税</h2>
+      <p>これは、他のどのシナリオよりも多くの初心者を捉えるシナリオです。USDTをドルで購入します。その後、そのUSDTをBitcoinに交換します。あなたは銀行口座に何も引き出していないので、あなたの心の中では課税対象は何も起こりませんでした—あなたは単に2つの暗号資産の間を移動しました。一部の法域では、それは間違っています。スワップは、あなたのUSDTの処分とビットコインの取得として扱われ、あなたのUSDTポジションがそのコストベースと比較して何らかの利益を持っていた場合、その利益はあなたの銀行残高が変わっていないにもかかわらず課税される可能性があります。</p>
+      <p>特にUSDTでは、ステーブルコインは1ドル付近にとどまるように設計されているため、スワップ自体の利益は小さいことがよくあります。 しかし、「しばしば小規模」は「常にゼロ」ではありません。割引価格でUSDTを取得したり、報酬として受け取ったり、低コストベースで獲得したりした場合、その差は実際に発生する可能性があります。 そして、より大きな問題は、1つのスワップのサイズではありません。スワップのチェーンはそれぞれ個別に小さく、それぞれが何も感じなかったために記録されなかった報告可能なイベントの長いリストに加算される可能性があるということです。</p>
+      <p>トラップには2番目のレイヤーがあります。一部の法域では、ステーブルコインからステーブルコインへのスワップと暗号資産から暗号資産へのスワップは異なる扱いを受け、他の法域では同じ扱いを受けます。一部の国では、少額の取引に対して免除または簡素化された取り扱いがあり、一部の国ではそうではありません。唯一の信頼できるアプローチは、それが重要であるかのようにすべてのスワップを記録することです。なぜなら、後でそれが重要であると判断することは、その時点でそれを記録するよりもはるかに難しいからです。取引履歴には通常、これらすべてが含まれていますが、アカウントを閉鎖する前にダウンロードした場合やアクセスを失った場合に限られます。</p>
+      <p>このページは一般的な情報に過ぎず、税務上のアドバイスではありません。規則は変更され、居住地によって異なります。現地の税務専門家に状況を相談してください。</p>
+      <h2>記録保持：あらゆる場所で機能する1つの習慣</h2>
+      <p>税制が国によって異なる場合、記録保持は普遍的な習慣の1つです。すべての税制は、すべての国で、証拠に基づいて実行されています。取引の日付、金額、手数料、および価値を表示できる場合は、税務当局または会計士が尋ねる質問に答えることができます。できないときは、記憶から歴史を再構築しているのであり、記憶は貧弱な会計士である。良い知らせは、習慣が単純であるということです。毎回、その時に書き留めておけば、残りは自分で処理することができます。</p>
+      <p>シンプルなスプレッドシートから始めましょう。トランザクションごとに1行、以下のテンプレートの列。始めるのに高級なソフトウェアは必要ありません。ノートアプリやスプレッドシートで1年目を始めるのに十分です。重要なのは一貫性です。小さなものや何も感じなかったスワップを含め、すべての取引に同じ列が入力されます。複数の取引所やウォレットを使用する場合は、プラットフォームごとに別々のメモではなく、1つの組み合わせレコードを保持して、見落としのないようにします。</p>
+      <p>独自のスプレッドシートに加えて、取引所の取引履歴のエクスポート、入出金記録、使用したウォレットアドレスなどのソースドキュメントを保管します。 取引所はエクスポート形式を変更したり、古い履歴を制限したり、アカウントを閉鎖したりする可能性があるため、年に1回ではなく定期的にダウンロードしてください。 スプレッドシートはあなたの要約です。エクスポートはあなたの証拠です。 両方を保管し、交換するデバイス以外の場所にバックアップしておきます。</p>
+      <h3>記録管理テンプレート</h3>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>柱</th><th>何を書くか</th><th>なぜ重要なの？</th></tr></thead>
+        <tbody>
+          <tr><td>日付と時刻</td><td>取引日</td><td>課税年度と保有期間を定める</td></tr>
+          <tr><td>プラットフォームまたはウォレット</td><td>発生した取引所またはウォレット</td><td>ソースドキュメントを後でトレースできます</td></tr>
+          <tr><td>取引種別</td><td>購入、販売、交換、使用、賭け、報酬</td><td>適用される可能性のある税制措置を決定します</td></tr>
+          <tr><td>アセットインと金額</td><td>受け取ったものと受け取った金額</td><td>ゲイン計算の半分</td></tr>
+          <tr><td>アセットアウトと金額</td><td>何をあきらめたのか、いくらですか</td><td>ゲイン計算の残りの半分</td></tr>
+          <tr><td>学費を負担</td><td>取引手数料、ネットワーク手数料、スプレッド</td><td>手数料は多くの場合、コストベースの一部となります</td></tr>
+          <tr><td>当時のフィアットの価値</td><td>両当事者の現地通貨価値</td><td>税金は通常、暗号通貨ではなく法定通貨で計算されます</td></tr>
+          <tr><td>注</td><td>注文ID、目的、異常なもの</td><td>あなたの未来の自分はあなたに感謝するでしょう</td></tr>
+        </tbody>
+      </table></div>
+      <p>もう1つの習慣を身につける価値があります：毎月の短いルーチン。月に1回、使用した各プラットフォームから履歴をエクスポートし、新しい行をスプレッドシートに追加し、合計がアカウントに表示されているものとほぼ一致していることを確認します。月に30分は、提出シーズンのパニックに陥った週末に打ち勝ち、問題をキャッチします。問題は、輸出の紛失、財布の忘れですが、修正はまだ簡単です。</p>
+      <p>このページは一般的な情報に過ぎず、税務上のアドバイスではありません。規則は変更され、居住地によって異なります。現地の税務専門家に状況を相談してください。</p>
+      <h2>初心者が犯す5つの間違い</h2>
+      <p><strong> 1.キャッシュアウトがないと仮定すると、税金はかかりません。</strong>スワップセクションで説明しているように、銀行口座に何も届かない場合でも、廃棄は課税される可能性があります。 これは、人々が1年間取引し、その後書類を発見するだけであるため、暗号税で最も高価な誤解です。</p>
+      <p><strong> 2.ファイリングシーズンまで記録を保持しません。</strong>交換は歴史を保持しますが、永遠ではなく、必ずしも便利な形式ではありません。散らばったスクリーンショットから1年間の取引を再構築するのは惨めです。記録しながら進めれば、申請シーズンは考古学プロジェクトではなくレビュー作業になります。</p>
+      <p><strong> 3.ステーキング報酬やエアドロップを忘れる。</strong>報酬は無料のお金のように感じられ、小さな報酬は重要ではないように感じる。ただし、受け取った報酬には所得待遇が適用され、1年間の週ごとの小さな報酬は実数に加算されます。ログ報酬は、取引を記録するのと同じ方法です。</p>
+      <p><strong> 4.パーソナルウォレットと共有ウォレットを混在させます。</strong> 1つのウォレットを自分の取引、友人の資金、ビジネスの副業に使用すると、すべての取引が曖昧になります。各レコードには明確な所有者と明確なストーリーが1つずつあるように、個別の目的のために個別のウォレットまたはアカウントを保持します。</p>
+      <p><strong> 5.他国のルールをコピーする。</strong>米国の税金に関するブログ記事には英国の税金については記載されておらず、2年前に書かれたガイドには今年の規則については記載されていない場合があります。 ご自身の居住国の現在の規則を常に確認し、日付のない料金を提供する記事を疑ってください。</p>
+      <p>このページは一般的な情報に過ぎず、税務上のアドバイスではありません。規則は変更され、居住地によって異なります。現地の税務専門家に状況を相談してください。</p>
+      <h2>申請する前にすべきこと</h2>
+      <p>提出時期が近づいたら、短いチェックリストに目を通してください。 まず、使用した各エクスチェンジ、取引した各ウォレット、報酬を支払ったプラットフォームなど、すべてのエクスポートを収集します。 次に、スプレッドシートをそれらのエクスポートと照合し、履歴がまだ利用可能である間にギャップを埋めます。 第三に、大きな贈答品、自分の財布間の送金、またはビジネス収入など、異常なものを特定し、それらの治療を推測するのではなく、専門家への質問として脇に置きます。</p>
+      <p>その後、助けが必要かどうかを判断します。 一握りの簡単な売買を行った場合、あなた自身の記録とあなたの国の公式ガイダンスで十分かもしれません。 頻繁に取引したり、複数のプラットフォームを使用したり、ステーキングリワードを獲得したり、支払いとして暗号通貨を受け取ったりした場合、現地の税務専門家は、ルールが不可能であるからではなく、専門家があなたの特定の状況についてどの質問をするべきかを知っているからです。 スプレッドシートとエクスポートを持ち込むと、彼らの仕事は再構築ではなく検証になります。これは安価で正確です。</p>
+      <p>最後に、ファイルの後にすべてを保管します。 税務当局は数年後に質問することができます。唯一の防御策は、その時点で保管していた記録です。 スプレッドシート、エクスポート、および提出された返品を一緒に保存し、国の規則が必要とする限り、そして疑わしい場合はより長くバックアップします。</p>
+      <p>このページは一般的な情報に過ぎず、税務上のアドバイスではありません。規則は変更され、居住地によって異なります。現地の税務専門家に状況を相談してください。</p>
+
+      <h3>暗号通貨を保有しているだけで税金を払う必要がありますか？</h3>
+      <p>ほとんどの国では、単に暗号を保持することは課税対象ではありません。税金は通常、売却、交換、または使用することで廃棄するときに有効になります。一般的に、購入と保有だけでは税金の請求書は作成されませんが、規則は居住地によって異なりますので、地域の規則を確認してください。</p>
+      <h3>USDTをBTCに交換することは課税対象イベントですか？</h3>
+      <p>一部の法域では、そうです。 1つの暗号を別の暗号に交換することは、あなたの銀行口座にフィアットマネーが触れていなくても、最初の資産の処分としてカウントされます。 それは多くの初心者を驚かせます。 他の法域ではスワップを異なる方法で扱っているため、スワップが免税であると見なす前に、あなたの国が暗号から暗号への取引をどのように扱っているかを確認してください。</p>
+      <h3>小規模な取引を報告する必要がありますか？</h3>
+      <p>小規模な取引はまだ取引です。一部の国では少額の申告基準や免除が設定されていますが、多くの国ではそうではなく、規則は頻繁に変更されます。安全な習慣は、どんなに小さくてもすべての取引を記録することです。そのため、後で推測ではなく証拠を使って質問に答えることができます。</p>
+      <h3>取引ごとにどのような記録を保管する必要がありますか？</h3>
+      <p>すべての取引について、取引時の日付、使用されたプラットフォーム、取引の種類、資産と金額、出てくる資産と金額、支払われた手数料、および法定価値を記録します。 取引明細書とウォレットの履歴も保持します。 良い記録とは、穏やかなファイリングシーズンと痛みを伴うファイリングシーズンの違いです。</p>
+      <h3>米国、英国、EUの規則はどのように異なりますか？</h3>
+      <p>細部だけでなく、構造も異なります。米国は一般的に暗号を財産として扱い、英国は独自のキャピタルゲインフレームワークを持ち、EU加盟国はそれぞれ独自のルールを設定しているため、EUの暗号税はありません。料金、しきい値、締め切りは変更されるため、このページには意図的に数字が記載されていません。地域のルールを確認するか、地域のプロフェッショナルを確認してください。</p>
+      <h3>暗号税ソフトウェアを使用する必要がありますか、それともプロフェッショナルを使用する必要がありますか</h3>
+      <p>ソフトウェアは、取引所の履歴をインポートし、利益を計算するため、複数のプラットフォームで多くの取引を行っている場合に役立ちます。 しかし、ソフトウェアはあなたが提供するレコードと同じくらい優れているだけであり、個人的なアドバイスを与えることはできません。 ステーキング、事業収入、または多額の金額が必要な場合は、現地の税務専門家に相談してください。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">初心者のための暗号を購入する方法</a></li>
+        <li><a href="how-to-sell-crypto.html">仮想通貨の売却方法</a></li>
+        <li><a href="how-to-withdraw-from-binance.html">Binanceから出金する方法</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

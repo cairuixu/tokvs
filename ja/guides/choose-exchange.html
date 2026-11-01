@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>暗号交換の選択方法： 6つのチェック— TokVS</title>
+<meta name="description" content="初心者のための最高の暗号交換： 6つのチェックで任意のプラットフォームを判断します—準備金、実績、手数料、フィアットオンランプ、セキュリティ、サポート。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/choose-exchange">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/choose-exchange">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/choose-exchange">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/choose-exchange">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/choose-exchange">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/choose-exchange">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/choose-exchange">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/choose-exchange">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/choose-exchange">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/choose-exchange">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/choose-exchange">
+<meta property="og:title" content="取引所の選び方： 6つのチェック— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="取引所が信頼できるかどうかを示す6つのチェックと、ビッグ4の判決。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/choose-exchange">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"初心者向け最良の暗号資産取引所：6つのチェック","item":"https://tokvs.com/ja/guides/choose-exchange"}]},{"@type":"Article","headline":"初心者向け最良の暗号資産取引所：6つのチェック","description":"初心者のための最高の暗号交換： 6つのチェックで任意のプラットフォームを判断します—準備金、実績、手数料、フィアットオンランプ、セキュリティ、サポート。","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/choose-exchange","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"私のお金を引き続き交換することはできますか？","acceptedAnswer":{"@type":"Answer","text":"これは歴史的に起こってきたことであり、まさにあなたがトップランクに固執し、独自のレイヤーを追加する理由です。単一のプラットフォームに大きな長期保有を維持しないでください。ウォレットとシードフレーズの安全性を参照してください。"}},{"@type":"Question","name":"複数の取引所に口座が必要ですか？","acceptedAnswer":{"@type":"Answer","text":"初心者には1つで十分です。追加のアカウントはすべて、セキュリティ面と簿記が追加されています。限定キャンペーンなど、具体的な理由がある場合にのみ秒を開きます。"}},{"@type":"Question","name":"紹介リンクを介して登録することは危険ですか？","acceptedAnswer":{"@type":"Answer","text":"紹介プログラムは取引所自体が運営しており、ONEを通じてサインアップしても料金が上がることはありません。実際の手数料を下げることができます。確認すべき1つのことはドメインです。サインアップページは、取引所の実際のドメイン( okx.com、binance.com )に配置されている必要があります。他に何かありましたら、閉じてください。"}},{"@type":"Question","name":"手数料が最も低い取引所はどれですか？","acceptedAnswer":{"@type":"Answer","text":"通常ユーザーにとっては近い。OKXの現物メイカー0.08%が4社で最も低く、他はほとんど0.10%。先物テイカーはBinanceとOKXが0.05%、Bybitが0.055%、Bitgetが0.06%だ。完全な表は比較ページにある。"}},{"@type":"Question","name":"紹介リンクを介して開設されたアカウントに違いはありますか？","acceptedAnswer":{"@type":"Answer","text":"いいえ。同じ機能、同じ料金ティア、同じサポート。唯一の違いは、取引所の公式紹介プログラムで取引手数料の一部が返金されることです。同じサービスにキャッシュバックが加算されます。利用規約は各取引所の公式紹介ページに記載されています。"}},{"@type":"Question","name":"アプリとウェブサイトの違いは？","acceptedAnswer":{"@type":"Answer","text":"機能的には同じだ。アプリはクイック購入やQRフローといったモバイル向けの便利さを加える。初心者は両方を入れるべきだ。日常使いにはアプリ、大きな注文を慎重に確認するにはウェブサイトだ。"}},{"@type":"Question","name":"無料エクスチェンジランキングは信頼できますか？","acceptedAnswer":{"@type":"Answer","text":"ランキングの支払い元を確認します。多くの「トップ10取引所」リストは広告インベントリであり、現物のために支払われたナンバーワンです。テスト：方法論を公開し、広告関係を開示していますか？私たちのルールは簡単です。公式の公開データ(料金表、予約ページ)のみで、マーケティングコピーは絶対に使用しないでください。このページの上部には、私たちの方法論が記載されています。"}},{"@type":"Question","name":"登録にはどのような書類が必要ですか？","acceptedAnswer":{"@type":"Answer","text":"有効な政府発行の身分証明書(パスポートまたは国民ID )、ご自身で管理する電話番号またはメールアドレス、アプリを実行してコードを受け取ることができる携帯電話の3つ。一部のプラットフォームではフェイスチェックが追加されています。明るい場所で行うと、最初の試みに合格します。公式アプリ内でのみ書類を提出してください。身分証明書の写真を送信する「サポートエージェント」は詐欺師です。"}},{"@type":"Question","name":"1つの取引所で複数の口座を開くことはできますか？","acceptedAnswer":{"@type":"Answer","text":"正当なプラットフォームでは、1人につき1つの認証済みメインアカウントが許可されています。重複アカウントにはフラグが立てられます。分離(たとえば、長期保留とアクティブな取引)を希望する場合は、サブアカウントを使用してください。4つのメジャーすべてが無料の内部送金でサポートしています。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/エクスチェンジの選択</div>
+      <h1>取引所の選び方： 6つの重要なチェック</h1>
+      <p class="sub">簡単な答え：初心者はグローバルトップランクからのみ選択する必要があります。Binance、OKX、Bybit、Bitgetの4つの主要な選択肢は、安全性、手数料、製品の焦点、アプリの感触が似ています。これらの6つのチェックを使用すると、任意のプラットフォームを自分で判断できます。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">スムーズな先物取引、頻繁なプロモーション</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitに登録する</a></div>
+      </div>
+      <p class="updated">更新日： 2026年10月・作成者： TokVS・所要時間： 11分</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>チェック1 ：積立金の大きさと証明</h2>
+      <p>大きなプラットフォームは、動機が少なく、預金で消える余地がありません。より重要なのは、ユーザー資産が静かに貸し出されるのではなく、1 ： 1のオンチェーンで存在するという証拠である<strong>準備金証明(PoR)</strong>を公開するかどうかです。4つのメジャーはすべて、点検できるリザーブページを公開しています。予約ページなし、サインアップなし—ベースラインフィルターとして扱います。たとえば、Binanceは公式PoRページでリザーブスナップショットを定期的に更新します。常に公式ドメインで確認し、スクリーンショットやサードパーティの再投稿を信頼しないでください。</p>
+
+      <p>4人全員が、少なくとも1つの完全なブルベアサイクル( 2021年から2022年のドローダウンを含む)を生き延びました。それが名前のないプラットフォームとの根本的な違いです。極端な市場は最高のストレステストです。</p>
+      <h2>チェック2 ：実績</h2>
+      <p>引き出しを凍結することなく、完全な強気相場サイクルと極端なボラティリティの日々を生き延びたプラットフォームは、いくつかの信頼を得ています。また、インシデント履歴を検索します。過去のハッキングは失格ではありません。<strong>彼らがそれをどのように処理したか</strong>です。全額払い戻しと公開ポストモーテムは良いもののように見えます。沈黙と隠蔽工作は歩き去ることを意味します。</p>
+
+      <p>レギュラーユーザーベースライン：現物は主に0.10%、OKXメイカーは0.08%、先物受注者は0.05%〜0.06%。料金表は変更される場合があります。公式サイトをご確認ください。</p>
+      <h2>チェック3 ：透明性のある手数料</h2>
+      <p>信頼できるプラットフォームは手数料表をすべて公開している。現物メイカー／テイカー、先物メイカー／テイカーだ。相場は現物約0.1%、先物テイカー約0.05%だ。これよりはるかに高ければ疑うべきだし、完全に隠されていれば除外だ。4社を横並びで比較するには<a href="../exchanges.html">比較ページ</a>を見て、計算方法は<a href="crypto-fees.html">暗号資産の手数料解説</a>で学ぶこと。</p>
+
+      <p>販売業者数と稼働時間は重要な指標です。P2P注文を行う前に、販売業者の30日間の取引数と評価を確認します。 これはどの広告よりも多くのことを示しています。</p>
+      <h2>チェック4 ：稼働中のフィアットオンランプ</h2>
+      <p>初心者にとって、毎日の経験は資金調達にかかっています。USDTをすばやく購入し、実際に引き出しを行うことができますか？深いP2Pマーチャントベンチと信頼性の高いレールは、大きな4つの利点です。あいまいなプラットフォームは、「入金が簡単で、出金が不可能」な場所です。</p>
+
+      <p>BinanceのSAFUファンドを例にとると、トッププラットフォームは通常ユーザー保護ファンドを実行しますが、支払い条件は異なります。サインアップする前に、2分間公式の説明に時間をかけてください。</p>
+      <h2>チェック5 ：セキュリティ機能</h2>
+      <ul>
+        <li>二要素認証、フィッシング対策コード、引き出しアドレスのホワイトリスト</li>
+        <li>コールドストレージのほとんどの資産に加えて、リスク/保険ファンド</li>
+        <li>ログインアラートとデバイス管理</li>
+      </ul>
+      <p>4つのメジャーすべてにこれらがあります。ギャップは、それらをオンにするかどうかです。登録した日に行います。チェックリストは<a href="../start/step3.html">ビギナーパス</a>のステップ3にあります。</p>
+
+      <p>緊急の問題の場合は、メールではなくライブチャットを使用してください。中国語のサポート時間はプラットフォームによって異なります。深夜に取引する前に、誰かが実際にシフトしていることを確認してください。</p>
+      <h2>チェック6 ：実際に連絡できるサポート</h2>
+      <p>何か問題が発生した場合、連絡可能なサポートはきれいなインターフェースよりも重要です。私たちの経験では、OKXとBitgetはアプリ内で比較的うまく対応しています。Binanceのサイズの大きさは、ヘルプセンターを介したより多くのセルフサービスにより、チケットキューが遅くなる可能性があることを意味します。</p>
+
+      <h2>ビッグ4は、それぞれ1行で</h2>
+      <ul>
+        <li><strong>Binance</strong>：世界最大の流動性とコインの選択—ほとんどの人にとってデフォルトの選択。<a href="../reviews/binance.html">レビュー</a></li>
+        <li><strong> OKX </strong>：現物メイカーの手数料は0.08%でわずかに低く、強力なWeb 3ウォレット、洗練されたアプリ。<a href="../reviews/okx.html">レビュー</a></li>
+        <li><strong> Bybit </strong>：スムーズなデリバティブエクスペリエンスと頻繁なキャンペーン、トレーダー傾向。<a href="../reviews/bybit.html">レビュー</a></li>
+        <li><strong> Bitget </strong>：コピートレーディングのスペシャリストで、他の人をミラーリングしたい場合はフレンドリーです。<a href="../reviews/bitget.html">レビュー</a></li>
+      </ul>
+      <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">現物取引 · account.binance.com</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">okx.com</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">bybit.com</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#3861FB;">B</div><div><div class="tt">Bitget</div><div class="dd">このサイトに紹介リンクはありません· bitget.com</div></div><a class="go dark" href="https://www.bitget.com" target="_blank" rel="nofollow noopener">公式サイト</a></div>
+      </div>
+
+      <div class="callout warn"><b>初心者を騙すために作られた3つの「取引所」：</b>1.巨大なリベートをぶら下げている不明瞭なプラットフォーム—消えた元本に対する90%のリベートはまだゼロです。2.人々があなたに送信するリンクからインストールされた偽のアプリ、預金が戻ってこないピクセル完璧なコピー。3.チャットグループ内にのみ存在する「交換」。会社もウェブサイトも訴える人もいません。公式ドメインのみ、アプリストアのみ。</div>
+
+      <h2>カテゴリの受賞者：あなたの状況に合った答えをコピーしてください</h2>
+      <ul>
+        <li><strong>初心者に最適： OKX </strong> —よりスムーズなオンボーディングとサポート、サインアップから最初の購入までの最短ルート。</li>
+        <li><strong>先物に最適： Bybit </strong> —アクティブトレーダー向けに構築されたディープデリバティブのラインナップと流動的な取引インターフェース。</li>
+        <li><strong>最低手数料： OKX </strong> — 0.08%の現物メイカー、通常のティアの4つの中で最も低い。頻繁なリミットオーダーユーザーは、時間の経過とともに実際のお金を節約します。</li>
+      </ul>
+      <p class="note">料金は変更される場合があります。公式サイトをご確認ください。「ベスト」はあなた次第です。上記は通常のティア料金と初心者のシナリオを想定しています。</p>
+      <p>これらすべては初めてですか？<a href="best-crypto-exchange-for-beginners.html">初心者向けのエクスチェンジランキング</a>をご覧ください。</p>
+      <h2>手数料の計算：実際に差額がいくらかかるか</h2>
+      <p>0.10%対0.08%は、ボリュームで乗算するまで、丸め誤差のように見えます。月に$10,000の現物を取引しているとします。</p>
+      <ul>
+        <li>0.10% ：手数料約$10。</li>
+        <li>0.08%（OKXメイカー層）の場合：約$8。</li>
+        <li>上にリベートを積み重ねると、年間のギャップは素敵な夕食をカバーすることができます。アクティブなトレーダーの場合は、それを10倍にします。</li>
+      </ul>
+      <p>お持ち帰り：<strong>取引すればするほど、低手数料で高リベートのプラットフォームを選ぶことができます。ほとんど取引していない場合は、最もスムーズに感じるものを選んでください。</strong>数字は通常のティアのベースラインです。公式サイトを確認してください。</p>
+      <h2>事前登録チェックリスト</h2>
+      <ol>
+        <li><strong>ドメインを確認し、文字ごとに</strong> —アドレスバー、このサイトのボタン、または自分のブックマークから入力します。グループチャットで転送されたリンクからは使用できません。</li>
+        <li><strong>アプリが</strong> —公式サイトまたはお使いの携帯電話のアプリストアのみから提供されている場合。インストール後に開発者名を確認してください。</li>
+        <li><strong> 2 FAとフィッシング対策コード</strong> —登録後10分以内にすべてを有効にします。これまでで最も安価なセキュリティ投資。</li>
+        <li><strong>まず少額でテストすること</strong>——最初の入金と出金は少額で行い、速度と流れを確認してから、規模を拡大すること。</li>
+      </ol>
+      <h2>実際に2回目の交換が必要な場合</h2>
+      <p>初心者には1つで十分です。次の場合を考えてみましょう。1.欲しいコインが最初にリストされていない。2.プロモーションの報酬がサインアップの手間を上回っている。3.先物取引を開始し、本の深さと手数料を比較したい。2番目のアカウントを開設する前に、1番目のアカウント( 2 FA、引き出しホワイトリスト)でセキュリティを確保してください。アカウントが多いほど、管理しやすくなります。</p>
+      <h2>直接対決： 6つのチェックを並べて</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>チェック</th><th>Binance</th><th>OKX</th><th>Bybit</th><th>Bitget</th></tr></thead>
+        <tbody>
+          <tr><td>規模と引当金</td><td>世界最大、PoRページ</td><td>トップランク、PoRページ</td><td>トップランク、PoRページ</td><td>トップランク、PoRページ</td></tr>
+          <tr><td>実績</td><td>2017年以来、フルサイクルは存続しました</td><td>2017年以来、フルサイクルは存続しました</td><td>2018年以来、フルサイクルは存続しました</td><td>2018年以来、フルサイクルは存続しました</td></tr>
+          <tr><td>現物手数料(通常)</td><td>0.10% / 0.10%</td><td>0.08% / 0.10%</td><td>0.10% / 0.10%</td><td>0.10% / 0.10%</td></tr>
+          <tr><td>先物手数料(通常)</td><td>0.02% / 0.05%</td><td>0.02% / 0.05%</td><td>0.02% / 0.055%</td><td>0.02% / 0.06%</td></tr>
+          <tr><td>フィアットオンランプ</td><td>ほとんどのP2Pマーチャント</td><td>スムーズなP2P、優れた言語サポート</td><td>アクティブなP2P</td><td>完全なP2Pカバレッジ</td></tr>
+          <tr><td>サポート</td><td>ボリュームが大きい、反応が異なる</td><td>優れた言語サポート</td><td>わいせつ</td><td>優れた言語サポート</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">通常のランクベースライン。手数料は変更される場合があります。公式サイトを確認してください。創業年は公開情報です。</p>
+      <h2>取引所の移動：移行チェックリスト</h2>
+      <p>「引き下がって歩く」だけではありません。「手順は次のとおりです。1.新しいプラットフォームでサインアップ、検証、2 FAを完了する。2.少量の引き出しでテストし、タイミングとネットワークを確認する。3.大量に移動する—間違ったネットワークを選択した場合、損害は含まれたままになります。4.古いプラットフォームでAPIキーと認証を取り消す。5.古いアカウントを保持する(削除しないでください。記録が必要な場合があります)。または公式プロセスを介して閉じる。移動中は、両方の場所でログインアラートをオンにしておきます。</p>
+      <h2>テストサポート：実際に良いかどうかを判断する方法</h2>
+      <p>「24時間年中無休のサポート」バッジを信用しないでください。3分で自分でテストできます。</p>
+      <ol>
+        <li>ライブチャットを開き、実際の質問をします(例：「P2Pの異議申し立てには通常どのくらいの時間がかかりますか？」)。 応答速度と応答品質を判断する—質問を回避するボットは、実際の緊急事態ではあなたを救いません。</li>
+        <li>ヘルプドキュメントが本当に現地化されているか、機械翻訳かをチェックすること。機械翻訳のドキュメントは、最悪のタイミングで積極的に誤解を招くことがある。</li>
+        <li>公式コミュニティアクティビティ( Telegram、Discord )をご覧ください。問題が発生した場合、コミュニティモッドはチケットよりも迅速に対応することがよくあります。</li>
+      </ol>
+      <p>覚えておいてください：<strong>サポートは物事がうまくいかないときの唯一のライフラインです</strong>。登録前の3分間のテストは、その後のチケットの3日間の待ち時間に勝ちます。</p>
+      <h2>1行の答え： 1つだけ選んでください</h2>
+      <div class="callout good"><b>決められない場合は、これを真似する：</b>最初のアカウント→<strong> OKX </strong>(スムーズなオンボーディング)。世界最大の→<strong>Binance</strong>が欲しい。先物について真剣に考えている→<strong> Bybit </strong>。コピー取引→<strong> Bitget </strong>を介して学びたい。4つすべてがトップティアです。「間違った」選択をする可能性は非常に低いです。実際にお金を失うのは、誰も聞いたことのないプラットフォームにコインを駐車することです。</div>
+      <h2>1つのパラグラフの概要</h2>
+      <p>取引所の選択は、6つのチェックに分類されます。スケールと準備金の証明、実績、透明性のある手数料、稼働中のフィアットオンランプ、セキュリティ機能、および到達可能なサポートです。ビッグ4 ( Binance、OKX、Bybit、Bitget )は同じセキュリティレベルにあり、手数料と経験が異なります。初心者： OKX。グローバル最大：Binance。先物： Bybit。コピー取引： Bitget。サインアップする前にドメインを確認し、選択した4つのうちのどれよりも10倍も重要な後すぐに2 FAを有効にします。</p>
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">評決に達しました—今すぐ行動してください： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">サインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">サインアップ</a> <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">サインアップ</a></p>
+      <h2>よくある質問</h2>
+      <h3>私のお金を引き続き交換することはできますか？</h3>
+      <p>これは歴史的に起こってきたことであり、それがまさにあなたがトップ層に固執し、独自のレイヤーを追加する理由です。単一のプラットフォームに大きな長期保有を維持しないでください。 ウォレットに移動します。<a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a>を参照してください。</p>
+      <h3>複数の取引所に口座が必要ですか？</h3>
+      <p>初心者には1つで十分です。追加のアカウントはすべて、セキュリティ面と簿記が追加されています。限定キャンペーンなど、具体的な理由がある場合にのみ秒を開きます。</p>
+      <h3>紹介リンクを介して登録することは危険ですか？</h3>
+      <p>紹介プログラムは取引所自体が運営しており、ONEを通じてサインアップしても料金が上がることはありません。実際の手数料を下げることができます。確認すべき1つのことは、<strong>ドメイン</strong>です。サインアップページは、取引所の実際のドメイン( okx.com、binance.com )に配置されている必要があります。他に何かありましたら、閉じてください。</p>
+      <h3>手数料が最も低い取引所はどれですか？</h3>
+      <p>通常のユーザーにとっては、彼らは近くにいます： OKXの現物メイカーは0.08%が4つの中で最も低く、他のほとんどは0.10%です。先物受注者はBinanceとOKXで0.05%、Bybitで0.055%、Bitgetで0.06%です。<a href="../exchanges.html">比較ページ</a>のフルテーブル。</p>
+
+      <h3>紹介リンクを介して開設されたアカウントに違いはありますか？</h3>
+      <p>いいえ。同じ機能、同じ料金ティア、同じサポート。唯一の違いは、取引所の公式紹介プログラムで取引手数料の一部が返金されることです。同じサービスにキャッシュバックが加算されます。利用規約は各取引所の公式紹介ページに記載されています。</p>
+      <h3>アプリとウェブサイトの違いは？</h3>
+      <p>機能的には同じだ。アプリはクイック購入やQRフローといったモバイル向けの便利さを加える。初心者は両方を入れるべきだ。日常使いにはアプリ、大きな注文を慎重に確認するにはウェブサイトだ。</p>
+      <h3>無料エクスチェンジランキングは信頼できますか？</h3>
+      <p>ランキングの支払い元を確認します。多くの「トップ10取引所」リストは広告インベントリであり、現物のために支払われたナンバーワンです。テスト：方法論を公開し、広告関係を開示していますか？私たちのルールは簡単です。公式の公開データ(料金表、予約ページ)のみで、マーケティングコピーは絶対に使用しないでください。このページの上部には、私たちの方法論が記載されています。</p>
+      <h3>登録にはどのような書類が必要ですか？</h3>
+      <p>有効な政府発行の身分証明書(パスポートまたは国民ID )、ご自身で管理する電話番号またはメールアドレス、アプリを実行してコードを受け取ることができる携帯電話の3つ。一部のプラットフォームではフェイスチェックが追加されています。明るい場所で行うと、最初の試みに合格します。公式アプリ内でのみ書類を提出してください。身分証明書の写真を送信する「サポートエージェント」は詐欺師です。</p>
+      <h3>1つの取引所で複数の口座を開くことはできますか？</h3>
+      <p>正当なプラットフォームでは、1人につき1つの認証済みメインアカウントが許可されています。重複アカウントにはフラグが立てられます。分離(たとえば、長期保留とアクティブな取引)を希望する場合は、サブアカウントを使用してください。4つのメジャーすべてが無料の内部送金でサポートしています。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。本人確認を1回行い、2FAを有効化し、P2Pで初めてのUSDTを買いましょう。このサイトのガイドに従えば大丈夫です。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">スムーズな先物取引、頻繁なプロモーション</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitに登録する</a></div>
+        </div>
+        <p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+      </div>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="binance-vs-okx.html">Binance対OKX ：ラインバイラインの比較</a></li>
+        <li><a href="../exchanges.html">手数料とリベートを計算機と比較</a></li>
+        <li><a href="avoid-scams.html">暗号通貨は詐欺ですか？知っておくべき8つのスキーム</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

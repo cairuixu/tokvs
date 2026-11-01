@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>イーサリアム(ETH)の購入方法：初心者向けステップバイステップガイド— TokVS</title>
+<meta name="description" content="初心者向けにイーサリアムを購入する方法：取引所を選択し、IDを認証し、アカウントに資金を入金し、最初のETH現物注文を行い、コストのかかる間違いなくガス料金とネットワークの選択を処理します。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-ethereum">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-ethereum">
+<meta property="og:title" content="初心者のためのイーサリアム(ETH)の購入方法— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="交換、サインアップ、資金調達、最初のETH注文、ガス料金、安全な保管— 5つのステップで完全な初心者プロセス。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/how-to-buy-ethereum">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"イーサリアム(ETH)の購入方法：初心者向けステップバイステップガイド","item":"https://tokvs.com/ja/guides/how-to-buy-ethereum"}]},{"@type":"Article","headline":"イーサリアム(ETH)の購入方法：初心者向けステップバイステップガイド","description":"初心者向けにイーサリアムを購入する方法：取引所を選択し、IDを認証し、アカウントに資金を入金し、最初のETH現物注文を行い、コストのかかる間違いなくガス料金とネットワークの選択を処理します。","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/how-to-buy-ethereum","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"$50でどのくらいのETHを購入できますか？","acceptedAnswer":{"@type":"Answer","text":"ETHは小さな分数に分割されるため、$50は1つのETHの小さな部分を購入します。 コイン1枚あたりの価格は関係ありません。重要なのは、パーセンテージの動きです。 ほとんどの初心者は、50〜$100の価値から始めます。"}},{"@type":"Question","name":"取引所でETHを購入する際に、ガス料金を支払う必要がありますか？","acceptedAnswer":{"@type":"Answer","text":"いいえ。取引所の現物マーケットでの購入には、取引手数料(約0.1% )しかかかりません。 イーサリアムネットワーク上でETHを移動したり、オンチェーンアプリを使用したりすると、ガス料金が適用されます。 出金手数料は別途設定されており、確認する前に表示されます。"}},{"@type":"Question","name":"ETHを取引所に保管するか、ウォレットに移動するか？","acceptedAnswer":{"@type":"Answer","text":"2 FAを有効にすると、少額の取引を引き続き取引所に残すことができます。 より大きな長期保有は、シードフレーズが紙にバックアップされた、あなたが管理する財布に属します。 完全なルーチンについては、財布の安全ガイドを参照してください。"}},{"@type":"Question","name":"どのウォレットアドレスにもETHを送ることはできますか？","acceptedAnswer":{"@type":"Answer","text":"転送のために選択した同じネットワーク上のアドレスのみに転送します。 イーサリアムのメインネット上のETHとレイヤー2ネットワーク上のETHは同じように見えますが、ブリッジなしでは交差しません。 出金画面のネットワークとウォレットが予想するネットワークを常に一致させ、最初に少量でテストします。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/イーサリアムの購入</div>
+      <h1>イーサリアムの買い方：完全な初心者プロセス</h1>
+      <p class="sub">イーサリアムは2番目に大きな暗号であり、DeFi、NFT、ステーブルコインのバックボーンです。最初のETHの購入には約30分かかります。トップクラスの取引所を選択し、IDを確認し、アカウントに資金を提供し、現物注文を行い、どこに保管するかを決定します。 初心者が乗車するのは、ガソリン代とネットワークの選択だけです。このガイドでは、1セントを使う前に両方をカバーしています。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+      </div>
+      <p class="updated">2026年10月更新· By TokVS · 8分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <div class="callout good"><b>5ステップを一目で：</b>1.交換品を選ぶ→2. 登録して確認する→3. アカウントに資金を入金する→4. ETHで注文する→5. 安全に保管してください。各ステップは以下に展開されています。フォローすると、すべてがスマートフォンから動作します。</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>始める前に：準備する3つのこと</h2>
+      <ul>
+        <li><strong>政府発行の身分証明書。</strong>すべての正当な交換には、例外なく身元確認(KYC)が必要です。 「IDなし購入」を提供するチャネルはすべて罠です。</li>
+        <li><strong>あなたが管理する電話とメールアドレス</strong> —サインアップ、コード、認証アプリ用。</li>
+        <li><strong>失う余裕のあるお金。</strong>小さなことから始めましょう。プロセスを学ぶのに十分で、傷つけるのに十分ではありません。</li>
+      </ul>
+      <p>あなたが購入しているものの1つのライン： ETHはイーサリアムネットワークのネイティブコインです。 それは取引手数料(「GAS」と呼ばれる)を支払い、イーサリアム上に構築されたアプリを強化します—融資、取引、NFT、およびステーブルコイン転送はすべてそれで実行されます。 この二重の役割は、まさにETHが需要を維持している理由であり、保有者としてガソリン料金が重要である理由でもあります。</p>
+
+      <h2>ステップ1 ：交換を選択する</h2>
+      <p>取引所とは、購入するマーケットプレイスのことだ。初心者は、規模が大きく、長く運営され、手数料が透明なグローバルなトップ層からのみ選ぶべきだ。Binance、OKX、Bybitはいずれも深いETH現物市場をそろえている。通常ユーザーの現物手数料は近いため、アプリの使い心地とお住まいの国で使える入金手段で選ぶこと。当社の<a href="choose-exchange.html">取引所選択ガイド</a>で判断方法を確認するか、<a href="../exchanges.html">計算機付きの手数料比較</a>へ直接進むこともできる。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>取引所</th><th>現物メイカー</th><th>現物テイカー</th><th>ETHノート</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10%</td><td>0.10%</td><td>最も深いETH流動性、ほとんどのETHペア</td></tr>
+          <tr><td>OKX</td><td>0.08%</td><td>0.10%</td><td>3つのうち最も低い現物メイカー手数料</td></tr>
+          <tr><td>Bybit</td><td>0.10%</td><td>0.10%</td><td>完全なETH現物市場。<a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">当社のBybitリンク</a>からサインアップ</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">手数料スケジュールが変更されます。取引する前に、必ず取引所の公式手数料ページを確認してください。</p>
+      <p><strong>直接的な判断：</strong>ほとんどの初心者は、Binance(最大の選択、最も深い流動性)またはOKX ( 0.08%の現物メイカー手数料をわずかに下回る)で問題ありません。 最初に1つの口座を開設してください。口座が増えても利益が増えるわけではありません。</p>
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">決めましたか？アカウントの開設には約10分かかります： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成</a></p>
+      <h2>ステップ2 ：登録して確認する</h2>
+      <ol>
+        <li>公式ウェブサイトまたは携帯電話のアプリストアからのみアプリをダウンロードしてください。 <strong>誰かがあなたに送ったリンクからアプリをインストールしないでください</strong> —偽のアプリはナンバーワンの初心者詐欺です。</li>
+        <li>メールアドレスまたは電話番号、および固有の強力なパスワードで登録します。</li>
+        <li>本人確認を完了してください。身分証明書をアップロードし、顔認証に合格してください。 承認には通常数分から数時間かかります。</li>
+        <li>2要素認証( 2 FA )とフィッシング対策コードをすぐに有効にします。 これはアカウントの基本的な鎧です。</li>
+      </ol>
+      <p>詳細なウォークスルーは、<a href="../start/step3.html">初心者パスのステップ3 ：サインアップ</a>にあります。</p>
+
+      <h2>ステップ3 ：アカウントに資金を入金する</h2>
+      <p>ルートが2つあります。 標準的なもの：最初にUSDTを購入し、ETH/USDTペアでETHと取引します。USDTペアは最も流動性が高く、最もタイトな価格です。 よりシンプルなもの：一部の取引所では、直接フィアットペア( ETH/USD、ETH/EUR )またはインスタントカード購入を提供しています。これにより、USDTのステップはスキップされますが、より多くの費用がかかる場合があります。 いずれにしても、少量のテストから始めて、それがより多くのことを行う前に着陸することを確認してください。 USDTルートは<a href="buy-usdt.html"> USDTの購入方法</a>でカバーされています。</p>
+
+      <h2>ステップ4 ： ETH注文をする</h2>
+      <ol>
+        <li>現物取引では、<strong> ETH/USDT </strong>ペアを開きます。</li>
+        <li>初心者は<strong>指値注文</strong>を使用する必要があります：支払う意思のある価格と金額(たとえば、$100相当)を設定します。 市場があなたの価格に達すると満たされ、メイカー手数料が低くなります。 急いでいますか？現在の本の価格が何であれ、市場注文は機能します。</li>
+        <li>確認する前に、料金、金額、手数料の3つの数字を確認してください。0.10%の現物手数料で、$100の購入は約0.$10の費用がかかります。手数料の計算は<a href="crypto-fees.html">暗号手数料の説明</a>でカバーされています。</li>
+        <li>一度記入すると、ETHは資産/現物の下に表示されます。 おめでとうございます。最初の購入が完了しました。</li>
+      </ol>
+
+      <h2>ステップ5 ：保管場所を決める</h2>
+      <ul>
+        <li><strong>少額でも取引可能：</strong>取引所に残しておいても問題ありません。2 FAがオンになっているため、アカウントが共有されることはありません。</li>
+        <li><strong>金額が大きく、長期保有する場合：</strong>自分で管理するウォレットへ移し、シードフレーズを紙にバックアップすること。パスの<a href="../start/step5.html">ステップ5</a>と<a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a>を参照。</li>
+      </ul>
+
+      <h2>ガス料金とネットワークの選択：初心者が間違っている部分</h2>
+      <p>取引所でETHを購入する場合、取引手数料のみがかかります。 高価なミスは、ETHを<em>移動</em>するときに発生します。これらはすべて、ガスとネットワークという2つの概念に帰着します。</p>
+      <p><strong> GASとは何ですか。</strong>イーサリアムネットワーク上のすべての取引は、GASと呼ばれるETHで手数料を支払います。ガソリン価格は、ネットワークの混雑に伴って上下します。誰もが一度に取引すると、手数料が急上昇します。静かな時間には、手数料が下がります。取引所で購入するときにガスを設定することはありませんが、チェーン上でETHを引き出したり、イーサリアムアプリを使用したりするときに間接的に支払いを行います。また、引き出し画面には確認前に常に手数料が表示されるため、タップする代わりにそれを読んでください。</p>
+      <p><strong>メインネットとレイヤー2ネットワーク。</strong>イーサリアムのメインネットワーク( ERC -20 )がデフォルトですが、Arbitrum、Optimism、Baseなどの安価な「レイヤー2」ネットワークは現在、大きなシェアを占めています。キャッチ： ArbitrumのETHは、メインネットのETHと同じ残高ではありません。それらは同じように見え、同じアドレス形式を使用しますが、異なるネットワーク上に存在し、ブリッジなしで交差することはありません。Arbitrumのみを監視するウォレットにメインネットETHを送信するか、間違ったネットワークオプションを介して出金すると、ブリッジバックするまでコインが束ねられ、ブリッジングには時間と手数料がかかります。</p>
+      <div class="callout warn"><b>ETH送金のルール：</b>1.出金画面で、選択したネットワークは、受取ウォレットまたは両替デポジットが実際に使用しているネットワークと一致している必要があります。両側を読み、推測しないでください。 2.別のネットワークに表示されている契約アドレスまたは入金アドレスにETHを送信しないでください。 3.新しい目的地への最初の送金は常に少量のテスト金額です。残りは到着後にのみ移動してください。</div>
+      <p>実際のお金を節約する実践的な習慣：毎回の送金前に出金手数料とネットワークを確認し、送金が緊急でない場合は、明白な輻輳ピーク時にETHを移動しないでください。 ガソリン代は、1時間待つだけで縮小できることがよくあります。</p>
+      <p>最初の出金前に知っておくべきもう1つの違い：取引所が表示する手数料は、ネットワークのライブガス価格ではなく、独自の出金手数料です。この2つは関連していますが、同じではありません。取引所は通常、ガソリン代をすでにバンドルしている定額または段階的な引き出し手数料を設定しているため、表示される番号は支払う番号です。その数値が友人が報告する数値と比較して高い場合は、目的地でレイヤー2オプションが利用可能な場合にメインネットを選択したかどうか、および転送がより静かなウィンドウを待つことができるかどうかを確認してください。どちらの調整もコストを大幅に削減することができ、どちらも技術的なスキルを必要としません。引き出し画面を2回読む習慣だけです。</p>
+
+      <h2>初回はいくらで買いますか？</h2>
+      <p>正直な答え：<strong>睡眠を失わない量</strong>。 小規模(例えば、$50 -100 )から始めて、入金、購入、必要に応じて出金など、フロー全体をミスなしでエンドツーエンドで実行します。 長期滞在の場合は、エントリー料金の平均を毎月一定額に設定することをおすすめします。 最初の購入は利益を目的としたものではありません。 それは<strong>完璧にプロセスを完了することです</strong>。</p>
+
+      <h2>初心者が作り続けている5つの購入ミス</h2>
+      <ol>
+        <li><strong>借りたお金やクレジットで購入する</strong> —最初の購入時のレバレッジは、通常のボラティリティを危機に変える。</li>
+        <li><strong>チェックせずにピークガスを支払う</strong> —混雑時に引き出すと、静かな時間の料金の倍数がかかる場合があります。</li>
+        <li><strong>間違ったネットワーク転送</strong> —最も高価なETH初心者の間違いであり、テスト金額の習慣で完全に回避できます。</li>
+        <li><strong>すべてを1つのプラットフォームに保管する</strong> —取引所は銀行ではありません。 より大きな長期保有物を自分の財布に移動します。</li>
+        <li><strong>「グル」とシグナルグループ</strong>に従ってください—あなたの手数料と出口の流動性から何を買うべきかを誰かが教えてくれます。</li>
+      </ol>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        </div>
+        <p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+      </div>
+      <h2>よくある質問</h2>
+      <h3>$50でどのくらいのETHを購入できますか？</h3>
+      <p>ETHは小さな分数に分割されるため、$50は1つのETHの小さな部分を購入します。 コイン1枚あたりの価格は関係ありません。重要なのは、パーセンテージの動きです。 ほとんどの初心者は、50〜$100の価値から始めます。</p>
+      <h3>取引所でETHを購入する際に、ガス料金を支払う必要がありますか？</h3>
+      <p>いいえ。取引所の現物マーケットでの購入には、取引手数料(約0.1% )しかかかりません。 イーサリアムネットワーク上でETHを移動したり、オンチェーンアプリを使用したりすると、ガス料金が適用されます。 出金手数料は別途設定されており、確認する前に表示されます。</p>
+      <h3>ETHを取引所に保管するか、ウォレットに移動するか？</h3>
+      <p>まだ取引する少額は、2FAを有効にした上で取引所に置いたままでよい。長期保有の大きな金額は、自分で管理するウォレットに移し、シードフレーズを紙にバックアップすること。完全な手順は<a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a>を参照。</p>
+      <h3>どのウォレットアドレスにもETHを送ることはできますか？</h3>
+      <p>転送のために選択した同じネットワーク上のアドレスのみに転送します。 イーサリアムのメインネット上のETHとレイヤー2ネットワーク上のETHは同じように見えますが、ブリッジなしでは交差しません。 出金画面のネットワークとウォレットが予想するネットワークを常に一致させ、最初に少量でテストします。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="buy-usdt.html"> USDTの購入方法：比較された3つの方法</a></li>
+        <li><a href="how-to-buy-bitcoin.html">ビットコインの購入方法：完全なウォークスルー</a></li>
+        <li><a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a></li>
+        <li><a href="crypto-fees.html">暗号手数料の説明</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

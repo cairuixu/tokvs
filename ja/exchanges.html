@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>取引所手数料比較：Binance、OKX、Bybit、Bitget — TokVS</title>
+<meta name="description" content="Binance、OKX、Bybit、Bitgetの現物・先物手数料とリベート上限を横並びで比較。先物手数料計算機と各取引所の詳細レビュー付き。">
+<link rel="canonical" href="https://tokvs.com/ja/exchanges">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/exchanges">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/exchanges">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/exchanges">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/exchanges">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/exchanges">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/exchanges">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/exchanges">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/exchanges">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/exchanges">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/exchanges">
+<meta property="og:title" content="取引所手数料比較：Binance、OKX、Bybit、Bitget — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="大手4社の現物／先物手数料とリベート方針を横並びで比較。往復コスト計算機付き。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tokvs.com/ja/exchanges">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"取引所手数料比較：Binance、OKX、Bybit、Bitget","item":"https://tokvs.com/ja/exchanges"}]}]}</script>
+
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<style>
+/* 手机端：对比表改堆叠卡片（本页专属，桌面端原样；标签来自 td 的 data-label） */
+@media (max-width:640px) {
+  .table-wrap, .tbl-wrap { overflow:visible; }
+  table.fee, .tbl-wrap table { min-width:0; width:100%; display:block; }
+  table.fee thead, .tbl-wrap table tr:first-child { display:none; }
+  table.fee tbody, .tbl-wrap table tbody { display:block; }
+  table.fee tr, .tbl-wrap table tr { display:block; background:#fff; border:1.5px solid #EFF1EA; border-radius:18px; padding:8px 16px; margin-bottom:12px; }
+  table.fee td, .tbl-wrap table td { display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:10px 0; border-top:1px solid #F1F1EC; text-align:right; }
+  table.fee td:first-child, .tbl-wrap table td:first-child { border-top:none; font-weight:900; font-size:16px; text-align:left; }
+  table.fee td::before, .tbl-wrap table td::before { content:attr(data-label); color:#8A9082; font-size:12.5px; font-weight:700; text-align:left; flex:none; }
+  table.fee td:not([data-label])::before, .tbl-wrap table td:not([data-label])::before { display:none; }
+  table.fee td:last-child .btn-ref { width:100%; text-align:center; }
+
+  /* 费率主表手机端改 2 列紧凑格：每家卡片从 6 行压到约 3 行，一屏能看到两家
+     （下面还有 OKX / Bybit / Bitget，不是只有 Binance；计算器结果表不受影响） */
+  table.fee tbody:not(#resultBody) tr { display:grid; grid-template-columns:1fr 1fr; padding:6px 12px; margin-bottom:10px; }
+  table.fee tbody:not(#resultBody) td { display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding:7px 6px; text-align:left; }
+  table.fee tbody:not(#resultBody) td::before { font-size:11.5px; }
+  table.fee tbody:not(#resultBody) td:first-child { grid-column:1 / -1; }
+  table.fee tbody:not(#resultBody) td:nth-child(6) { grid-column:1 / -1; flex-direction:row; justify-content:space-between; align-items:baseline; }
+  table.fee tbody:not(#resultBody) td:last-child { grid-column:1 / -1; }
+  table.fee tbody:not(#resultBody) td:last-child .btn-ref { padding:10px 20px; }
+}
+</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="start/step1.html">初心者パス</a><a href="guides/index.html">ガイド</a><a href="exchanges.html" class="on">取引所</a><a href="airdrops.html">エアドロップ</a><a href="tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="index.html">ホーム</a>/ 取引所比較</div>
+      <h1>取引所手数料とリベートの比較</h1>
+      <p class="sub">大手4社の現物・先物手数料とリベート方針に関する、独立した第三者による比較です。誇張はありません。数字がすべてを語ります。取引所名をクリックすると詳細レビューが開きます。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybit</div><div class="dd">スムーズな先物取引、頻繁なプロモーション</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitに登録する</a></div>
+      </div>
+      <p class="updated">2026年10月更新 · TokVS</p>
+    </div>
+    <div class="disclosure-bar">開示：本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。リベートは取引所が負担します。手数料はランキングやスコアに影響しません。詳しくは<a href="methodology.html">方法論</a>と<a href="disclosure.html">開示全文</a>をご覧ください。</div>
+  </div>
+
+  <section>
+    <div class="sec-head"><h2 id="fees">手数料とリベートの比較</h2><span class="desc">VIP0標準ユーザーの基本料率</span></div>
+    <div class="card" style="padding:6px 10px;">
+      <div class="table-wrap">
+        <table class="fee num">
+          <thead>
+            <tr><th>取引所</th><th>現物メイカー</th><th>現物テイカー</th><th>先物メイカー</th><th>先物テイカー</th><th>リベート上限</th><th>一言で</th><th>おすすめの人</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="name"><a href="reviews/binance.html">Binance</a></td>
+              <td data-label="Spot maker">0.10%</td><td data-label="Spot taker">0.10%</td><td data-label="Futures maker">0.02%</td><td data-label="Futures taker">0.05%</td>
+              <td data-label="Rebate cap">最大50% <span class="tag">公式サイトによる</span></td>
+              <td data-label="In one line">世界最深の流動性、最多の上場銘柄</td>
+              <td data-label="Best for">ほとんどの人にとっての定番の選択</td><td><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する →</a></td>
+            </tr>
+            <tr>
+              <td class="name"><a href="reviews/okx.html">OKX</a></td>
+              <td data-label="Spot maker">0.08%</td><td data-label="Spot taker">0.10%</td><td data-label="Futures maker">0.02%</td><td data-label="Futures taker">0.05%</td>
+              <td data-label="Rebate cap">最大50% <span class="tag">公式サイトによる</span></td>
+              <td data-label="In one line">最も充実した商品ラインナップ、強い言語対応</td>
+              <td data-label="Best for">中国語UXと低い現物メイカー手数料</td><td><a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">登録する →</a></td>
+            </tr>
+            <tr>
+              <td class="name"><a href="reviews/bybit.html">Bybit</a></td>
+              <td data-label="Spot maker">0.10%</td><td data-label="Spot taker">0.10%</td><td data-label="Futures maker">0.02%</td><td data-label="Futures taker">0.055%</td>
+              <td data-label="Rebate cap">最大30% <span class="tag">公式サイトによる</span></td>
+              <td data-label="In one line">スムーズな先物体験、頻繁なキャンペーン</td>
+              <td data-label="Best for">先物トレーダー</td><td><a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">登録する →</a></td>
+            </tr>
+            <tr>
+              <td class="name"><a href="reviews/bitget.html">Bitget</a></td>
+              <td data-label="Spot maker">0.10%</td><td data-label="Spot taker">0.10%</td><td data-label="Futures maker">0.02%</td><td data-label="Futures taker">0.06%</td>
+              <td data-label="Rebate cap">最大50% <span class="tag">公式サイトによる</span></td>
+              <td data-label="In one line">強力なコピートレード、初心者に優しい</td>
+              <td data-label="Best for">コピートレードをしたい初心者</td><td><a class="btn-ref" href="https://www.bitget.com" target="_blank" rel="nofollow noopener">公式サイト →</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="availability">
+      <div class="sec-head"><h2>各取引所が実際に利用できる国：国別対応状況</h2></div>
+      <div class="tbl-wrap"><table>
+        <tr><th>取引所</th><th>米国</th><th>欧州連合／EEA</th><th>カナダ</th><th>英国</th><th>オーストラリア</th></tr>
+        <tr><td><b>Binance</b></td><td data-label="United States">いいえ——米国居住者は別法人のBinance.USを利用</td><td data-label="European Union / EEA">2026年7月1日以降、新規の活動なし：ギリシャのMiCA申請は2026年6月24日に取り下げ、既存ユーザーは出金のみ</td><td data-label="Canada">2023年に撤退</td><td data-label="United Kingdom">2023年10月以降、新規ユーザーなし。既存ユーザーは現物アクセスを維持</td><td data-label="Australia">利用可</td></tr>
+        <tr><td><b>OKX</b></td><td data-label="United States">別法人のOKX INC。ニューヨーク州を除く全州で利用可</td><td data-label="European Union / EEA">可——マルタ経由でMiCA取得（MFSA、2025年1月）。ただし、OKX EuropeではUSDTの取引はできません</td><td data-label="Canada">全面制限</td><td data-label="United Kingdom">制限付きで利用可（デリバティブ、証拠金、P2Pなし）</td><td data-label="Australia">利用可</td></tr>
+        <tr><td><b>Bybit</b></td><td data-label="United States">いいえ（公式の制限リスト）</td><td data-label="European Union / EEA">別法人のBybit EU経由（MiCA、オーストリア、2025年5月）。EEA小売向けのUSDT現物取引は未確認——MiCA認可の取引所ではUSDTペアが上場廃止されているため、bybit.euで確認してください</td><td data-label="Canada">いいえ（公式の制限リスト）</td><td data-label="United Kingdom">2026年9月21日以降、新規登録を停止。既存アカウントは出金のみ</td><td data-label="Australia">グローバル取引所経由で利用可（現地ライセンスなし）</td></tr>
+        <tr><td><b>Bitget</b></td><td data-label="United States">いいえ（利用規約で禁止）</td><td data-label="European Union / EEA">提供なし——オーストリアのMiCA申請は審査中</td><td data-label="Canada">制限あり</td><td data-label="United Kingdom">制限あり——FCAライセンスなし。規約を確認してください</td><td data-label="Australia">利用可（AUSTRAC登録が報告されている）</td></tr>
+      </table></div>
+    </section>
+    <section id="calculator">
+    <div class="sec-head"><h2>先物手数料計算機</h2><span class="desc">往復コスト：メイカーで建玉＋テイカーで決済</span></div>
+    <div class="calc-grid">
+      <div class="card calc-form">
+        <form id="calcForm" onsubmit="return false">
+          <div class="field">
+            <label class="fl" for="notional">ポジションサイズ（USDT想定元本）</label>
+            <input type="number" id="notional" placeholder="例：10000" min="1" step="any" value="10000">
+          </div>
+          <div class="field">
+            <label class="fl">方向</label>
+            <div class="seg">
+              <label><input type="radio" name="side" value="long" checked><span>ロング</span></label>
+              <label><input type="radio" name="side" value="short"><span>ショート</span></label>
+            </div>
+          </div>
+          <div class="field">
+            <label class="fl" for="leverage">レバレッジ（1～125倍）</label>
+            <input type="number" id="leverage" value="10" min="1" max="125" step="1">
+          </div>
+          <button class="calc-btn" id="calcBtn" type="submit">計算する</button>
+          <p class="calc-err" id="errMsg"></p>
+        </form>
+      </div>
+      <div class="card calc-result" id="result" style="display:none">
+        <div style="padding:10px 16px 0;">
+          <h3 style="font-size:18px;font-weight:900;">結果 <span style="font-size:13px;color:#8A9082;font-weight:600;" id="resultMeta"></span></h3>
+          <p class="note" style="margin-top:4px;">合計往復手数料の安い順に並べ替え</p>
+        </div>
+        <div class="table-wrap">
+          <table class="fee num">
+            <thead><tr><th>取引所</th><th>建玉手数料</th><th>決済手数料</th><th>合計</th><th>必要証拠金</th><th></th></tr></thead>
+            <tbody id="resultBody"></tbody>
+          </table>
+        </div>
+        <p class="note" style="padding:0 16px 10px;">方法：建玉はメイカー料率、決済はテイカー料率で課金され、すべてVIP0の公開基本料率です。ロングとショートで手数料は変わりません。先物ポジションでは、ロングとショートの間でファンディング支払いが発生することもあります。データは2026年10月時点のもので、参考用です。公式の料率表で確認してください。</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2 id="reviews">詳細レビュー</h2><span class="desc">手数料表、リベート方針、長所と短所、入出金</span></div>
+    <div class="rev-grid">
+      <a class="card rev-card" href="reviews/binance.html"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binanceレビュー</div><div class="dd">取引量世界最大の取引所——手数料、リベート、入金経路を網羅。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="reviews/okx.html"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKXレビュー</div><div class="dd">最も充実した商品ラインナップ。内蔵Web3ウォレットが目玉。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="reviews/bybit.html"><div class="cic" style="background:#C99612;">B</div><div><div class="tt">Bybitレビュー</div><div class="dd">先物の経験を土台に、充実したキャンペーンを展開。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="reviews/bitget.html"><div class="cic" style="background:#3861FB;">B</div><div><div class="tt">Bitgetレビュー</div><div class="dd">コピートレードから生まれた、最も初心者に優しい選択肢の一つ。</div></div><span class="go">›</span></a>
+    </div>
+  </section>
+
+</div>
+
+<section>
+    <div class="card article prose">
+<section id="small-order-costs">
+      <div class="sec-head"><h2 id="costs">基本料率で1,000ドルの成行注文にかかるコスト</h2></div>
+      <div class="tbl-wrap"><table>
+        <tr><th>取引所</th><th>1,000ドルあたりのテイカーコスト</th><th>1,000ドルあたりのメイカーコスト</th></tr>
+        <tr><td><b>Binance</b></td><td data-label="Taker cost on $1,000">$1.00</td><td data-label="Maker cost on $1,000">$1.00</td></tr>
+        <tr><td><b>OKX</b></td><td data-label="Taker cost on $1,000">$1.00</td><td data-label="Maker cost on $1,000">$0.80</td></tr>
+        <tr><td><b>Bybit</b></td><td data-label="Taker cost on $1,000">$1.00</td><td data-label="Maker cost on $1,000">$1.00</td></tr>
+        <tr><td><b>Bitget</b></td><td data-label="Taker cost on $1,000">$1.00</td><td data-label="Maker cost on $1,000">$1.00</td></tr>
+      </table></div>
+      <div class="sec-head"><h2>USDT出金ネットワーク手数料（概算）</h2></div>
+      <div class="tbl-wrap"><table>
+        <tr><th>ネットワーク</th><th>目安の手数料</th></tr>
+        <tr><td>TRC20 (Tron)</td><td data-label="Typical fee">約1 USDT</td></tr>
+        <tr><td>BNB Chain</td><td data-label="Typical fee">1 USDT未満</td></tr>
+        <tr><td>Solana</td><td data-label="Typical fee">0.10ドル未満</td></tr>
+        <tr><td>Ethereum (ERC20)</td><td data-label="Typical fee">約2～15ドル、混雑状況により変動</td></tr>
+      </table></div>
+    </section>
+    </div>
+  </section>
+
+
+
+      
+      <!-- tokvs-end-cta -->
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="index.html" style="margin-top:10px;">ホーム</a><a href="airdrops.html">毎日のエアドロップ</a><a href="start/step1.html">初心者パス</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="start/step1.html">初心者パス</a><a href="start/step2.html">取引所を選ぶ</a><a href="start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="reviews/binance.html">Binance</a><a href="reviews/okx.html">OKX</a><a href="reviews/bybit.html">Bybit</a><a href="reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="tools.html#watchlist">ウォッチリストアラート</a><a href="tools.html#calendar">イベントカレンダー</a><a href="exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。TokVSは、比較対象の取引所とは関係のない独立した第三者サイトです。料率は2026年10月にまとめた公開基本料率（VIP0）で、参考用です。公式の料率表で確認してください。投資にはリスクが伴います。</div>
+  </div>
+</footer>
+
+<script src="../js/calc.js?v=20261030f"></script>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

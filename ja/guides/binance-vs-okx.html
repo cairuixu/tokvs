@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>BinanceとOKX ：手数料、製品、エクスペリエンス— TokVS</title>
+<meta name="description" content="BinanceとOKXの比較：現物と先物手数料、コインの選択、商品の獲得、Web 3ウォレットとアプリのエクスペリエンスの比較、1行の評決。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/binance-vs-okx">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/binance-vs-okx">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/binance-vs-okx">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/binance-vs-okx">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/binance-vs-okx">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/binance-vs-okx">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/binance-vs-okx">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/binance-vs-okx">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/binance-vs-okx">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/binance-vs-okx">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/binance-vs-okx">
+<meta property="og:title" content="BinanceとOKX ：比較— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="料金、コイン、製品、アプリのエクスペリエンスを比較し、ユーザータイプごとに判断します。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/binance-vs-okx">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"BinanceとOKX ：手数料、製品、エクスペリエンス","item":"https://tokvs.com/ja/guides/binance-vs-okx"}]},{"@type":"Article","headline":"BinanceとOKX ：手数料、製品、エクスペリエンス","description":"BinanceとOKXの比較：現物と先物手数料、コインの選択、商品の獲得、Web 3ウォレットとアプリのエクスペリエンスの比較、1行の評決。","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/binance-vs-okx","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/Binance対OKX</div>
+      <h1>BinanceとOKX ：どちらが優れていますか？</h1>
+      <p class="sub">どちらもファーストティアであり、どちらも他方を押しつぶすことはありません。実際の違い：Binanceは、ボリュームとコインの選択で最大であり、最も深い流動性を持っています。OKXは、より低い現物メイカー手数料( 0.08% )を請求し、より強力なWeb 3ウォレットとアプリ内エクスペリエンスを備えています。実際に最もやりたいことを選びましょう。</p>
+      <p class="updated">2026年10月更新· TokVSによる· 4分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>手数料： OKXは現物メイカーにとってわずかに安い</h2>
+      <p>通常( VIP 0 )ユーザーの標準料金は、<a href="../exchanges.html">比較ページ</a>と一致します。</p>
+      <div class="table-wrap">
+        <table class="fee num">
+          <thead><tr><th>取引所</th><th>現物メイカー</th><th>現物テイカー</th><th>先物メイカー</th><th>先物テイカー</th><th>リベート上限</th></tr></thead>
+          <tbody>
+            <tr><td class="name"><a href="../reviews/binance.html">Binance</a></td><td>0.10%</td><td>0.10%</td><td>0.02%</td><td>0.05%</td><td>最大50%</td></tr>
+            <tr><td class="name"><a href="../reviews/okx.html">OKX</a></td><td>0.08%</td><td>0.10%</td><td>0.02%</td><td>0.05%</td><td>最大50%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>そのギャップはどれくらいの価値がありますか？現物制限注文で10万ドルの暗号を購入する：Binanceは100ドル、OKXは80ドル— 20ドルの差額を請求します。小口口座には関係ありません。OKXとリミットオーダーの習慣を組み合わせる必要がある頻繁なトレーダーにとっては意味があります。メイカーとテイカーについては、<a href="crypto-fees.html">暗号手数料の説明</a>で説明されています。2026年の手数料の詳細については、<a href="binance-vs-okx-fees-2026.html">Binance対OKX手数料2026 </a>を参照してください。代わりに、OKXとBybitを比較しますか？ <a href="okx-vs-bybit.html"> OKX対Bybit </a>。</p>
+
+      <h2>スケールとコインの選択：明らかにBinance</h2>
+      <p>Binanceは、取引量で世界最大の取引所です。最も深い流動性は、より大きな注文でのスリッページが少なくなることを意味し、最も長いコインリストは、通常、新しいニッチなトークンが最初に取引されることを意味します。OKXはより少ないコインをリストしています。主流のものはすべてそこにあり、より保守的なリストポリシーはまた、踏み込むべきジャンクトークンが少ないことを意味します。</p>
+
+      <h2>製品：異なる重心</h2>
+      <ul>
+        <li><strong>新トークンイベント：</strong>Binanceのランチプールは最も長く、最も混雑しています。OKXは異なるリズムとしきい値でJumpstartを実行します。両側に価値があります。</li>
+        <li><strong> Web 3ウォレット：</strong> OKXの組み込みウォレットは際立っています。マルチチェーンアセット管理とオンチェーンエントリーポイントが顕著に統合されています。 エアドロップをファーミングしたり、DeFiを使用したりすると、実際の摩擦が軽減されます。 Binanceにもウォレット製品があり、統合に一歩遅れています。</li>
+        <li><strong>コピー取引とボット：</strong>どちらも提供しています。どちらもカテゴリーリーダーではありません。そのタイトルはBitgetに属しています。<a href="../reviews/bitget.html"> Bitgetレビュー</a>を参照してください。</li>
+      </ul>
+
+      <h2>アプリのエクスペリエンスとサポート： OKXがより身近に感じられる</h2>
+      <p>両方のアプリが完全に機能しています。OKXのインターフェースとアプリ内サポートは、一般的に応答性が高く、人間の回答を得る方が速い傾向があります。Binanceのスケールは両方向にカットされます。ほとんどの回答が見つかる巨大なヘルプセンターのナレッジベースですが、あなたの忍耐力を試すことができるチケットキューです。</p>
+
+      <h2>セキュリティとリザーブ：同じティア</h2>
+      <p>両方とも準備金の証拠を公開しており、両方とも完全な市場サイクルと深刻なストレスイベントを生き残っています。安全性を選ぶ必要はありません。あなた自身の習慣の方が重要です。2 FA、固有のパスワード、あなた自身の財布の大きな残高。<a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a>を参照してください。</p>
+
+      <h2>評決：自分自身をマッチさせる</h2>
+      <ul>
+        <li><strong>現物のみ、すべてのコインが欲しい</strong>→Binance。流動性と選択は大きな利点です。</li>
+        <li><strong>頻繁に取引し、手数料を気にするなら</strong> → OKX。0.08%のメイカー手数料にリミット注文を組み合わせると効果が積み上がる。</li>
+        <li><strong>オンチェーン、農業エアドロップ</strong> → OKX。Web 3ウォレットのエントリーポイントは、常に手間を省きます。</li>
+        <li><strong>本当に決められない</strong>Binance→から始めましょう。後で2つ目のアカウントを開設しても費用はかかりません。</li>
+      </ul>
+      <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">現物取引 · account.binance.com</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">okx.com</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">登録する</a></div>
+      </div>
+
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">あなたの選択をしましたか？アカウントを開く： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成</a></p>
+      <h2>よくある質問</h2>
+      <h3>両方のアカウントを持つことはできますか？</h3>
+      <p>ええ、矛盾はありません。OKXウォレットでは、多くの人がBinanceとオンチェーンアクティビティに注目しています。各アカウントには独自の認証とセキュリティ設定が必要です。</p>
+      <h3>完全な初心者に適しているのはどれですか？</h3>
+      <p>OKXのガイド付きフローとサポートは、初日にはより親しみやすくなります。Binanceのチュートリアルエコシステムは非常に大きく、問題は検索可能です。ギャップは小さく、一度プロセスを完了することは選択よりも重要です。</p>
+      <h3>0.02%の手数料ギャップは切り替える価値がありますか？</h3>
+      <p>あなたのボリュームを計算してください：年間10万$は〜$20を意味します—移動する価値はありません。年間500万$では、約$1,000の価値があります。まずは自分自身を測りましょう。</p>
+      <h3>出金手数料が低いのはどれですか？</h3>
+      <p>引き出し手数料は主にブロックチェーンネットワークによって駆動され、時間の経過とともに変化する小さなプラットフォームサービス料が加算されます。古いブログ投稿ではなく、その時点で出金ページに表示されている番号を常に信頼してください。</p>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。本人確認を1回行い、2FAを有効化し、P2Pで初めてのUSDTを買いましょう。このサイトのガイドに従えば大丈夫です。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        </div>
+        <p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+      </div>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="../exchanges.html"> 4つの取引所すべてを比較( BybitとBitgetを含む)</a></li>
+        <li><a href="crypto-fees.html">暗号手数料の説明：メイカー、テイカー、資金調達</a></li>
+        <li><a href="choose-exchange.html">取引所の選び方： 6チェック</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

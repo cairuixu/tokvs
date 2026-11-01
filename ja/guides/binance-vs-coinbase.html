@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>初心者のためのBinanceとCoinbase ：どちらから始めるべきですか？ — TokVS</title>
+<meta name="description" content="手数料、入金方法、使いやすさ、コイン、安全性など、初心者向けのBinanceとCoinbaseを正直に比較しました。私たちの判断：米国外のほとんどの初心者のためのBinance、シンプルさを望む米国の初心者のためのCoinbase。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/binance-vs-coinbase">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/binance-vs-coinbase">
+<meta property="og:title" content="初心者のためのBinance vs Coinbase — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="手数料、デポジット、使いやすさ、コイン、安全性—そして初心者のための明確な判断であり、ネクタイではありません。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/binance-vs-coinbase">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"Binance vs Coinbase","item":"https://tokvs.com/ja/guides/binance-vs-coinbase"}]},{"@type":"Article","headline":"初心者のためのBinance vs Coinbase","description":"初心者向けのBinanceとCoinbaseは、手数料、入金方法、使いやすさ、コイン、安全性などを正直に比較し、明確な判断を下しました。","datePublished":"2026-10-30","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/binance-vs-coinbase","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Binanceまたはコインベースは完全な初心者に適していますか？","acceptedAnswer":{"@type":"Answer","text":"米国外では、Binanceはほとんどの初心者にとってより良いスタートです。取引手数料の削減、より多くのコイン、地元の支払い方法で購入するためのより深いP2P市場。米国では、Binanceのメインプラットフォームは米国居住者には利用できず、Coinbaseのシンプルなインターフェースが最も簡単な第一歩であるため、Coinbaseはより良いスタートです。"}},{"@type":"Question","name":"BinanceとCoinbaseのどちらが安いですか？","acceptedAnswer":{"@type":"Answer","text":"Binanceは取引のために安価です。発行された標準現物手数料は、ボリュームディスカウントの前に、メイカーとテイカーのための0.10%です。Coinbaseのシンプルな購入インターフェースは、取引あたりのコストが著しく高くなりますが、高度な取引インターフェースはBinanceにはるかに近いものです。レートが変わるため、取引前に必ず公式の料金表を確認してください。"}},{"@type":"Question","name":"アメリカ人はBinanceを使用できますか？","acceptedAnswer":{"@type":"Answer","text":"米国の居住者は、Binanceの主要なグローバルプラットフォームを使用することはできません。より少ないコインと機能を備えた別のプラットフォームであるBinance.USに誘導されます。米国にお住まいの場合、Coinbaseは簡単な選択肢です。特にBinanceエコシステムが必要な場合は、Binance.USが代替手段です。"}},{"@type":"Question","name":"コインベースはBinanceよりも安全ですか？","acceptedAnswer":{"@type":"Answer","text":"どちらもセキュリティのトップクラスであり、どちらもリスクフリーではありません。Coinbaseは米国の公開会社であり、同社が保有する米ドルの現金残高は、提携銀行を通じて最大25万ドルのFDIC保険に加入していますが、暗号自体はどこでもFDIC保険に加入していません。Binanceは、はるかに大きな規模のカウンターと、2019年のハッキング後のすべてのユーザー損失を完全にカバーしたSAFU緊急基金を提供しています。ほとんどの初心者にとって、実用的な安全性の違いはわずかです。あなた自身の2 FAとフィッシングの習慣がより重要です。"}},{"@type":"Question","name":"BinanceとCoinbaseの両方を使用できますか？","acceptedAnswer":{"@type":"Answer","text":"はい、多くの経験豊富なユーザーがまさにそれをしています。単純なドル対暗号購入のためのCoinbase、安価な取引とより幅広いコイン選択のためのBinance。1つから始める方が簡単ですが、最初にあなたの国に合ったものを選び、制限に達した場合は後で2つ目を追加してください。"}},{"@type":"Question","name":"どれがより多くのコインを購入することができますか？","acceptedAnswer":{"@type":"Answer","text":"Binanceは、Coinbaseに届かない多くの小規模なトークンを含む、Coinbaseよりもはるかに多くのコインをリストしています。ビットコイン、イーサリアム、または主要なコインを購入する初心者にとって、違いは重要ではありません。両方ともメジャーをカバーしています。より小さなアルトコインを探しに行くときにのみ重要になります。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/Binance対コインベース</div>
+      <h1>初心者のためのBinance vs Coinbase</h1>
+      <p class="sub">ネクタイなし、フェンスシッティングなし：Binanceは米国外のほとんどの初心者に勝ち、Coinbaseは米国内の初心者に勝ちます。カテゴリごとにまさにその理由をご紹介します。</p>
+      <p class="updated">2026年10月更新· By TokVS · 10分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ→</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>まずは評決から</h2>
+      <p>米国外にお住まいの場合は、Binanceから始めてください。取引ごとの料金が安く、はるかに多くのコインをリストアップし、地元の支払い方法で暗号を購入するための最も深いピアツーピア市場を運営しています。これは、開始時とすべての手数料が最も重要な組み合わせです。米国にお住まいの場合は、Coinbaseから始めてください。Binanceの主要なグローバルプラットフォームは、米国の居住者には利用できません(代わりに別個の、より小さいBinance.USを取得します)。一方、Coinbaseのシンプルな購入画面は、暗号通貨で最も簡単な最初の購入であり、その米国規制の公開取引ステータスは、慎重な初心者にさらなる快適さを提供します。</p>
+      <p>それが1つのパラグラフの全体的な答えです。このガイドの残りの部分では、カテゴリごとにそれを証明しているので、あなたの状況が例外の1つであるかどうかを確認することができます。そうではありません。典型的な初心者にとっては、国の質問がそれを決定し、それ以外はすべて詳細です。読んだ後も引き裂かれている場合は、お住まいの国で最もサポートされているものを選択し、少量のテストから始めてください。後でいつでも他のものを開くことができ、多くの経験豊富なユーザーが最終的に両方のアカウントを保持します。</p>
+      <h2>手数料：Binanceが勝ち、それは近いものではありません</h2>
+      <p>手数料は、初心者が気づかずにお金を出血する場所です。手数料は、すべての取引で小さく複合的に見えるパーセンテージで見積もられているからです。Binanceの公開されている標準現物手数料は、メイカーとテイカーのために、ボリュームベースの割引の前に0.10%です。これは、当社のサイトが参照として使用するレートであり、取引所は時間の経過とともにレートとランクを調整するため、公式の手数料スケジュールに対して確認する必要があります。100ドルの取引では、約10セントです。</p>
+      <p>Coinbaseは2階層のストーリーであり、あなたが着陸する階層は非常に重要です。シンプルな購入画面—ほとんどの初心者が押す大きなフレンドリーなボタン—は、スプレッドと取引手数料を1つの便利な価格にバンドルするため、取引インターフェースよりも取引ごとにはっきりと多くの料金を請求します。対照的に、CoinbaseのAdvanced Tradeインターフェースは、Binanceスタイルの為替レートにかなり近い価格で設定されています。Coinbase初心者のための実用的なアドバイス：快適になったらすぐに高度な取引を学ぶか、取引ごとに数倍のコストがかかることを受け入れてください。いずれにせよ、取引サイズを変更する前に、使用するプラットフォームの公式料金表を必ず確認してください。料金ページは変更され、このガイドはそれらを上書きしません。</p>
+      <p class="in-cta">最初に低手数料ルートを比較してください： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成</a></p>
+      <h2>使いやすさ： Coinbaseが初日に勝利</h2>
+      <p>Coinbaseのシンプルなインターフェースは、暗号通貨の最高の最初の1時間です。コインを選び、金額を入力し、購入を押して所有します。あなたを混乱させるオーダーブック、リミットオーダー、資金調達ウォレットと現物ウォレットはありません。暗号通貨を購入したことがなく、少し緊張している人にとっては、そのシンプルさは実際のお金の価値があります。これが、Coinbaseがアメリカの初心者にとってデフォルトの推奨となった理由です。</p>
+      <p>Binanceのアプリはより強力で混雑しています。より多くのメニュー、より多くの商品(現物、先物、売り上げ、P2Pなど)、そして間違ったタップをするより多くの方法があります。初心者は絶対に学ぶことができますが、最初の1時間はより忍耐が必要であり、特に先物セクションは、現物取引をよく理解するまで完全に無視する必要があります。可能な限り穏やかなスタートを切って米国に住んでいる場合、Coinbaseのシンプルさがこのラウンドに勝ちます。米国外にいて、アプリの学習に20分を費やす意思がある場合、Binanceの深さはすぐに負担ではなく優位性になります。</p>
+      <h2>入金方法：Binanceが米国外で勝利</h2>
+      <p>どのようにお金を得るかは、取引手数料と同じくらい重要です。Coinbaseは、サポートされている地域で銀行振込、デビットカード、PayPalに依存しています。米国やヨーロッパの一部では、クリーンで使い慣れたレールがうまく機能しています。Binanceは、多くの地域のものと一致し、世界のほとんどの地域でこのカテゴリを決定する機能、すなわちピアツーピア取引を追加します。暗号通貨のカード購入がブロックされている、または高価な国では、BinanceのP2P市場では、銀行振込、モバイルマネー、地域固有のアプリなどの現地の決済方法を使用して、現地の加盟店からUSDTやその他のコインを市場主導の価格で購入できます。</p>
+      <p>だからこそ、地理的に分かれていることがとても重要なのです。ナイジェリア、ベトナム、ブラジル、またはトルコの初心者は、P2Pが現地の決済の現実を満たしているため、Binanceの資金調達オプションがCoinbaseよりも劇的に便利であることに気付くでしょう。ヨーロッパでの<a href="how-to-buy-usdt-in-europe.html"> USDTの購入</a>を含む地域ガイドは、国ごとに現地の鉄道を歩きます。一方、米国の初心者は、Coinbaseの銀行リンクが完全に適切であり、P2Pをまったく必要としない可能性があります。</p>
+      <h2>利用可能なコイン：Binanceが大幅に勝利</h2>
+      <p>Binanceは、Coinbaseよりもはるかに多くの暗号通貨をリストしています。Coinbaseのより厳格なリストプロセスを決して通過しない多くの小規模プロジェクトを含む、数百の追加トークンです。ビットコイン、イーサリアム、またはその他の主要なコインを購入する初心者にとって、この違いは無関係です。どちらのプラットフォームもメジャーを深い流動性でカバーしています。オンラインで聞いたことのある小規模なアルトコインを探しに行くとすぐに重要になります。Coinbaseでは、単純にリストされていないことがよくあります。Binanceでは通常そうです。</p>
+      <p>このセクションに属する注意事項：より大きなコインリストは両刃の剣です。小規模なトークンはより不安定であり、不十分な投資である可能性が高く、「Binanceに上場されている」は品質スタンプではありません。初心者は、最初の数か月は主要なコインをデフォルトとして扱い、小さなものはヒントとしてではなく、研究の宿題として扱う必要があります。私たちの<a href="how-to-buy-crypto-for-beginners.html">初心者購入ガイド</a>は、最初の購入を賢明に評価する方法を説明しています。</p>
+      <h2>安全性：さまざまな強みを備えたドロー</h2>
+      <p>両方の取引所はセキュリティのトップクラスであり、両方とも完全な市場サイクルを生き延びてきましたが、安全性のストーリーは異なります。Coinbaseは米国の公開会社であり、監査された財務および米国の規制監督を意味し、Coinbaseが保有する米ドルの現金残高は、パートナー銀行を通じて最大25万ドルのFDIC保険に加入しています。その保護の限界に注意してください。これは暗号ではなく現金を対象としています。いずれのプラットフォームでも、取引所の暗号保有はFDICに保証されていません。</p>
+      <p>Binanceカウンターには、スケールと公開の実績があります。取引手数料から資金提供されたSAFU緊急基金は、2019年のハッキング後のすべてのユーザーの損失を完全にカバーしました。これは、当社の<a href="is-binance-safe.html">Binanceセーフ</a>分析が詳細に検討する先例です。また、ユーザーが信頼するのではなく裏付けを検証できるように、準備金の証明を公開しています。Binanceはまた、米国の主要な和解を含む複数の管轄区域で長年にわたって規制上の圧力に直面してきました。これらのケースではユーザー資金は問題ではありませんでしたが、歴史は正直なイメージの一部です。</p>
+      <p>初心者のための実践的なポイント：これら2つの間の安全ギャップは、あなた自身の習慣が生み出すギャップと比較して小さいです。Authenticator 2 FA、固有のパスワード、フィッシング対策コード、および引き出しホワイトリストは、<a href="how-to-keep-your-binance-account-safe.html">Binanceアカウントの安全性チェックリスト</a>でカバーされており、これら2つの取引所の間で選択するよりも保護されています。お住まいの国に合った取引所を選択し、チェックリストを作成してください。</p>
+      <h2>比較の概要</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>カテゴリ</th><th>Binance</th><th>Coinbase</th><th>勝者</th></tr></thead>
+        <tbody>
+          <tr><td>取引手数料</td><td>低い標準現物手数料(メイカー/テイカー0.10%、公式スケジュールを確認)</td><td>シンプルな購入はより多くの費用がかかります。高度な取引ははるかに近い</td><td>Binance</td></tr>
+          <tr><td>初回使用時の使いやすさ</td><td>パワフルだが混雑しているアプリ</td><td>暗号通貨で最もシンプルな購入画面</td><td>Coinbase</td></tr>
+          <tr><td>入金方法</td><td>カード、銀行、さらに深いP2P市場</td><td>サポートされている地域の銀行、カード、PayPal</td><td>Binance(米国外)</td></tr>
+          <tr><td>リストされたコイン</td><td>はるかに幅広い選択肢</td><td>キュレーションされた、専攻に焦点を当てた</td><td>Binance</td></tr>
+          <tr><td>安全ストーリー</td><td>SAFUファンド、引当金証明、大規模</td><td>米国の公開会社、現金FDIC -最大250,000ドルの保険</td><td>ドロー</td></tr>
+          <tr><td>米国での予約可能状況</td><td>メインプラットフォームは利用できません。代わりにBinance.US</td><td>完全に利用可能</td><td>Coinbase</td></tr>
+        </tbody>
+      </table></div>
+      <h2>誰がどれを選ぶべきか</h2>
+      <ul>
+        <li><strong>次の場合にBinanceを選択します。</strong>米国外に住んでいる場合。低い手数料を気にしている場合。P2Pまたはローカルの支払い方法が必要な場合。後で小さなコインにアクセスしたい場合。</li>
+        <li><strong>次の場合にCoinbaseを選択します。</strong>あなたが米国に住んでいます。可能な限り簡単な最初の購入が必要です。米国の公開会社を好みます。主に主要なコインを購入して保有します。</li>
+        <li><strong>以下の場合は、後で両方を選択してください。</strong> 1つの制限に達し始めた場合。たとえば、Coinbaseで単に購入したが、より安価な取引または記載されていないコインが必要な場合。それは良い問題であり、それはあなたが初心者の段階を上回っていることを意味します。</li>
+      </ul>
+      <h2>どちらにも当てはまらない場合：正直な選択肢</h2>
+      <p>BinanceとCoinbaseは、初心者がすでに知っている2つの名前であるため、この比較を支配していますが、真剣な選択肢だけではありません。OKXは、手数料とコインの選択においてBinanceと密接に一致しており、特にP2P市場が深い米国以外の初心者のための強力な代替手段です。<a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener"> Bybit </a>は、トレーダーに人気のあるもう1つの主要な取引所であり、競争力のある手数料と完全な製品範囲を備えています。どちらも上記の中核的な判断を変更することはありません。あなたの国がまだ最終候補リストを決定していますが、あなたの最初の選択肢の取引所があなたの地域や支払い方法をサポートしていない場合は、流動性が低く、サポートが弱い小規模なプラットフォームに決済する前に、これら2つを確認してください。公式ドメインの確認、2 FAの有効化、小規模な開始など、同じルールがどこにでも適用されます。</p>
+      <h2>何をしてはいけないか、どちらを選択してもかまいません</h2>
+      <p>3つのビギナートラップは、両方のプラットフォームに等しく適用されます。まず、先物やレバレッジドトークンから始めないでください。彼らは急速な市場の動きで初心者の口座を清算することができ、どちらのプラットフォームの初心者インターフェースもそのリスクを十分に明白にしません。第二に、単一の取引所を永久に保有しないでください。金額が本当に損失を被るようになったら、<a href="best-crypto-wallet-for-beginners.html">初心者ウォレットガイド</a>で自己管理を学んでください。第三に、画面共有やメッセージングアプリを介してアカウントを設定するのを誰にも「手伝わせない」ようにしてください。どちらのプラットフォームでも、実際のサポートがパスワード、2 FAコード、またはシードフレーズを要求することはありません。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        </div>
+        <p class="note">直接サインアップするのと同じ手数料です。リンクに追加料金はかかりません。Bitget (<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener"> bitget.com </a>)もご利用いただけます。現在、Bitgetとのリベート契約はありませんのでご注意ください。</p>
+      </div>
+
+      <h3>Binanceまたはコインベースは完全な初心者に適していますか？</h3>
+      <p>米国外では、Binanceはほとんどの初心者にとってより良いスタートです。取引手数料の削減、より多くのコイン、地元の支払い方法で購入するためのより深いP2P市場。米国では、Binanceのメインプラットフォームは米国居住者には利用できず、Coinbaseのシンプルなインターフェースが最も簡単な第一歩であるため、Coinbaseはより良いスタートです。</p>
+      <h3>BinanceとCoinbaseのどちらが安いですか？</h3>
+      <p>Binanceは取引のために安価です。発行された標準現物手数料は、ボリュームディスカウントの前に、メイカーとテイカーのための0.10%です。Coinbaseのシンプルな購入インターフェースは、取引あたりのコストが著しく高くなりますが、高度な取引インターフェースはBinanceにはるかに近いものです。レートが変わるため、取引前に必ず公式の料金表を確認してください。</p>
+      <h3>アメリカ人はBinanceを使用できますか？</h3>
+      <p>米国の居住者は、Binanceの主要なグローバルプラットフォームを使用することはできません。より少ないコインと機能を備えた別のプラットフォームであるBinance.USに誘導されます。米国にお住まいの場合、Coinbaseは簡単な選択肢です。特にBinanceエコシステムが必要な場合は、Binance.USが代替手段です。</p>
+      <h3>コインベースはBinanceよりも安全ですか？</h3>
+      <p>どちらもセキュリティのトップクラスであり、どちらもリスクフリーではありません。Coinbaseは米国の公開会社であり、同社が保有する米ドルの現金残高は、提携銀行を通じて最大25万ドルのFDIC保険に加入していますが、暗号自体はどこでもFDIC保険に加入していません。Binanceは、はるかに大きな規模のカウンターと、2019年のハッキング後のすべてのユーザー損失を完全にカバーしたSAFU緊急基金を提供しています。ほとんどの初心者にとって、実用的な安全性の違いはわずかです。あなた自身の2 FAとフィッシングの習慣がより重要です。</p>
+      <h3>BinanceとCoinbaseの両方を使用できますか？</h3>
+      <p>はい、多くの経験豊富なユーザーがまさにそれをしています。単純なドル対暗号購入のためのCoinbase、安価な取引とより幅広いコイン選択のためのBinance。1つから始める方が簡単ですが、最初にあなたの国に合ったものを選び、制限に達した場合は後で2つ目を追加してください。</p>
+      <h3>どれがより多くのコインを購入することができますか？</h3>
+      <p>Binanceは、Coinbaseに届かない多くの小規模なトークンを含む、Coinbaseよりもはるかに多くのコインをリストしています。ビットコイン、イーサリアム、または主要なコインを購入する初心者にとって、違いは重要ではありません。両方ともメジャーをカバーしています。より小さなアルトコインを探しに行くときにのみ重要になります。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">初心者のための暗号を購入する方法</a></li>
+        <li><a href="is-binance-safe.html">Binanceは安全ですか？ SAFU、リザーブ、正直な注意事項</a></li>
+        <li><a href="buy-usdt.html"> USDTの購入方法：すべての方法を比較</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">初心者に最適な暗号ウォレット</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>初心者に最適な暗号ウォレット：ホット、コールド、選択方法— TokVS</title>
+<meta name="description" content="Best crypto wallet for beginners: hot vs cold wallets, MetaMask, Trust Wallet, Ledger and Trezor compared by features — plus seed phrase safety and the "not your keys" rule.">
+<link rel="canonical" href="https://tokvs.com/ja/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/best-crypto-wallet-for-beginners">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/best-crypto-wallet-for-beginners">
+<meta property="og:title" content="初心者に最適な暗号ウォレット：ホット、コールド、選択方法— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="セットアップ手順とシードフレーズの安全性を備えた、初心者向けのホットウォレットとコールドウォレットを比較しました。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/best-crypto-wallet-for-beginners">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"初心者に最適な暗号資産ウォレット","item":"https://tokvs.com/ja/guides/best-crypto-wallet-for-beginners"}]},{"@type":"Article","headline":"初心者に最適な暗号ウォレット：ホット、コールド、選択方法","description":"ホットとコールドウォレット、MetaMask、Trust Wallet、Ledger、Trezorの機能、さらにシードフレーズの安全性と初心者のためのシンプルな意思決定パス。","datePublished":"2026-10-28","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/best-crypto-wallet-for-beginners","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"ホットウォレットとコールドウォレットの違いは何ですか？","acceptedAnswer":{"@type":"Answer","text":"ホットウォレットはインターネット(電話アプリまたはブラウザの拡張機能)に接続されており、毎日の使用に便利です。コールドウォレットは、ハードウェアデバイス上でキーをオフラインに保管し、ほとんど触れない長期保有に適しています。"}},{"@type":"Question","name":"MetaMaskは初心者にとって安全ですか？","acceptedAnswer":{"@type":"Answer","text":"MetaMaskは広く使用されており、良い習慣を実践している場合はEVMチェーンに適しています。公式ソースからのみダウンロードし、シードフレーズを共有せず、承認する前にすべての接続と署名要求を確認してください。"}},{"@type":"Question","name":"少量しか持っていない場合、ハードウェアウォレットは必要ですか？","acceptedAnswer":{"@type":"Answer","text":"必ずしもそうではありません。あなたが学んでいる間に数百ドルで、評判の良いホットウォレットは妥当です。金額が失いたくないものになったら、ハードウェアウォレットを考えてみましょう。"}},{"@type":"Question","name":"復元フレーズを忘れるとどうなりますか","acceptedAnswer":{"@type":"Answer","text":"シードフレーズがなければ、ウォレットを復元する方法はありません。コインは事実上失われます。そのため、安全な場所にある紙のバックアップは、選択したアプリやデバイスよりも重要です。"}},{"@type":"Question","name":"ビットコインをMetaMaskに保存できますか？","acceptedAnswer":{"@type":"Answer","text":"いいえ— MetaMaskはEVM互換チェーン用に構築されており、ビットコインをネイティブにサポートしていません。BTCには、Trust Walletやハードウェアウォレットなど、ビットコインをサポートするウォレットを使用します。"}},{"@type":"Question","name":"ウォレット会社がシャットダウンした場合はどうなりますか？","acceptedAnswer":{"@type":"Answer","text":"あなたのコインは会社ではなくブロックチェーン上に存在します。シードフレーズがある限り、別の互換性のあるアプリまたはデバイスで同じウォレットを復元できます。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/初心者向け暗号通貨ウォレット</div>
+      <h1>初心者に最適な暗号資産ウォレット</h1>
+      <p class="sub">ホットvsコールド、メタマスクvsハードウェア、そしてブランドよりも重要なシードフレーズのルール。保有量と取引の頻度で選択します。</p>
+      <p class="updated">2026年10月更新· By TokVS · 12分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">クリーンなアプリで現物と先物を探そう</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitアカウントを作成</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>まず、暗号資産ウォレットとは実際には何ですか</h2>
+      <p>暗号資産ウォレットは、レザーウォレットが紙幣を保管するような方法でコインを保管するわけではありません。あなたのコインはブロックチェーン上にあります。ウォレットには、あなたがそれらを所有していることを証明し、それらを移動させる<strong>秘密鍵</strong>が保管されています。鍵を管理する者がコインを管理する。その1つの事実は、あなたがこれから下す財布の決定のほとんどすべてを説明しています。問題は決して「どのアプリが最も素敵に見えるか」ではなく、「誰が私の鍵を持っていて、盗むのがどれほど難しいか」です。</p>
+      <p>取引所があなたの鍵を持っている場合、あなたはその取引所の安全性、支払能力、誠実さを信頼しています。自分の鍵を持っていれば、デバイス、バックアップの習慣、詐欺を発見する能力など、自分自身を信頼していることになります。どちらのオプションも抽象的には「安全」ではありません。正しい選択は、どれくらいの金額を保有しているか、どれくらいの頻度で取引しているか、そしてどれだけ慎重になっているかによって異なります。このガイドは両側を歩いているので、目を開いて決めることができます。</p>
+      <h2>ホットウォレットとコールドウォレット：重要な違い</h2>
+      <p>ウォレットは2つのファミリーに分かれています。<strong>ホットウォレット</strong>は、電話アプリとブラウザ拡張機能というインターネットに接続されています。無料で、高速で、便利です。マルウェアからフィッシングサイトまで、オンラインと同じリスクにさらされています。<strong>コールドウォレット</strong>キーは専用のハードウェアデバイスでオフラインに保管されます。コストがかかり、すべてのトランザクションに摩擦が加わりますが、リモート攻撃者の手の届かないところにキーが完全に置かれます。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>ホットウォレット</th><th>コールドウォレット</th></tr></thead>
+        <tbody>
+          <tr><td>インターネットに接続されています</td><td>常にしている</td><td>いいえ。キーはオフラインのままです</td></tr>
+          <tr><td>典型的なコスト</td><td>無料</td><td>機器価格(公式店舗をご確認ください)</td></tr>
+          <tr><td>おすすめの人</td><td>毎日の使用、少量、DeFiとNFT</td><td>めったに触れない長期保有</td></tr>
+          <tr><td>主なリスク</td><td>マルウェア、フィッシング、悪意のあるサイト</td><td>デバイス<em>と</em>のバックアップを失う。改ざんされたデバイスを購入する</td></tr>
+          <tr><td>デバイスが紛失した場合の回復</td><td>シードフレーズを再インストールして復元する</td><td>新しいデバイスを購入して、シードフレーズで復元</td></tr>
+        </tbody>
+      </table></div>
+      <p>経験豊富なユーザーが利用する標準的なセットアップは、お金を使うホットウォレットと、節約できるコールドウォレットの組み合わせです。そこから始める必要はありません。ホットウォレットと少量から始めて、仕組みを学び、保有量が重要になったときにハードウェアデバイスを追加します。</p>
+      <h2>ホットウォレット初心者が実際に使用</h2>
+      <h3>MetaMask ：ブラウザウォレット</h3>
+      <p>MetaMaskは、ブラウザ拡張機能(およびモバイルアプリ)であり、Ethereumおよびその他のEVM互換チェーン( Ethereum、BNB Chain、Polygon、Arbitrumなどのネットワーク)のデフォルトウォレットです。DeFiアプリ、NFTマーケットプレイス、またはオンチェーンツールを使用する予定がある場合は、遅かれ早かれMetaMaskに会うことになります。ほとんどのWebアプリには、直接会話する「ウォレットに接続」ボタンがあります。</p>
+      <p>インストールする前に知っておくべき2つのこと。まず、MetaMaskは<strong>ビットコインをネイティブにサポートしていません。</strong>ビットコインはEVMチェーン用に構築されているため、BTCには別のウォレットが必要です。次に、ブラウザに存在するため、ブラウジングの習慣と同じくらい安全です。接続を承認すると、悪意のあるサイトに喜んで接続します。すべての接続要求を反射ではなく決定として扱います。</p>
+      <h3>Trust Wallet ：マルチチェーンフォンウォレット</h3>
+      <p>Trust Walletは、Bitcoin、Ethereum、BNB Chain、Solana、Dogecoinなど、幅広いチェーンを1か所でサポートするモバイルアプリです。複数のコインで1つのアプリを使用したい初心者にとっては、1つのシードフレーズ、多くのネットワーク、基本的なオンチェーンアクション用の組み込みのスワップとdAppブラウザが魅力です。</p>
+      <p>トレードオフはホットウォレットと同じです。キーは終日オンラインの携帯電話に保存されています。クリーンな携帯電話、公式アプリストアのダウンロード、バックアップされたシードフレーズは、どのブランドを選択するかよりも重要です。メッセージや広告のリンクからウォレットアプリをインストールしないでください。公式アプリストアで自分で検索し、開発者名を確認してください。</p>
+      <h2>コールドウォレット： LedgerとTrezor</h2>
+      <p>ハードウェアウォレットは、キーをオフラインで生成して保存し、デバイス自体でトランザクションに署名する小さな専用デバイスです。侵害されたコンピューターに接続しても、キーがデバイスから離れることはありません。コンピューターには署名された結果しか表示されません。これがセキュリティモデル全体であり、強力なものです。</p>
+      <h3>台帳</h3>
+      <p>Ledgerのデバイス（Nanoシリーズや新しいStaxラインなど）は、コインの管理やチェーンごとのアプリのインストールのためにLedger Liveアプリとペアリングされる。Ledgerは非常に幅広いコインに対応し、広く入手できる。Ledgerでも他のハードウェアウォレットでも共通の鉄則は、<strong>公式ストアからのみ</strong>買うことだ——マーケットプレイスの割引品は改ざんされている可能性があり、それでは意味がなくなってしまう。</p>
+      <h3>Trezor</h3>
+      <p>Trezorのデバイス( Model One、Model T、Safeラインなど)はTrezor Suiteとペアリングされており、独立した研究者がコードを監査できるオープンソースのファームウェアで知られています。Ledgerと同様に、Trezorは主要なコインをカバーし、同じシードフレーズのバックアップモデルを使用します。12ワードまたは24ワードのリカバリフレーズは実際のウォレットであり、デバイスは交換可能です。</p>
+      <p>どちらのブランドも絶対的な意味で「ベスト」ではなく、このサイトではそれらをランク付けしていません。お持ちのコイン、お気に入りのコンパニオンアプリ、お住まいの地域で正式に利用可能なものに基づいて選択します。ブランドよりもはるかに重要なのは、本物を購入し、自分で設定し、シードフレーズを守ることです。</p>
+      <h2>選択方法：簡単な意思決定パス</h2>
+      <ol>
+        <li><strong>数百ドル未満で、ロープを学ぶ：</strong>評判の良いホットウォレットは問題ありません。リスクのある金額は小さく、診療が必要です。</li>
+        <li><strong>頻繁に取引する、またはDeFi/NFTを使用する：</strong>ホットウォレットは、EVMチェーン用のMetaMask、マルチチェーンモバイル用のTrust Walletなどの実用的なツールです。</li>
+        <li><strong>あなたが失いたくない金額を保持し、めったに取引しない：</strong>ハードウェアウォレットを手に入れる。摩擦が特徴です。</li>
+        <li><strong>両方を混ぜる：</strong>お金を熱く使い続け、貯蓄を冷やし続ける。衝動的ではなく、スケジュール通りに利益をコールドストレージに移動します。</li>
+      </ol>
+      <p>もう1つの考慮事項：チェーンサポート。ウォレットにコミットする前に、所持している特定のコインがサポートされていることを確認してください。コインをサポートしていないウォレットはそれを受け取ることができず、サポートされていないウォレットにコインを送ることは、最も一般的で、通常は元に戻せない初心者の損失の1つです。</p>
+      <div id="tokvs-wallet-picker">
+  <style>
+    #tokvs-wallet-picker .tokvs-opt { background:#fff; border:1.5px solid #D8DCD2; font:inherit; font-weight:700; padding:9px 16px; border-radius:999px; cursor:pointer; margin:0 8px 8px 0; }
+    #tokvs-wallet-picker .tokvs-opt.tokvs-picked { background:#12150F; color:#fff; border-color:#12150F; }
+    #tokvs-picker-result { background:#F4F6F1; border-radius:12px; padding:12px 14px; margin-top:12px; }
+    #tokvs-picker-result:empty { display:none; }
+  </style>
+  <h2>3つの質問でウォレットの種類を選択してください</h2>
+  <p><strong>どれくらい持ちますか？</strong></p>
+  <p><button type="button" class="tokvs-opt" data-q="amount" data-v="small" aria-pressed="false">少量のスターター量</button>
+    <button type="button" class="tokvs-opt" data-q="amount" data-v="serious" aria-pressed="false">かなりの金額</button>
+  </p>
+  <p><strong>どのくらいの頻度で取引しますか？ </strong></p>
+  <p><button type="button" class="tokvs-opt" data-q="freq" data-v="daily" aria-pressed="false">毎日</button>
+    <button type="button" class="tokvs-opt" data-q="freq" data-v="rarely" aria-pressed="false">ほとんどない</button>
+  </p>
+  <p><strong>シードフレーズにどの程度慣れていますか？ </strong></p>
+  <p><button type="button" class="tokvs-opt" data-q="seed" data-v="fine" aria-pressed="false">いいだろう</button>
+    <button type="button" class="tokvs-opt" data-q="seed" data-v="nervous" aria-pressed="false">緊張している</button>
+  </p>
+  <p id="tokvs-picker-hint">3つの質問すべてに答えて、おすすめを確認してください。</p>
+  <div id="tokvs-picker-result" aria-live="polite"></div>
+  <p class="note">これは、単一の商品ではなく、ウォレットタイプを指しています。以下に記載されているブランドは例であり、推奨ではありません。</p>
+</div>
+
+      <h2>めちゃくちゃにせずに最初のウォレットをセットアップする</h2>
+      <ol>
+        <li>公式ウェブサイトまたは公式アプリストアからのみダウンロードできます。開発者名とURLを再確認します。</li>
+        <li>新しいウォレットを作成します(誰かがあなたに与えたシードフレーズをインポートしないでください。そのフレーズは他の誰かのウォレットに属しているか、詐欺師に属しています)。</li>
+        <li>アプリにシードフレーズ(通常12語または24語)が表示されたら、紙に手書きで順番に書きます。スクリーンショットを撮らず、メモやクラウドストレージに貼り付けず、自分自身に電子メールを送信しないでください。</li>
+        <li>アプリから再入力を求められたら、フレーズを確認してください。これにより、文字起こしの間違いをキャッチし、修正することができます。</li>
+        <li>強力なアプリのパスワードまたはPINを設定し、アプリが提供する追加のロック(生体認証、自動ロック)を有効にして、重大な問題が発生する前に少額のテスト金額を送信します。</li>
+      </ol>
+      <h2>シードフレーズの安全性：スキップできない部分</h2>
+      <p>あなたのシードフレーズ<em>は</em>あなたの財布です。これらの言葉を持っている人は誰でも、自分のデバイスでウォレットを復元してすべてを奪うことができ、サポートチームはそれを元に戻すことはできません。セルフカストディには「パスワードを忘れた」ことはありません。正当なサポートは<strong>決して</strong>あなたのシードフレーズを求めません—誰でもあなたから盗んでいます、フルストップ。</p>
+      <p>実用的なルール：紙は携帯電話を打ち負かします(スクリーンショットは雲にバックアップされ、一括で盗まれます)。2つの別々の安全な場所にある2つのコピーは1つのコピーを打ち負かします。火災や洪水が住んでいる場所で本当のリスクがある場合は、金属製のバックアッププレートが紙を打ち負かします。また、シードフレーズをWebサイト、フォーム、または「バリデータ」ツールに入力しないでください。インターネットに触れた瞬間に、侵害されたと見なし、コインを新しいウォレットに移動します。当社の<a href="wallet-safety.html">ウォレット安全ガイド</a>では、ストレージ、継承、フレーズが漏洩した場合の対処方法について詳しく説明しています。</p>
+      <h2>「あなたの鍵ではなく、あなたのコインではありません」—それが実際に何を意味するのか</h2>
+      <p>取引所のコインはその取引所からのIOUです。取引所がハッキング、凍結、または破産した場合、あなたのアクセスは他の誰かの危機管理に依存します。歴史は痛みを伴う例を提供してきました。そのため、経験豊富なホルダーはこのフレーズを繰り返します。</p>
+      <p>しかし、その逆もまた真実です。自己管理はすべての責任をあなたに譲渡します。シードフレーズを失うと、交換の失敗と同じようにコインがなくなります。ヘルプデスクはありません。したがって、この言葉をコマンドではなく、考えるためのプロンプトとして扱ってください。両方のリスクを理解し、賢明に保有しているものを分割し、考え抜いていない金額をどちらの場所にも決して保管しないでください。</p>
+      <h2>最初に暗号通貨を購入し、ウォレットに移動します</h2>
+      <p>ほとんどの初心者は最初に取引所で購入します。つまり、フィアットオンランプ、深い流動性、シンプルなインターフェースが存在し、コインを自分のウォレットに移動します。流れは次のとおりです。取引所で確認し、USDTまたは選択したコインを購入し、ウォレットアドレスに出金します。必ず最初に少額のテスト引き出しを送信し、到着を確認してから、残りを送信してください。フルサイズ転送の間違ったアドレスや間違ったネットワークは、暗号で最も高価なタイプミスです。</p>
+      <p class="in-cta">取引所アカウントから開始： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成</a> <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener"> Bybitアカウントを作成</a></p>
+      <p>Bitgetは、ご希望に応じてご利用いただけます。リンクは<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener"> Bitgetホームページ</a>のみに移動し、TokVS経由のリベートはありません。どちらの取引所を選択しても、購入後のウォレットの手順は同じです。ウォレットアプリ自体からウォレットの受信アドレスをコピーし(メッセージやスクリーンショットからは決してコピーしないでください)、ネットワークの一致を再確認し、小規模なテストを行います。</p>
+      <h2>初心者にリアルマネーがかかるよくある間違い</h2>
+      <ul>
+        <li><strong>シードフレーズを撮影しています。</strong>電話バックアップは雲に同期します。雲が破られます。紙はどこにも同期しません。</li>
+        <li><strong>偽のウォレットアプリをインストールしています。</strong> Copycatアプリが検索結果と広告の上位に表示されます。公式ストア+検証済みの開発者名、毎回。</li>
+        <li><strong>ブラインド署名トランザクション。</strong>サイトがあなたの財布にあなたが理解していないものに署名するように求めた場合、拒否します。承認もトランザクションです。</li>
+        <li><strong>間違ったネットワーク出金。</strong> USDTは多くのネットワークに存在します。間違ったネットワークに送信すると、資金を失う可能性があります。常に両側のネットワークを一致させます。</li>
+        <li><strong>すべてを1つの場所に保管します。</strong> 1つの取引所、1つの財布、1つのシードのコピー—すべての障害点は将来の物語です。リスクを広げる。</li>
+      </ul>
+      <h2>マルチシグと社会復興：基本を超えて</h2>
+      <p>1つのシードフレーズに慣れたら、2つのアップグレードについて聞きます。<strong> Multisig </strong>は、トランザクションを承認するために2つ以上の別々のキーを必要とします。たとえば、3つのデバイスのうち2つが署名する必要があります。これは単一障害点を排除しますが、実際には複雑さを増します。あまりにも多くのキーを失い、最終的に1つのシードフレーズを失うのと同じように自分自身をロックアウトします。ほとんどの初心者にとって、マルチシグは後で学ぶものであり、最初から学ぶものではありません。</p>
+      <p><strong>ソーシャルリカバリー</strong>は、よりフレンドリーに聞こえるアイデアです。信頼できる連絡先は、鍵を紛失した場合にアクセスを復元するのに役立ちます。キャッチは、信頼できるサードパーティー(セルフカストディが取り除くもの)を再導入し、実装のセキュリティが大きく異なることです。どちらの選択肢も間違っていません。どちらも1つのリスクを別のリスクに置き換えます。これらを考慮するのに適したタイミングは、保有物が十分に大きく、余分なセットアップコストが1つのフレーズが失われるリスクよりも小さい場合です。</p>
+      <h2>購入そのもの：取引のコスト</h2>
+      <p>ウォレットに移動する前に取引所で暗号を購入すると、標準的な現物手数料がかかります：Binance0.10%/ 0.10%、OKX 0.08%/ 0.10%、Bybit 0.10%/ 0.10%メイカー/テイカー。手数料のスケジュールが変更され、プロモーションが行き来するため、取引の前に必ず取引所の公式手数料ページで確認してください。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。確認を1回行い、2 FAを有効にしてから、上記の手順に従ってください。このサイトのガイドでは、残りの手順を説明します。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">クリーンなアプリで現物と先物を探そう</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybitアカウントを作成</a></div>
+        </div>
+        <p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+      </div>
+
+      <h3>ホットウォレットとコールドウォレットの違いは何ですか？</h3>
+      <p>ホットウォレットはインターネット(電話アプリまたはブラウザの拡張機能)に接続されており、毎日の使用に便利です。コールドウォレットは、ハードウェアデバイス上でキーをオフラインに保管し、ほとんど触れない長期保有に適しています。</p>
+      <h3>MetaMaskは初心者にとって安全ですか？</h3>
+      <p>MetaMaskは広く使用されており、良い習慣を実践している場合はEVMチェーンに適しています。公式ソースからのみダウンロードし、シードフレーズを共有せず、承認する前にすべての接続と署名要求を確認してください。</p>
+      <h3>少量しか持っていない場合、ハードウェアウォレットは必要ですか？</h3>
+      <p>必ずしもそうではありません。あなたが学んでいる間に数百ドルで、評判の良いホットウォレットは妥当です。金額が失いたくないものになったら、ハードウェアウォレットを考えてみましょう。</p>
+      <h3>復元フレーズを忘れるとどうなりますか</h3>
+      <p>シードフレーズがなければ、ウォレットを復元する方法はありません。コインは事実上失われます。そのため、安全な場所にある紙のバックアップは、選択したアプリやデバイスよりも重要です。</p>
+      <h3>ビットコインをMetaMaskに保存できますか？</h3>
+      <p>いいえ— MetaMaskはEVM互換チェーン用に構築されており、ビットコインをネイティブにサポートしていません。BTCには、Trust Walletやハードウェアウォレットなど、ビットコインをサポートするウォレットを使用します。</p>
+      <h3>ウォレット会社がシャットダウンした場合はどうなりますか？</h3>
+      <p>あなたのコインは会社ではなくブロックチェーン上に存在します。シードフレーズがある限り、別の互換性のあるアプリまたはデバイスで同じウォレットを復元できます。</p>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">ビットコインの購入方法：完全なウォークスルー</a></li>
+        <li><a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a></li>
+        <li><a href="buy-usdt.html"> USDTの購入方法：すべての方法を比較</a></li>
+        <li><a href="avoid-scams.html">暗号通貨は詐欺ですか？知っておくべき8つの詐欺</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+  <script src="/js/tokvs-widgets.js"></script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

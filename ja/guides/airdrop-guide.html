@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>暗号資産エアドロップとは何ですか？それらを安全にファーミングする方法— TokVS</title>
+<meta name="description" content="暗号資産エアドロップとは何ですか？プロジェクトがトークン、時間の価値のある3つのタイプ、現実的な期待、詐欺防止のレッドラインを提供する理由。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/airdrop-guide">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/airdrop-guide">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/airdrop-guide">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/airdrop-guide">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/airdrop-guide">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/airdrop-guide">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/airdrop-guide">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/airdrop-guide">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/airdrop-guide">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/airdrop-guide">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/airdrop-guide">
+<meta property="og:title" content="暗号資産エアドロップとは何ですか？ — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="プロジェクトがトークンを配布する理由、ファーミングに値する3つのタイプ、現実的な期待、そして詐欺を見分けるレッドライン。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/airdrop-guide">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"暗号資産エアドロップとは何ですか？安全にファーミングする方法","item":"https://tokvs.com/ja/guides/airdrop-guide"}]},{"@type":"Article","headline":"暗号資産エアドロップとは何ですか？安全にファーミングする方法","description":"暗号資産エアドロップとは何ですか？プロジェクトがトークン、時間の価値のある3つのタイプ、現実的な期待、詐欺防止のレッドラインを提供する理由。","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/airdrop-guide","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/エアドロップ101</div>
+      <h1>暗号資産エアドロップとは何ですか？ロジックと安全な方法</h1>
+      <p class="sub">エアドロップは、初期のユーザーにトークンを無料で提供するプロジェクトです。無料のお金のように聞こえます。実際に支払っているのは時間と注意力です。このガイドでは、プロジェクトがそれを行う理由、参加する価値のある3つのタイプ、正しい参加方法、安全を確保するためのレッドラインについて説明します。</p>
+      <p class="updated">2026年10月更新· TokVSによる· 4分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>プロジェクトがトークンを配布する理由</h2>
+      <ul>
+        <li><strong>コールドスタートの成長：</strong>新製品にはユーザーがいません。最初の本物に報酬を与えることは、広告よりも安価でターゲットを絞ったものです。</li>
+        <li><strong>ディストリビューション：</strong>多くの所有者に分散されたトークンは、より分散化されているように見えます。これにより、リスティングと信頼性が向上します。</li>
+        <li><strong>初期の貢献者への報酬：</strong>バグを提出したテストネットユーザーと初期の流動性プロバイダーは、将来のトークンで報酬を受け取り、プロジェクトの最大の支持者になります。</li>
+      </ul>
+      <p>したがって、エアドロップはチャリティではなくマーケティングです。早期のアクティビティと注目を提供します。プロジェクトは、将来のトークンのオプションを提供します。その枠組みを維持することで、非現実的な期待を防ぐことができます。</p>
+
+      <h2>普通の人が参加できる3つのタイプ</h2>
+      <h3>1.テストネットタスク(資本金ゼロ)</h3>
+      <p>メインネットの立ち上げ前に、プロジェクトはタスクを完了するための無料のテストトークンを配布します—蛇口からの請求、転送、ステーク、フィードバックの送信。唯一のコストは時間であり、初心者に最適なエントリーポイントとなっています。<a href="../airdrops.html">毎日のエアドロップページ</a>で「テストネットタスク」とタグ付けされたアイテムは、まさにこれであり、それぞれに期限があります。</p>
+      <h3>2.ポイントプログラム(メインネット、少額費用)</h3>
+      <p>ライブ製品を使用し、ポイントを蓄積し、後でポイントをトークンに変換します。注意：メインネットアクティビティは実際のガス料金を燃やします。まずプロジェクトの信頼性を確認し、5ドルのポイントを追いかけて50ドルの手数料を支払うことは決してありません。</p>
+      <h3>3.交換イベント(資金が必要)</h3>
+      <p>Binance Launchpool、OKX Jumpstartなど：特定の資産を賭けるか、取引タスクを完了して新しいトークン割り当てを共有します。最も透明性が高く予測可能なカテゴリですが、資金とKYCが必要であり、入金額に応じて支払いが拡大します。</p>
+      <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">頻繁なLaunchpoolイベント</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Jumpstart＋Web3ウォレットのタスクハブ</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">登録する</a></div>
+      </div>
+
+      <h2>通常の参加の仕組み</h2>
+      <ol>
+        <li><strong>専用の財布を用意してください。</strong>別の「バーナー」財布で農作業をしましょう。貯金を保有するものではありません。<a href="wallet-safety.html">財布とシードフレーズの安全性</a>を参照してください。</li>
+        <li><strong>公式チャンネルを介してのみ入力：</strong>プロジェクトのウェブサイト、公式Xアカウント、またはドキュメント。グループチャットで転送されたリンクをクロスチェックします。</li>
+        <li><strong>タスクリストを完成させ、メモを残します：</strong>多くのドロップはスナップショットによって支払われます。いつ、何をしたかを記録します。</li>
+        <li><strong>スナップショットとクレームウィンドウを待ちます：</strong>クレームの有効期限が切れます。公式ページでのみ受け取ることができます。</li>
+      </ol>
+
+      <h2>期待管理： 3回のコールドシャワー</h2>
+      <ul>
+        <li><strong>ほとんどのプロジェクトは支払うことも、ダストを払うこともありません。</strong>エアドロップのリターンはロングテールです。いくつかの大きな勝利が多くの乾燥井戸をカバーしています。</li>
+        <li><strong> Sybilの小切手は本物です。</strong>一括マルチアカウントとボットはフィルタリングされ、失格となります。時には正直に見えるアカウントを引きずることもあります。通常の人間のペースで農業を行います。不正行為に最適化しないでください。</li>
+        <li><strong>時間は実質的なお金です。</strong> 1日30分は1年に180時間です。農業は低コストのサイドアクティビティであり、オンチェーンスキルを学ぶための授業料であり、給与の代替にはなりません。</li>
+      </ul>
+
+      <div class="callout warn"><b>詐欺防止のレッドライン（暗記してください）：</b>1.秘密鍵やシードフレーズを要求するエアドロップは、100%詐欺です。例外はありません。2.請求を「有効化」するために最初に送金するように求められることは、ほとんど常に詐欺です。3.チャットグループ内にのみ存在する「エアドロップリンク」をクリックしないでください。4.ドメインが公式サイトと一致しない申し立てページは、ただちに閉じてください。完全な詐欺フィールドガイド： <a href="avoid-scams.html">一般的な暗号詐欺</a>。</div>
+
+      <p>当社の<a href="../airdrops.html">エアドロップページ</a>は毎日更新され、検証可能なソースのみをリストアップし、どのアイテムがウォレットを接続する必要があり、どのアイテムが資金を入金する必要があるかを明確にラベル付けします。このガイドと同じ原則：ウォレット接続クレームと少量のガス/入金要件は通常の仕組みです。<strong>プライベートキーまたはシードフレーズを要求することが1つの失格条件です</strong>。</p>
+
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">エアドロップを狩る準備はできましたか？最初に取引所アカウントを準備してください： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener"> OKXアカウントを作成</a></p>
+      <h2>よくある質問</h2>
+      <h3>農業エアドロップには費用がかかりますか？</h3>
+      <p>テストネットは時間がかかります。メインネットポイントプログラムにはGASがかかります。取引所イベントには、ステークされた資本または取引量が必要です。何かを始める前に、それがあなたの時間を必要としているのか、お金を必要としているのかを明確にしてください</p>
+      <h3>複数のアカウントを実行してさらに請求することはできますか？</h3>
+      <p>プロジェクトはまさにこれに対してsybil検出を実行します。共有されたIP、共有された資金源、および同一の行動パターンは、1つの偽のクラスターとしてフラグが立てられ、しばしば何も得られません。1つの正直なアカウントが10つの偽のアカウントを打ち負かします。</p>
+      <h3>トークンの価値は？</h3>
+      <p>ゼロから数千ドルまで、事前に知ることはできません。グループチャットの価格コールではなく、プロジェクトのファンダメンタルズとトークンの経済性を判断し、請求後、より多くを保持または購入する前にロック解除スケジュールを読んでください。</p>
+      <h3>クレームサイトが私のシードフレーズを要求しています。どうしますか？</h3>
+      <p>タブを閉じます。フィッシングサイトです。実際のクレームでは、ウォレットを接続してサインするように求められるだけです。シードフレーズを入力しないでください。すでに入力済みですか？ <a href="wallet-safety.html">リーク応答</a>に従って、すぐにアセットを移動してください。</p>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。本人確認を1回行い、2FAを有効化し、P2Pで初めてのUSDTを買いましょう。このサイトのガイドに従えば大丈夫です。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        </div>
+        <p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+      </div>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="../airdrops.html">本日のエアドロップリスト、毎日スクリーニング</a></li>
+        <li><a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a></li>
+        <li><a href="avoid-scams.html">暗号通貨は詐欺ですか？知っておくべき8つのスキーム</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

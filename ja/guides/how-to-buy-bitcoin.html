@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>ビットコインの購入方法：初心者向けステップバイステップガイド— TokVS</title>
+<meta name="description" content="初心者向けにビットコインを購入する方法：取引所を選び、身元を確認し、USDTを購入し、最初のBTC注文を行い、安全に保管します。">
+<link rel="canonical" href="https://tokvs.com/ja/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-bitcoin">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-bitcoin">
+<meta property="og:title" content="初心者のためのビットコインの購入方法— TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="交換、サインアップ、USDT、初回注文、安全な保管— 5つのステップで完全な初心者プロセス。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/ja/guides/how-to-buy-bitcoin">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/ja/"},{"@type":"ListItem","position":2,"name":"ガイド","item":"https://tokvs.com/ja/guides/"},{"@type":"ListItem","position":3,"name":"ビットコインの購入方法：初心者向けステップバイステップガイド","item":"https://tokvs.com/ja/guides/how-to-buy-bitcoin"}]},{"@type":"Article","headline":"ビットコインの購入方法：初心者向けステップバイステップガイド","description":"初心者向けにビットコインを購入する方法：取引所を選び、身元を確認し、USDTを購入し、最初のBTC注文を行い、安全に保管します。","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/ja/guides/how-to-buy-bitcoin","dateModified":"2026-10-30"},"inLanguage":"en"}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"ビットコインを購入するための最低条件は何ですか？","acceptedAnswer":{"@type":"Answer","text":"ビットコインは1億単位に分割されるため、数ドル分の価値があります。 障壁は決してお金ではありませんでした。最初にプロセスとリスクを理解することです。"}},{"@type":"Question","name":"暗号自体を購入することは安全ですか？","acceptedAnswer":{"@type":"Answer","text":"リスクは、価格の変動とプラットフォーム/運用のセキュリティです。 最初のものは少量で購入したアイドルマネーで処理し、2番目のものはトップクラスのプラットフォーム、2 FAで処理し、シードフレーズを共有することはありません。 ルールは国によって異なります。地域の規制をご確認ください。"}},{"@type":"Question","name":"現物または先物—どちらを購入すべきですか？","acceptedAnswer":{"@type":"Answer","text":"現物とは、実際のコインを所有していることを意味します。 先物は、損失が拡大され、証拠金をゼロに清算できるレバレッジドデリバティブです。 初心者は現物のみを購入します。 その理由については、レバレッジと清算を参照してください。"}},{"@type":"Question","name":"税金の申告は必要ですか？","acceptedAnswer":{"@type":"Answer","text":"税務上の取り扱いは管轄区域によって大きく異なり、当サイトでは税務上のアドバイスは提供していません。 有意義な金額を得るには、取引記録を保管し、現地の専門家に相談してください。"}},{"@type":"Question","name":"ビットコインは高価に見えます。手遅れですか？","acceptedAnswer":{"@type":"Answer","text":"「高価」は幻想です—ビットコインは1億個に分割されるので、$10相当のものを購入することができます。 重要なのは、1コインあたりの価格ではなく、パーセンテージの動きです。 本当の質問は常に次のとおりです。それが何であるか、そしてどれくらいのボラティリティを感じることができるかを理解していますか？ 小さく始めて、ビューを形成します。"}},{"@type":"Question","name":"銀行口座または支払いアプリから資金を入金する必要がありますか？","acceptedAnswer":{"@type":"Answer","text":"為替フィアットオンランプは、一般的に銀行カードまたは送金を使用します。P2Pは、加盟店が受け入れるものは何でも従います。 プロの習慣は、給与や日々の支出とは別に保管される暗号フローのための専用口座またはカードであり、リスク管理や簿記のためにクリーナーです。"}},{"@type":"Question","name":"ドル平均コストは利益を保証しますか？","acceptedAnswer":{"@type":"Answer","text":"いいえ。DCAはエントリーコストを平均しています。返品は行いません。複数年の減少を買い、口座は依然として赤色で表示されます。 その価値は規律です。トップスを追いかけず、ボトムスをパニックに陥れることもありません。"}},{"@type":"Question","name":"1つ未満のフルビットコインを購入できますか？","acceptedAnswer":{"@type":"Answer","text":"絶対に—ビットコインは1億ピース(「SAT」)に分割されます。 ほとんどの初心者は、50〜$100の価値から始めます。 単価は関係ありません。移動の割合だけが重要です。"}},{"@type":"Question","name":"ビットコインを間違ったアドレスに送った場合はどうなりますか？","acceptedAnswer":{"@type":"Answer","text":"それはなくなりました—ビットコイン取引は不可逆的であり、それらを元に戻すためのカスタマーサポートはありません。 そのため、チェックリストは重要です。住所をコピー＆ペーストし、最初と最後の文字を確認し、新しい目的地で少量をテストします。 この1つの習慣は、暗号で最も高価な初心者の間違いを防ぎます。"}},{"@type":"Question","name":"取引画面に表示されるビッドアスクスプレッドは何ですか？","acceptedAnswer":{"@type":"Answer","text":"オーダーブックには、緑色の買い注文と赤色の売り注文が表示されます。ベストバイ価格とベストセル価格のギャップはスプレッドです。 スプレッドを狭くすることは、より健全な流動性を意味します スプレッドが広く見えると、流動性は薄くなり、成行注文はさらに下落します。これは、初心者が注文を制限するためにデフォルトを設定すべきもう1つの理由です。"}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">初心者パス</a><a href="index.html" class="on">ガイド</a><a href="../exchanges.html">取引所</a><a href="../airdrops.html">エアドロップ</a><a href="../tools.html">ツール</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja" selected>日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">ホーム</a>/<a href="index.html">ガイド</a>/ビットコインの購入</div>
+      <h1>ビットコインの購入方法：完全な初心者プロセス</h1>
+      <p class="sub">簡単な答え：ビットコインの購入には5つのステップがあります。トップクラスの取引所を選択し、サインアップしてIDを確認し、最初にUSDTを購入し、BTCに交換してから、どこに保管するかを決定します。 すべてはあなたの携帯電話で実行され、約30分かかります。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceにサインアップ→</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+      </div>
+      <p class="updated">2026年10月更新· By TokVS · 10分間の読み取り</p>
+      <p class="note">出典と方法：<a href="../methodology.html">どのようにして</a>・<a href="../exchanges.html#availability">国の可用性表</a>・数値が変化するか、行動する前に公式ページで確認してください。</p>
+      <div class="callout good"><b>5ステップを一目で：</b>1.交換品を選ぶ→2. 登録して確認する→3. 最初にUSDTを購入→4. BTCの注文をする→5. どこに保管するかを決める。 各ステップは以下に展開されています。フォローすると、すべてがスマートフォンから動作します。</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>始める前に：準備する3つのこと</h2>
+      <ul>
+        <li><strong>政府発行の身分証明書。</strong>すべての正当な交換には、例外なく身元確認(KYC)が必要です。 「IDなし購入」を提供するチャネルはすべて罠です。</li>
+        <li><strong>あなたが管理する電話とメールアドレス</strong> —サインアップ、コード、認証アプリ用。</li>
+        <li><strong>失う余裕のあるお金。</strong>小さなことから始めましょう。プロセスを学ぶのに十分で、傷つけるのに十分ではありません。</li>
+      </ul>
+      <p>ビットコインが実際に何であるかまだわかりませんか？ 初心者パスの<a href="../start/step1.html">ステップ1に5分間費やしてください。ビットコイン</a>をご紹介してから、戻ってきてください。</p>
+
+      <h2>ステップ1 ：交換を選択する</h2>
+      <p>取引所とは、購入するマーケットプレイスのことです。 初心者は、透明性の高い手数料を伴う大規模で長期的なグローバルトップランクからのみ選択する必要があります。 Binance、OKX、Bybit、Bitgetは4つのメインストリームオプションです。現物手数料はすべて約0.1%で、主に製品フォーカスとアプリエクスペリエンスが異なります。 当社の<a href="choose-exchange.html">取引所選択ガイド</a>は、プラットフォームを判断する方法、または<a href="../exchanges.html"> 4ウェイ料金とリベートの比較</a>に直接ジャンプする方法を示しています。</p>
+      <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最多の銘柄</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">低い現物メイカー手数料</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">登録する</a></div>
+      </div>
+
+      <p><strong>直接的な判断：</strong>ほとんどの初心者は、Binance(最大の選択、最も深い流動性)またはOKX (よりスムーズな経験、わずかに低い0.08%の現物メイカー手数料)で問題ありません。 先物を真剣に取引する予定がある場合は、Bybitをご覧ください。 最初に1つの口座を開設してください。口座が増えても利益が増えるわけではありません。</p>
+      <!-- tokvs-in-cta -->
+      <p class="in-cta">決めましたか？アカウントの開設には約10分かかります： <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">サインアップ</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">サインアップ</a></p>
+      <h2>ステップ2 ：登録して確認する</h2>
+      <ol>
+        <li>公式ウェブサイトまたは携帯電話のアプリストアからのみアプリをダウンロードしてください。 <strong>誰かがあなたに送ったリンクからアプリをインストールしないでください</strong> —偽のアプリはナンバーワンの初心者詐欺です。</li>
+        <li>メールアドレスまたは電話番号、および固有の強力なパスワードで登録します。</li>
+        <li>本人確認を完了してください。身分証明書をアップロードし、顔認証に合格してください。 承認には通常数分から数時間かかります。</li>
+        <li>2要素認証( 2 FA )とフィッシング対策コードをすぐに有効にします。 これはアカウントの基本的な鎧です。</li>
+      </ol>
+      <p>詳細なウォークスルーは、<a href="../start/step3.html">初心者パスのステップ3 ：サインアップ</a>にあります。</p>
+
+      <h2>ステップ3 ：最初にUSDTを購入する</h2>
+      <p>BTCを現金で直接購入しないのはなぜですか？ ほとんどの取引ペアはUSDT (ドル固定ステーブルコイン)で引用されているためです。 USDTを最初に購入すると、より良い価格と必要なすべてのペアが手に入ります。 取引所の即時購入またはP2P機能を使用し、アプリ内のフローに従ってください。保険料と凍結資金のリスクについては、<a href="buy-usdt.html"> USDTの購入方法</a>を参照してください。 初回：少量を購入し、それがより多くのことを行う前に、それが着陸することを確認します。</p>
+
+      <h2>ステップ4 ： BTCを購入する</h2>
+      <ol>
+        <li>現物取引では、<strong> BTC/USDT </strong>ペアを開きます。</li>
+        <li>初心者は<strong>指値注文</strong>を使用する必要があります：支払う意思のある価格と金額(たとえば、$100相当)を設定します。 市場があなたの価格に達すると満たされ、メイカー手数料が低くなります。 急いでいますか？現在の本の価格が何であれ、市場注文は機能します。</li>
+        <li>確認する前に、価格、金額、料金の3つの数字を確認してください。 0.1%の現物手数料で、$100の購入は約0.$10の費用がかかります。 手数料の計算は<a href="crypto-fees.html">暗号手数料の説明</a>でカバーされています。</li>
+        <li>記入すると、BTCは資産/現物の下に表示されます。 おめでとうございます。最初の購入が完了しました。</li>
+      </ol>
+
+      <h2>ステップ5 ：保管場所を決める</h2>
+      <ul>
+        <li><strong>少額でも取引可能：</strong>取引所に残しておいても問題ありません。2 FAがオンになっているため、アカウントが共有されることはありません。</li>
+        <li><strong>金額が大きく、長期保有する場合：</strong>自分で管理するウォレットへ移し、シードフレーズを紙にバックアップすること。パスの<a href="../start/step5.html">ステップ5</a>と<a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a>を参照。</li>
+      </ul>
+
+      <div class="callout warn"><b>初心者に最も多い4つの失敗：</b>1.借りたお金やクレジットで購入する。2.ポンプを追いかけ、何度もパニックセリングを繰り返す。3.「メンター」やシグナルグループに代わって決めさせる。4.誰も聞いたことのない不明瞭なプラットフォームにコインを長期間残す。 これらの4つを避けることで、すでにほとんどの初心者をリードしています。</div>
+
+      <h2>4つの購入方法：取引所だけが唯一の道ではありません</h2>
+      <p>ほとんどの人は取引所の現物市場でビットコインを購入しますが、他の3つのルートを知っておくと、どのルートが適しているかを選ぶことができます。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>チャンネル</th><th>長所</th><th>短所</th><th>おすすめの人</th></tr></thead>
+        <tbody>
+          <tr><td>為替現物市場</td><td>最低の手数料(通常ユーザーの場合は約0.1% )、すべてのコイン、いつでも取引</td><td>身分証明書の認証が必要で、学習曲線が狭い</td><td>ほぼ全員</td></tr>
+          <tr><td>現物ETF (米株式)</td><td>シンプルで規制された証券口座内で購入する</td><td>管理手数料。実際のビットコインではなく、株式を保有しているため、引き出すことはできません</td><td>財布を管理せずに露出したい人</td></tr>
+          <tr><td>P2P</td><td>ダイレクト・フィアット・オンランプ、柔軟な支払いオプション</td><td>販売業者を審査する必要があります。凍結された資金のリスクが存在します</td><td>カード購入が困難な地域</td></tr>
+          <tr><td>ビットコインATM</td><td>登録なし、現金払い</td><td>通常は高額な手数料、機械はまれです</td><td>少額の緊急時</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">料金スケジュールの変更—チャンネルにコミットする前に公式サイトを確認してください。</p>
+      <h2>初回はいくらで買いますか？</h2>
+      <p>正直な答え：<strong>睡眠を失わない量</strong>。 初心者は2つの極端な傾向があります—何も教えてくれない「試してみる」ためのトークン量、またはギャンブルとして全力を尽くす。 より健全な道筋：小規模(例えば、$50 -100 )から始めて、流れ全体をエンドツーエンドで実行します。入金、購入、そして必要に応じて出金します。ミスはありません。 長期滞在の場合は、エントリー料金の平均を毎月一定額に設定することをおすすめします。 最初の購入は利益を目的としたものではありません。 それは<strong>完璧にプロセスを完了することです</strong>。</p>
+      <h2>現物ETFと実際のビットコイン：あなたは実際にどちらを望みますか？</h2>
+      <p>これは多くの新参者を惹きつけます。 現物ETF ( 2024年から米国の証券会社を通じて利用可能)は、通常の株式口座内でビットコインの価格を追跡します。便利で管理するウォレットはありませんが、実際のBTCを引き出したり、チェーン上で使用したりすることはできず、年間管理手数料を支払うことになります。 取引所で購入すると、完全にコントロールできる本物のコインと、それに伴う完全な責任が得られます。 あなたの目標が「自分のビットコイン」である場合は、コインを購入してください。 あなたの目標が「私の退職口座に価格エクスポージャーを得る」ことであるならば、ETFはより簡単な手段です。</p>
+      <h2>発注：制限と市場</h2>
+      <p>ステップ4では、2つの注文タイプが表示されます。 初心者は違いを知っておく必要があります。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>リミットオーダー</th><th>成行注文</th></tr></thead>
+        <tbody>
+          <tr><td>充填方法</td><td>価格を設定します。市場が到達した場合にのみ満たされます</td><td>現在の予約価格で即座に満たされます</td></tr>
+          <tr><td>手数料</td><td>メイカーレート—より低い</td><td>テイカー率—わずかに高い</td></tr>
+          <tr><td>リスク</td><td>価格が下落した場合、決して満たさない可能性がある</td><td>塗りつぶしは保証されていますが、価格が変動すると価格が下落する可能性があります</td></tr>
+          <tr><td>次の場合に使用</td><td>初心者のためのデフォルトの選択肢</td><td>急いで少量</td></tr>
+        </tbody>
+      </table></div>
+      <p>注文を制限するデフォルト： BTCが97,000ドルの場合は、96,800ドルで購入し、プルバックで満たすことができます。また、メイカー/テイカーの手数料の差額をポケットに入れることもできます。 正確な数に苦しまないでください。最初の目標はフローを完了することであり、底を釘付けにすることではありません。</p>
+      <h2>最初の30日間：プラン</h2>
+      <ol>
+        <li><strong>第1週</strong> —サインアップ、検証、2 FAを有効にします。少量のUSDTを購入し、入出金を学習するために移動します。</li>
+        <li><strong>第2週</strong> —最初のBTC購入(少額)を行います。リミットオーダーを練習します。コインを自分のウォレットに一度移動して、シードフレーズをバックアップしてみてください。</li>
+        <li><strong> 3〜4週目</strong> —手数料の費用、ほとんどうまくいかなかった点を確認します。長期間保持しているか、追加する前に学習を続けているかを判断します。 この30日間、先物やレバレッジに触れないでください。まったく。</li>
+      </ol>
+      <p>この30日間を乗り切れば、初心者の80%よりも「暗号の購入」をよく理解できるようになります。 残りは忍耐と規律です。</p>
+      <h2>初心者が作り続けている5つの購入ミス</h2>
+      <ol>
+        <li><strong>「落ちたら買う」</strong> —初心者は底をつかむことはありません。彼らはラリーを追いかけることになります。 タイミングが気になる場合は、代わりに平均的なドルコストを設定してください。</li>
+        <li><strong>時価総額注文</strong> —流動性が薄いときに大規模な時価注文がスリッページによって食べられます。 リミットオーダーは、初心者のデフォルトです。</li>
+        <li><strong>すべてを1つのプラットフォームに保管する</strong> —取引所は銀行ではありません。 より大きな長期保有物を自分の財布に移動します。</li>
+        <li><strong>そのための取引</strong> —すべての取引には手数料がかかります。1か月のいら立ちは、あなたが得た利益よりも手数料が高くなる可能性があります。</li>
+        <li><strong>「グル」とシグナルグループ</strong>に従ってください—あなたの手数料と出口の流動性から何を買うべきかを誰かが教えてくれます。 彼らが確かなものを持っていれば、彼らはすでに静かに裕福になっていたでしょう。</li>
+      </ol>
+      <h2>レベルアップ：ドルコストの平均化とは何か</h2>
+      <p>DCAとは、価格にかかわらず、固定されたスケジュール(毎月1日に$100など)で一定額を購入することを意味します。 ロジックは単純です：あなたは決して底をつかむことはありませんが、時間の経過とともにトランチェスで購入すると、平均に向かうコストが平均化されます。 多くのExchangeアプリには、定期購入機能が組み込まれています。一度設定すると忘れてしまいます。 チャートを見る時間がなく、感情に巻き込まれたくない人に適しています。 DCAは利益を保証するものではありません。リターンではなく、<em>タイミングの不安</em>をスムーズにします。 長いドローダウンでは、DCA口座も出血します。</p>
+      <h2>よくある質問</h2>
+      <h3>ビットコインを購入するための最低条件は何ですか？</h3>
+      <p>ビットコインは1億単位に分割されるため、数ドル分の価値があります。 障壁は決してお金ではありませんでした。最初にプロセスとリスクを理解することです。</p>
+      <h3>暗号自体を購入することは安全ですか？</h3>
+      <p>リスクは、価格の変動とプラットフォーム/運用のセキュリティです。 最初のものは少量で購入したアイドルマネーで処理し、2番目のものはトップクラスのプラットフォーム、2 FAで処理し、シードフレーズを共有することはありません。 ルールは国によって異なります。地域の規制をご確認ください。</p>
+      <h3>現物または先物—どちらを購入すべきですか？</h3>
+      <p>現物とは、実際のコインを所有していることを意味します。 先物は、損失が拡大され、証拠金をゼロに清算できるレバレッジドデリバティブです。 初心者は現物のみを購入します。 その理由については、<a href="leverage-guide.html">レバレッジと清算</a>を参照してください。</p>
+      <h3>税金の申告は必要ですか？</h3>
+      <p>税務上の取り扱いは管轄区域によって大きく異なり、当サイトでは税務上のアドバイスは提供していません。 有意義な金額を得るには、取引記録を保管し、現地の専門家に相談してください。</p>
+
+      <h3>ビットコインは高価に見えます。手遅れですか？</h3>
+      <p>「高価」は幻想です—ビットコインは1億個に分割されるので、$10相当のものを購入することができます。 重要なのは、1コインあたりの価格ではなく、パーセンテージの動きです。 本当の質問は常に次のとおりです。それが何であるか、そしてどれくらいのボラティリティを感じることができるかを理解していますか？ 小さく始めて、ビューを形成します。</p>
+      <h3>銀行口座または支払いアプリから資金を入金する必要がありますか？</h3>
+      <p>為替フィアットオンランプは、一般的に銀行カードまたは送金を使用します。P2Pは、加盟店が受け入れるものは何でも従います。 プロの習慣は、給与や日々の支出とは別に保管される暗号フローのための専用口座またはカードであり、リスク管理や簿記のためにクリーナーです。</p>
+      <h3>ドル平均コストは利益を保証しますか？</h3>
+      <p>いいえ。DCAはエントリーコストを平均しています。返品は行いません。複数年の減少を買い、口座は依然として赤色で表示されます。 その価値は規律です。トップスを追いかけず、ボトムスをパニックに陥れることもありません。</p>
+      <h3>1つ未満のフルビットコインを購入できますか？</h3>
+      <p>絶対に—ビットコインは1億ピース(「SAT」)に分割されます。 ほとんどの初心者は、50〜$100の価値から始めます。 単価は関係ありません。移動の割合だけが重要です。</p>
+      <h3>ビットコインを間違ったアドレスに送った場合はどうなりますか？</h3>
+      <p>それはなくなりました—ビットコイン取引は不可逆的であり、それらを元に戻すためのカスタマーサポートはありません。 そのため、チェックリストは重要です。住所をコピー＆ペーストし、最初と最後の文字を確認し、新しい目的地で少量をテストします。 この1つの習慣は、暗号で最も高価な初心者の間違いを防ぎます。</p>
+      <h3>取引画面に表示されるビッドアスクスプレッドは何ですか？</h3>
+      <p>オーダーブックには、緑色の買い注文と赤色の売り注文が表示されます。ベストバイ価格とベストセル価格のギャップはスプレッドです。 スプレッドを狭くすることは、より健全な流動性を意味します スプレッドが広く見えると、流動性は薄くなり、成行注文はさらに下落します。これは、初心者が注文を制限するためにデフォルトを設定すべきもう1つの理由です。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>準備はできましたか？</b><div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">登録には約10分かかります。本人確認を1回行い、2FAを有効化し、P2Pで初めてのUSDTを買いましょう。このサイトのガイドに従えば大丈夫です。B</div><div><div class="tt">Binance</div><div class="dd">世界最大、最も深い流動性</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Binanceに登録する</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">Okx</div><div class="dd">幅広い商品ラインナップ、充実した言語対応</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">OKXアカウントを作成する</a></div>
+        </div>
+        <p class="note">直接登録するのと同じ手数料です。私たちのリンクを使っても追加費用はかかりません。</p>
+      </div>
+      <h2>続きを読む</h2>
+      <ul>
+        <li><a href="buy-usdt.html"> USDTの購入方法：比較された3つの方法</a></li>
+        <li><a href="../exchanges.html">為替手数料とリベートの比較(電卓付き)</a></li>
+        <li><a href="wallet-safety.html">ウォレットとシードフレーズの安全性</a></li>
+        <li><a href="../start/step1.html">ステップ1からのビギナーパス</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">ホーム</a><a href="../airdrops.html">毎日のエアドロップ</a><a href="../exchanges.html">取引所比較</a>
+      </div>
+      <div class="col" style="flex:1;"><b>初心者</b><a href="../start/step1.html">初心者パス</a><a href="index.html">ガイド</a><a href="../start/step5.html">初めてのコインを買う</a></div>
+      <div class="col" style="flex:1;"><b>レビュー</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>ツール</b><a href="../tools.html#watchlist">ウォッチリストアラート</a><a href="../tools.html#calendar">イベントカレンダー</a><a href="../exchanges.html#calculator">手数料計算機</a></div>
+    </div>
+    <div class="disclosure">本サイトにはアフィリエイトリンクが含まれています。これらのリンク経由で登録しても追加費用はかかりません。暗号資産の価格は大きく変動します。ここにある情報は投資助言ではありません。リスクはご自身で判断してください。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>まだアカウントがありませんか？3分で登録 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">登録する</a><button class="sx" aria-label="閉じる" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
