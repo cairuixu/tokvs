@@ -38,6 +38,23 @@
     });
   }
 
+  /* ---- CoinGecko 备用源：CoinPaprika（CoinGecko 在部分网络下不可达时自动切换） ---- */
+  var CP_ID = { 'btc-bitcoin': 'bitcoin', 'eth-ethereum': 'ethereum', 'sol-solana': 'solana', 'bnb-binance-coin': 'binancecoin', 'xrp-xrp': 'ripple' };
+  function cpCoins(arr) {
+    return (arr || []).map(function (t) {
+      var q = (t && t.quotes && t.quotes.USD) || {};
+      return { id: CP_ID[t.id] || t.id, symbol: t.symbol, name: t.name, current_price: q.price, price_change_percentage_24h: q.percent_change_24h };
+    });
+  }
+  function fetchJSONTimeout(url, ms) {
+    return fetchTimeout(url, ms).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); });
+  }
+  function cgOrCp(cgUrl, cpUrl, ms, adapt) {
+    return fetchJSONTimeout(cgUrl, ms).catch(function () {
+      return fetchJSONTimeout(cpUrl, ms).then(adapt);
+    });
+  }
+
   /* ---- Hero 市场状态：恐惧贪婪 + 总市值/BTC 市占（CoinGecko global） ---- */
   function loadStatus() {
     var fngV = document.getElementById('ms-fng');
@@ -61,8 +78,9 @@
     var domV = document.getElementById('ms-dom');
     var chgV = document.getElementById('ms-chg');
     if (mcapV || domV) {
-      fetch('https://api.coingecko.com/api/v3/global')
-        .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+      cgOrCp('https://api.coingecko.com/api/v3/global', 'https://api.coinpaprika.com/v1/global', 8000, function (g) {
+        return { data: { total_market_cap: { usd: g.market_cap_usd }, market_cap_change_percentage_24h_usd: g.market_cap_change_24h, market_cap_percentage: { btc: g.bitcoin_dominance_percentage } } };
+      })
         .then(function (d) {
           var data = (d && d.data) || {};
           var mcap = data.total_market_cap && data.total_market_cap.usd;
@@ -93,7 +111,7 @@
     if (!el) return;
     var url = 'https://api.coingecko.com/api/v3/coins/markets' +
       '?vs_currency=usd&order=market_cap_desc&per_page=5&page=1&sparkline=false&price_change_percentage=24h';
-    fetchTimeout(url, 8000).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+    cgOrCp(url, 'https://api.coinpaprika.com/v1/tickers?limit=5', 8000, cpCoins)
       .then(function (d) {
         if (!d || !d.length) throw new Error('empty');
         var html = '';
@@ -116,7 +134,7 @@
 
   /* ---- 今日涨跌榜：CoinGecko 市值 Top100 按 24h 涨跌幅取涨前 5 / 跌前 5（失败 4 秒后自动重试一次） ---- */
   function fetchMoversOnce(url) {
-    return fetchTimeout(url, 8000).then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); });
+    return cgOrCp(url, 'https://api.coinpaprika.com/v1/tickers?limit=100', 8000, cpCoins);
   }
   function loadMovers() {
     var el = document.getElementById('movers-rows');
