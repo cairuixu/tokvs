@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Como Vender Cripto e Sacar: Spot, P2P e Banco — TokVS</title>
+<meta name="description" content="Como vender cripto e sacar: venda spot para USDT, venda P2P para seu banco, passo a passo de saque da Binance, taxas, e o hábito de registro fiscal.">
+<link rel="canonical" href="https://tokvs.com/pt/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-sell-crypto">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-sell-crypto">
+<meta property="og:title" content="Como Vender Cripto e Sacar: Spot, P2P e Banco — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Três formas de vender cripto e levar fiduciário ao seu banco, com taxas e regras de segurança.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/pt/guides/how-to-sell-crypto">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/pt/"}, {"@type": "ListItem", "position": 2, "name": "Guias", "item": "https://tokvs.com/pt/guides/"}, {"@type": "ListItem", "position": 3, "name": "Como Vender Cripto e Sacar", "item": "https://tokvs.com/pt/guides/how-to-sell-crypto"}]}, {"@type": "Article", "headline": "Como Vender Cripto e Sacar: Spot, P2P e Banco", "description": "Venda spot para USDT, venda P2P para seu banco, saques fiduciários diretos, um passo a passo da Binance, taxas, e registro fiscal para iniciantes.", "datePublished": "2026-10-28", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/pt/guides/how-to-sell-crypto", "dateModified": "2026-10-30"}, "inLanguage": "pt"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Como vendo cripto na Binance?", "acceptedAnswer": {"@type": "Answer", "text": "Venda sua moeda por USDT no mercado spot, mova o USDT para sua carteira Funding, depois venda-o no P2P para um comprador verificado — ou use o canal de saque fiduciário da Binance se um estiver disponível para sua moeda."}}, {"@type": "Question", "name": "Quais taxas pago ao vender cripto?", "acceptedAnswer": {"@type": "Answer", "text": "Uma negociação spot paga a taxa maker ou taker (Binance 0.10%/0.10%, OKX 0.08%/0.10%, Bybit 0.10%/0.10% spot — confirme na página oficial de taxas). Venda P2P geralmente não tem comissão da plataforma; o custo é o spread do comprador. Saques adicionam taxas de rede e possivelmente bancárias."}}, {"@type": "Question", "name": "Quanto tempo leva para sacar?", "acceptedAnswer": {"@type": "Answer", "text": "Venda spot é instantânea. Venda P2P leva minutos a algumas horas dependendo do comprador. Saques bancários variam de minutos a vários dias úteis dependendo do trilho e região."}}, {"@type": "Question", "name": "Vender P2P é seguro?", "acceptedAnswer": {"@type": "Answer", "text": "Sim quando você segue as regras: a custódia segura seu USDT, você verifica o pagamento no seu próprio app bancário antes de liberar, e nunca acerta fora da plataforma. Liberar antes do pagamento chegar é a principal forma de pessoas perderem dinheiro."}}, {"@type": "Question", "name": "Pago imposto quando vendo cripto?", "acceptedAnswer": {"@type": "Answer", "text": "Isso depende do seu país — regras, taxas e deveres de declaração variam e mudam. Esta página não é aconselhamento fiscal: mantenha registros de cada venda e verifique suas regras locais ou consulte um profissional fiscal."}}, {"@type": "Question", "name": "Posso sacar cripto diretamente para minha conta bancária?", "acceptedAnswer": {"@type": "Answer", "text": "Bancos não recebem cripto diretamente. Você vende por fiduciário primeiro — via P2P ou o canal de saque fiduciário da exchange — e o fiduciário vai para seu banco. Qualquer serviço prometendo uma transferência direta de cripto para banco vale verificação dupla."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Trilha do Iniciante</a><a href="index.html" class="on">Guias</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Ferramentas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt" selected>Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Início</a> / <a href="index.html">Guias</a> / Como Vender Cripto e Sacar</div>
+      <h1>Como Vender Cripto e Sacar</h1>
+      <p class="sub">Spot para USDT, P2P para seu banco, ou saque fiduciário direto — as três saídas, suas taxas, e a regra de liberação que protege cada venda P2P.</p>
+      <p class="updated">Atualizado em out. de 2026 · Por TokVS · 10 min de leitura</p>
+      <p class="note">Fontes e método: <a href="../methodology.html">como verificamos</a> · <a href="../exchanges.html#availability">tabela de disponibilidade por país</a> · os números mudam, verifique na página oficial antes de agir.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">A maior do mundo, com a maior liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se na Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Linha de produtos completa, bom suporte a idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Criar conta na OKX</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">Spot e futuros com um app limpo</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Criar conta na Bybit</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>As três saídas: escolha sua saída antes de precisar dela</h2>
+      <p>Todo saque é um de três movimentos. <strong>Venda spot</strong> troca sua moeda por USDT dentro da exchange — rápida, precisa, e o padrão para traders. <strong>Venda P2P</strong> negocia seu USDT diretamente com outra pessoa por fiduciário na sua conta bancária ou carteira digital. <strong>Saques off-ramp</strong> convertem para fiduciário dentro da exchange e o enviam para seu banco ou cartão onde a exchange suporta. A maioria dos iniciantes usa spot primeiro, depois P2P — e conhecer ambos com antecedência vence aprender qualquer um sob pressão.</p>
+      <p>Um hábito cobre as três: nunca mova todo seu stack em um passo não testado. Venda um pequeno valor primeiro, confirme que o dinheiro chega onde você espera, depois faça o resto. A taxa de uma negociação de teste é trivial; o custo de um endereço errado ou um comerciante ruim não é.</p>
+      <h2>Passo 1: venda no spot por USDT</h2>
+      <p>Na sua exchange, mova a moeda da sua carteira Funding para sua carteira Spot (grátis e instantâneo na maioria das exchanges), abra o par moeda/USDT — BTC/USDT, ETH/USDT, ou o que você detém — e faça um pedido de venda. Uma <strong>ordem a mercado</strong> vende imediatamente ao melhor preço disponível; uma <strong>ordem limite</strong> vende somente ao seu preço escolhido ou melhor. Mercado é mais simples; limite evita vender em uma queda repentina. Para a maioria dos iniciantes vendendo um valor modesto, mercado está ok — apenas verifique o preço antes de confirmar.</p>
+      <p>O que custa: uma negociação spot paga a taxa taker quando você vende a mercado, ou a taxa maker quando sua ordem limite espera e executa depois. Taxas spot padrão nas principais exchanges são:</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Exchange</th><th>Maker / taker spot</th><th>Notas</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10% / 0.10%</td><td>Liquidez mais profunda para a maioria dos pares</td></tr>
+          <tr><td>OKX</td><td>0.08% / 0.10%</td><td>Linha completa de produtos</td></tr>
+          <tr><td>Bybit</td><td>0.10% / 0.10%</td><td>Spot e futuros em um app</td></tr>
+          <tr><td>Bitget</td><td>Veja a página oficial de taxas</td><td>Vinculado aqui ao <a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">página inicial da Bitget</a> somente — sem rebate via TokVS</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">Os números de taxas abaixo são as taxas spot padrão maker/taker que a maioria dos iniciantes vê. As exchanges mudam tabelas de taxas e rodam promoções, então sempre confirme na página oficial de taxas da exchange antes de negociar.</p>
+      <p>Após a venda, seu USDT fica na sua carteira Spot. Daqui você pode mantê-lo, negociá-lo, ou movê-lo para Funding para venda P2P. Nada neste passo toca seu banco — isso vem depois.</p>
+      <h2>Passo 2: venda USDT no P2P por fiduciário</h2>
+      <p>Venda P2P espelha compra P2P. Mova USDT para sua carteira Funding, abra P2P, mude para Vender, escolha USDT e sua moeda, e filtre pelo seu método de pagamento — transferência bancária, ou uma carteira digital local onde suportada. Você verá ofertas de compradores com preço, limites e estatísticas de conclusão. Escolha da mesma forma que escolheria um comerciante ao comprar: alta taxa de conclusão, muitos pedidos concluídos, uma conta antiga.</p>
+      <ol>
+        <li>Insira o valor em USDT e faça o pedido de venda. Seu USDT trava na custódia.</li>
+        <li>O comprador paga a você pelo seu método escolhido e marca o pagamento como feito.</li>
+        <li><strong>Verifique se o dinheiro está realmente na sua conta antes de fazer qualquer coisa.</strong> Verifique o saldo do seu app bancário ou carteira digital — não uma captura que o comprador envia a você.</li>
+        <li>Somente então toque em "Liberar". Liberar antes do dinheiro chegar é a perda mais comum de venda P2P, e não é recuperável.</li>
+      </ol>
+      <p>Duas regras de disciplina: nunca aceite pagamento de uma conta cujo nome não corresponda ao nome verificado do comprador, e nunca se comunique ou acerte fora da plataforma. "Vamos terminar isto no WhatsApp, mais rápido" é como a proteção de custódia evapora.</p>
+      <h2>Passo 3: saque fiduciário para seu banco ou cartão</h2>
+      <p>Onde sua exchange suporta saques fiduciários, você pode converter dentro da plataforma e sacar diretamente: USDT para sua moeda local pelo convert da exchange ou mercados fiduciários, depois sacar para uma conta bancária ou cartão vinculado. Disponibilidade, trilhos e limites variam muito por país e moeda — transferência bancária SEPA na Europa, trilhos bancários locais em outros lugares, saques com cartão em algumas regiões — então verifique o que sua exchange oferece para sua moeda antes de planejar em torno disso.</p>
+      <p>Espere dois tipos de custo aqui. A exchange pode cobrar uma taxa de saque fiduciário (fixa ou percentual, mostrada antes de confirmar), e seu banco pode aplicar suas próprias cobranças de recebimento. O processamento varia de minutos para alguns trilhos a vários dias úteis para outros. Como sempre, o número mostrado na tela de confirmação é o número que importa — leia-o antes de tocar em confirmar.</p>
+      <h2>Como sacar da Binance, passo a passo</h2>
+      <p>Binance é onde a maioria dos iniciantes pergunta sobre sacar, então aqui está o caminho padrão. Presume que você já detém cripto na Binance; se suas moedas estão na sua própria carteira, deposite-as na Binance primeiro e aguarde confirmações.</p>
+      <ol>
+        <li><strong>Venda por USDT no spot</strong> (Passo 1 acima) se você detém qualquer outra coisa. USDT é a moeda que compradores P2P querem.</li>
+        <li><strong>Mova USDT para Funding:</strong> Carteira → Transferir → Spot para Funding, insira o valor.</li>
+        <li><strong>Abra P2P → Vender → USDT</strong>, escolha sua moeda fiduciária e método de pagamento, e escolha um comprador por taxa de conclusão e contagem de pedidos — não só pelo melhor preço.</li>
+        <li><strong>Faça o pedido, aguarde o pagamento, verifique-o no seu próprio app bancário</strong>, depois libere o USDT da custódia.</li>
+        <li>Se a Binance oferece um canal direto de saque fiduciário para sua moeda, essa é a alternativa ao P2P: converta e saque dentro da plataforma. Verifique Carteira → Sacar → Fiduciário para o que está disponível para você — ofertas diferem por região e mudam ao longo do tempo, então o app é a fonte da verdade.</li>
+      </ol>
+      <p>Uma nota específica da Binance: mantenha os métodos de pagamento da sua conta no seu próprio nome. Pagamentos de terceiros são sinalizados, congelados ou revertidos, e apelações sobre pagamento de outra pessoa são uma batalha perdida.</p>
+      <h2>Taxas de saque de rede: o custo que as pessoas esquecem</h2>
+      <p>Mover moedas <em>entre</em> plataformas ou para sua própria carteira é um custo diferente das taxas de negociação. Cada blockchain cobra uma taxa de rede que sobe e desce com congestionamento, e a exchange adiciona sua própria taxa de saque por cima — mostrada antes de confirmar. Sacar um pequeno valor em uma rede congestionada pode custar uma porcentagem dolorosa; esperar horas calmas, ou escolher uma rede mais barata que o lado receptor realmente suporta, pode cortá-lo drasticamente. Nunca escolha uma rede só porque é a mais barata — a carteira ou exchange receptora deve suportar exatamente essa rede, ou as moedas podem não chegar.</p>
+      <h2>Cronometrando sua venda: prático, não preditivo</h2>
+      <p>Ninguém neste guia dirá quando vender — chamadas de preço não são nosso negócio. Nosso negócio é execução: ordens limite protegem você de vender em uma queda relâmpago; dividir uma grande venda em duas ou três tranches evita mover o preço contra você em pares finos; e vender na força em etapas vence uma única ordem a mercado em pânico no pior momento do dia. Decida seu plano quando estiver calmo, escreva-o, e deixe o plano — não a vela vermelha — apertar o botão.</p>
+      <h2>Impostos: mantenha registros, obtenha aconselhamento local</h2>
+      <div class="callout warn"><b>Não é aconselhamento fiscal:</b> regras fiscais de cripto diferem por país e mudam frequentemente — tratamento de ganhos de capital, limiares de declaração, e deveres de registro são todos locais. Nada nesta página é aconselhamento fiscal. Mantenha um registro de cada venda (data, moeda, valor, preço, taxas, ID do pedido) e verifique as regras atuais do seu próprio país ou fale com um profissional fiscal antes da temporada de declaração, não durante ela.</div>
+      <p>O hábito de registro é todo o jogo. Exchanges permitem exportar histórico de negociações, mas exportações desaparecem quando contas fecham e formatos mudam. Uma planilha simples com uma linha por venda, atualizada no mesmo dia, vale mais que qualquer correria de fim de ano.</p>
+      <h2>Erros comuns de saque</h2>
+      <ul>
+        <li><strong>Liberar cripto P2P antes do pagamento compensar.</strong> Capturas mentem; saldos bancários não. Verifique primeiro, libere depois.</li>
+        <li><strong>Sacar na rede errada.</strong> A rede mais barata não vale nada se o destino não a suporta.</li>
+        <li><strong>Uma venda gigante a mercado em um par fino.</strong> Slippage come o "melhor preço" que você achava ter. Divida-a ou use um limite.</li>
+        <li><strong>Aceitar pagamentos de terceiros.</strong> Incompatibilidades de nome fazem negociações serem congeladas e apelações negadas.</li>
+        <li><strong>Esquecer a pilha de taxas.</strong> Taxa spot + spread P2P + taxa de saque + cobranças bancárias: some as quatro antes de julgar uma rota "barata".</li>
+      </ul>
+      <h2>Spot vs. P2P vs. saque direto: qual rota quando</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Rota</th><th>Velocidade</th><th>Custos principais</th><th>Ideal para</th></tr></thead>
+        <tbody>
+          <tr><td>Venda spot para USDT</td><td>Instantâneo</td><td>Taxa taker (veja a tabela acima)</td><td>Traders, primeiro passo de qualquer saída</td></tr>
+          <tr><td>Venda P2P de USDT</td><td>Minutos–horas</td><td>Spread do comprador, geralmente sem comissão da plataforma</td><td>Maioria dos saques, maioria dos países</td></tr>
+          <tr><td>Saque fiduciário direto</td><td>Minutos–dias</td><td>Taxas de exchange + bancárias</td><td>Onde suportado para sua moeda</td></tr>
+        </tbody>
+      </table></div>
+      <p>O padrão pragmático para a maioria dos iniciantes: spot para USDT, depois P2P para seu banco. Funciona na maioria dos países, os custos são visíveis de antemão, e cada passo tem proteção de custódia ou livro de ofertas. Saque direto vence onde existe para sua moeda — verifique primeiro, depois escolha.</p>
+      <h2>Vendendo em força: um exemplo trabalhado</h2>
+      <p>Imagine que você detém 0.5 BTC comprado a vários preços e quer sair da metade. A versão desleixada é uma venda a mercado de 0.25 BTC durante uma queda acentuada — você paga a taxa taker e engole qualquer slippage que o livro fino de ofertas entregue. A versão disciplinada: defina duas vendas limite, 0.125 BTC cada, a preços que você escolheu enquanto calmo, e deixe-as executar conforme o mercado vem até você. Você paga taxas maker em vez de taker onde as ordens descansam, você evita o pior minuto do dia, e ainda sai do mesmo total. A diferença raramente é dramática em uma negociação — mas repetida em dezenas de saídas, é a diferença entre um plano e uma reação.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Pronto?</b> Cadastrar-se leva cerca de 10 minutos: verifique uma vez, ative o 2FA e siga os passos acima. Os guias deste site conduzem você pelo resto.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">A maior do mundo, com a maior liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se na Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Linha de produtos completa, bom suporte a idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Criar conta na OKX</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#E5322D;">B</div><div><div class="tt">Bybit</div><div class="dd">Spot e futuros com um app limpo</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Criar conta na Bybit</a></div>
+        </div>
+        <p class="note">As mesmas taxas de se cadastrar diretamente — nosso link não custa nada a mais para você.</p>
+      </div>
+
+      <h3>Como vendo cripto na Binance?</h3>
+      <p>Venda sua moeda por USDT no mercado spot, mova o USDT para sua carteira Funding, depois venda-o no P2P para um comprador verificado — ou use o canal de saque fiduciário da Binance se um estiver disponível para sua moeda.</p>
+      <h3>Quais taxas pago ao vender cripto?</h3>
+      <p>Uma negociação spot paga a taxa maker ou taker (Binance 0.10%/0.10%, OKX 0.08%/0.10%, Bybit 0.10%/0.10% spot — confirme na página oficial de taxas). Venda P2P geralmente não tem comissão da plataforma; o custo é o spread do comprador. Saques adicionam taxas de rede e possivelmente bancárias.</p>
+      <h3>Quanto tempo leva para sacar?</h3>
+      <p>Venda spot é instantânea. Venda P2P leva minutos a algumas horas dependendo do comprador. Saques bancários variam de minutos a vários dias úteis dependendo do trilho e região.</p>
+      <h3>Vender P2P é seguro?</h3>
+      <p>Sim quando você segue as regras: a custódia segura seu USDT, você verifica o pagamento no seu próprio app bancário antes de liberar, e nunca acerta fora da plataforma. Liberar antes do pagamento chegar é a principal forma de pessoas perderem dinheiro.</p>
+      <h3>Pago imposto quando vendo cripto?</h3>
+      <p>Isso depende do seu país — regras, taxas e deveres de declaração variam e mudam. Esta página não é aconselhamento fiscal: mantenha registros de cada venda e verifique suas regras locais ou consulte um profissional fiscal.</p>
+      <h3>Posso sacar cripto diretamente para minha conta bancária?</h3>
+      <p>Bancos não recebem cripto diretamente. Você vende por fiduciário primeiro — via P2P ou o canal de saque fiduciário da exchange — e o fiduciário vai para seu banco. Qualquer serviço prometendo uma transferência direta de cripto para banco vale verificação dupla.</p>
+      <h2>Continue lendo</h2>
+      <ul>
+        <li><a href="buy-usdt.html">Como comprar USDT: todos os métodos comparados</a></li>
+        <li><a href="how-to-buy-bitcoin.html">Como comprar bitcoin: passo a passo completo</a></li>
+        <li><a href="how-to-buy-usdt-on-binance-p2p.html">Comprar USDT no P2P da Binance</a></li>
+        <li><a href="avoid-scams.html">Cripto é golpe? 8 fraudes para conhecer</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Início</a><a href="../airdrops.html">Airdrops diários</a><a href="../exchanges.html">Comparação de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Iniciantes</b><a href="../start/step1.html">Trilha do iniciante</a><a href="index.html">Guias</a><a href="../start/step5.html">Compre sua primeira moeda</a></div>
+      <div class="col" style="flex:1;"><b>Análises</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Ferramentas</b><a href="../tools.html#watchlist">Alertas de lista de acompanhamento</a><a href="../tools.html#calendar">Calendário de eventos</a><a href="../exchanges.html#calculator">Calculadora de taxas</a></div>
+    </div>
+    <div class="disclosure">Este site contém links de afiliados. Cadastrar-se pelos nossos links não custa nada a mais para você. Os preços das criptomoedas são altamente voláteis; nada aqui é conselho de investimento — avalie os riscos por conta própria.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Ainda sem conta? Cadastre-se em 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se</a><button class="sx" aria-label="Fechar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

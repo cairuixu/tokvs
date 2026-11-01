@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Como Sacar da Binance: Banco, P2P e Carteira — Taxas, Prazos e Correções — TokVS</title>
+<meta name="description" content="Como sacar da Binance de três formas: para seu banco, vendendo no P2P, ou para sua própria carteira. Escolha de rede, taxas, tempos de chegada, e por que saques travam.">
+<link rel="canonical" href="https://tokvs.com/pt/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-withdraw-from-binance">
+<meta property="og:title" content="Como Sacar da Binance — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Saque da Binance por banco, P2P ou carteira: passos, escolha de rede, taxas, prazos, e correções de saques travados.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/pt/guides/how-to-withdraw-from-binance">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/pt/"}, {"@type": "ListItem", "position": 2, "name": "Guias", "item": "https://tokvs.com/pt/guides/"}, {"@type": "ListItem", "position": 3, "name": "Sacar da Binance", "item": "https://tokvs.com/pt/guides/how-to-withdraw-from-binance"}]}, {"@type": "Article", "headline": "Como Sacar da Binance", "description": "Como sacar da Binance de três formas: para seu banco, vendendo no P2P, ou para sua própria carteira. Escolha de rede, taxas, tempos de chegada, e correções de saques travados.", "datePublished": "2026-10-30", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/pt/guides/how-to-withdraw-from-binance", "dateModified": "2026-10-30"}, "inLanguage": "pt"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Quanto tempo leva um saque da Binance?", "acceptedAnswer": {"@type": "Answer", "text": "Depende da rota. Saques de cripto geralmente chegam em minutos a uma hora uma vez que a rede os confirma, embora redes congestionadas levem mais tempo. Saques bancários dependem dos trilhos de pagamento do seu país e podem levar de minutos a vários dias úteis. Vendas P2P liquidam tão rápido quanto o comprador paga — geralmente em minutos."}}, {"@type": "Question", "name": "Por que meu saque da Binance está travado em processamento?", "acceptedAnswer": {"@type": "Answer", "text": "As causas usuais são um bloqueio de segurança após mudança de senha ou 2FA, um novo endereço de saque ainda dentro do período de espera, congestionamento de rede, manutenção de carteira naquela moeda, ou um passo de verificação incompleto. Verifique a página de status de saque primeiro, depois seu e-mail por um aviso de segurança, antes de contatar o suporte."}}, {"@type": "Question", "name": "O que acontece se eu escolher a rede errada para um saque?", "acceptedAnswer": {"@type": "Answer", "text": "Enviar cripto em uma rede que a carteira receptora não suporta pode significar que os fundos estão perdidos ou muito difíceis de recuperar. Sempre combine a rede nos dois lados — se sua carteira mostra um endereço TRON, saque em TRON, não Ethereum. Em dúvida, envie primeiro um pequeno valor de teste."}}, {"@type": "Question", "name": "Preciso de um memo ou tag ao sacar?", "acceptedAnswer": {"@type": "Answer", "text": "Algumas moedas, como XRP e XLM, exigem um memo ou destination tag além do endereço ao enviar para uma exchange. Se o lado receptor mostra um campo de memo, você deve preenchê-lo exatamente — saques enviados sem um memo exigido podem atrasar por semanas ou se perder. Transferências carteira a carteira dessas moedas geralmente não precisam de memo."}}, {"@type": "Question", "name": "Há um valor mínimo de saque na Binance?", "acceptedAnswer": {"@type": "Answer", "text": "Sim, toda moeda e rede tem seu próprio valor mínimo de saque, mostrado na página de saque antes de confirmar. Se seu saldo está abaixo do mínimo para sua rede escolhida, mude para uma rede com mínimo menor ou uma rota diferente como P2P."}}, {"@type": "Question", "name": "Posso sacar USDT da Binance para minha conta bancária?", "acceptedAnswer": {"@type": "Answer", "text": "Não diretamente — bancos não aceitam USDT. Você primeiro converte USDT para sua moeda local, seja vendendo-o no mercado spot e sacando fiduciário, ou vendendo-o para um comprador P2P que paga por transferência bancária. Ambas as rotas terminam com dinheiro normal na sua conta bancária."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Trilha do Iniciante</a><a href="index.html" class="on">Guias</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Ferramentas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt" selected>Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Início</a> / <a href="index.html">Guias</a> / Sacar da Binance</div>
+      <h1>Como Sacar da Binance</h1>
+      <p class="sub">Três saídas — banco, P2P, ou sua própria carteira — mais a escolha de rede que iniciantes erram, as taxas e prazos a esperar, e o que fazer quando um saque trava.</p>
+      <p class="updated">Atualizado em out. de 2026 · Por TokVS · 11 min de leitura</p>
+      <p class="note">Fontes e método: <a href="../methodology.html">como verificamos</a> · <a href="../exchanges.html#availability">tabela de disponibilidade por país</a> · os números mudam, verifique na página oficial antes de agir.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">A maior do mundo, com a maior liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se na Binance →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Linha de produtos completa, bom suporte a idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Criar conta na OKX</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Primeiro: o que "sacar" significa na Binance</h2>
+      <p>Iniciantes geralmente tropeçam em uma distinção, então vamos esclarecê-la primeiro. Na Binance, "sacar" cobre duas coisas diferentes. Um <strong>saque fiduciário</strong> envia dinheiro normal (dólares, euros, ou sua moeda local) para sua conta bancária. Um <strong>saque de cripto</strong> envia moedas ou tokens para um endereço de carteira em uma blockchain. Qual você precisa depende do que você quer no final: dinheiro gastável no seu banco, ou cripto sob seu próprio controle. Há também uma terceira rota que borra a linha — vender no P2P, onde um comprador paga diretamente por transferência bancária — e para muitos países é a forma mais prática de sacar. Este guia cobre as três, depois os erros que causam a maioria dos saques travados.</p>
+      <p>Antes de qualquer saque, uma nota de organização: seus fundos vivem em carteiras diferentes dentro da Binance (Spot, Funding, Earn, Futures), e você só pode sacar da certa. Se o botão de saque parecer desabilitado ou seu saldo mostrar zero, você provavelmente precisa transferir fundos internamente primeiro — por exemplo, de Funding para Spot. Transferências internas são grátis e instantâneas, e confundem quase todo iniciante exatamente uma vez.</p>
+      <h2>Rota 1: saque fiduciário para sua conta bancária</h2>
+      <p>Esta é a rota mais limpa quando está disponível no seu país. Os passos: venda sua cripto pela sua moeda local no mercado spot (por exemplo, venda USDT por USD ou EUR), depois vá para Carteira, escolha Sacar, selecione Fiduciário, escolha sua moeda e sua conta bancária vinculada, insira o valor, e confirme. Sua conta bancária deve estar no mesmo nome que sua conta verificada na Binance, ou o saque será rejeitado ou congelado para revisão.</p>
+      <p>O prazo depende inteiramente dos trilhos de pagamento do seu país. Sistemas bancários instantâneos podem liquidar em minutos; transferências tradicionais podem levar de um a vários dias úteis, e fins de semana e feriados adicionam atrasos. Taxas também variam por moeda e trilho — a Binance mostra a taxa exata na tela de saque antes de confirmar, e essa tela é a autoridade: tabelas de taxas mudam, então nunca confie em um número lembrado. Se saque fiduciário não é oferecido para sua moeda, pule para a Rota 2 — essa é exatamente a situação para a qual o P2P existe.</p>
+      <p class="in-cta">Ainda sem conta? <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se na Binance</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Criar conta na OKX</a></p>
+      <h2>Rota 2: venda no P2P e receba por transferência bancária</h2>
+      <p>P2P é a rota de saque para a maior parte do mundo, e funciona como o fluxo de compra ao contrário. Você vai para P2P, escolhe Vender, escolhe a moeda (geralmente USDT) e sua moeda, e navega por compradores. Escolha um comprador com longo histórico, centenas de negociações concluídas, e alta taxa de conclusão — o mesmo checklist de compra, porque os mesmos golpistas trabalham os dois lados. Insira o valor, faça o pedido, e sua cripto trava na custódia da exchange.</p>
+      <p>Então o comprador envia uma transferência bancária (ou pagamento por dinheiro móvel) no valor acordado. Quando o dinheiro cair na sua conta — verificado no seu próprio app bancário, não a partir de uma captura de tela que o comprador enviar — você libera a cripto da custódia. Essa ordem importa: nunca libere antes de o dinheiro estar de fato na sua conta. Duas regras de segurança completam o quadro. Primeiro, o pagamento deve vir de uma conta no próprio nome do comprador, correspondente à sua identidade P2P; pagamentos de terceiros são um padrão clássico de fraude e um motivo para recorrer. Segundo, mantenha toda a comunicação dentro do chat P2P — se um comprador pedir para migrar para WhatsApp ou Telegram, isso é um sinal de alerta, porque conversas fora da plataforma removem suas evidências caso você precise recorrer.</p>
+      <p>O preço P2P merece uma observação honesta: compradores cotam ligeiramente abaixo da taxa de mercado, e essa diferença é a margem deles. Em moedas líquidas a diferença é pequena; em moedas menos comuns ela aumenta. Compare três ou quatro compradores antes de aceitar, e trate uma oferta muito acima do mercado como isca, não sorte. Nosso <a href="how-to-sell-crypto.html">guia de como vender cripto</a> cobre a mentalidade de venda com mais detalhes.</p>
+      <h2>Rota 3: sacar cripto para sua própria carteira</h2>
+      <p>Esta rota é para mover cripto para autocustódia, não para converter em dinheiro — e é onde acontecem os erros caros. Os passos: no app da sua carteira, copie o endereço de recebimento da moeda; na Binance, vá em Sacar, selecione Cripto, escolha a moeda, cole o endereço, selecione a rede, informe o valor e confirme com 2FA. Aí vem a parte que os iniciantes apressam: a rede.</p>
+      <h2>A escolha da rede: o menu mais caro da Binance</h2>
+      <p>Muitas moedas existem em várias blockchains ao mesmo tempo. O USDT, por exemplo, roda em Ethereum (ERC20), Tron (TRC20), BNB Chain (BEP20) e outras. Elas não são intercambiáveis. Se sua carteira mostra um endereço Tron e você saca USDT em Ethereum, os fundos vão para um endereço que sua carteira pode não controlar nessa rede — e a recuperação varia de dolorosa a impossível.</p>
+      <p>A regra é absoluta: <strong>a rede que você seleciona na Binance deve corresponder à rede que sua carteira ou exchange receptora suporta para aquela moeda.</strong> Verifique os dois lados antes de confirmar. Se sua carteira suporta várias redes, escolha a de menor taxa mostrada na tela de saque da Binance — as taxas diferem bastante por rede, e a tela de saque mostra a taxa exata por rede antes de você confirmar. Para um primeiro saque para um endereço novo, envie um pequeno valor de teste, confirme que chegou, e só então envie o resto. O teste custa uma taxa extra; pulá-lo já custou a iniciantes o saque inteiro.</p>
+      <div class="callout warn"><b>Duas armadilhas de endereço:</b> 1. nunca digite um endereço à mão — copie e cole, depois confira se os quatro primeiros e os quatro últimos caracteres correspondem; existe malware que troca endereços da área de transferência. 2. algumas moedas (XRP, XLM e algumas outras) precisam de um memo ou destination tag além do endereço ao enviar para uma exchange — se o lado receptor mostrar um campo de memo, preencha-o exatamente, ou o depósito pode atrasar semanas.</div>
+      <h2>Taxas e prazos em resumo</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Rota</th><th>Taxa típica</th><th>Prazo típico</th><th>Atenção para</th></tr></thead>
+        <tbody>
+          <tr><td>Fiduciário para o banco</td><td>Mostrado na tela de saque; varia por moeda e trilho</td><td>Minutos a vários dias úteis</td><td>O nome do banco deve corresponder ao nome do KYC</td></tr>
+          <tr><td>Venda P2P</td><td>Sem comissão da plataforma; cotação do comprador abaixo do mercado</td><td>Minutos após o comprador pagar</td><td>Libere somente após o dinheiro estar no seu banco</td></tr>
+          <tr><td>Cripto para a carteira</td><td>Taxa de rede, mostrada por rede antes de confirmar</td><td>Minutos a uma hora, tipicamente</td><td>Rede errada ou memo ausente</td></tr>
+        </tbody>
+      </table></div>
+      <p>Um custo que os iniciantes subestimam: sacar valores minúsculos. Todo saque de cripto carrega uma taxa de rede fixa, independentemente do tamanho, então sacar 10 dólares de uma moeda com taxa de rede de 5 dólares é um deságio de 50%. Se o valor for pequeno, escolha a rede mais barata disponível, acumule um valor maior antes de sacar, ou use P2P. Taxas e mínimos são exibidos na página de saque antes de você confirmar — trate essa página como a palavra final, já que redes e tabelas de taxas mudam.</p>
+      <h2>Por que saques travam (e o que fazer)</h2>
+      <ul>
+        <li><strong>Bloqueio de segurança após alterações na conta.</strong> Alterar sua senha, redefinir o 2FA ou adicionar um novo endereço de saque normalmente aciona uma retenção de saque de 24 horas. Isso é proteção, não um bug — aguarde, e não tente "consertar" alterando mais configurações, o que pode reiniciar o relógio.</li>
+        <li><strong>Congestionamento da rede ou manutenção da carteira.</strong> Se a blockchain estiver congestionada ou a Binance tiver pausado saques para manutenção daquela moeda, seu saque entra na fila. Verifique a página de status do saque e qualquer aviso de manutenção antes de entrar em pânico.</li>
+        <li><strong>Rede errada ou memo ausente.</strong> Se você enviou em uma rede não suportada ou esqueceu um memo obrigatório, entre em contato com o suporte imediatamente com o ID da transação — a recuperação às vezes é possível, mas lenta, e nunca garantida. É por isso que existe o valor de teste.</li>
+        <li><strong>Verificação incompleta ou limites.</strong> Contas não verificadas ou parcialmente verificadas têm limites de saque; um saque acima do seu limite será bloqueado até a verificação ser concluída. Verifique seu nível de verificação nas configurações da conta.</li>
+        <li><strong>Confirmação de e-mail pendente.</strong> Alguns saques exigem clicar em um link de confirmação enviado para seu e-mail. Verifique sua caixa de entrada (e a pasta de spam) — e confirme se o e-mail traz seu código anti-phishing, conforme abordado em nosso <a href="how-to-keep-your-binance-account-safe.html">checklist de segurança da conta</a>, antes de clicar.</li>
+      </ul>
+      <p>Se um saque estiver genuinamente travado além da janela esperada, reúna três coisas antes de entrar em contato com o suporte: o registro do saque (moeda, valor, rede, horário), o ID da transação se um foi gerado, e o endereço de recebimento. O suporte só consegue rastrear o que você consegue mostrar. E nunca pague a terceiros que prometem "desbloquear" seu saque — isso é um golpe subsequente voltado para pessoas já ansiosas com fundos travados.</p>
+      <h2>Mais uma rota: transferências de exchange para exchange</h2>
+      <p>Às vezes o destino não é seu banco ou sua carteira, mas outra exchange — por exemplo, mover USDT para uma plataforma que lista uma moeda que a Binance não lista, ou consolidar fundos. A mecânica é idêntica à da Rota 3: copie o endereço de depósito da exchange receptora, combine a rede exatamente, preste atenção ao memo se a moeda exigir um, e envie um valor de teste primeiro. A armadilha extra aqui é presumir que duas exchanges suportam as mesmas redes para uma moeda; muitas vezes não suportam, e a página de depósito da exchange receptora — não sua memória — é a autoridade sobre quais redes ela aceita. Trate um depósito em exchange exatamente como um saque para carteira: mesmo checklist, mesmo valor de teste, mesma irreversibilidade se você errar a rede. Outras grandes exchanges, como <a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit</a> funcionam da mesma forma, e as mesmas regras protegem você lá.</p>
+      <h2>Checklist de segurança de saque</h2>
+      <ol>
+        <li>Fundos movidos para a carteira interna certa (Spot ou Funding, conforme necessário).</li>
+        <li>Endereço de recebimento copiado, não digitado; quatro primeiros e quatro últimos caracteres conferidos.</li>
+        <li>Rede combinada nos dois lados; memo ou tag preenchido se necessário.</li>
+        <li>Valor de teste enviado primeiro para qualquer endereço ou rede novos.</li>
+        <li>Taxa e mínimo conferidos na tela de saque antes de confirmar.</li>
+        <li>Para P2P: dinheiro verificado no seu próprio app bancário antes de liberar a custódia.</li>
+        <li>Para banco: o nome da conta corresponde ao seu nome verificado na Binance.</li>
+        <li>Lista branca de saque ativada, para que uma conta comprometida não possa redirecionar seus fundos.</li>
+      </ol>
+      <p>Saques parecem estressantes na primeira vez porque são irreversíveis — não há botão "desfazer" em uma transferência de blockchain. É exatamente por isso que o checklist existe. Siga-o mecanicamente, e o processo se torna entediante. Entediante é o objetivo: um saque sobre o qual você mal pensou é um saque bem feito.</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>Pronto?</b> Cadastrar-se leva cerca de 10 minutos: verifique uma vez, ative o 2FA e siga os passos acima. Os guias deste site conduzem você pelo resto.
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">A maior do mundo, com a maior liquidez</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se na Binance</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Linha de produtos completa, bom suporte a idiomas</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Criar conta na OKX</a></div>
+        </div>
+        <p class="note">As mesmas taxas de se cadastrar direto — nosso link não custa nada a mais para você. Bitget (<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">bitget.com</a>) também está disponível; observe que atualmente não temos acordo de rebate com a Bitget.</p>
+      </div>
+
+      <h3>Quanto tempo leva um saque da Binance?</h3>
+      <p>Depende da rota. Saques de cripto geralmente chegam em minutos a uma hora uma vez que a rede os confirma, embora redes congestionadas levem mais tempo. Saques bancários dependem dos trilhos de pagamento do seu país e podem levar de minutos a vários dias úteis. Vendas P2P liquidam tão rápido quanto o comprador paga — geralmente em minutos.</p>
+      <h3>Por que meu saque da Binance está travado em processamento?</h3>
+      <p>As causas usuais são um bloqueio de segurança após mudança de senha ou 2FA, um novo endereço de saque ainda dentro do período de espera, congestionamento de rede, manutenção de carteira naquela moeda, ou um passo de verificação incompleto. Verifique a página de status de saque primeiro, depois seu e-mail por um aviso de segurança, antes de contatar o suporte.</p>
+      <h3>O que acontece se eu escolher a rede errada para um saque?</h3>
+      <p>Enviar cripto em uma rede que a carteira receptora não suporta pode significar que os fundos estão perdidos ou muito difíceis de recuperar. Sempre combine a rede nos dois lados — se sua carteira mostra um endereço TRON, saque em TRON, não Ethereum. Em dúvida, envie primeiro um pequeno valor de teste.</p>
+      <h3>Preciso de um memo ou tag ao sacar?</h3>
+      <p>Algumas moedas, como XRP e XLM, exigem um memo ou destination tag além do endereço ao enviar para uma exchange. Se o lado receptor mostra um campo de memo, você deve preenchê-lo exatamente — saques enviados sem um memo exigido podem atrasar por semanas ou se perder. Transferências carteira a carteira dessas moedas geralmente não precisam de memo.</p>
+      <h3>Há um valor mínimo de saque na Binance?</h3>
+      <p>Sim, toda moeda e rede tem seu próprio valor mínimo de saque, mostrado na página de saque antes de confirmar. Se seu saldo está abaixo do mínimo para sua rede escolhida, mude para uma rede com mínimo menor ou uma rota diferente como P2P.</p>
+      <h3>Posso sacar USDT da Binance para minha conta bancária?</h3>
+      <p>Não diretamente — bancos não aceitam USDT. Você primeiro converte USDT para sua moeda local, seja vendendo-o no mercado spot e sacando fiduciário, ou vendendo-o para um comprador P2P que paga por transferência bancária. Ambas as rotas terminam com dinheiro normal na sua conta bancária.</p>
+      <h2>Continue lendo</h2>
+      <ul>
+        <li><a href="how-to-sell-crypto.html">Como vender cripto</a></li>
+        <li><a href="how-to-keep-your-binance-account-safe.html">Como manter sua conta na Binance segura</a></li>
+        <li><a href="buy-usdt.html">Como comprar USDT: todos os métodos comparados</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">Melhor carteira de cripto para iniciantes</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Início</a><a href="../airdrops.html">Airdrops diários</a><a href="../exchanges.html">Comparação de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Iniciantes</b><a href="../start/step1.html">Trilha do iniciante</a><a href="index.html">Guias</a><a href="../start/step5.html">Compre sua primeira moeda</a></div>
+      <div class="col" style="flex:1;"><b>Análises</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Ferramentas</b><a href="../tools.html#watchlist">Alertas de lista de acompanhamento</a><a href="../tools.html#calendar">Calendário de eventos</a><a href="../exchanges.html#calculator">Calculadora de taxas</a></div>
+    </div>
+    <div class="disclosure">Este site contém links de afiliados. Cadastrar-se pelos nossos links não custa nada a mais para você. Os preços das criptomoedas são altamente voláteis; nada aqui é conselho de investimento — avalie os riscos por conta própria.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Ainda sem conta? Cadastre-se em 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se</a><button class="sx" aria-label="Fechar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

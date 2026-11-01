@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Guias de Cripto para Iniciantes: Comprar Bitcoin, Exchanges — TokVS</title>
+<meta name="description" content="A biblioteca de guias da TokVS: comprar bitcoin, comprar USDT, escolher uma exchange, taxas, alavancagem, segurança de carteira, airdrops e golpes — 22 guias bilíngues.">
+<link rel="canonical" href="https://tokvs.com/pt/guides/index">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/index">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/index">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/index">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/index">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/index">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/index">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/index">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/index">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/index">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/index">
+<meta property="og:title" content="Guias para Iniciantes | Compre, Compare, Fique Seguro — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="22 guias para iniciantes: comprar seu primeiro bitcoin, taxas explicadas, riscos de alavancagem, segurança de carteira, airdrops e prevenção de golpes.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tokvs.com/pt/guides/index">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"TokVS","item":"https://tokvs.com/pt/"},{"@type":"ListItem","position":2,"name":"Guias","item":"https://tokvs.com/pt/guides/"},{"@type":"ListItem","position":3,"name":"Guias de Cripto para Iniciantes: Comprar Bitcoin, Exchanges","item":"https://tokvs.com/pt/guides/"}]},{"@type":"Article","headline":"Guias de Cripto para Iniciantes: Comprar Bitcoin, Exchanges","description":"A biblioteca de guias da TokVS: comprar bitcoin, comprar USDT, escolher uma exchange, taxas, alavancagem, segurança de carteira, airdrops e golpes — 22 guias bilíngues.","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/pt/guides/"},"inLanguage":"pt"}]}
+</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Trilha do Iniciante</a><a href="index.html" class="on">Guias</a><a href="../exchanges.html">Exchanges</a><a href="../airdrops.html">Airdrops</a><a href="../tools.html">Ferramentas</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt" selected>Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Início</a> / Guias</div>
+      <h1>Guias para iniciantes</h1>
+      <p class="sub">As perguntas em que todo comprador de primeira viagem trava, respondidas uma a uma: como comprar, onde comprar, quanto custa, como guardar e como não cair em golpes. Comece pela trilha de 5 passos para concluir sua primeira compra e depois mergulhe nos guias individuais conforme precisar.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="sec-head"><h2>Comece pela trilha</h2><span class="desc">5 passos até seu primeiro bitcoin</span></div>
+    <div class="steps">
+      <a class="step" href="../start/step1.html"><div class="n">1</div><div class="t">Conheça o Bitcoin</div><div class="d">O que é e por que tem valor</div><span class="arr">›</span></a>
+      <a class="step" href="../start/step2.html"><div class="n">2</div><div class="t">Escolha uma exchange</div><div class="d">Compare taxas e segurança primeiro</div><span class="arr">›</span></a>
+      <a class="step" href="../start/step3.html"><div class="n">3</div><div class="t">Cadastre-se</div><div class="d">Passos visuais, passe no KYC de primeira</div><span class="arr">›</span></a>
+      <a class="step" href="../start/step4.html"><div class="n">4</div><div class="t">Compre USDT</div><div class="d">O jeito certo de financiar sua conta</div><span class="arr">›</span></a>
+      <a class="step" href="../start/step5.html"><div class="n">5</div><div class="t">Compre sua primeira moeda</div><div class="d">Ordem spot + armazenamento seguro</div></a>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><h2>Todos os guias</h2><span class="desc">50 guias · atualizados regularmente</span></div>
+    <div class="rev-grid">
+      <a class="card rev-card" href="how-to-buy-bitcoin.html"><div><div class="tt">Como Comprar Bitcoin para Iniciantes</div><div class="dd">A jornada completa em uma página: escolha uma exchange, verifique, compre USDT, faça seu primeiro pedido de BTC.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="buy-usdt.html"><div><div class="tt">Como Comprar USDT</div><div class="dd">Compra instantânea, P2P e conversão spot comparadas — além de prêmios e riscos de cartão bloqueado.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="choose-exchange.html"><div><div class="tt">Melhor Exchange de Cripto para Iniciantes</div><div class="dd">Seis verificações que dizem se uma exchange é confiável, com veredictos sobre as quatro grandes.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="binance-vs-okx.html"><div><div class="tt">Binance vs OKX</div><div class="dd">Taxas, moedas, produtos e experiência no app comparados linha por linha, com um veredicto de uma linha.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="crypto-fees.html"><div><div class="tt">Taxas de Cripto Explicadas</div><div class="dd">Maker vs taker, taxas spot e de futuros, taxas de funding e custos de saque — com matemática de verdade.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="leverage-guide.html"><div><div class="tt">Alavancagem e Liquidação</div><div class="dd">O que é alavancagem em cripto? Exemplos resolvidos de como acontece a liquidação — leia antes de negociar.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="wallet-safety.html"><div><div class="tt">Segurança de Carteira e Seed Phrase</div><div class="dd">O que é uma seed phrase, como guardá-la e o que fazer se ela for perdida ou vazada.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="airdrop-guide.html"><div><div class="tt">O que é um Airdrop de Cripto?</div><div class="dd">Como funcionam os airdrops, três tipos que valem a pena, os passos para participar e as linhas vermelhas contra golpes.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="stablecoins.html"><div><div class="tt">USDT vs USDC</div><div class="dd">Emissores, reservas, regulação e risco de de-peg — qual dólar digital você deve ter?</div></div><span class="go">›</span></a>
+            <a class="card rev-card" href="how-to-buy-usdt-on-binance-p2p.html"><div><div class="tt">Comprar USDT no P2P da Binance</div><div class="dd">Custódia (escrow), checklist de comerciantes e segurança de pagamento — o jeito mais barato de comprar USDT, feito do jeito certo.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-india.html"><div><div class="tt">Comprar USDT na Índia</div><div class="dd">Passo a passo de P2P por UPI e transferência bancária, segurança de comerciantes, taxas e o alerta sobre impostos.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-nigeria.html"><div><div class="tt">Comprar USDT na Nigéria</div><div class="dd">Guia P2P de naira para USDT: avaliar comerciantes, ler cotações e desviar das armadilhas.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="okx-vs-bybit.html"><div><div class="tt">OKX vs Bybit</div><div class="dd">Taxas, profundidade de futuros, apps e segurança comparados — veredicto conforme seu jeito de negociar.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="lowest-fee-crypto-exchange.html"><div><div class="tt">Exchange de Cripto com as Menores Taxas</div><div class="dd">Números reais de maker/taker das quatro grandes, mais cinco hábitos que reduzem o que você paga.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="is-binance-safe.html"><div><div class="tt">A Binance é Segura?</div><div class="dd">SAFU, prova de reservas e histórico — as evidências, além de ressalvas honestas.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-bitcoin-with-paypal.html"><div><div class="tt">Comprar Bitcoin com PayPal</div><div class="dd">As três rotas reais de PayPal para bitcoin, o que cada uma custa e as armadilhas.</div></div><span class="go">›</span></a>
+<a class="card rev-card" href="crypto-futures-fees-comparison.html"><div><div class="tt">Taxas de Futuros Comparadas</div><div class="dd">Taxas maker/taker em Binance, OKX, Bybit e Bitget — além de taxas de funding explicadas.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="binance-vs-okx-fees-2026.html"><div><div class="tt">Taxas Binance vs OKX 2026</div><div class="dd">Taxas spot, de futuros e de saque linha por linha — qual é mais barata para você?</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="what-is-usdt.html"><div><div class="tt">O que é USDT?</div><div class="dd">A stablecoin atrelada ao dólar explicada: mecânica do peg, reservas e riscos honestos.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="best-crypto-exchange-2026.html"><div><div class="tt">Melhor Exchange 2026</div><div class="dd">Binance, OKX e Bybit avaliadas pela experiência do iniciante — escolha em 5 minutos.</div></div><span class="go">›</span></a>
+            <a class="card rev-card" href="best-crypto-exchange-for-beginners.html"><div><div class="tt">Melhor Exchange para Iniciantes</div><div class="dd">OKX, Binance e Bitget comparadas para quem está começando, mais uma primeira semana dia a dia.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-ethereum.html"><div><div class="tt">Como Comprar Ethereum (ETH)</div><div class="dd">ETH para iniciantes: taxas de gas, mainnet vs redes L2 e o caminho mais seguro para a primeira compra.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-solana.html"><div><div class="tt">Como Comprar Solana (SOL)</div><div class="dd">SOL para iniciantes: escolha de carteira, histórico de interrupções em termos simples e os passos da primeira compra.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-xrp.html"><div><div class="tt">Como Comprar XRP (Ripple)</div><div class="dd">XRP para iniciantes: tags de destino, regras regionais e como não perder moedas por falta de memo.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-vietnam.html"><div><div class="tt">Comprar USDT no Vietnã</div><div class="dd">Passo a passo de P2P por transferência bancária e MoMo, segurança de comerciantes e notas sobre taxas.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-philippines.html"><div><div class="tt">Comprar USDT nas Filipinas</div><div class="dd">Guia P2P por GCash e Maya: cotações, verificações de comerciantes e as armadilhas.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-brazil.html"><div><div class="tt">Comprar USDT no Brasil</div><div class="dd">Passo a passo de P2P por Pix e TED, custos reais e as armadilhas locais.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-turkey.html"><div><div class="tt">Comprar USDT na Turquia</div><div class="dd">Guia P2P por FAST bancário e Papara, armadilhas de taxa da lira e segurança de comerciantes.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-crypto-for-beginners.html"><div><div class="tt">Como Comprar Cripto para Iniciantes</div><div class="dd">O pilar de 5 passos: aprenda, escolha uma exchange, verifique, compre, guarde — com links para todos os guias detalhados.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="what-is-bitcoin.html"><div><div class="tt">O que é Bitcoin?</div><div class="dd">Origens em 2009, blockchain e mineração, o teto de 21M, como comprar e os riscos honestos.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="what-is-cryptocurrency.html"><div><div class="tt">O que é Criptomoeda?</div><div class="dd">Moedas vs tokens, básico de blockchain, carteiras e exchanges — cripto explicada para iniciantes totais.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="bitcoin-vs-ethereum.html"><div><div class="tt">Bitcoin vs Ethereum</div><div class="dd">Propósito, consenso, oferta, taxas e ecossistema comparados — veredicto conforme o seu tipo.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="best-crypto-wallet-for-beginners.html"><div><div class="tt">Melhor Carteira de Cripto para Iniciantes</div><div class="dd">Carteiras quentes vs frias, MetaMask, Trust Wallet, Ledger, Trezor — e segurança da seed phrase.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-sell-crypto.html"><div><div class="tt">Como Vender Cripto e Sacar</div><div class="dd">Venda spot para USDT, venda P2P, saques bancários — taxas, prazos e a nota sobre impostos.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-dogecoin.html"><div><div class="tt">Como Comprar Dogecoin</div><div class="dd">DOGE para iniciantes: exchange, troca por USDT, armazenamento — mais a nota honesta sobre o risco de meme-coin.</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-europe.html"><div><div class="tt">Comprar USDT na Europa</div><div class="dd">Passo a passo de transferência bancária SEPA e P2P para a maioria dos países da UE, com ressalvas de disponibilidade.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="how-to-buy-usdt-in-usa.html"><div><div class="tt">Comprar USDT nos EUA</div><div class="dd">ACH, wire, cartão e P2P: custos, velocidade e KYC para compradores dos EUA.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="how-to-buy-usdt-in-uk.html"><div><div class="tt">Comprar USDT no Reino Unido</div><div class="dd">Faster Payments, cartão e P2P: rotas em GBP, custos e verificações.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="how-to-buy-usdt-with-bank-transfer.html"><div><div class="tt">Como Comprar USDT com Transferência Bancária</div><div class="dd">P2P e depósito direto: prazos, taxas e os erros a evitar.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="how-to-buy-usdt-with-debit-card.html"><div><div class="tt">Como Comprar USDT com Cartão de Débito</div><div class="dd">Compras instantâneas com cartão: taxas, limites e o que fazer quando recusado.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="can-you-buy-usdt-with-paypal.html"><div><div class="tt">Dá para Comprar USDT com PayPal?</div><div class="dd">Resposta honesta: não diretamente — mais as três alternativas que realmente funcionam.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="how-to-keep-your-binance-account-safe.html"><div><div class="tt">Como Manter sua Conta na Binance Segura</div><div class="dd">2FA, código anti-phishing, lista branca de saques e como identificar phishing.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="binance-vs-coinbase.html"><div><div class="tt">Binance vs Coinbase para Iniciantes</div><div class="dd">Taxas, financiamento, facilidade de uso e segurança — com uma escolha clara para iniciantes.</div></div><span class="go">›</span></a>
+       <a class="card rev-card" href="how-to-withdraw-from-binance.html"><div><div class="tt">Como Sacar da Binance</div><div class="dd">Banco, venda P2P ou carteira: redes, taxas, prazos e saques travados.</div></div><span class="go">›</span></a> <a class="card rev-card" href="how-to-buy-usdt-in-canada.html"><div><div class="tt">Comprar USDT no Canadá</div><div class="dd">Nenhuma exchange comparada atende bem o Canadá — o que verificar, trilhos Interac e as opções honestas.</div></div><span class="go">›</span></a> <a class="card rev-card" href="how-to-buy-usdt-in-australia.html"><div><div class="tt">Comprar USDT na Austrália</div><div class="dd">PayID, transferência bancária e cartão: primeira compra, taxas e notas em AUD.</div></div><span class="go">›</span></a> <a class="card rev-card" href="how-to-buy-usdt-in-eea.html"><div><div class="tt">Comprar USDT no EEE</div><div class="dd">MiCA após julho de 2026: quem atende você, por que o USDC é a stablecoin mais simples e rotas SEPA.</div></div><span class="go">›</span></a> <a class="card rev-card" href="crypto-taxes-for-beginners.html"><div><div class="tt">Impostos sobre Cripto para Iniciantes</div><div class="dd">Manter vs dispor, registro de operações e por que trocas podem ser tributáveis — apenas informações gerais.</div></div><span class="go">›</span></a> <a class="card rev-card" href="exchanges-to-avoid.html"><div><div class="tt">Exchanges de Cripto a Evitar</div><div class="dd">Exchanges que quebraram, segundo registros públicos, sinais de alerta e o que fazer em vez disso.</div></div><span class="go">›</span></a>
+<a class="card rev-card" href="avoid-scams.html"><div><div class="tt">Cripto é Golpe?</div><div class="dd">Oito golpes comuns de cripto, como identificar cada um e o que fazer se você já enviou dinheiro.</div></div><span class="go">›</span></a>
+    </div>
+    <p class="note">Os guias são atemporais e revisados conforme as regras das plataformas mudam. Para taxas e políticas, o anúncio oficial mais recente de cada exchange sempre prevalece.</p>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Início</a><a href="../airdrops.html">Airdrops diários</a><a href="../exchanges.html">Comparação de exchanges</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Iniciantes</b><a href="../start/step1.html">Trilha do iniciante</a><a href="index.html">Guias</a><a href="../start/step5.html">Compre sua primeira moeda</a></div>
+      <div class="col" style="flex:1;"><b>Análises</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Ferramentas</b><a href="../tools.html#watchlist">Alertas de lista de acompanhamento</a><a href="../tools.html#calendar">Calendário de eventos</a><a href="../exchanges.html#calculator">Calculadora de taxas</a></div>
+    </div>
+    <div class="disclosure">Este site contém links de afiliados. Cadastrar-se pelos nossos links não custa nada a mais para você. Os preços das criptomoedas são altamente voláteis; nada aqui é conselho de investimento — avalie os riscos por conta própria.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Ainda sem conta? Cadastre-se em 3 minutos →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Cadastre-se</a><button class="sx" aria-label="Fechar" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
