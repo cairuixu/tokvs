@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Exchange crypto da evitare (e perché) — TokVS</title>
+<meta name="description" content="Quali exchange crypto sono crollati, cosa è andato storto in FTX, Celsius, Voyager, BlockFi, Mt. Gox e QuadrigaCX, e quali exchange al momento non servono i principali mercati occidentali, più i segnali d'allarme da controllare prima di fidarti di qualsiasi piattaforma.">
+<link rel="canonical" href="https://tokvs.com/it/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/exchanges-to-avoid">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/exchanges-to-avoid">
+<meta property="og:title" content="Exchange crypto da evitare (e perché) — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Exchange crollati dal pubblico registro, restrizioni di mercato attuali e segnali d'allarme che ogni principiante dovrebbe controllare prima di fidarsi di una piattaforma.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/it/guides/exchanges-to-avoid">
+<meta property="og:locale" content="it_IT">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/it/"}, {"@type": "ListItem", "position": 2, "name": "Guide", "item": "https://tokvs.com/it/guides/"}, {"@type": "ListItem", "position": 3, "name": "Exchange crypto da evitare (e perché)", "item": "https://tokvs.com/it/guides/exchanges-to-avoid"}]}, {"@type": "Article", "headline": "Exchange crypto da evitare (e perché)", "description": "Quali exchange crypto sono crollati, cosa è andato storto in FTX, Celsius, Voyager, BlockFi, Mt. Gox e QuadrigaCX, e quali exchange al momento non servono i principali mercati occidentali, più i segnali d'allarme da controllare prima di fidarti di qualsiasi piattaforma.", "datePublished": "2026-10-30", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/it/guides/exchanges-to-avoid", "dateModified": "2026-10-30"}, "inLanguage": "it"}]}</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"FTX è ancora operativa?","acceptedAnswer":{"@type":"Answer","text":"No. FTX collapsed in November 2022 and went through bankruptcy proceedings. Its trading platform is not operating as a normal exchange, and customers became creditors in the bankruptcy process. If you see a site claiming to be a relaunched FTX, treat it with extreme caution and verify it through official bankruptcy communications before trusting it."}},{"@type":"Question","name":"Posso riavere denaro da un exchange crollato?","acceptedAnswer":{"@type":"Answer","text":"Sometimes, but never assume so. Bankruptcy proceedings can return a portion of customer funds over a period of years, and the amount depends on what assets remain and how claims are ranked. Some cases have returned significant amounts, others very little. Treat any money on a collapsed platform as at risk until a court-approved distribution actually reaches you."}},{"@type":"Question","name":"Perché si parla di proof of reserves?","acceptedAnswer":{"@type":"Answer","text":"Proof of reserves is a way for an exchange to show it holds the assets it claims to hold, usually through a third-party attestation. It matters because several collapsed platforms turned out not to hold what they claimed. But it has limits: it shows assets at one moment in time, not liabilities, and it is not an audit. Read it as one signal among several, not as a guarantee."}},{"@type":"Question","name":"La regolamentazione significa che un exchange è sicuro?","acceptedAnswer":{"@type":"Answer","text":"Regulation reduces some risks but removes none of them entirely. A licensed exchange is subject to rules, reporting, and supervision, which is better than no oversight at all. But regulated firms can still fail, freeze withdrawals, or suffer hacks. Regulation is one factor to weigh alongside reserves transparency, track record, and how much you keep on the platform."}},{"@type":"Question","name":"Perché non posso iscrivermi a un exchange nel mio paese?","acceptedAnswer":{"@type":"Answer","text":"Exchanges restrict countries for legal and licensing reasons. For example, our country availability table, checked 30 October 2026, shows Binance not onboarding new users in the EEA and the UK, Bybit not serving the US and Canada, and Bitget restricted in the US, the UK, and Canada with EEA access pending. Availability changes, so check the table and the official page before you plan around any exchange."}},{"@type":"Question","name":"Dovrei tenere tutte le mie crypto su un exchange?","acceptedAnswer":{"@type":"Answer","text":"For most beginners, the practical answer is no, not once the amount matters to you. Keep on an exchange only what you actively trade, and move longer-term holdings to a wallet you control, where you hold the seed phrase. That way, even if a platform fails, your long-term holdings are not trapped in its bankruptcy. Learn self-custody before the amount grows, not after."}}]}</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Percorso per principianti</a><a href="index.html" class="on">Guide</a><a href="../exchanges.html">Exchange</a><a href="../airdrops.html">Airdrop</a><a href="../tools.html">Strumenti</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it" selected>Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Home</a> / <a href="index.html">Guide</a> / Exchange da evitare</div>
+      <h1>Exchange crypto da evitare (e perché)</h1>
+      <p class="sub">Alcuni exchange non ci sono più perché sono crollati. Altri sono società valide che semplicemente non servono il tuo paese. Entrambi i tipi ti faranno perdere tempo o intrappolare denaro se scegli alla cieca: ecco come distinguerli, usando solo il pubblico registro.</p>
+      <p class="updated">Aggiornato ott 2026 · Di TokVS · 11 min di lettura</p>
+      <p class="note">Fonti e metodo: <a href="../methodology.html">come verifichiamo</a> · <a href="../exchanges.html#availability">tabella di disponibilità per paese</a> · i dati cambiano, verifica sulla pagina ufficiale prima di agire.</p>
+      <p class="note">Fonti e metodo: <a href="../methodology.html">come verifichiamo</a> · <a href="../exchanges.html#availability">tabella di disponibilità per paese (controllata il 30 ott 2026)</a> · la disponibilità cambia, verifica sulla pagina ufficiale prima di agire.</p>
+      <div class="callout warn"><b>Prima di iscriverti ovunque:</b> controlla prima la <a href="../exchanges.html#availability">tabella di disponibilità per paese</a> . Un exchange che non accetta utenti nel tuo paese non è un piano di riserva: è un vicolo cieco, e scoprirlo dopo aver depositato è il momento peggiore per impararlo.</div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Exchange crollati: cosa mostra il pubblico registro</h2>
+      <p>Ogni exchange qui sotto c'è per eventi già di pubblico registro: fallimenti, procedimenti giudiziari e hack riportati all'epoca. Niente di tutto questo è diceria. Lo scopo di elencarli non è spaventarti lontano dalle crypto; è mostrarti gli schemi di fallimento esatti, così puoi riconoscere i segnali di avvertimento se mai dovessero apparire altrove.</p>
+      <h3>FTX — crollata nel novembre 2022</h3>
+      <p>FTX era uno dei più grandi exchange crypto al mondo fino al novembre 2022, quando crollò in pochi giorni dopo notizie che i fondi dei clienti erano stati usati per sostenere una società di trading affiliata. Presentò istanza di fallimento, il suo fondatore fu in seguito condannato per frode negli Stati Uniti, e i clienti divennero creditori in un processo fallimentare protrattosi per anni. <strong>La lezione:</strong> dimensione e sponsorizzazioni di celebrità non sono prove di custodia sana. Se una piattaforma non riesce a mostrare chiaramente che i fondi dei clienti sono tenuti separati dal proprio trading, è un motivo per andarsene, non un dettaglio da ignorare.</p>
+      <h3>Celsius — crollata nel 2022</h3>
+      <p>Celsius offriva alti rendimenti sui depositi crypto, congelò i prelievi nel giugno 2022 e presentò istanza di fallimento il mese seguente. Il suo business dipendeva dal prestare i depositi dei clienti in strategie rischiose, e quando i mercati caddero, il divario tra ciò che doveva ai depositanti e ciò che deteneva divenne impossibile da colmare. <strong>La lezione:</strong> un rendimento che sembra molto al di sopra del tasso di mercato non è denaro gratis: è un compenso per il rischio, e il rischio è che la piattaforma non possa restituire il tuo deposito. Leggi cosa fa davvero un prodotto di rendimento con i tuoi fondi prima di depositare.</p>
+      <h3>Voyager — crollata nel 2022</h3>
+      <p>Voyager era una broker crypto che presentò istanza di fallimento nel luglio 2022 dopo che un grande mutuatario non riuscì a rimborsare un grosso prestito. I clienti che credevano di detenere asset su una semplice broker scoprirono che i loro fondi erano stati prestati oltre, e che il recupero dipendeva da un tribunale fallimentare anziché dal saldo del loro account. <strong>La lezione:</strong> comprendi la differenza tra asset detenuti per te e asset prestati per tuo conto. Se una piattaforma presta asset dei clienti, il tuo rischio è anche il rischio del mutuatario.</p>
+      <h3>BlockFi — crollata nel 2022</h3>
+      <p>BlockFi era un prestatore crypto che presentò istanza di fallimento nel novembre 2022, settimane dopo il crollo di FTX, verso cui aveva un'esposizione significativa. Aveva offerto account fruttiferi che molti utenti trattavano come conti di risparmio, ma quegli account erano prestiti non garantiti alla società, e i clienti divennero di nuovo creditori fallimentari. <strong>La lezione:</strong> un account di interesse crypto non è un conto bancario. I depositi bancari in molti paesi godono di assicurazione sui depositi; i prodotti di prestito crypto generalmente no, e il marketing di “account di interesse” non va mai letto come “risparmio assicurato”.</p>
+      <h3>Mt. Gox — hackerata e crollata nel 2014</h3>
+      <p>Mt. Gox era un tempo l'exchange Bitcoin dominante, gestendo la maggior parte del trading Bitcoin mondiale, finché crollò nel 2014 dopo aver perso una grande porzione dei Bitcoin dei clienti a causa di furti protrattisi per anni. La perdita fu scoperta tardi, la società presentò istanza di fallimento, e il processo di risanamento per i creditori è continuato per un decennio. <strong>La lezione:</strong> pratiche di sicurezza e trasparenza contano più della quota di mercato. Una piattaforma che domina il trading può comunque avere deboli controlli interni, e la prima storia delle crypto mostra che i problemi possono restare nascosti a lungo prima di emergere.</p>
+      <h3>QuadrigaCX — crollata nel 2019</h3>
+      <p>QuadrigaCX era un exchange canadese crollato nel 2019 dopo la morte del suo fondatore, secondo quanto riferito l'unica persona che deteneva le password dei wallet contenenti i fondi dei clienti. Gli investigatori scoprirono in seguito che gran parte dei fondi dei clienti non poteva essere localizzata, e che la piattaforma operava con gravi carenze. <strong>La lezione:</strong> una piattaforma con un singolo punto di guasto, una persona che detiene le chiavi, un wallet che detiene i fondi, un revisore che nessuno può nominare, è fragile per progettazione. Chiedi chi altro controlla il denaro, e cosa succede se quella persona scompare.</p>
+      <h2>Cosa hanno in comune questi crolli</h2>
+      <p>Decenni diversi, modelli di business diversi, ma si ripetono gli stessi tre schemi. Primo, <strong>i fondi dei clienti non erano davvero separati</strong> dal denaro proprio della società o dalle sue scommesse di trading. Quando una piattaforma può attingere ai depositi dei clienti per coprire le proprie perdite, ogni cliente diventa un prestatore non garantito senza rendersene conto. Secondo, <strong>l'opacità ha nascosto il problema finché non è stato troppo tardi</strong>. I bilanci non erano pubblicati, gli audit erano assenti o superficiali, e gli utenti non avevano modo di verificare ciò che veniva loro detto. Terzo, <strong>la crescita ha superato i controlli</strong>: le piattaforme si espansero in prestiti, trading proprietario o nuovi prodotti più rapidamente di quanto la gestione del rischio, la custodia e la conformità potessero tenere il passo.</p>
+      <p>Per questo le tre difese di cui i principianti sentono parlare contano davvero, e perché contano insieme anziché da sole. <strong>Proof of reserves</strong> è una piattaforma che mostra, tramite attestazione di terze parti, di detenere gli asset che afferma di detenere. È utile ma limitata: cattura un momento nel tempo, non dimostra di per sé le passività, e non è un audit completo: leggila come un segnale, non una garanzia. <strong>Regolamentazione</strong> significa che una piattaforma opera secondo regole, rendicontazione e supervisione nelle giurisdizioni in cui è autorizzata, il che riduce alcuni rischi ma non li rimuove del tutto; anche le società regolamentate possono fallire. <strong>Autocustodia</strong> significa detenere i propri asset in un wallet in cui controlli la seed phrase, così che nessun fallimento di piattaforma possa intrappolarli. Nessuna di queste è sufficiente da sola. Insieme, sono il kit pratico: preferisci piattaforme trasparenti e supervisionate, e comunque non lasciare disponibilità a lungo termine ferme su nessuna piattaforma.</p>
+      <h2>Al momento limitati: exchange che non servono il tuo mercato</h2>
+      <p>Un secondo tipo di “evitare” non ha nulla a che fare con il crollo. Alcuni exchange operativi semplicemente non accettano utenti in certi paesi, per motivi legali e di licenza. Iscriversi con uno di questi da un paese limitato fa perdere tempo: la verifica fallirà, o l'account verrà limitato in seguito. Peggio, alcuni utenti aggirano le restrizioni con falsi dettagli di localizzazione, il che può portare ad account congelati e accesso perso: non farlo mai. I fatti qui sotto provengono dalla <a href="../exchanges.html#availability">tabella di disponibilità per paese di TokVS</a>, controllata il 30 ottobre 2026. La disponibilità cambia, quindi verifica sulla pagina ufficiale prima di pianificare intorno a qualsiasi exchange.</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Exchange</th><th>Al momento non serve</th><th>Cosa fare invece</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>Nessun nuovo utente nell'EEA e nel Regno Unito</td><td>Controlla la tabella di disponibilità per le piattaforme che accettano nel tuo paese</td></tr>
+          <tr><td>Bybit</td><td>Non serve USA e Canada</td><td>Controlla la tabella di disponibilità per le piattaforme che accettano nel tuo paese</td></tr>
+          <tr><td>Bitget</td><td>Limitato in USA, Regno Unito e Canada; accesso EEA in attesa</td><td>Controlla la tabella di disponibilità per le piattaforme che accettano nel tuo paese</td></tr>
+        </tbody>
+      </table></div>
+      <p>Due cose da notare. Primo, “limitato” non è un'accusa: si tratta di exchange operativi che prendono decisioni di licenza mercato per mercato, e il loro status in un dato paese può cambiare man mano che le licenze vengono concesse o ritirate. Secondo, le liste di limitazione non sono simmetriche: un exchange può servire il tuo paese per il trading spot ma non per i derivati, o può accettare utenti esistenti chiudendo ai nuovi. Per questo la tabella di disponibilità, anziché un singolo articolo, è il primo controllo giusto: viene mantenuta come unico luogo in cui queste distinzioni sono tracciate.</p>
+      <h2>Segnali d'allarme da controllare prima di fidarti di qualsiasi exchange</h2>
+      <p>Usa questa checklist su qualsiasi piattaforma, nuova o consolidata, prima di depositare più di un importo di prova. <strong>Leadership anonima o non verificabile:</strong> se non puoi identificare chi gestisce la piattaforma, non puoi valutarne il track record. <strong>Nessuna licenza o informazione societaria:</strong> una piattaforma legittima dichiara dove è costituita e quali regolatori la supervisionano; la vaghezza qui è una scelta, non una svista. <strong>Promesse di rendimenti garantiti:</strong> nessuna piattaforma onesta può garantire rendimenti di investimento, e la promessa in sé è un classico segnale di frode. <strong>Congelamenti di prelievi o ritardi inspiegabili:</strong> la manutenzione occasionale è normale, ma problemi di prelievo ripetuti o inspiegabili sono il singolo segnale precoce più affidabile di guai. <strong>Riserve opache:</strong> se una piattaforma non pubblica informazioni sulle riserve né un'attestazione credibile, ti stai fidando solo della sua parola. <strong>Pressione a depositare rapidamente:</strong> timer di conto alla rovescia, affermazioni di “allocazione limitata” e agenti di supporto che sollecitano depositi maggiori sono tattiche di vendita, non funzioni di sicurezza.</p>
+      <p>Un'altra abitudine appartiene a questa lista: cerca il nome della piattaforma insieme a parole come “problemi di prelievo”, “avviso del regolatore” e “fallimento” prima di depositare. Dieci minuti di ricerca fanno emergere problemi che le pagine di marketing non menzionano mai, e non costano nulla. Se i risultati sono dominati da avvisi di regolatori o reclami irrisolti sui prelievi, questa è la tua risposta, indipendentemente da quanto sembri curato il sito.</p>
+      <h2>Cosa fare invece</h2>
+      <p>La routine pratica è breve. Primo, controlla la <a href="../exchanges.html#availability">tabella di disponibilità per paese</a> per trovare piattaforme che accettano davvero utenti dove vivi. Secondo, preferisci piattaforme che pubblicano informazioni sulle riserve e dichiarano chiaramente le licenze, e trattale entrambe come segnali anziché garanzie. Terzo, inizia con un piccolo deposito di prova e un piccolo prelievo di prova prima di impegnare importi maggiori: una piattaforma che gestisce prontamente un piccolo prelievo ha superato l'unico test che conta. Quarto, una volta che detieni una somma che farebbe male perdere, impara l'autocustodia: sposta le disponibilità a lungo termine in un wallet che controlli, tieni la seed phrase offline e privata, e tieni sull'exchange solo i fondi di trading attivi. Infine, rivisita periodicamente le tue scelte, perché disponibilità, licenze e divulgazioni sulle riserve cambiano tutte nel tempo.</p>
+      <p>I crolli in questa pagina condividono un'ultima lezione facile da perdere: in ogni caso, i segnali di avvertimento esistevano prima del crollo, ma erano visibili solo a chi guardava. Gli utenti che hanno perso meno erano di solito quelli che tenevano registri, tenevano le disponibilità distribuite, e tenevano la maggior parte delle crypto da qualche parte dove nessuna piattaforma poteva congelarle. Questo non è paranoia. È l'assicurazione più economica nelle crypto, e costa solo un po' di attenzione.</p>
+
+      <h3>FTX è ancora operativa?</h3>
+      <p>No. FTX crollò nel novembre 2022 e passò attraverso procedure fallimentari. La sua piattaforma di trading non opera come un exchange normale, e i clienti divennero creditori nel processo fallimentare. Se vedi un sito che afferma di essere una FTX rilanciata, trattalo con estrema cautela e verificalo tramite comunicazioni ufficiali fallimentari prima di fidarti.</p>
+      <h3>Posso riavere denaro da un exchange crollato?</h3>
+      <p>A volte, ma non darlo mai per scontato. Le procedure fallimentari possono restituire una parte dei fondi dei clienti in un periodo di anni, e l'importo dipende da quali asset restano e da come vengono classificati i crediti. Alcuni casi hanno restituito importi significativi, altri molto poco. Considera qualsiasi denaro su una piattaforma crollata come a rischio finché una distribuzione approvata dal tribunale non ti raggiunge davvero.</p>
+      <h3>Perché si parla di proof of reserves?</h3>
+      <p>La proof of reserves è un modo per un exchange di mostrare che detiene gli asset che afferma di detenere, di solito tramite attestazione di terze parti. Conta perché diverse piattaforme crollate si rivelarono non detenere ciò che affermavano. Ma ha limiti: mostra gli asset in un momento nel tempo, non le passività, e non è un audit. Leggila come un segnale tra diversi, non come una garanzia.</p>
+      <h3>La regolamentazione significa che un exchange è sicuro?</h3>
+      <p>La regolamentazione riduce alcuni rischi ma non li rimuove del tutto. Un exchange autorizzato è soggetto a regole, rendicontazione e supervisione, il che è meglio di nessuna supervisione. Ma le società regolamentate possono comunque fallire, congelare prelievi o subire hack. La regolamentazione è un fattore da pesare insieme a trasparenza delle riserve, track record e quanto tieni sulla piattaforma.</p>
+      <h3>Perché non posso iscrivermi a un exchange nel mio paese?</h3>
+      <p>Gli exchange limitano i paesi per motivi legali e di licenza. Ad esempio, la nostra tabella di disponibilità per paese, controllata il 30 ottobre 2026, mostra Binance che non accetta nuovi utenti nell'EEA e nel Regno Unito, Bybit che non serve USA e Canada, e Bitget limitato in USA, Regno Unito e Canada con accesso EEA in attesa. La disponibilità cambia, quindi controlla la tabella e la pagina ufficiale prima di pianificare intorno a qualsiasi exchange.</p>
+      <h3>Dovrei tenere tutte le mie crypto su un exchange?</h3>
+      <p>Per la maggior parte dei principianti, la risposta pratica è no, non una volta che la somma conta per te. Tieni su un exchange solo ciò che scambi attivamente, e sposta le disponibilità a lungo termine in un wallet che controlli, dove detieni la seed phrase. In questo modo, anche se una piattaforma fallisce, le tue disponibilità a lungo termine non sono intrappolate nel suo fallimento. Impara l'autocustodia prima che la somma cresca, non dopo.</p>
+      <h2>Continua a leggere</h2>
+      <ul>
+        <li><a href="how-to-buy-crypto-for-beginners.html">Come acquistare crypto per principianti</a></li>
+        <li><a href="is-binance-safe.html">Binance è sicura?</a></li>
+        <li><a href="how-to-keep-your-binance-account-safe.html">Come mantenere sicuro il tuo account Binance</a></li>
+        <li><a href="../exchanges.html#availability">Tabella di disponibilità per paese</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Home</a><a href="../airdrops.html">Airdrop giornalieri</a><a href="../exchanges.html">Confronto tra exchange</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principianti</b><a href="../start/step1.html">Percorso per principianti</a><a href="index.html">Guide</a><a href="../start/step5.html">Acquista la tua prima moneta</a></div>
+      <div class="col" style="flex:1;"><b>Recensioni</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Strumenti</b><a href="../tools.html#watchlist">Avvisi della watchlist</a><a href="../tools.html#calendar">Calendario degli eventi</a><a href="../exchanges.html#calculator">Calcolatore delle commissioni</a></div>
+    </div>
+    <div class="disclosure">Questo sito contiene link di affiliazione. Registrarsi tramite i nostri link non ti costa nulla in più. I prezzi delle criptovalute sono estremamente volatili; nulla qui è un consiglio di investimento: valuta tu stesso i rischi.</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
