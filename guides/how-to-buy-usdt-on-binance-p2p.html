@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>如何在 Binance P2P 上买 USDT（一步步来）— TokVS</title>
+<meta name="description" content="在 Binance P2P 上买 USDT：找到受信任的商家、下单、安全付款并躲开资金冻结风险。附商家清单的完整指南。">
+<link rel="canonical" href="https://tokvs.com/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-usdt-on-binance-p2p">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-usdt-on-binance-p2p">
+<meta property="og:title" content="在 Binance P2P 上买 USDT：完整指南 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="托管、商家清单、付款安全和申诉流程——正确地做 P2P USDT 购买。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/how-to-buy-usdt-on-binance-p2p">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "在 Binance P2P 上买 USDT", "item": "https://tokvs.com/guides/how-to-buy-usdt-on-binance-p2p"}]}, {"@type": "Article", "headline": "如何在 Binance P2P 上买 USDT（一步步来）", "description": "在 Binance P2P 上买 USDT：找到受信任的商家、下单、安全付款并躲开资金冻结风险。附商家清单的完整指南。", "datePublished": "2026-10-16", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/how-to-buy-usdt-on-binance-p2p", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "我也能在 Binance P2P 上卖 USDT 吗？", "acceptedAnswer": {"@type": "Answer", "text": "是——同一个市场反向也适用。切换到卖出标签，选择 USDT 和你的法币，选一个求购商家，并按镜像流程操作：只有在确认你账户里的法币后才释放加密资产。"}}, {"@type": "Question", "name": "我需要为 P2P 完成 KYC 吗？", "acceptedAnswer": {"@type": "Answer", "text": "是。Binance 要求你在使用 P2P 之前完成身份验证，买入和卖出两边都要求。这是反洗钱要求，不是可选的。"}}, {"@type": "Question", "name": "为什么商家有时会要求身份证或自拍？", "acceptedAnswer": {"@type": "Answer", "text": "一些商家会对大订单附加自己的验证作为欺诈保护。这是他们的业务规则，不是 Binance 的。如果你不舒服，选另一个商家——很多商家不会要求。"}}, {"@type": "Question", "name": "Binance 上的 C2P 和 P2P 有什么区别？", "acceptedAnswer": {"@type": "Answer", "text": "没什么你需要在意的——C2C（客户对客户）和 P2P（点对点）是同一个托管市场的两个名字。Binance 把它标为 P2P；机制完全相同。"}}, {"@type": "Question", "name": "商家能看到我的个人资料吗？", "acceptedAnswer": {"@type": "Answer", "text": "他们看到的是你已验证的显示名和付款所需的任何信息（例如转账用的你的银行账户名）。他们看不到你的身份证件、邮箱或电话。保持这样——永远不要分享超过交易所需的信息。"}}, {"@type": "Question", "name": "为什么我的 P2P 订单被自动取消了？", "acceptedAnswer": {"@type": "Answer", "text": "通常是以下三种之一：付款计时过期、商家离线且系统释放了托管，或者姓名/金额不一致触发了自动取消。在这三种情况下，都没有资金移动——查看订单状态，然后重新下一个。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 在 Binance P2P 上买 USDT</div>
+      <h1>如何在 Binance P2P 上买 USDT</h1>
+      <p class="sub">Binance P2P 是大多数人买 USDT 最便宜的方式：没有平台佣金、托管保护的交易，以及适合每个地区的付款方式。下面是完整流程，正确的做法。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 8 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>Binance P2P 实际上是什么</h2>
+      <p>Binance P2P 是 Binance App 内的一个市场，你在其中直接与其他用户交易——不是与 Binance 本身交易。你想要 USDT，一个已验证的商家有 USDT；你用本地货币付给他们，他们释放加密资产。Binance 的角色是 <strong>托管</strong>：商家的 USDT 在你下单的那一刻就被平台锁定，只有在交易完成时才释放。交易中途任何一方都无法跑路。这就是整个安全模型，也是为什么顶级交易所内的 P2P 每次都胜过随机的 Telegram 交易商。</p>
+      <h2>开始之前：你需要什么</h2>
+      <ul>
+        <li><strong>一个已验证的 Binance 账户。</strong> P2P 要求身份验证（KYC）——在合法平台上没有例外。</li>
+        <li><strong>一种你自己名下的付款方式。</strong> 你的银行账户或钱包上的姓名必须与你已验证的 Binance 姓名一致，否则商家会取消你的订单。</li>
+        <li><strong>Binance App，从官网或你的应用商店下载。</strong> 永远不要从别人发给你的链接下载。</li>
+      </ul>
+      <p class="in-cta">还没有 Binance 账户？ <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></p>
+      <h2>一步步来：在 Binance P2P 上买 USDT</h2>
+      <ol>
+        <li><strong>打开 P2P。</strong> 在 Binance App 里，进入交易 → P2P（在电脑上：买币 → P2P 交易）。</li>
+        <li><strong>设置筛选。</strong> 标签： <em>买入</em>。加密资产： <em>USDT</em>。法币：你的本地货币。付款：选择你的方式（银行转账、UPI、SEPA 等——以你所在地区可用的为准）。</li>
+        <li><strong>选商家。</strong> 你会看到一个按价格排序的列表。不要盲目抢最便宜的——查看商家卡片：已完成订单数、完成率和账户年龄。偏好数百笔订单、95% 以上的完成率，以及存在了一段时间的账户。</li>
+        <li><strong>输入金额并下单。</strong> 输入你想花多少法币（或你想要多少 USDT）。商家的 USDT 现在已锁定在托管中。倒计时开始——在时限内付款。</li>
+        <li><strong>付给商家。</strong> 你会看到他们准确的付款详情。从以下账户转账准确金额 <em>你自己的</em> 账户。在付款附言里， <strong>永远不要写任何与加密相关的内容</strong> ——不要写“BTC”、不要写“USDT”、不要写“crypto”。如果商家要求附言，用订单号，或者留空。</li>
+        <li><strong>点“已转账 / 已付款”。</strong> 这会通知商家。然后等待——不要恐慌地关闭 App。大多数释放在几分钟内完成。</li>
+        <li><strong>确认收款。</strong> 在关闭订单之前，确认准确的 USDT 金额已到达你的资金钱包。搞定——那就是你的第一次 P2P 购买。</li>
+      </ol>
+      <h2>商家清单（30 秒省数小时）</h2>
+      <ul>
+        <li><strong>交易笔数：</strong> 至少几百笔。历史单薄 = 信任单薄。</li>
+        <li><strong>完成率：</strong> 高于 95%。低于这个值，通常背后有故事。</li>
+        <li><strong>账户年龄：</strong> 越老越好。一个一周新的账户却有列表中最好的价格，是危险信号，不是便宜货。</li>
+        <li><strong>条款：</strong> 打开商家页面并阅读它们——付款时段、接受的附言、限额。清晰的条款是专业的信号。</li>
+        <li><strong>现在在线：</strong> 显示在线的商家释放更快。如果没有人在线，你的订单就只是在那里等着。</li>
+      </ul>
+      <h2>P2P 花多少钱？</h2>
+      <p>有个令人愉快的惊喜：P2P 交易本身通常带有 <strong>零平台佣金</strong> ——对买家来说，Binance 不从你的订单中抽成。真正的成本在商家的报价里：他们的 USDT 价格 vs 市场价。这个差距（溢价）就是你为服务付的钱，通常远小于用卡购买的手续费。比较两三家商家的全包报价，你会立刻看到真实价格。收费表可能变化，所以如果你想要当前条款，请查看 Binance 的官方 P2P 手续费页面。</p>
+      <h2>资金冻结风险：诚实版</h2>
+      <p>P2P 唯一真正的风险与 Binance 无关：如果你的对手方的钱来自欺诈，收款银行账户可能在调查期间被冻结。它很少见，但真实存在。像有经验的交易者那样降低它：只在平台托管内交易（永远不要“我们去 WhatsApp 上私下解决”）、用一个专门的银行账户处理加密资金流、保持金额合理，如果陌生人曾经“误”多付给你，不要动它——联系客服。这个风险可以管理。无法归零。</p>
+      <div class="callout warn"><b>在 P2P 上永远不要做这些：</b> 1. 在确认你确实收到钱之前释放加密资产；2. 在你已经付款后取消订单（改用你的收据发起申诉）；3. 与任何 <em>在平台外联系你的</em> 、提供“更好汇率”的人交易。</div>
+      <h2>如果商家不释放怎么办？</h2>
+      <p>不要恐慌，也不要取消。你的钱受托管保护——USDT 已锁定，没有平台介入哪儿也去不了。发起 <strong>申诉</strong> ，从订单页面上传你的付款收据（金额、日期和附言可见的截屏），Binance 客服会裁决。这正是托管存在的场景，有了收据，买家通常都能赢。</p>
+      <h2>P2P vs 其他买 USDT 的方式</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th></th><th>P2P</th><th>即时购买（用卡）</th><th>银行转账</th></tr></thead>
+        <tbody>
+          <tr><td>典型成本</td><td>商家溢价，通常最低</td><td>用卡处理费，最高</td><td>低，但慢</td></tr>
+          <tr><td>速度</td><td>分钟</td><td>即时</td><td>1–2 个工作日</td></tr>
+          <tr><td>可用性</td><td>几乎每个国家</td><td>在一些地区卡会被拒</td><td>部分地区</td></tr>
+          <tr><td>适合</td><td>定期购买、大额</td><td>第一次极小存款</td><td>大额、不匆忙的金额</td></tr>
+        </tbody>
+      </table></div>
+      <h2>读商家订单簿</h2>
+      <p>P2P 列表 <em>就是</em> 一个市场。价格在一天中变动：当比特币上涨时，所有人都涌入买 USDT，溢价扩大；在安静时段则压缩。有经验的买家的两个习惯：1. 在大额购买前在两个不同时间查看列表——5000 美元上的 0.5% 波动就是等一小时省 25 美元；2. 比较排名前三的商家的 <em>全包</em> 报价，而不是盯着最便宜的一个，因为最便宜的往往释放最慢。</p>
+      <h2>常见错误及其实际含义</h2>
+      <ul>
+        <li><strong>“付款方式姓名不一致”</strong> ——你的付款账户上的姓名与你已验证的 Binance 姓名不一致。修正姓名或用匹配的账户；商家会自动取消不一致的订单。</li>
+        <li><strong>“订单已过期”</strong> ——你用完了付款计时。托管自动释放了，什么都没损失。重新下一个订单就行。</li>
+        <li><strong>“商家离线”</strong> ——他们在交易中途离线了。不要恐慌取消；如果你已经付款，发起申诉。如果你还没付款，自由取消并选一个在线商家。</li>
+        <li><strong>“申诉审核中”</strong> ——客服正在裁决。通常在几小时内凭清晰的收据解决。等待期间不要为同一金额下重复订单。</li>
+      </ul>
+      <h2>进阶：发布你自己的广告</h2>
+      <p>当你完成了十几次购买后，你会注意到一件事：商家自己定价。发布你自己的 <strong>求购广告</strong> 会扭转局面——你定价格和付款方式，卖家来找你。要求更严格（更高的验证、有时需要保证金），你的广告要在价格上与专业商家竞争，所以你的报价需要现实。大多数普通用户永远不需要这个。但如果你定期大额购买，以比最佳商家报价略低的折扣打广告，几个月下来能明显削减溢价。先从买家做起，只有当算下来明显有利时才升级到广告。</p>
+      <h2>P2P 与税收：从第一笔交易起保留记录</h2>
+      <p>在许多司法管辖区，每笔 P2P 交易在你之后卖出或兑换加密资产的那一刻就构成应税事件——而购买价格就是你的成本基础。把每笔订单的详情（日期、金额、支付的法币）截屏或导出到一个简单的电子表格里。每笔交易花五分钟，能在报税时省下数小时的重建时间，而“我丢了记录”在任何地方都不是辩护理由。</p>
+      <h2>P2P 限额与验证等级</h2>
+      <p>更高的验证解锁更高的 P2P 限额——这就是全部关系。基础验证覆盖日常金额；高级验证（更多证件）会大幅提高上限。如果一笔大订单被拦截，几乎总是一个限额问题，而不是 bug：在往最坏处想之前，先在账户部分查看你的验证级别。限额按滚动窗口重置，确切数字在 Binance 的官方限额页面上，因为它们会变。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        </div>
+        <p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。</p>
+      </div>
+      
+      <h3>我也能在 Binance P2P 上卖 USDT 吗？</h3>
+      <p>是——同一个市场反向也适用。切换到卖出标签，选择 USDT 和你的法币，选一个求购商家，并按镜像流程操作：只有在确认你账户里的法币后才释放加密资产。</p>
+      <h3>我需要为 P2P 完成 KYC 吗？</h3>
+      <p>是。Binance 要求你在使用 P2P 之前完成身份验证，买入和卖出两边都要求。这是反洗钱要求，不是可选的。</p>
+      <h3>为什么商家有时会要求身份证或自拍？</h3>
+      <p>一些商家会对大订单附加自己的验证作为欺诈保护。这是他们的业务规则，不是 Binance 的。如果你不舒服，选另一个商家——很多商家不会要求。</p>
+      
+      <h3>Binance 上的 C2P 和 P2P 有什么区别？</h3>
+      <p>没什么你需要在意的——C2C（客户对客户）和 P2P（点对点）是同一个托管市场的两个名字。Binance 把它标为 P2P；机制完全相同。</p>
+      <h3>商家能看到我的个人资料吗？</h3>
+      <p>他们看到的是你已验证的显示名和付款所需的任何信息（例如转账用的你的银行账户名）。他们看不到你的身份证件、邮箱或电话。保持这样——永远不要分享超过交易所需的信息。</p>
+      
+      <h3>为什么我的 P2P 订单被自动取消了？</h3>
+      <p>通常是以下三种之一：付款计时过期、商家离线且系统释放了托管，或者姓名/金额不一致触发了自动取消。在这三种情况下，都没有资金移动——查看订单状态，然后重新下一个。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="buy-usdt.html">如何购买 USDT：全部方式对比</a></li>
+        <li><a href="choose-exchange.html">如何选交易所：6 条检查标准</a></li>
+        <li><a href="wallet-safety.html">钱包与助记词安全</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

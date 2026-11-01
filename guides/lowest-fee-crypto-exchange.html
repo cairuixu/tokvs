@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>最低手续费加密交易所：对比 — TokVS</title>
+<meta name="description" content="哪家加密交易所的费率最低？Binance、OKX、Bybit、Bitget 的真实挂单/吃单数字——外加真正少付钱的 5 种方法。">
+<link rel="canonical" href="https://tokvs.com/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/lowest-fee-crypto-exchange">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/lowest-fee-crypto-exchange">
+<meta property="og:title" content="最低手续费加密交易所：真实数字 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="四大所的挂单/吃单费率对比，外加能省 20–50% 手续费的习惯。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/lowest-fee-crypto-exchange">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "最低手续费交易所", "item": "https://tokvs.com/guides/lowest-fee-crypto-exchange"}]}, {"@type": "Article", "headline": "最低手续费加密交易所：对比", "description": "哪家加密交易所的费率最低？Binance、OKX、Bybit、Bitget 的真实挂单/吃单数字——外加真正少付钱的 5 种方法。", "datePublished": "2026-10-16", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/lowest-fee-crypto-exchange", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "买 100 美元比特币最便宜的方法是什么？", "acceptedAnswer": {"@type": "Answer", "text": "在任何大所的现货市场下一笔限价单：约 0.08–0.10 美元手续费。别想太多——接下来一小时的价格波动远大于这笔手续费。"}}, {"@type": "Question", "name": "VIP 档对普通用户重要吗？", "acceptedAnswer": {"@type": "Answer", "text": "要等你的 30 天交易量达到几万美元才重要。低于这个量，你在所有地方都是标准档，而这正是我们的表格展示的。"}}, {"@type": "Question", "name": "去中心化交易所更便宜吗？", "acceptedAnswer": {"@type": "Answer", "text": "纸面上偶尔是，全部算上从不是：常规规模下，Gas 费、MEV/滑点和跨链成本通常超过中心化交易所的费率。去中心化交易所赢在托管和准入，而不是成本。"}}, {"@type": "Question", "name": "我该只为更低的费率换交易所吗？", "acceptedAnswer": {"@type": "Answer", "text": "先算账：算出你实际每年的费率差距（用我们的计算器），再问自己是否值得重新验证、重新学一个 App、拆分流动性。对每年交易量低于 5 万美元的大多数人来说，答案是否定的。"}}, {"@type": "Question", "name": "只是持有加密资产也要收费吗？", "acceptedAnswer": {"@type": "Answer", "text": "不。在任何大所持有都不花钱。手续费在交易、兑换和提币时触发——而不是在静置不动时。"}}, {"@type": "Question", "name": "App 和网站的费率不同吗？", "acceptedAnswer": {"@type": "Answer", "text": "不——同一个账户、同一个费率档，App、网页和 API 的费率都一样。选你用得最顺手的界面。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 最低手续费交易所</div>
+      <h1>最低手续费加密交易所</h1>
+      <p class="sub">没有谁便宜得离谱——但细节重要。四大所的真实费率数字，以及能削减你实际支付的五个习惯。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 9 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>费率表：四家交易所，零营销</h2>
+      <p>常规档（VIP0）基准——新账户实际拿到的费率：</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>交易所</th><th>现货挂单</th><th>现货吃单</th><th>合约挂单</th><th>合约吃单</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>0.10%</td><td>0.10%</td><td>0.02%</td><td>0.05%</td></tr>
+          <tr><td>OKX</td><td>0.08%</td><td>0.10%</td><td>0.02%</td><td>0.05%</td></tr>
+          <tr><td>Bybit</td><td>0.10%</td><td>0.10%</td><td>0.02%</td><td>0.055%</td></tr>
+          <tr><td>Bitget</td><td>0.10%</td><td>0.10%</td><td>0.02%</td><td>0.06%</td></tr>
+        </tbody>
+      </table></div>
+      <p class="note">费率表会变——以官网为准。含返佣的完整对比： <a href="../exchanges.html">手续费与返佣表</a>。</p>
+      <p>标题是： <strong>OKX 的现货挂单费最低（0.08%）</strong>；合约挂单到处都是 0.02%；合约吃单在 0.05%–0.06% 之间。没有谁便宜得离谱——真正的节省来自 <em>多少</em> 你交易的金额，而不只是 <em>哪里</em>.</p>
+      <h2>30 秒讲清挂单 vs 吃单</h2>
+      <p>一笔 <strong>挂单</strong> 挂在盘口等待（一笔不会立刻成交的限价单）——你增加了流动性，所以你付得更少。一笔 <strong>吃单</strong> 立刻与盘口成交（市价单，或激进限价单）——你移除了流动性，所以你付得更多。加密交易中最便宜的一个习惯： <strong>默认用限价单</strong>。在上面所有交易所，这一个习惯比全部市价下单省 20–50% 的手续费。</p>
+      <p class="in-cta">四家之中最低的现货挂单费： <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></p>
+      <h2>费率真正咬人的地方：现货 vs 合约</h2>
+      <p>现货手续费看起来小，因为它确实小——1,000 美元买入按 0.10% 是 1 美元。合约正好相反：杠杆放大你的交易名义金额，手续费也随之放大。一个 10 倍杠杆的 1,000 美元仓位要按 10,000 美元的名义金额付手续费。这就是为什么合约交易者该在意每一个 0.005%，而现货买入持有投资者几乎可以忽略整个话题。</p>
+      <h2>隐藏的第四种费率：提币</h2>
+      <p>提币费不是由费率档定的——而是由 <strong>区块链网络</strong>。用 TRC20 提 USDT 通常约 1 美元；以太坊拥堵时 ERC20 可能要 10 美元以上。同一家交易所、同一个币，10 倍差距——完全由你选的网络决定。确认前务必查看提币费率预览，永远不要提零头金额。</p>
+      <h2>真正少付钱的五种方法</h2>
+      <ol>
+        <li><strong>永远用限价单。</strong> 在每个平台上，挂单费率都胜过吃单费率。（见上文。）</li>
+        <li><strong>用推荐链接。</strong> 返佣是在交易所官方计划下返还你手续费的一部分——费率和直接注册一样，另加返现。 <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></li>
+        <li><strong>自然地爬 VIP 档位。</strong> 更高的 30 天交易量会自动解锁更低的费率——别强求，但要知道这些档位存在。</li>
+        <li><strong>提币选便宜的网络。</strong> USDT 提币选 TRC20 而非 ERC20，除非你有特定理由。</li>
+        <li><strong>不要大额“一键兑换”。</strong> 一键兑换功能报的是价差；大额的话，现货限价单可衡量地更便宜。</li>
+      </ol>
+      <h2>算你自己的数字</h2>
+      <p>表格是抽象的；你的交易不是。把你的月交易量代入我们的 <a href="../exchanges.html#calculator">合约手续费计算器</a> ，看看每家交易所要多少钱 <em>你</em> ——再加上返佣层。大多数人一旦代入自己的数字，就会发现“最便宜的交易所”这个问题自己有了答案。</p>
+      <h2>三个交易量下的费率：算例</h2>
+      <p><strong>休闲——每月 2 千美元现货，挂单/吃单混合（约 0.09% 综合）：</strong> 在所有地方约每月 1.80 美元。“最便宜的交易所”之争对你来说每月值 0.20 美元。跳过它；按体验选。</p>
+      <p><strong>活跃——每月 5 万美元现货，多为挂单：</strong> OKX 按 0.08% = 40 美元；其他按 0.10% = 50 美元。每月 10 美元、每年 120 美元——真实，但改变不了人生。</p>
+      <p><strong>严肃合约——每月 50 万美元吃单：</strong> Binance/OKX 按 0.05% = 250 美元；Bybit 按 0.055% = 275 美元；Bitget 按 0.06% = 300 美元。现在说的是每年 300–600 美元的差距——返佣之前。在这个水平上，费率表是你读得最多的页面。</p>
+      <h2>大多数人忽略的返佣层</h2>
+      <p>公布的费率是标价；返佣是你从正确的门进来拿到的折扣。在官方推荐计划下，你付的每一笔手续费都有一部分返还——费率和直接注册一样，另加返现。按上面“严肃合约”的交易量，30–50% 的返佣每年返还 900–1,500 美元。这不是优惠券；这是涨工资。返佣数学值得在你的电子表格里单独占一行。</p>
+      <h2>充值与提币：被遗忘的成本</h2>
+      <ul>
+        <li><strong>充值：</strong> 四大所的加密资产充值都免费。法币充值各不相同：SEPA/银行转账在交易所一侧通常免费；卡充值要收处理费。</li>
+        <li><strong>提币：</strong> 由区块链网络定，不是费率档。USDT-TRC20 约 1 美元；拥堵时 USDT-ERC20 可达 10 美元以上。同一个币，10 倍差距——网络下拉框比交易所标志更重要。</li>
+        <li><strong>内部转账：</strong> 在一家交易所内于子账户之间或现货/合约钱包之间转移资金免费且即时。用它代替链上转移。</li>
+      </ul>
+      <h2>关于“零手续费”的神话</h2>
+      <ul>
+        <li><strong>“零手续费交易周。”</strong> 通常只限挂单，或有上限，或是为新上币做的营销。读星号注释。</li>
+        <li><strong>“永远 0% 手续费。”</strong> 如果一家不知名的交易所承诺这个，问它怎么赚钱。答案通常是：你的存款。</li>
+        <li><strong>“平台币永远省 25%。”</strong> 用 BNB/OKB 这类代币付手续费在某些平台确实打折——但折扣会随档位变化而缩小，而且持有代币本身就是一个仓位。算清楚；不要想当然。</li>
+      </ul>
+      <h2>追逐低费率的心理（优化前先读）</h2>
+      <p>有一个有记录的新手陷阱：花六小时对比 0.01% 的费率差异，然后市价买进一波 5% 的日内波动。手续费是 <strong>确定、小且可控</strong>；市场波动是 <strong>不确定、大且不可控</strong>。按正确的顺序优化：1. 别再全部市价下单（立刻省 20–50% 的手续费），2. 用推荐链接（白拿的钱），3. <em>然后</em> 对比平台。先做第 3 步再做第 1 步的人是在抛光错误的旋钮。</p>
+      <h2>交易前费率清单（30 秒）</h2>
+      <ol>
+        <li>限价还是市价？（限价 = 挂单 = 更便宜。）</li>
+        <li>现货还是合约？（合约名义金额 = 真正的费率基数。）</li>
+        <li>提币用哪个网络？（买入前设定，而不是买入后。）</li>
+        <li>有返佣吗？（经推荐注册 = 有。）</li>
+      </ol>
+      <p>把这份清单执行一个月，低手续费就成了习惯，而不是研究项目。</p>
+      <h2>费率真正决定平台的时候</h2>
+      <p>费率表就是全部决策依据的三类人： <strong>高频合约交易者</strong> （基点复利累积起来就是工资）， <strong>做市商</strong> （交易量大了有负挂单费——交易所付钱给 <em>你</em>），以及 <strong>套利者</strong> （它们的优势 <em>就是</em> 费率差距）。如果你不属于这些人——95% 的读者都不属于——就把费率当作其他条件相等平台之间的决胜因素，而不是主角。</p>
+      <h2>返佣数学：算例</h2>
+      <p>以“严肃合约”交易者为例：每月 50 万美元吃单量，在 Binance 按 0.05% = 每月 250 美元手续费、每年 3,000 美元。通过官方推荐计划拿到 40% 返佣， <strong>每年 1,200 美元返还</strong>。同样的交易、同样的平台、同样的费率——唯一的区别是你用哪个链接注册的。这就是推荐链接的全部卖点：不是更低的费率，而是对你本来就在付的手续费的退款。它不花钱，是交易所自己的计划，唯一的错误就是没用推荐链接注册。</p>
+      <h2>要完全避开的费率结构</h2>
+      <ul>
+        <li><strong>只赚价差的“零手续费”经纪商</strong> 报 1–2% 的价差——那就是 1–2% 的 <em>手续费</em> 穿着戏服。</li>
+        <li><strong>高于网络成本 5 倍以上的提币费</strong> ——有些小平台靠退出赚钱。充值前先查，不要事后才查。</li>
+        <li><strong>每月付费的“高级”档位</strong> 只在你永远达不到的交易量上才有意义。先算盈亏平衡。</li>
+      </ul>
+      <h2>最终排名（给速读者）</h2>
+      <p><strong>最便宜的现货挂单：</strong> OKX（0.08%）。 <strong>最便宜的合约吃单：</strong> Binance/OKX（0.05%）。 <strong>对大多数人来说综合体验最便宜的：</strong> 四大所中你用返佣链接注册并用限价单交易的那一家——因为行为胜过基点。费率表给你最后的 10%；你的习惯给你最初的 90%。</p>
+      <h2>快速回顾：费率层级</h2>
+      <p>如果你什么都不记得： <strong>限价单胜过市价单</strong> 在每家交易所， <strong>合约名义金额</strong> 才是你真正付费的对象， <strong>提币网络</strong> 比提币交易所更重要，一个 <strong>返佣链接</strong> 返还其中一部分。四个习惯，你不用“优化”就能比 95% 的交易者付得少。</p>
+      <h2>自己去哪里查费率</h2>
+      <p>不要轻信任何文章——费率表在各家交易所的官网，通常在页脚的“Fees”或“Fee Schedule”下面。提交前先查三页： <strong>现货费率表</strong> （按 VIP 档的挂单/吃单）， <strong>合约费率表</strong> （同样的拆分，不同的数字），以及 <strong>提币费率页</strong> （按币种、按网络）。花十分钟读一下，胜过一年的想当然。每当促销改了数字，官网页总是先更新——收藏它。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册拿返佣 →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        </div>
+        <p class="note">通过 TokVS 链接注册会自动适用各家交易所的推荐费率返佣——同一个账户，更低的费率。通过我们的链接注册不会让你多花钱——返佣由交易所补贴。</p>
+      </div>
+      
+      <h3>买 100 美元比特币最便宜的方法是什么？</h3>
+      <p>在任何大所的现货市场下一笔限价单：约 0.08–0.10 美元手续费。别想太多——接下来一小时的价格波动远大于这笔手续费。</p>
+      <h3>VIP 档对普通用户重要吗？</h3>
+      <p>要等你的 30 天交易量达到几万美元才重要。低于这个量，你在所有地方都是标准档，而这正是我们的表格展示的。</p>
+      <h3>去中心化交易所更便宜吗？</h3>
+      <p>纸面上偶尔是，全部算上从不是：常规规模下，Gas 费、MEV/滑点和跨链成本通常超过中心化交易所的费率。去中心化交易所赢在托管和准入，而不是成本。</p>
+      
+      <h3>我该只为更低的费率换交易所吗？</h3>
+      <p>先算账：算出你实际每年的费率差距（用我们的计算器），再问自己是否值得重新验证、重新学一个 App、拆分流动性。对每年交易量低于 5 万美元的大多数人来说，答案是否定的。</p>
+      <h3>只是持有加密资产也要收费吗？</h3>
+      <p>不。在任何大所持有都不花钱。手续费在交易、兑换和提币时触发——而不是在静置不动时。</p>
+      
+      <h3>App 和网站的费率不同吗？</h3>
+      <p>不——同一个账户、同一个费率档，App、网页和 API 的费率都一样。选你用得最顺手的界面。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="crypto-fees.html">加密手续费详解</a></li>
+        <li><a href="../exchanges.html">手续费与返佣对比表</a></li>
+        <li><a href="choose-exchange.html">如何选交易所：6 条检查标准</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

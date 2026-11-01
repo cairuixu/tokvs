@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>在欧洲经济区买 USDT：MiCA 规则、SEPA 与用卡路线（2026） — TokVS</title>
+<meta name="description" content="MiCA 之后，欧洲经济区居民面对一个不同的 USDT 市场：Binance 只允许提币，OKX Europe 不能提供 USDT 交易，Bybit EU 服务欧洲经济区。SEPA 和用卡路线、USDC 替代品，以及如何处理停服交易所上的资金。">
+<link rel="canonical" href="https://tokvs.com/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-buy-usdt-in-eea">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-buy-usdt-in-eea">
+<meta property="og:title" content="在欧洲经济区买 USDT：MiCA 规则与路线 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="MiCA 改变了欧洲经济区 USDT 市场：谁还在服务你、SEPA 和用卡路线、TRC20 vs ERC20，以及 USDC 替代品。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/how-to-buy-usdt-in-eea">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "在欧洲经济区买 USDT", "item": "https://tokvs.com/guides/how-to-buy-usdt-in-eea"}]}, {"@type": "Article", "headline": "如何在欧洲经济区买 USDT：MiCA 规则、SEPA 与用卡路线", "description": "MiCA 之后，欧洲经济区居民面对一个不同的 USDT 市场：谁还在服务你、SEPA 和用卡路线、TRC20 vs ERC20，以及 USDC 替代品。", "datePublished": "2026-10-30", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/how-to-buy-usdt-in-eea", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "如果我住在欧洲经济区，还能买 USDT 吗？", "acceptedAnswer": {"@type": "Answer", "text": "这取决于平台。持有 MiCA 牌照的欧洲经济区平台必须遵守稳定币规则，有些已经完全移除了 USDT 交易对，所以入金前务必在平台的欧盟网站上查看实时交易对列表。Bybit EU 在其奥地利 MiCA 授权下服务欧洲经济区居民，OKX Europe 服务欧洲经济区但不提供 USDT 交易——它的美元稳定币选项是 USDC。如果 USDT 没有为你上架，USDC 在大多数用途上用法相同，比如买 BTC 或 ETH。"}}, {"@type": "Question", "name": "为什么我不能在 OKX Europe 交易 USDT？", "acceptedAnswer": {"@type": "Answer", "text": "因为 USDT 的发行方 Tether 在欧盟没有 MiCA 授权，而 OKX Europe 是持牌交易所。根据 MiCA，持牌交易所只能提供发行方持有必需欧盟授权的稳定币。这也是为什么 OKX Europe 把欧洲经济区用户引向由 Circle 发行的 USDC，后者确实持有欧盟授权。不要向 OKX Europe 存入 USDT 并期待交易它——先查看 OKX Europe 官网。"}}, {"@type": "Question", "name": "Binance 在欧洲经济区还能用吗？", "acceptedAnswer": {"@type": "Answer", "text": "Binance 不再接受欧洲经济区居民的新活动：它在 2026 年 6 月 24 日撤回了希腊 MiCA 申请，自 2026 年 7 月 1 日起只提供提币。如果你已经在那里持有资金，把它们提到持牌平台或你控制的钱包，并查看官方 Binance 通知了解任何截止日期。不要存入新资金并期待交易。"}}, {"@type": "Question", "name": "MiCA 是什么，大白话讲？", "acceptedAnswer": {"@type": "Answer", "text": "MiCA 是欧盟的加密规则手册。自 2026 年 7 月 1 日起，只有持有 MiCA 牌照的交易所才能接纳欧洲经济区居民，一个欧洲经济区监管机构的牌照可以通行到全部 30 个欧洲经济区国家——27 个欧盟成员国加上冰岛、挪威和列支敦士登。对新手来说，这意味着两件事：检查服务你的交易所是否持有 MiCA 牌照（ESMA 注册名单列出了持牌公司），并预期稳定币选择会更窄，因为只有获得授权的稳定币才能提供。"}}, {"@type": "Question", "name": "在欧洲经济区我该买 USDT 还是 USDC？", "acceptedAnswer": {"@type": "Answer", "text": "如果你住在欧洲经济区，USDC 是持牌平台上更简单的选择：它持有 MiCA 授权，在 OKX Europe 和其他持牌场所完全支持入金、交易和提币，用途与 USDT 相同——一种用于购买其他加密资产的美元挂钩币。USDT 仍然存在，也可以放在你自己的钱包里，但持牌的欧洲经济区交易所可能不提供它交易，所以围绕它做计划之前先查看交易对列表。"}}, {"@type": "Question", "name": "我已经在一家停止服务欧洲经济区居民的交易所持有加密资产——我该怎么办？", "acceptedAnswer": {"@type": "Answer", "text": "不要恐慌，也不要再入金。首先，阅读平台的官方通知了解提币截止日期。然后提到持牌平台或你控制的钱包，先发一笔小额测试金额，并两端匹配网络——例如，TRC20 发到 TRC20 地址，永远不要发到 ERC20 地址。保留每次提币的记录，迁移期间对任何自称客服联系你的人一律不理：真正的客服永远不会问你的密码或助记词。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 在欧洲经济区买 USDT</div>
+      <h1>如何在欧洲经济区买 USDT</h1>
+      <p class="sub">MiCA 之后，欧洲经济区是一个不同的市场：Binance 只允许提币，OKX Europe 不能交易 USDT，Bybit EU 是持牌路线。下面是谁还在服务你、SEPA 和用卡买入如何运作，以及如何处理停服交易所上的资金。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS 出品 · 阅读约 16 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">B</div><div><div class="tt">Bybit EU</div><div class="dd">面向欧洲经济区居民的持牌欧盟实体</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">在 Bybit 注册 →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX Europe</div><div class="dd">在欧洲经济区持牌——USDC，而不是 USDT</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>先读这段：谁真正服务欧洲经济区居民</h2>
+      <p>如果你从欧洲经济区内搜索“buy USDT”，大多数指南描述的仍然是全球市场。那个市场在 2026 年 7 月 1 日发生了变化，那时 MiCA 过渡期结束了。在那之后，只有持有 MiCA 牌照的公司才能接纳欧洲经济区居民，稳定币规则重塑了持牌平台可以提供哪些美元币。下面的表格是 TokVS 的国家可用性核查，日期为 2026 年 10 月 30 日。在任何地方注册之前先读它，因为在错误的实体上注册是欧洲经济区新手最常见的错误。完整表格也在我们的 <a href="../exchanges.html#availability">交易所对比页</a>，如果你想要一般的欧洲图景而不是全 MiCA 范围的，请看 <a href="how-to-buy-usdt-in-europe.html">如何在欧洲买 USDT</a>。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>交易所</th><th>服务欧洲经济区居民吗？</th><th>面向欧洲经济区零售的 USDT？</th><th>对你意味着什么</th></tr></thead>
+        <tbody>
+          <tr><td>Binance</td><td>自 2026 年 7 月 1 日起没有新活动</td><td>否</td><td>只允许提币。它的希腊 MiCA 申请在 2026 年 6 月 24 日被撤回。如果你在那里持有资金，提出来——不要存入新资金并期待交易。</td></tr>
+          <tr><td><a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">Bitget</a> （与 TokVS 没有返佣安排）</td><td>在欧洲经济区不提供</td><td>否</td><td>它的奥地利 MiCA 申请仍在等待中。在状态变化之前，不要围绕它做计划——查看官网。</td></tr>
+          <tr><td>OKX</td><td>是——OKX Europe，马耳他 MiCA 牌照，2025 年 1 月</td><td>不能——USDT 不能在 OKX Europe 交易</td><td>Tether 没有 MiCA 授权，所以 OKX Europe 把欧洲经济区用户引向 USDC。不要在那里存入 USDT 并期待交易它。</td></tr>
+          <tr><td>Bybit</td><td>是——Bybit EU，奥地利 MiCA 授权，2025 年 5 月</td><td>入金前核查</td><td>Bybit EU 是持牌的欧洲经济区路线。2026 年期间，欧洲经济区的稳定币上架情况发生了变化，所以在你注册当天在 bybit.eu 上确认 USDT 是否为你的国家上架。如果没有，USDC 是替代品。</td></tr>
+        </tbody>
+      </table></div>
+      <p>一条规则解释了这张表的大部分内容：交易所和它的欧盟实体是不同的产品。你在国际指南里读到的全球平台不是服务你的平台。欧洲经济区居民由欧盟实体服务——bybit.eu 而不是全球 Bybit 网站，OKX Europe 而不是全球 OKX——有自己的产品列表、费率表和客服。每当一篇指南告诉你注册时，检查你实际注册的是哪个实体。</p>
+      <h2>大白话讲 MiCA</h2>
+      <p>MiCA 是《加密资产市场法规》的简称，是欧盟的加密规则手册。其中两部分对新手重要。第一，交易所——法律上称为加密资产服务提供商——需要获得欧洲经济区内监管机构的授权。在一个欧洲经济区国家授予的牌照可以“通行”到全部 30 个欧洲经济区国家：27 个欧盟成员国加上冰岛、挪威和列支敦士登。这就是为什么你会看到一个实体，比如奥地利的 Bybit EU 或马耳他的 OKX Europe，服务整个欧洲经济区的用户。第二，稳定币：只有发行方持有必需的欧盟授权（电子货币机构牌照或资产参考代币授权），法币挂钩代币才能提供给欧洲经济区零售用户。USDT 的发行方 Tether 在欧盟两者都没有——这就是为什么持牌的欧洲经济区场所不能提供 USDT 交易，即使 USDT 仍然是全球最大的稳定币。</p>
+      <p>2026 年 7 月 1 日变化的是过渡期的结束。在旧国家规则下运营的公司必须持有 MiCA 牌照，否则就要结束其欧洲经济区业务。这就是上表中 Binance 和 Bitget 两行背后的日期，也是为什么欧盟实体的产品范围比全球平台窄：一个全球存在的产品可能根本不在欧盟实体上提供。务必查看欧盟实体自己的产品列表，而不是假定全球目录适用于你。</p>
+      <p>如何核实牌照声明？两项检查大约花一分钟。第一，交易所自己的法律或实体页面应该写明服务你的实体及其监管机构——如果两者都没写，就把它当作警告信号。第二，欧洲证券和市场管理局（ESMA）维护着持牌加密资产服务提供商的注册名单；在那里搜索实体名称。在两个地方都找不到的牌照声明，不值得你拿钱去信任。</p>
+      <h2>你的两条入金路线：SEPA 和用卡</h2>
+      <p>对欧洲经济区居民来说，入金通道是你的银行账户或你的卡——不是在为其他地区写的指南里占主导的 P2P 市场。全球平台上的 P2P 是与服务你的欧盟实体分开的产品，所以请使用欧盟实体自己的 App 或网站内的入金选项。</p>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>路径</th><th>速度</th><th>典型成本</th><th>注意</th></tr></thead>
+        <tbody>
+          <tr><td>SEPA 银行转账</td><td>几分钟（支持 SEPA 即时转账的地方）到一个工作日</td><td>通常是成本较低的路线</td><td>银行账户名必须与你已验证的交易所名称一致，否则入金可能被拒</td></tr>
+          <tr><td>借记卡或信用卡</td><td>即时</td><td>比 SEPA 更高的手续费</td><td>一些银行拒绝加密购买；被拒的卡是银行政策，不是交易所的错误</td></tr>
+        </tbody>
+      </table></div>
+      <p>不管你选哪条路线，都从小额开始。第一笔 20–50 欧元的入金就够你学会整个流程——入金、买入、核实余额——而不会附带任何昂贵的错误。你实际支付的手续费是确认前预览界面上显示的那个，不是广告里的标价：务必阅读预览，它准确说明你会收到多少 USDT 或 USDC。</p>
+      <p class="in-cta">先把账户准备好： <a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">去 Bybit 注册</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></p>
+      <h2>分步指南：你的第一次买入</h2>
+      <p>下面的步骤假定用 Bybit EU，即上表中持牌的欧洲经济区路线。如果你改选 OKX Europe，步骤相同，但买 USDC 而不是 USDT——OKX Europe 不提供 USDT 交易。在任一场所都默认用 USDC：USDT 现货交易对已在持牌场所为欧洲经济区零售下架，所以把 USDT 当作你必须确认的例外，而不是计划。</p>
+      <ol>
+        <li><strong>去 bybit.eu，而不是全球网站。</strong> 欧洲经济区居民由欧盟实体服务。全球平台上的账户不是一回事，也不是你想要的账户。</li>
+        <li><strong>用邮箱和一个强大、唯一的密码注册。</strong> 用一个你控制的邮箱地址和一个你在别处不重复使用的密码。</li>
+        <li><strong>完成身份验证（KYC）。</strong> 你需要政府签发的带照片身份证件，通常还需要地址证明。审批通常需要几分钟到几小时；模糊的证件照片是大多数被拒的原因，所以如果卡住了，就在光线好的地方重拍。</li>
+        <li><strong>入金前开启安全设置。</strong> 用验证器 App（不是短信）启用双重验证，如果平台提供，还要设置防钓鱼码。在任何资金移动之前做这些。</li>
+        <li><strong>查看 USDT 是否为你的国家上架——预期是没有。</strong> 在 bybit.eu 上搜索 USDT。持有 MiCA 牌照的场所已在 2026 年期间为欧洲经济区零售下架了 USDT 交易对，所以预期情况是 USDT 不提供交易。如果没有上架，改用同样的步骤买 USDC。不要抱着它会出现的希望入金。</li>
+        <li><strong>通过 SEPA 入金欧元。</strong> 一字不差地从交易所自己的入金页面复制它的入金信息——永远不要从聊天消息或别人发来的截图里复制。先发一笔小额测试金额，20–50 欧元，等它到账。</li>
+        <li><strong>下买单。</strong> 进入现货，打开为你的入金货币显示的 USDC 交易对（或者只有当第 5 步确认它为你的国家上架时，才打开 USDT 交易对），并下一个市价单。仔细阅读预览界面：它说明金额、手续费和你确切会收到多少。只有那时才确认。</li>
+        <li><strong>核实并记录它。</strong> 查看你账户里的余额，然后写下日期、支付的欧元、收到的币和订单 ID。这份记录就是你日后卖出时的成本基础，现在花十秒钟，胜过日后花几小时重建。</li>
+      </ol>
+      <p>一旦测试买入感觉无聊，你就学会了流程。按你的真实规模重复——无聊就是目标，因为无聊意味着没有意外。</p>
+      <h2>USDT 网络：TRC20 vs ERC20</h2>
+      <p>USDT 存在于几条区块链上，每次入金或提币时网络都很重要。你最常遇到的两个是 TRC20 和 ERC20。TRC20 是指 Tron 网络上的 USDT：转账通常很快，费用常常在 1 USDT 左右——务必查看提币预览上显示的费用，因为它可能变化。ERC20 是指 Ethereum 网络上的 USDT：它几乎在所有地方都受支持，但 Gas 费随网络拥堵而变化，可能比 TRC20 高得多。</p>
+      <p>防止损失的规则很简单： <strong>网络必须两端匹配。</strong> 把 TRC20 USDT 发到 ERC20 地址，或者把 ERC20 USDT 发到 TRC20 地址，都可能丢失资金。任何转账之前，打开接收平台的入金页面，查看它接受 USDT 的哪些网络；然后在发送方选择同一个网络。还有其他网络——Solana、BNB Chain 等等——但只有双方都支持时才用一个。和入金一样，向新地址转移 USDT 时先发一笔小额测试金额。</p>
+      <h2>如果你已经在一家停止服务你的交易所持有资金</h2>
+      <p>只允许提币不等于资金没了，所以不要恐慌——但也不要拖延。按顺序做这些：</p>
+      <ol>
+        <li><strong>阅读平台的官方通知。</strong> 提币截止日期和清盘窗口在那里说明，而不是在社交媒体帖子里。如果存在截止日期，它就是你最先需要的事实。</li>
+        <li><strong>转移任何东西之前先选好目的地。</strong> 要么是一家服务你国家的持牌平台，要么是你控制的钱包（自托管）。没有目的地就转移，资金就会停在第二个同样不服务你的平台上。</li>
+        <li><strong>先提一笔小额测试金额。</strong> 两端匹配网络——TRC20 发到 TRC20 地址，永远不要发到 ERC20 地址——并在发送剩余部分之前确认测试到账。</li>
+        <li><strong>不要向正在清盘的账户存入新资金。</strong> 向只允许提币的账户入金会在第一个问题之上再制造第二个问题。</li>
+        <li><strong>不要理会迁移季的骗子。</strong> 清盘会吸引假冒客服账号，声称要“帮助”转移你的资金。真正的客服永远不会索要你的密码、双重验证码或助记词，任何合法的帮助者都不需要远程访问你的账户。</li>
+        <li><strong>如果你的资金是 USDT，查看平台的官方迁移路径。</strong> 一些持牌场所为欧洲经济区用户提供从 USDT 到 USDC 的单向兑换；条款和可用性会变，所以发送任何东西之前先在官网确认当前选项，并尽早行动而不是临近截止日期。</li>
+      </ol>
+      <h2>USDC：持有 MiCA 授权的替代品</h2>
+      <p>USDC 是由 Circle 发行的美元挂钩稳定币，与 USDT 不同，它持有欧盟授权——这就是为什么它在持牌的欧洲经济区场所完全支持入金、交易和提币。对大多数新手用途来说，它做的工作和 USDT 完全一样：一种用于购买 BTC 或 ETH、或在交易之间停放价值的美元挂钩币。价格行为是同一个概念——一枚币锚定一美元——持牌欧洲经济区平台上的交易对以 USDC 而不是 USDT 计价。</p>
+      <p>OKX Europe 是最清楚的例子：因为它不能提供 USDT 交易，它把欧洲经济区用户引向 USDC（和 USDG）。如果你在别处持有 USDT，想把价值带入持牌的欧洲经济区场所，转移任何东西之前先查看该场所的官网了解其兑换选项——一些场所提供单向的 USDT 到 USDC 兑换，条款因平台而异。不要假定兑换存在；核实它，然后像其他任何转账一样先转移一笔测试金额。</p>
+      <h2>要花多少钱</h2>
+      <p>不要相信任何一个广告手续费，因为一次买入的成本来自四个地方：入金费（SEPA 通常比用卡便宜）、交易手续费（查看欧盟实体自己的官方费率表——欧盟实体的定价可能与其全球平台不同，所以全球费率表可能不适用于你）、价差（买价和卖价之间的小差距），以及提币或网络费（显示在提币预览上）。确认前的预览界面就是真实价格：它准确说明你会收到多少 USDT 或 USDC。如果那个数字让你吃惊，确认前先停下来比较路线——预览是用来读的，不是用来点过去的。</p>
+      <h2>保护你的币安全</h2>
+      <p>三个选项，和别处一样： <strong>在交易所里</strong> （交易方便，但有平台风险）， <strong>在你自己的钱包里</strong> （助记词由你持有——金额对你重要时明智的做法），或者 <strong>放在理财产品里</strong> （额外收益、额外风险——碰之前先读条款）。第一次购买时，在学习期间把它留在交易所完全没问题。金额变大后，学习自托管：我们的 <a href="best-crypto-wallet-for-beginners.html">新手加密钱包指南</a> 妥善讲清助记词。不管你选什么，不可妥协的是：用验证器 App 的双重验证、唯一的密码，以及离线保存的助记词——永远不要拍照、永远不要输入到网站里、永远不要分享给任何人。</p>
+      <h2>欧洲经济区新手常犯的错误</h2>
+      <ul>
+        <li><strong>在全球网站而不是欧盟实体上注册。</strong> 账户、产品列表和保护措施都不一样。从欧盟实体开始。</li>
+        <li><strong>向 OKX Europe 存入 USDT 并期待交易它。</strong> USDT 不能在那里交易。发送任何东西之前先查看交易对列表。</li>
+        <li><strong>在错误的网络上发送 USDT。</strong> TRC20 发到 ERC20 地址，或者反过来，都可能丢失资金。两端匹配网络，先小额测试。</li>
+        <li><strong>用别人的银行账户做 SEPA。</strong> 姓名不一致会导致入金被拒。你的账户、你的名字，永远如此。</li>
+        <li><strong>跳过测试金额。</strong> 一笔 20 欧元的测试买入揭示问题很便宜；一笔全额转账揭示同样的问题就不便宜了。</li>
+        <li><strong>迁移期间相信“客服”消息。</strong> 清盘期是骗局高发季。客服永远不会索要密码或助记词。</li>
+        <li><strong>假定全球手续费适用于欧盟实体。</strong> 欧盟实体制定自己的费率表。请阅读欧盟实体的官方费率页。</li>
+      </ul>
+      <h2>完整首次购买清单（欧洲经济区版）</h2>
+      <ol>
+        <li>确认服务你的交易所持有 MiCA 牌照——法律页面上的实体名称和监管机构，以及该实体能在 ESMA 注册中查到。</li>
+        <li>在欧盟实体（Bybit 用 bybit.eu）上注册，完成 KYC，启用双重验证和防钓鱼码。</li>
+        <li>在欧盟实体上查看 USDT 是否为你的国家上架。如果没有，在入金之前把计划改成 USDC。</li>
+        <li>通过 SEPA 从以你自己名字开的银行账户存入一笔 20–50 欧元的测试金额。</li>
+        <li>在现货上下一笔小额市价买单。阅读预览——金额、手续费、收到的币——然后确认。</li>
+        <li>核实余额，记录交易（日期、欧元、币、订单 ID），只有那时才按你的真实规模重复。</li>
+        <li>如果你在一家停止服务欧洲经济区的平台上持有资金，尽早按上面的滞留资金步骤操作，永远不要再向它入金。</li>
+      </ol>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">B</div><div><div class="tt">Bybit EU</div><div class="dd">面向欧洲经济区居民的持牌欧盟实体</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">去 Bybit 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX Europe</div><div class="dd">在欧洲经济区持牌——USDC，而不是 USDT</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        </div>
+        <p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。</p>
+      </div>
+
+      <h3>如果我住在欧洲经济区，还能买 USDT 吗？</h3>
+      <p>这取决于平台。持有 MiCA 牌照的欧洲经济区平台必须遵守稳定币规则，有些已经完全移除了 USDT 交易对，所以入金前务必在平台的欧盟网站上查看实时交易对列表。Bybit EU 在其奥地利 MiCA 授权下服务欧洲经济区居民，OKX Europe 服务欧洲经济区但不提供 USDT 交易——它的美元稳定币选项是 USDC。如果 USDT 没有为你上架，USDC 在大多数用途上用法相同，比如买 BTC 或 ETH。</p>
+      <h3>为什么我不能在 OKX Europe 交易 USDT？</h3>
+      <p>因为 USDT 的发行方 Tether 在欧盟没有 MiCA 授权，而 OKX Europe 是持牌交易所。根据 MiCA，持牌交易所只能提供发行方持有必需欧盟授权的稳定币。这也是为什么 OKX Europe 把欧洲经济区用户引向由 Circle 发行的 USDC，后者确实持有欧盟授权。不要向 OKX Europe 存入 USDT 并期待交易它——先查看 OKX Europe 官网。</p>
+      <h3>Binance 在欧洲经济区还能用吗？</h3>
+      <p>Binance 不再接受欧洲经济区居民的新活动：它在 2026 年 6 月 24 日撤回了希腊 MiCA 申请，自 2026 年 7 月 1 日起只提供提币。如果你已经在那里持有资金，把它们提到持牌平台或你控制的钱包，并查看官方 Binance 通知了解任何截止日期。不要存入新资金并期待交易。</p>
+      <h3>MiCA 是什么，大白话讲？</h3>
+      <p>MiCA 是欧盟的加密规则手册。自 2026 年 7 月 1 日起，只有持有 MiCA 牌照的交易所才能接纳欧洲经济区居民，一个欧洲经济区监管机构的牌照可以通行到全部 30 个欧洲经济区国家——27 个欧盟成员国加上冰岛、挪威和列支敦士登。对新手来说，这意味着两件事：检查服务你的交易所是否持有 MiCA 牌照（ESMA 注册名单列出了持牌公司），并预期稳定币选择会更窄，因为只有获得授权的稳定币才能提供。</p>
+      <h3>在欧洲经济区我该买 USDT 还是 USDC？</h3>
+      <p>如果你住在欧洲经济区，USDC 是持牌平台上更简单的选择：它持有 MiCA 授权，在 OKX Europe 和其他持牌场所完全支持入金、交易和提币，用途与 USDT 相同——一种用于购买其他加密资产的美元挂钩币。USDT 仍然存在，也可以放在你自己的钱包里，但持牌的欧洲经济区交易所可能不提供它交易，所以围绕它做计划之前先查看交易对列表。</p>
+      <h3>我已经在一家停止服务欧洲经济区居民的交易所持有加密资产——我该怎么办？</h3>
+      <p>不要恐慌，也不要再入金。首先，阅读平台的官方通知了解提币截止日期。然后提到持牌平台或你控制的钱包，先发一笔小额测试金额，并两端匹配网络——例如，TRC20 发到 TRC20 地址，永远不要发到 ERC20 地址。保留每次提币的记录，迁移期间对任何自称客服联系你的人一律不理：真正的客服永远不会问你的密码或助记词。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="how-to-buy-usdt-in-europe.html">如何在欧洲买 USDT：通用指南</a></li>
+        <li><a href="how-to-sell-crypto.html">如何卖出加密资产：把币变回现金</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">新手加密钱包：如何选一个</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有欧洲经济区账户？从 Bybit EU 开始 →</span><a class="btn-ref" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

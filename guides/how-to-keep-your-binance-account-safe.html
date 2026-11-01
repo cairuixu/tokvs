@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>如何保护你的 Binance 账户安全：2FA、防钓鱼与提币白名单 — TokVS</title>
+<meta name="description" content="新手 Binance 账户安全清单：验证器 2FA、防钓鱼码、提币白名单、设备管理，以及如何在钓鱼链接让你付出代价之前识别它们。">
+<link rel="canonical" href="https://tokvs.com/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-keep-your-binance-account-safe">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-keep-your-binance-account-safe">
+<meta property="og:title" content="如何保护你的 Binance 账户安全 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="验证器 2FA、防钓鱼码、提币白名单、设备检查和钓鱼识别——完整的 Binance 安全清单。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/how-to-keep-your-binance-account-safe">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "保护你的 Binance 账户安全", "item": "https://tokvs.com/guides/how-to-keep-your-binance-account-safe"}]}, {"@type": "Article", "headline": "如何保护你的 Binance 账户安全", "description": "新手 Binance 账户安全清单：验证器 2FA、防钓鱼码、提币白名单、设备管理和钓鱼识别。", "datePublished": "2026-10-30", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/how-to-keep-your-binance-account-safe", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "短信 2FA 对 Binance 来说够好吗？", "acceptedAnswer": {"@type": "Answer", "text": "不是。短信验证码可以通过 SIM 卡调换攻击被拦截，骗子说服你的运营商把你的号码移到他们的 SIM 卡上。验证器 App 在你自己的设备上生成验证码，不受这种伎俩影响。用验证器 App 作为你的主要 2FA 方式。"}}, {"@type": "Question", "name": "什么是 Binance 防钓鱼码，为什么它重要？", "acceptedAnswer": {"@type": "Answer", "text": "它是你在安全设置里设置的一个简短单词或短语。Binance 随后会在它发给你的每封真实邮件里包含那个代码。如果一封声称来自 Binance 的邮件缺少你的代码，它就是假的——删除它，不要点击里面的任何东西。"}}, {"@type": "Question", "name": "提币白名单是干什么的？", "acceptedAnswer": {"@type": "Answer", "text": "一旦启用，提币只能去往你预先批准的地址。即使有人进入了你的账户，他们也无法把你的资金发到他们自己的钱包。添加新地址会触发一个等待期，如果这个变更不是你的，这就给了你反应的时间。"}}, {"@type": "Question", "name": "如果我自己的账户被黑，SAFU 会保护我吗？", "acceptedAnswer": {"@type": "Answer", "text": "不是。SAFU 是一笔承担平台方面失败的紧急基金，众所周知，它在 2019 年黑客事件后全额承担了所有用户损失。它不承担由你自己泄露的密码、钓鱼点击或假客服骗局造成的损失。账户方面的安全是你的工作。"}}, {"@type": "Question", "name": "我点了钓鱼链接。先做什么？", "acceptedAnswer": {"@type": "Answer", "text": "快速行动：从干净的设备更改密码、撤销所有活跃会话和 API 密钥、检查提币白名单和近期提币，并且只通过官方 App 或网站联系 Binance 客服。速度比面子重要——客服团队每天都见这种事。"}}, {"@type": "Question", "name": "我应该把所有加密资产都留在 Binance 上吗？", "acceptedAnswer": {"@type": "Answer", "text": "对于活跃交易，把资金留在交易所是正常且方便的。对于更大的长期持仓，把它们移到你控制助记词的自己的钱包。大多数有经验的用户最终采用的分配是：交易资金在交易所，储蓄在自托管。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 保护你的 Binance 账户安全</div>
+      <h1>如何保护你的 Binance 账户安全</h1>
+      <p class="sub">大多数“交易所账户被黑”的故事根本不是交易所被黑。它们是重复使用的密码、缺失的 2FA 和一次粗心的点击。这份清单大约十分钟就能堵住这三个漏洞。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 12 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册 →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>关于 Binance 安全的 30 秒真相</h2>
+      <p>下面是一个塑造以下所有内容的不舒服的事实：当新手丢失加密资产时，交易所的金库几乎从来不是问题。这种模式每年重复成千上万次。有人重复使用了一个在旧数据泄露中泄露的密码。有人通过一个导向仿冒域名的 Google 广告登录。有人信任了一个在 Telegram 上索要验证码的“客服”。资金带着有效凭证从正门离开，而世界上没有任何安全系统能把那次登录与你的登录区分开。</p>
+      <p>这实际上是好消息。这意味着最大的风险是你自己可以免费、在一次操作中消除的那些。Binance 的平台方面保护——SAFU 紧急基金、储备金证明、大部分资产的冷存储——承担交易所那边的责任。本指南承担你这边的。把整个清单做一遍，针对你账户的最常见攻击路径就干脆行不通了。</p>
+      <p class="in-cta">还没有账户？ <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></p>
+      <h2>第 1 步：一个别处不存在的密码</h2>
+      <p>你的 Binance 密码必须只属于 Binance——不是你邮箱密码的变体，不是你最喜欢的旧密码加一个“!”。撞库攻击通过尝试用从其他网站泄露的密码攻击加密交易所来运作，而且它们之所以能大规模成功，正是因为人们重复使用密码。密码管理器能妥善解决这个问题：它生成一个长随机密码、记住它，并为你填充。如果你不用管理器，把一个长密码短语写在纸上并保存在安全的地方——永远不要放在备忘录 App、发给自己的聊天消息或截屏里。</p>
+      <p>还有两条规则。第一，除了你自己输入或从收藏夹到达的真正的 Binance App 或真正的 binance.com 域名外，永远不要在其他任何地方输入你的密码——永远不要从邮件、广告或消息里的链接进入。第二，如果你怀疑密码泄露，立即更改密码，并把任何意外的“密码重置”邮件当作警告信号，而不是要遵循的指示。</p>
+      <h2>第 2 步：验证器 2FA，不是短信</h2>
+      <p>双重验证是本页价值最高的单个设置，而且类型很重要。短信验证码感觉方便，但它们可以通过 SIM 卡调换攻击被拦截：骗子说服你的移动运营商把你的号码移到他们控制的 SIM 卡上，突然之间，你的短信验证码就到了他们的手机上。这发生在普通人身上，不只是名人。</p>
+      <p>验证器 App（Google Authenticator、Authy 或类似应用）在你自己的设备上生成基于时间的验证码。没有可以欺骗的运营商，也没有可以拦截的短信。在 Binance App 的安全设置里设置它，当它向你显示备份密钥时，把那个密钥离线保存——写在纸上，放在安全的地方。如果你在没有备份密钥的情况下丢了手机，恢复会变成缓慢的身份验证流程。如果你保留备份密钥，恢复只要几分钟。</p>
+      <div class="callout warn"><b>永远不要与任何人分享 2FA 验证码。</b> 没有 Binance 员工、没有客服、没有“安全团队”会索要它。任何索要的人都是骗子，毫无疑问——包括那些听起来很专业、已经知道你名字的人。</div>
+      <h2>第 3 步：设置你的防钓鱼码</h2>
+      <p>这是 Binance 上最被低估的安全功能，只需要三十秒。在你的安全设置里，你可以设置一个简短的单词或短语——选一个只有你能认出的。之后，来自 Binance 的每封真实邮件都会包含那个代码。一封声称来自 Binance 但缺少你的代码的邮件就是假的，无论它的 logo、布局或紧急警告看起来多么令人信服。</p>
+      <p>把这变成条件反射：在点击任何与加密相关的邮件里的任何东西之前，先检查你的代码。没有代码，就不点击。钓鱼邮件是假登录页面的头号投递方式，而这一个设置就能让大多数钓鱼邮件变成明显的假货。在你进入邮件设置的同时，也确认你账户上的邮箱地址是你真正控制并监控的——一个陈旧或共用的收件箱是一个薄弱环节。</p>
+      <h2>第 4 步：开启提币白名单</h2>
+      <p>提币白名单（也叫地址管理白名单）是你的最后一道防线，而且极其有效。一旦启用，提币只能去往你预先批准的钱包地址。如果攻击者不知怎的获得了你账户的完全访问权限——密码、2FA 全都有——他们仍然无法把你的资金发到他们自己的钱包。他们必须先添加他们的地址，而添加新地址会触发等待期和邮件通知，这给了你冻结账户的时间。</p>
+      <p>设置很简单：进入提币地址管理，只添加你实际使用的地址（你自己的钱包，以及你经常汇款的任何交易所账户），并启用白名单。是的，第一次向新地方提币时会增加一点延迟。这种延迟就是全部意义所在。对于持有任何有意义金额的账户，没有好理由不开启它。</p>
+      <h2>第 5 步：管理设备和会话</h2>
+      <p>每次登录都会留下痕迹。在你的安全设置里，你可以看到当前登录你账户的设备和会话——设备类型、位置和时间。每月检查一次这个列表，并在任何异常之后立即检查（你没有触发的登录提醒、关于新设备的邮件）。如果你看到不认识的设备，立即移除它并更改密码。</p>
+      <p>相关的零成本习惯：在共用电脑上退出登录，永远不要在可能丢失又没有锁屏的手机上保持登录，并保持手机操作系统更新。你的手机现在就是你的第二因素——没有锁屏的手机就是一座门开着的金库。另外，如果登录通知还没开，就打开它；一条关于来自你从未去过的城市的登录的提醒，比任何杀毒软件都值钱。</p>
+      <h2>第 6 步：钓鱼链接——在点击之前如何识别它们</h2>
+      <p>今天的钓鱼页面看起来像素级完美。破绽在别处：</p>
+      <ul>
+        <li><strong>域名。</strong> 真的：binance.com。假的：binance-support.com、binance-login.net、binance.com.verify-account.io。收藏真实域名并使用收藏夹。</li>
+        <li><strong>紧迫感。</strong> “除非你验证，否则你的账户将在 24 小时内关闭”是一种话术。真正的交易所不会通过邮件链接威胁关闭账户。</li>
+        <li><strong>渠道。</strong> Binance 客服不会先在 Telegram、WhatsApp 或 Twitter 私信里联系你。任何这样做的人都是在冒充客服。</li>
+        <li><strong>索要的东西。</strong> 助记词、密码、2FA 验证码和远程桌面访问永远不是合法的请求。真正的客服有后台工具，不需要这些。</li>
+        <li><strong>广告。</strong> 骗子会购买交易所自己名字的搜索广告。如果你搜索了 Binance 并点击了最上面的结果，登录前仔细核对域名——或者更好，用你的收藏夹。</li>
+      </ul>
+      <p>还有一个现代陷阱：假 App。只从 Binance 发布的官方 Apple App Store 或 Google Play 页面安装 Binance App，并检查开发者名称和评价数量。来自随机网站的旁加载 APK 是把你的凭证交给陌生人的经典方式。</p>
+      <h2>第 7 步：API 密钥——只有当你使用它们时</h2>
+      <p>大多数新手永远不需要 API 密钥，如果你不知道它们是什么，跳过这一节——没有它们你更安全。如果你确实连接了交易机器人或投资组合跟踪器，遵循三条规则：把每个密钥的权限限制在工具恰好需要的范围（如果只读就只读）、尽可能限制到工具的 IP 地址，并且永远不要把密钥粘贴到网站、聊天或客服工单里。一个泄露的带提币权限的密钥就等于一个泄露的密码，而且 API 密钥不会触发 2FA 提示。删除你不再使用的密钥；被遗忘的密钥就是被遗忘的漏洞。</p>
+      <h2>SAFU 承担什么、不承担什么</h2>
+      <p>Binance 的 SAFU 基金是一笔由交易手续费资助的紧急储备金，而且它有真实的记录：在 2019 年黑客事件中大约 7000 枚 BTC 被盗后，SAFU 全额承担了所有用户损失。这就是平台方面的安全网，也是 Binance 在我们的 <a href="is-binance-safe.html">Binance 安全吗</a> 分析。</p>
+      <p>但 SAFU 有一条你必须理解的边界。它承担 Binance 的失败，而不是你的失败。它不赔付因你的密码泄露、因为你点击了钓鱼链接，或因为你把加密资产发到了骗子的地址而损失的资金。它不承担市场损失——如果你的币跌了 50%，那是市场，不是安全事件。而且它是一笔公司基金，不是政府兜底：背后没有 FDIC 式的担保。诚实的说法是：Binance 是最安全的交易场所之一，而你自己的账户卫生仍然是你的资金是否保得住的决定因素。</p>
+      <h2>在交易所留多少</h2>
+      <p>安全与便利朝相反方向拉，正确的平衡取决于这笔钱是用来干什么的。你积极交易的资金属于交易所——为每笔交易来回转移会浪费手续费和时间。你计划持有几个月或几年的资金，尤其是一旦金额大到真的亏不起时，属于你自己的钱包，在那里你控制助记词，没有任何交易所账户会成为单点故障。我们的 <a href="best-crypto-wallet-for-beginners.html">新手钱包指南</a> 一步步讲清那个转移。实用的经验法则是：如果失去它会改变你的月份，它就不应该全部放在一个密码后面。同样的逻辑适用于你使用的任何平台——包括 <a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit</a>，另一家主流交易所，同样的清单（唯一密码、验证器 2FA、防钓鱼码、白名单）在那里也适用。</p>
+      <h2>10 分钟设置清单</h2>
+      <ol>
+        <li>唯一密码，存在密码管理器里（或写在纸上、离线保存）。</li>
+        <li>验证器 App 的 2FA 已启用；备份密钥已离线保存。</li>
+        <li>防钓鱼码已设置；在点击之前检查每封 Binance 邮件里的它。</li>
+        <li>提币白名单已启用，只批准了你自己的地址。</li>
+        <li>登录通知已开启；当前设备和会话已检查。</li>
+        <li>收藏 binance.com；永远不要从邮件链接、广告或消息登录。</li>
+        <li>手机有锁屏且软件更新到最新。</li>
+        <li>金额重要后，长期持仓已移到你自己的钱包。</li>
+      </ol>
+      <p>做完这八件事，你就关闭了绝大多数新手损失背后的攻击路径。安全永远没有完成时——新的骗局不断出现——但上面的基础就是容易目标和困难目标之间的区别，而攻击者绝大多数会挑容易的目标。</p>
+      <h2>如果你认为自己已经被攻破</h2>
+      <p>速度胜过面子。第一，从干净的设备更改密码并撤销所有活跃会话和 API 密钥。第二，检查近期提币和你的白名单——如果一笔提币仍在处理中，立即联系客服；可能还有窗口可以阻止它。第三，只通过官方 App 或网站联系 Binance 客服，并准确描述发生了什么。第四，如果资金已经离开，保存所有记录（交易 ID、地址、时间戳、聊天记录）——找回不太可能，但并非不可能，而记录就是让它成为可能的东西。不要付钱给任何承诺收费“找回”你的加密资产的人；那是针对第一场骗局受害者的第二场骗局。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        </div>
+        <p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。Bitget（<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">bitget.com</a>）也可以用；注意我们目前与 Bitget 没有返佣合作。</p>
+      </div>
+
+      <h3>短信 2FA 对 Binance 来说够好吗？</h3>
+      <p>不是。短信验证码可以通过 SIM 卡调换攻击被拦截，骗子说服你的运营商把你的号码移到他们的 SIM 卡上。验证器 App 在你自己的设备上生成验证码，不受这种伎俩影响。用验证器 App 作为你的主要 2FA 方式。</p>
+      <h3>什么是 Binance 防钓鱼码，为什么它重要？</h3>
+      <p>它是你在安全设置里设置的一个简短单词或短语。Binance 随后会在它发给你的每封真实邮件里包含那个代码。如果一封声称来自 Binance 的邮件缺少你的代码，它就是假的——删除它，不要点击里面的任何东西。</p>
+      <h3>提币白名单是干什么的？</h3>
+      <p>一旦启用，提币只能去往你预先批准的地址。即使有人进入了你的账户，他们也无法把你的资金发到他们自己的钱包。添加新地址会触发一个等待期，如果这个变更不是你的，这就给了你反应的时间。</p>
+      <h3>如果我自己的账户被黑，SAFU 会保护我吗？</h3>
+      <p>不是。SAFU 是一笔承担平台方面失败的紧急基金，众所周知，它在 2019 年黑客事件后全额承担了所有用户损失。它不承担由你自己泄露的密码、钓鱼点击或假客服骗局造成的损失。账户方面的安全是你的工作。</p>
+      <h3>我点了钓鱼链接。先做什么？</h3>
+      <p>快速行动：从干净的设备更改密码、撤销所有活跃会话和 API 密钥、检查提币白名单和近期提币，并且只通过官方 App 或网站联系 Binance 客服。速度比面子重要——客服团队每天都见这种事。</p>
+      <h3>我应该把所有加密资产都留在 Binance 上吗？</h3>
+      <p>对于活跃交易，把资金留在交易所是正常且方便的。对于更大的长期持仓，把它们移到你控制助记词的自己的钱包。大多数有经验的用户最终采用的分配是：交易资金在交易所，储蓄在自托管。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="is-binance-safe.html">Binance 安全吗？SAFU、储备金与诚实提醒</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">新手最佳加密钱包</a></li>
+        <li><a href="how-to-buy-crypto-for-beginners.html">新手如何购买加密货币</a></li>
+        <li><a href="buy-usdt.html">如何购买 USDT：全部方式对比</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

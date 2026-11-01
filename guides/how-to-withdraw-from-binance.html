@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>如何从 Binance 提币：银行、P2P 与钱包——费用、时间与修复 — TokVS</title>
+<meta name="description" content="如何用三种方式从 Binance 提币：到你的银行、在 P2P 上卖出，或到你自己的钱包。网络选择、费用、到账时间，以及提币为什么会卡住。">
+<link rel="canonical" href="https://tokvs.com/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/how-to-withdraw-from-binance">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/how-to-withdraw-from-binance">
+<meta property="og:title" content="如何从 Binance 提币 — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="从 Binance 提币到银行、P2P 或钱包：步骤、网络选择、费用、时间与卡住的提币修复。">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/guides/how-to-withdraw-from-binance">
+<meta property="og:locale" content="zh_CN">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/"}, {"@type": "ListItem", "position": 2, "name": "教程", "item": "https://tokvs.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "从 Binance 提币", "item": "https://tokvs.com/guides/how-to-withdraw-from-binance"}]}, {"@type": "Article", "headline": "如何从 Binance 提币", "description": "如何用三种方式从 Binance 提币：到你的银行、在 P2P 上卖出，或到你自己的钱包。网络选择、费用、到账时间与卡住的提币修复。", "datePublished": "2026-10-30", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/guides/how-to-withdraw-from-binance", "dateModified": "2026-10-30"}, "inLanguage": "zh-CN"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Binance 提币要多久？", "acceptedAnswer": {"@type": "Answer", "text": "这取决于路线。加密提币一旦网络确认，通常在几分钟到一小时内到账，不过拥堵网络需要更久。银行提币取决于你国家的支付通道，可能从几分钟到几个工作日不等。P2P 卖出按买家付款的速度结算——通常在几分钟内。"}}, {"@type": "Question", "name": "为什么我的 Binance 提币卡在处理中？", "acceptedAnswer": {"@type": "Answer", "text": "常见原因是密码或 2FA 变更后的安全锁定、新提币地址仍在等待期内、网络拥堵、该币种的钱包维护，或验证步骤未完成。联系客服前，先查看提币状态页，再查看邮箱里的安全通知。"}}, {"@type": "Question", "name": "提币选错网络会怎样？", "acceptedAnswer": {"@type": "Answer", "text": "在接收钱包不支持的网络上发送加密资产，可能意味着资金丢失或极难找回。永远让两边网络匹配——如果你的钱包显示 TRON 地址，就用 TRON 提币，而不是 Ethereum。拿不准时，先发一笔极小测试金额。"}}, {"@type": "Question", "name": "提币时我需要备注或标签吗？", "acceptedAnswer": {"@type": "Answer", "text": "一些币，如 XRP 和 XLM，在发往交易所时除了地址还需要备注或目标标签。如果接收方显示备注栏，你必须准确填写——没有必填备注发出的提币可能延迟数周或丢失。这些币的钱包间转账通常不需要备注。"}}, {"@type": "Question", "name": "Binance 有最低提币金额吗？", "acceptedAnswer": {"@type": "Answer", "text": "是的，每个币和网络都有自己的最低提币金额，确认前显示在提币页面上。如果你的余额低于所选网络的最低限额，换一个最低限额更低的网络，或换一条路线如 P2P。"}}, {"@type": "Question", "name": "我能把 USDT 从 Binance 提到我的银行账户吗？", "acceptedAnswer": {"@type": "Answer", "text": "不能直接提——银行不接受 USDT。你先把 USDT 换成你的本地货币，要么在现货市场卖出并提法币，要么卖给通过银行转账付你的 P2P 买家。两条路线最终都是常规货币进入你的银行账户。"}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">首页</a> / <a href="index.html">教程</a> / 从 Binance 提币</div>
+      <h1>如何从 Binance 提币</h1>
+      <p class="sub">三种退出方式——银行、P2P 或你自己的钱包——外加新手搞错的网络选择、预期的费用与时间，以及提币卡住时怎么办。</p>
+      <p class="updated">更新于 2026 年 10 月 · TokVS · 阅读约 11 分钟</p>
+      <p class="note">来源与方法： <a href="../methodology.html">我们怎么核查</a> · <a href="../exchanges.html#availability">国家可用性表</a> · 数据会变，操作前请以官网为准。</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册 →</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+      </div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+      <h2>首先：Binance 上的“提币”是什么意思</h2>
+      <p>新手经常在一个区别上绊倒，所以先把它讲清楚。在 Binance 上，“提币”涵盖两件不同的事。一个 <strong>法币提币</strong> 把常规货币（美元、欧元或你的本地货币）发送到你的银行账户。一个 <strong>加密提币</strong> 把币或代币发送到区块链上的钱包地址。你需要哪一个取决于你最终想要什么：银行里可花的钱，或你自己控制的加密资产。还有第三条路线模糊了界限——在 P2P 上卖出，买家直接通过银行转账付你——而对许多国家来说，它是最实用的变现方式。本指南涵盖全部三种，然后是导致大多数提币卡住的错误。</p>
+      <p>在任何提币之前，先说一个内务说明：你的资金在 Binance 内部存在不同的钱包里（现货、资金、理财、合约），你只能从正确的那个提币。如果提币按钮看起来是灰的或余额显示为零，你可能需要先在内部划转资金——例如从资金划到现货。内部划转免费且即时，几乎每个新手都会恰好被它迷惑一次。</p>
+      <h2>路线 1：把法币提到你的银行账户</h2>
+      <p>这是你国家可用时最干净的路线。步骤：在现货市场把你的加密资产卖成你的本地货币（例如把 USDT 卖成 USD 或 EUR），然后去钱包，选择提币，选择法币，挑选你的货币和关联银行账户，输入金额并确认。你的银行账户必须与你已验证的 Binance 账户同名，否则提币会被拒绝或冻结复核。</p>
+      <p>时间完全取决于你国家的支付通道。即时银行系统可以在几分钟内结算；传统转账可能需要一到几个工作日，周末和节假日还会增加延迟。费用也因货币和通道而异——Binance 在你确认前在提币界面上显示确切费用，那个界面就是权威：费率表会变，所以永远不要依赖记住的数字。如果你的货币根本不提供法币提币，跳到路线 2——P2P 正是为这种情况存在的。</p>
+      <p class="in-cta">还没有账户？ <a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a> <a class="btn-ref" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></p>
+      <h2>路线 2：在 P2P 上卖出并通过银行转账收款</h2>
+      <p>P2P 是世界上大多数地区的变现路线，它的运作就像买入流程的反向。你去 P2P，选择卖出，挑选币种（通常是 USDT）和你的货币，浏览买家。挑选历史悠久、已完成几百笔交易、完成率高的买家——与买入时同一份清单，因为同样的骗子两边都干。输入金额、下单，你的加密资产锁定在交易所托管中。</p>
+      <p>然后买家按约定金额给你发银行转账（或移动支付）。当钱落入你的账户——在你自己的银行 App 里核实，而不是凭买家发给你的截屏——你从托管中释放加密资产。这个顺序很重要：钱确实到账前永远不要放行。两条安全规则补全了全貌。第一，付款必须来自买家自己名下的账户，与其 P2P 身份匹配；第三方付款是经典的欺诈模式，也是申诉的理由。第二，把所有沟通留在 P2P 聊天内——如果买家要求转到 WhatsApp 或 Telegram，那就是红旗，因为平台外聊天会在你需要申诉时消除你的证据。</p>
+      <p>P2P 定价值得一句实话：买家报价略低于市场价，那个差价就是他们的利润。在流动性好的货币上差价小；在不常见的货币上差价拉大。接受前比较三四个买家，并把远高于市场的报价当作诱饵，而不是运气。我们的 <a href="how-to-sell-crypto.html">如何卖币指南</a> 更详细地讲了卖出心态。</p>
+      <h2>路线 3：把加密资产提到你自己的钱包</h2>
+      <p>这条路线是把加密资产移到自托管，而不是变现——而昂贵的错误就发生在这里。步骤：在你的钱包 App 里复制该币的接收地址；在 Binance 上，去提币，选择加密资产，选择币种，粘贴地址，选择网络，输入金额，并用 2FA 确认。接下来就是新手匆忙的部分：网络。</p>
+      <h2>网络选择：Binance 上最贵的下拉框</h2>
+      <p>许多币同时存在于多条区块链上。例如 USDT 运行在 Ethereum（ERC20）、Tron（TRC20）、BNB Chain（BEP20）等链上。它们不能互换。如果你的钱包向你显示一个 Tron 地址，而你用 Ethereum 提 USDT，资金会去到一个你的钱包可能在那条链上无法控制的地址——找回的难度从痛苦到不可能不等。</p>
+      <p>规则是绝对的： <strong>你在 Binance 上选择的网络必须与你的接收钱包或交易所为该币支持的网络匹配。</strong> 确认前检查两边。如果你的钱包支持多个网络，选择 Binance 提币界面上显示费用最低的那个——各网络费用差异很大，提币界面会在你确认前显示每个网络的确切费用。向新地址的第一次提币，先发一笔极小测试金额，确认到账后再发剩下的。测试多花一笔手续费；跳过它已经让新手损失过整笔提币。</p>
+      <div class="callout warn"><b>两个地址陷阱：</b> 1. 永远不要手打地址——复制粘贴，然后核对首尾各四位字符是否匹配；存在调换剪贴板地址的恶意软件。2. 一些币（XRP、XLM 等少数币）在发往交易所时除了地址还需要备注或目标标签——如果接收方显示备注栏，准确填写，否则充值可能延迟数周。</div>
+      <h2>费用与时间一览</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>路径</th><th>典型费用</th><th>典型时间</th><th>注意</th></tr></thead>
+        <tbody>
+          <tr><td>法币到银行</td><td>提币界面上显示；因货币和通道而异</td><td>几分钟到几个工作日</td><td>银行名必须与 KYC 名匹配</td></tr>
+          <tr><td>P2P 卖出</td><td>没有平台佣金；买家报价低于市场价</td><td>买家付款后几分钟</td><td>只有钱到了你的银行才放行</td></tr>
+          <tr><td>加密资产到钱包</td><td>网络费，确认前按网络显示</td><td>通常几分钟到一小时</td><td>网络错误或备注缺失</td></tr>
+        </tbody>
+      </table></div>
+      <p>新手低估的一项成本：提小额。每笔加密提币无论金额大小都带一笔固定网络费，所以提 10 美元的币而网络费 5 美元，就是 50% 的折损。如果金额小，要么选可用的最便宜网络，要么先攒到更大金额再提，要么改用 P2P。费用和最低限额在你确认前显示在提币页面上——把那个页面当作最终依据，因为网络和费率表会变。</p>
+      <h2>提币为什么会卡住（以及怎么办）</h2>
+      <ul>
+        <li><strong>账户变更后的安全锁定。</strong> 更改密码、重置 2FA 或添加新的提币地址通常会触发 24 小时提币冻结。这是保护，不是 bug——等它过去，不要试图通过改更多设置来“修复”它，那可能重新计时。</li>
+        <li><strong>网络拥堵或钱包维护。</strong> 如果区块链拥堵或 Binance 因该币种维护暂停了提币，你的提币会排队。先查看提币状态页和任何维护通知，再慌张。</li>
+        <li><strong>网络错误或备注缺失。</strong> 如果你在不支持的网络上发送或忘了必填的备注，立即拿着交易 ID 联系客服——找回有时可能，但很慢，且永远不保证。这就是测试金额存在的意义。</li>
+        <li><strong>验证不完整或额度不足。</strong> 未验证或部分验证的账户有提币额度；超出额度的提币会在验证完成前被阻止。在账户设置里查看你的验证等级。</li>
+        <li><strong>待邮件确认。</strong> 有些提币需要点击发到你邮箱的确认链接。检查你的收件箱（和垃圾邮件文件夹）——并确认邮件带有你的防钓鱼码，如我们的 <a href="how-to-keep-your-binance-account-safe.html">账户安全清单</a>中所讲的那样，点击前先确认。</li>
+      </ul>
+      <p>如果一笔提币确实超出了预期窗口而卡住，联系客服前先准备三样东西：提币记录（币种、金额、网络、时间）、如果已生成交易 ID 就带上它，以及接收地址。客服只能追踪你能出示的东西。永远不要付钱给承诺“解封”你提币的第三方——那是针对已经为卡住资金焦虑的人的后续骗局。</p>
+      <h2>还有一条路线：交易所之间的转账</h2>
+      <p>有时目的地不是你的银行或钱包，而是另一家交易所——例如把 USDT 移到一个上架了 Binance 没有的币的平台，或归集资金。操作与路线 3 完全相同：从接收交易所复制充值地址、精确匹配网络、币种需要备注时留意备注，并先发测试金额。这里额外的陷阱是假设两家交易所为某个币支持相同的网络；它们往往并不相同，而接收交易所的充值页面——不是你的记忆——才是它接受哪些网络的权威。把交易所充值完全当作钱包提币对待：同一份清单、同样的测试金额、网络搞错时同样的不可逆。其他主流交易所如 <a href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Bybit</a> 也同样运作，同样的规则在那里也保护你。</p>
+      <h2>提币安全清单</h2>
+      <ol>
+        <li>资金已移到正确的内部钱包（按需为现货或资金）。</li>
+        <li>接收地址已复制而非手打；首尾各四位字符已核对。</li>
+        <li>两边网络已匹配；如需备注或标签已填写。</li>
+        <li>任何新地址或网络都先发测试金额。</li>
+        <li>确认前已在提币界面核对费用和最低限额。</li>
+        <li>P2P：放行托管前已在你自己的银行 App 里核实钱款。</li>
+        <li>银行：账户名与你已验证的 Binance 名字匹配。</li>
+        <li>提币白名单已启用，因此被攻破的账户无法转移你的资金。</li>
+      </ol>
+      <p>提币第一次总让人紧张，因为它们不可逆——区块链转账没有“撤销”按钮。这正是清单存在的意义。机械地照着做，这个过程就变得无聊。无聊就是目标：一笔你几乎没怎么想过的提币，就是一笔做对的提币。</p>
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+        <b>准备好了？</b> 注册大约需要 10 分钟：验证一次、开启 2FA，然后按上面的步骤走。本站教程会带你走完剩下的部分。
+        <div class="ref-btns">
+        <div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">全球最大、流动性最深</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">去 Binance 注册</a></div>
+        <div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">产品线齐全，语言支持好</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">注册 OKX 账号</a></div>
+        </div>
+        <p class="note">费率和直接注册完全一样——我们的链接不让你多花一分钱。Bitget（<a href="https://www.bitget.com" target="_blank" rel="nofollow noopener">bitget.com</a>）也可以用；注意我们目前与 Bitget 没有返佣合作。</p>
+      </div>
+
+      <h3>Binance 提币要多久？</h3>
+      <p>这取决于路线。加密提币一旦网络确认，通常在几分钟到一小时内到账，不过拥堵网络需要更久。银行提币取决于你国家的支付通道，可能从几分钟到几个工作日不等。P2P 卖出按买家付款的速度结算——通常在几分钟内。</p>
+      <h3>为什么我的 Binance 提币卡在处理中？</h3>
+      <p>常见原因是密码或 2FA 变更后的安全锁定、新提币地址仍在等待期内、网络拥堵、该币种的钱包维护，或验证步骤未完成。联系客服前，先查看提币状态页，再查看邮箱里的安全通知。</p>
+      <h3>提币选错网络会怎样？</h3>
+      <p>在接收钱包不支持的网络上发送加密资产，可能意味着资金丢失或极难找回。永远让两边网络匹配——如果你的钱包显示 TRON 地址，就用 TRON 提币，而不是 Ethereum。拿不准时，先发一笔极小测试金额。</p>
+      <h3>提币时我需要备注或标签吗？</h3>
+      <p>一些币，如 XRP 和 XLM，在发往交易所时除了地址还需要备注或目标标签。如果接收方显示备注栏，你必须准确填写——没有必填备注发出的提币可能延迟数周或丢失。这些币的钱包间转账通常不需要备注。</p>
+      <h3>Binance 有最低提币金额吗？</h3>
+      <p>是的，每个币和网络都有自己的最低提币金额，确认前显示在提币页面上。如果你的余额低于所选网络的最低限额，换一个最低限额更低的网络，或换一条路线如 P2P。</p>
+      <h3>我能把 USDT 从 Binance 提到我的银行账户吗？</h3>
+      <p>不能直接提——银行不接受 USDT。你先把 USDT 换成你的本地货币，要么在现货市场卖出并提法币，要么卖给通过银行转账付你的 P2P 买家。两条路线最终都是常规货币进入你的银行账户。</p>
+      <h2>继续阅读</h2>
+      <ul>
+        <li><a href="how-to-sell-crypto.html">如何卖出加密资产</a></li>
+        <li><a href="how-to-keep-your-binance-account-safe.html">如何保护你的 Binance 账户安全</a></li>
+        <li><a href="buy-usdt.html">如何购买 USDT：全部方式对比</a></li>
+        <li><a href="best-crypto-wallet-for-beginners.html">新手最佳加密钱包</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">首页</a><a href="../airdrops.html">每日空投</a><a href="../exchanges.html">交易所对比</a>
+      </div>
+      <div class="col" style="flex:1;"><b>新手入门</b><a href="../start/step1.html">新手路径</a><a href="index.html">教程</a><a href="../start/step5.html">买第一枚币</a></div>
+      <div class="col" style="flex:1;"><b>测评</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>工具</b><a href="../tools.html#watchlist">自选提醒</a><a href="../tools.html#calendar">事件日历</a><a href="../exchanges.html#calculator">手续费计算器</a></div>
+    </div>
+    <div class="disclosure">本站含有返佣链接。通过我们的链接注册不会让你多花钱。加密货币价格波动剧烈；这里没有任何内容是投资建议——风险请自己判断。</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>还没有账号？3 分钟完成注册 →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">注册</a><button class="sx" aria-label="关闭" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

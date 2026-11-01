@@ -4,22 +4,47 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="light">
-<script src="/js/route-guard-404.js?v=20261030e"></script>
+<script src="/js/route-guard-404.js?v=20261031a"></script>
 <!-- tokvs-lang-router -->
 <script>
 (function () {
   try {
     var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
     var _ua = navigator.userAgent || '';
-    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return; // crawlers: no auto language redirect
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
     function norm(p) {
       if (!p) return '/';
       if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
       if (p === 'index.html') p = '/';
-      return p;
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
     }
     function treeOf(p) {
-      return (p === '/en' || p.indexOf('/en/') === 0) ? 'en' : 'zh';
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
     }
     var cur = norm(location.pathname);
     var curTree = treeOf(cur);
@@ -30,57 +55,68 @@
         if (!a || !a.pathname) return;
         if (a.host && location.host && a.host !== location.host) return;
         var tt = treeOf(norm(a.pathname));
-        if (tt !== curTree) {
-          try { localStorage.setItem(KEY, tt); } catch (ignore1) {}
-        }
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
       } catch (ignore2) {}
     });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
     var pref = null;
-    try { pref = localStorage.getItem(KEY); } catch (ignore3) {}
-    var want;
-    if (pref === 'zh' || pref === 'en') {
-      want = pref;
-    } else {
-      var nav = (navigator.languages && navigator.languages[0]) || navigator.language || '';
-      want = String(nav).toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en';
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
     }
     if (want === curTree) return;
-    var EN_ONLY = ['/en/guides/how-to-buy-usdt-on-binance-p2p', '/en/guides/how-to-buy-usdt-in-india', '/en/guides/how-to-buy-usdt-in-nigeria', '/en/guides/okx-vs-bybit', '/en/guides/lowest-fee-crypto-exchange', '/en/guides/is-binance-safe', '/en/guides/how-to-buy-bitcoin-with-paypal', '/en/guides/best-crypto-exchange-for-beginners', '/en/guides/crypto-futures-fees-comparison', '/en/guides/binance-vs-okx-fees-2026', '/en/guides/what-is-usdt', '/en/guides/best-crypto-exchange-2026', '/en/guides/how-to-buy-ethereum', '/en/guides/how-to-buy-solana', '/en/guides/how-to-buy-xrp', '/en/guides/how-to-buy-usdt-in-vietnam', '/en/guides/how-to-buy-usdt-in-philippines', '/en/guides/how-to-buy-usdt-in-brazil', '/en/guides/how-to-buy-usdt-in-turkey', '/en/tools/quiz', '/en/guides/how-to-buy-crypto-for-beginners', '/en/guides/what-is-bitcoin', '/en/guides/what-is-cryptocurrency', '/en/guides/bitcoin-vs-ethereum', '/en/guides/best-crypto-wallet-for-beginners', '/en/guides/how-to-sell-crypto', '/en/guides/how-to-buy-dogecoin', '/en/guides/how-to-buy-usdt-in-europe', '/en/guides/how-to-buy-usdt-in-usa', '/en/guides/how-to-buy-usdt-in-uk', '/en/guides/how-to-buy-usdt-with-bank-transfer', '/en/guides/how-to-buy-usdt-with-debit-card', '/en/guides/can-you-buy-usdt-with-paypal', '/en/guides/how-to-keep-your-binance-account-safe', '/en/guides/binance-vs-coinbase', '/en/guides/how-to-withdraw-from-binance', '/en/methodology', '/en/disclosure', '/en/guides/how-to-buy-usdt-in-canada', '/en/guides/how-to-buy-usdt-in-australia', '/en/guides/how-to-buy-usdt-in-eea', '/en/guides/crypto-taxes-for-beginners', '/en/guides/exchanges-to-avoid'];
-    if (want === 'zh' && EN_ONLY.indexOf(cur) !== -1) return; // 英文独占页不跳转中文
-
-    var dest;
-    if (want === 'en') {
-      dest = (cur === '/') ? '/en/' : '/en' + cur;
-    } else if (cur === '/en' || cur === '/en/') {
-      dest = '/';
-    } else {
-      dest = cur.slice(3);
-    }
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
     location.replace(dest + location.search + location.hash);
   } catch (ignore0) {}
 })();
 </script>
+
 <title>新手教程中心 | 买币选所防骗全解 — 币VS</title>
-<meta name="description" content="币VS 新手教程中心：新手买币全流程、USDT 怎么买、交易所怎么选、币安 vs 欧易、手续费全解、合约杠杆避坑、钱包与助记词安全、空投入门、稳定币入门、防骗指南，10 篇中文教程一篇一篇学，不踩坑。">
-<link rel="canonical" href="https://tokvs.com/guides/">
+<meta name="description" content="币VS 新手教程中心：新手买币全流程、USDT 怎么买、交易所怎么选、币安 vs 欧易、手续费全解、合约杠杆避坑、钱包与助记词安全、空投入门、稳定币入门、防骗指南，50 篇中文教程一篇一篇学，不踩坑。">
+<link rel="canonical" href="https://tokvs.com/guides/index">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/index">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/index">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/index">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/index">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/index">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/index">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/index">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/index">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/index">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/index">
 <meta property="og:title" content="新手教程中心 | 买币、选所、防骗全解 — 币VS">
 <meta property="og:site_name" content="币VS">
-<meta property="og:description" content="10 篇新手教程：买币全流程、手续费全解、杠杆避坑、钱包安全、空投入门、防骗指南。">
+<meta property="og:description" content="50 篇新手教程：买币全流程、手续费全解、杠杆避坑、钱包安全、空投入门、防骗指南。">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://tokvs.com/guides/">
+<meta property="og:url" content="https://tokvs.com/guides/index">
 <meta property="og:locale" content="zh_CN">
 <meta name="twitter:card" content="summary">
-<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/">
-<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/">
-<link rel="alternate" hreflang="x-default" href="https://tokvs.com/guides/">
-<link rel="stylesheet" href="../styles.css?v=20261030l">
+<link rel="stylesheet" href="../styles.css?v=20261031a">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="theme-color" content="#12150F">
 <!-- tokvs-jsonld -->
 <script type="application/ld+json">
-{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"币VS TokVS","item":"https://tokvs.com/"},{"@type":"ListItem","position":2,"name":"新手教程","item":"https://tokvs.com/guides/"},{"@type":"ListItem","position":3,"name":"新手教程中心 | 买币选所防骗全解","item":"https://tokvs.com/guides/"}]},{"@type":"Article","headline":"新手教程中心 | 买币选所防骗全解","description":"币VS 新手教程中心：新手买币全流程、USDT 怎么买、交易所怎么选、币安 vs 欧易、手续费全解、合约杠杆避坑、钱包与助记词安全、空投入门、稳定币入门、防骗指南，10 篇中文教程一篇一篇学，不踩坑。","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/guides/"},"inLanguage":"zh-CN"}]}
+{"@context":"https://schema.org","@graph":[{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"币VS TokVS","item":"https://tokvs.com/"},{"@type":"ListItem","position":2,"name":"新手教程","item":"https://tokvs.com/guides/"},{"@type":"ListItem","position":3,"name":"新手教程中心 | 买币选所防骗全解","item":"https://tokvs.com/guides/"}]},{"@type":"Article","headline":"新手教程中心 | 买币选所防骗全解","description":"币VS 新手教程中心：新手买币全流程、USDT 怎么买、交易所怎么选、币安 vs 欧易、手续费全解、合约杠杆避坑、钱包与助记词安全、空投入门、稳定币入门、防骗指南，50 篇中文教程一篇一篇学，不踩坑。","datePublished":"2026-10-12","author":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"publisher":{"@type":"Organization","name":"TokVS","url":"https://tokvs.com/"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://tokvs.com/guides/"},"inLanguage":"zh-CN"}]}
 </script>
 <!-- tokvs-ga -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
@@ -107,7 +143,7 @@ document.addEventListener('click', function (e) {
     <nav class="main">
       <a href="../start/step1.html">新手路径</a><a href="index.html" class="on">教程</a><a href="../exchanges.html">交易所</a><a href="../airdrops.html">空投</a><a href="../tools.html">工具</a>
     </nav>
-    <div class="top-right"><span class="lang"><b>中文</b> · <a href="../en/guides/index.html">EN</a></span></div>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh" selected>中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it">Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
   </div>
 </div>
 
@@ -133,7 +169,7 @@ document.addEventListener('click', function (e) {
   </section>
 
   <section>
-    <div class="sec-head"><h2>全部教程</h2><span class="desc">10 篇 · 持续更新</span></div>
+    <div class="sec-head"><h2>全部教程</h2><span class="desc">50 篇 · 持续更新</span></div>
     <div class="rev-grid">
       <a class="card rev-card" href="how-to-buy-bitcoin.html"><div><div class="tt">新手买币全流程</div><div class="dd">怎么买比特币？从选交易所、注册认证、买 USDT 到下单买入，一篇走完 5 步。</div></div><span class="go">›</span></a>
       <a class="card rev-card" href="buy-usdt.html"><div><div class="tt">USDT 怎么买</div><div class="dd">快捷买币、C2C、现货兑换三种方法对比，外加溢价和冻卡风险怎么防。</div></div><span class="go">›</span></a>
@@ -144,6 +180,46 @@ document.addEventListener('click', function (e) {
       <a class="card rev-card" href="wallet-safety.html"><div><div class="tt">钱包与助记词安全</div><div class="dd">助记词是什么、数字钱包怎么用？保管的 5 条铁律和丢了/泄露了的补救。</div></div><span class="go">›</span></a>
       <a class="card rev-card" href="airdrop-guide.html"><div><div class="tt">什么是空投、怎么撸</div><div class="dd">空投怎么撸才靠谱？三类可参与的空投、参与步骤和最重要的防骗红线。</div></div><span class="go">›</span></a>
       <a class="card rev-card" href="stablecoins.html"><div><div class="tt">稳定币入门</div><div class="dd">USDT 和 USDC 有什么区别？发行方、储备、合规、脱锚风险一篇讲清。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-on-binance-p2p.html"><div><div class="tt">如何在 Binance P2P 上买 USDT</div><div class="dd">在 Binance P2P 上买 USDT：找到受信任的商家、下单、安全付款并躲开资金冻结风险。附商家清单的完整指南。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-india.html"><div><div class="tt">如何在印度买 USDT</div><div class="dd">在印度用 UPI 或银行转账最便宜地买 USDT：P2P 溢价 vs 用卡手续费、商家安全检查，以及用大白话讲的 1% TDS / 30% 收益税。从一笔小额测试开始。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-nigeria.html"><div><div class="tt">如何在尼日利亚买 USDT</div><div class="dd">在尼日利亚用奈拉通过 P2P 银行转账买 USDT：商家审查、报价解读、安全模式和成本。托管保护的全程指南。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="okx-vs-bybit.html"><div><div class="tt">OKX vs Bybit</div><div class="dd">OKX vs Bybit 对比：现货与合约费率、衍生品深度、App 体验与安全性。结论按你的实际交易方式匹配。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="lowest-fee-crypto-exchange.html"><div><div class="tt">最低手续费加密交易所</div><div class="dd">哪家加密交易所的费率最低？Binance、OKX、Bybit、Bitget 的真实挂单/吃单数字——外加真正少付钱的 5 种方法。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="is-binance-safe.html"><div><div class="tt">Binance 安全吗？</div><div class="dd">Binance 安全详解：SAFU 基金、储备金证明、账户安全清单——以及它们不承担的部分。基于证据的答案，然后由你决定。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-bitcoin-with-paypal.html"><div><div class="tt">如何用 PayPal 买比特币</div><div class="dd">用 PayPal 买比特币：PayPal 自己的加密功能、P2P 商家或接受 PayPal 入金的经纪商。真实路线、真实成本、地区注意事项。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="crypto-futures-fees-comparison.html"><div><div class="tt">合约手续费对比</div><div class="dd">Binance、OKX、Bybit 和 Bitget 的合约挂单/吃单费率并排对比——外加资金费率和削减你支出的习惯。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="binance-vs-okx-fees-2026.html"><div><div class="tt">Binance vs OKX 手续费（2026）</div><div class="dd">2026 年 Binance vs OKX 手续费：现货、合约与提币费逐项对比——看看按你的交易方式谁更便宜。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="what-is-usdt.html"><div><div class="tt">什么是 USDT？</div><div class="dd">什么是 USDT（Tether）？美元锚定怎么运作、储备与风险——买第一笔 USDT 之前的大白话指南。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="best-crypto-exchange-2026.html"><div><div class="tt">2026 最佳加密货币交易所</div><div class="dd">2026 年新手最佳加密货币交易所：Binance、OKX 与 Bybit 在 KYC、客服和便捷购买上的对比——5 分钟选定。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="best-crypto-exchange-for-beginners.html"><div><div class="tt">新手最佳加密货币交易所</div><div class="dd">新手最佳加密货币交易所：OKX、Binance 与 Bitget 在开户、客服和费率上的对比——附按天的第一周计划。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-ethereum.html"><div><div class="tt">如何买以太坊：完整新手流程</div><div class="dd">新手如何买以太坊：选交易所、验证你的身份证件、给账户入金、下第一笔 ETH 现货订单，并处理 Gas 费和网络选择而不犯代价高昂的错误。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-solana.html"><div><div class="tt">如何买 Solana：完整新手流程</div><div class="dd">新手如何买 Solana：选交易所、验证你的身份证件、给账户入金、下第一笔 SOL 现货订单，并把它存放在合适的钱包——外加关于 Solana 网络历史需要知道的事。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-xrp.html"><div><div class="tt">如何买 XRP：完整新手流程</div><div class="dd">新手如何买 XRP：选交易所、验证你的身份证件、给账户入金、下第一笔 XRP 现货订单，并把目标标签搞对——外加要先查看的监管拼图。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-vietnam.html"><div><div class="tt">如何在越南买 USDT</div><div class="dd">在越南用 VND 买 USDT：银行转账和 MoMo P2P 全程指南、Binance vs OKX vs Bybit 手续费、TRC20 vs ERC20 网络选择，以及每个越南新手都需要的安全检查。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-philippines.html"><div><div class="tt">如何在菲律宾买 USDT</div><div class="dd">在菲律宾用 PHP 买 USDT：GCash 和 Maya P2P 全程指南、Binance vs OKX vs Bybit 手续费、TRC20 vs ERC20 网络选择，以及每个菲律宾新手都需要的安全检查。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-brazil.html"><div><div class="tt">如何在巴西买 USDT</div><div class="dd">在巴西用 BRL 买 USDT：Pix 和银行转账 P2P 全程指南、Binance vs OKX vs Bybit 手续费、TRC20 vs ERC20 网络选择，以及每个巴西新手都需要的安全检查。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-turkey.html"><div><div class="tt">如何在土耳其买 USDT</div><div class="dd">在土耳其用 TRY 买 USDT：银行转账和 Papara P2P 全程指南、Binance vs OKX vs Bybit 手续费、TRC20 vs ERC20 网络选择，以及每个土耳其新手都需要的安全检查。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-crypto-for-beginners.html"><div><div class="tt">新手如何购买加密货币</div><div class="dd">新手买币的五个简单步骤：了解币种、选交易所、验证、用法币入金、下第一单并安全存放。没有行话、没有炒作。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="what-is-bitcoin.html"><div><div class="tt">什么是比特币？</div><div class="dd">用大白话讲什么是比特币：它 2009 年从哪里来、区块链和挖矿怎么运作、为什么总量永远只有 2100 万枚、怎么买，以及诚实讲出的风险。不做价格预测。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="what-is-cryptocurrency.html"><div><div class="tt">什么是加密货币？</div><div class="dd">为纯新手讲什么是加密货币：币 vs 代币、区块链怎么运作、钱包 vs 交易所、加密资产实际能用来做什么，以及要避开的骗局。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="bitcoin-vs-ethereum.html"><div><div class="tt">比特币对比以太坊</div><div class="dd">比特币 vs 以太坊诚实对比：用途、共识、供应、手续费和生态——以及哪一种适合哪类用户，没有绝对结论，没有价格预测。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="best-crypto-wallet-for-beginners.html"><div><div class="tt">新手最佳加密钱包</div><div class="dd">新手最佳加密钱包：热钱包 vs 冷钱包，MetaMask、Trust Wallet、Ledger 与 Trezor 按功能对比——附助记词安全与</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-sell-crypto.html"><div><div class="tt">如何卖币变现</div><div class="dd">如何卖币变现：现货卖成 USDT、P2P 卖到你的银行、Binance 提币分步讲解、手续费，以及记账习惯。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-dogecoin.html"><div><div class="tt">如何买狗狗币</div><div class="dd">如何买狗狗币：选交易所、验证、买 USDT、兑换 DOGE/USDT 并安全存放——附诚实的迷因币波动警告。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-europe.html"><div><div class="tt">如何在欧洲买 USDT</div><div class="dd">在欧洲买 USDT：SEPA 银行转账、借记卡和 P2P 对比，含手续费、KYC 步骤和国家可用性说明。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-usa.html"><div><div class="tt">如何在美国买 USDT</div><div class="dd">在美国用 ACH、电汇、借记卡或 P2P 买 USDT：速度、成本、KYC 和各州可用性，用大白话对比。从一笔小额测试开始。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-uk.html"><div><div class="tt">如何在英国买 USDT</div><div class="dd">在英国用 Faster Payments、银行转账、借记卡或 P2P 买 USDT：GBP 路线、成本、FCA 说明和安全检查，用大白话讲。从小额开始。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-with-bank-transfer.html"><div><div class="tt">如何用银行转账买 USDT</div><div class="dd">用银行转账买 USDT：直接交易所存款 vs P2P、按通道分的时间、手续费、付款附言规则和要避免的陷阱。从一笔测试转账开始。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-with-debit-card.html"><div><div class="tt">如何用借记卡买 USDT</div><div class="dd">用借记卡即时买 USDT：一步步来、手续费、每日限额、3D Secure，以及卡被拒时怎么办。从一笔小额测试购买开始。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="can-you-buy-usdt-with-paypal.html"><div><div class="tt">能用 PayPal 买 USDT 吗？</div><div class="dd">能用 PayPal 买 USDT 吗？不能直接买——PayPal 的加密服务不包括 USDT。下面是三种诚实的变通方法、它们的成本和要避免的骗局。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-keep-your-binance-account-safe.html"><div><div class="tt">如何保护你的 Binance 账户安全</div><div class="dd">新手 Binance 账户安全清单：验证器 2FA、防钓鱼码、提币白名单、设备管理，以及如何在钓鱼链接让你付出代价之前识别它们。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="binance-vs-coinbase.html"><div><div class="tt">Binance vs Coinbase 新手对比</div><div class="dd">Binance vs Coinbase 新手诚实对比：费率、入金方式、易用性、币种和安全性。我们的结论：美国以外的大多数新手选 Binance，想要简单的美国新手选 Coinbase。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-withdraw-from-binance.html"><div><div class="tt">如何从 Binance 提币</div><div class="dd">如何用三种方式从 Binance 提币：到你的银行、在 P2P 上卖出，或到你自己的钱包。网络选择、费用、到账时间，以及提币为什么会卡住。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-canada.html"><div><div class="tt">如何在加拿大买 USDT</div><div class="dd">老实讲如何在加拿大买 USDT：Binance 在 2023 年离开了加拿大，Bybit、OKX 和 Bitget 对它的服务不好，所以改查本地可用的受监管交易所。Interac、银行转账和用卡步骤、手续费和网络选择。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-australia.html"><div><div class="tt">如何在澳大利亚买 USDT</div><div class="dd">在澳大利亚用 PayID、银行转账或用卡买 USDT：哪些交易所服务澳大利亚、分步首次购买、AUD 注意事项、手续费和 USDT 网络选择。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="how-to-buy-usdt-in-eea.html"><div><div class="tt">如何在欧洲经济区买 USDT</div><div class="dd">MiCA 之后，欧洲经济区居民面对一个不同的 USDT 市场：Binance 只允许提币，OKX Europe 不能提供 USDT 交易，Bybit EU 服务欧洲经济区。SEPA 和用卡路线、USDC 替代品，以及如何处理停服交易所上的资金。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="crypto-taxes-for-beginners.html"><div><div class="tt">新手加密税务</div><div class="dd">用大白话讲加密税务：什么算应税事件、为什么兑换即使不提现也可能应税、美国、英国和欧盟的规则在一般意义上有什么不同，以及每个新手都需要的记账模板。仅为一般信息，不是税务建议。</div></div><span class="go">›</span></a>
+      <a class="card rev-card" href="exchanges-to-avoid.html"><div><div class="tt">要避开的加密交易所（及原因）</div><div class="dd">哪些加密交易所崩盘了，FTX、Celsius、Voyager、BlockFi、Mt. Gox 和 QuadrigaCX 出了什么问题，哪些交易所目前不服务主要西方市场——外加在信任任何平台之前要检查的危险信号。</div></div><span class="go">›</span></a>
       <a class="card rev-card" href="avoid-scams.html"><div><div class="tt">防骗指南</div><div class="dd">数字货币是不是骗局？8 种常见骗局的识别法 + 被骗后的止损取证步骤。</div></div><span class="go">›</span></a>
     </div>
     <p class="note">教程为长青内容，会随各平台规则变化不定期修订；涉及费率与政策的数字，请以各交易所官网最新公告为准。</p>
