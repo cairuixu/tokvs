@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Passaggio 2: Scegli un exchange — Percorso per principianti | TokVS</title>
+<meta name="description" content="Scegli un exchange con cinque controlli: dimensioni, commissioni, storico di sicurezza, supporto linguistico e canali di finanziamento. Poi passa alla registrazione.">
+<link rel="canonical" href="https://tokvs.com/it/start/step2">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/start/step2">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/start/step2">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/start/step2">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/start/step2">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/start/step2">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/start/step2">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/start/step2">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/start/step2">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/start/step2">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/start/step2">
+<meta property="og:title" content="Passaggio 2: Scegli un exchange — Percorso per principianti | TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Cinque criteri di selezione, uno sguardo rapido ai quattro grandi e le trappole da evitare.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/it/start/step2">
+<meta property="og:locale" content="it_IT">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/it/"}, {"@type": "ListItem", "position": 2, "name": "Percorso per principianti", "item": "https://tokvs.com/it/start/step1"}, {"@type": "ListItem", "position": 3, "name": "Passaggio 2: Scegli un exchange — Percorso per principianti", "item": "https://tokvs.com/it/start/step2"}]}]}
+</script>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="step1.html" class="on">Percorso per principianti</a><a href="../guides/index.html">Guide</a><a href="../exchanges.html">Exchange</a><a href="../airdrops.html">Airdrop</a><a href="../tools.html">Strumenti</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it" selected>Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Home</a> / Percorso per principianti / Passaggio 2</div>
+      <h1>Passaggio 2: Scegli un exchange</h1>
+      <p class="sub">I tuoi soldi passeranno la maggior parte del tempo su un exchange. Se scegli male, nel migliore dei casi paghi troppe commissioni, nel peggiore perdi tutto. Prima gli standard, poi il verdetto.</p>
+    </div>
+  </div>
+
+  <section>
+    <div class="steps">
+      <a class="step done" href="step1.html"><div class="n">1</div><div class="t">Conosci Bitcoin</div><div class="d">Che cos'è e perché ha valore</div><span class="arr">›</span></a>
+      <span class="step" style="outline:2.5px solid #00C853;cursor:default;" aria-current="step"><div class="n">2</div><div class="t">Scegli un exchange</div><div class="d">Prima confronta commissioni e sicurezza</div></span>
+      <a class="step" href="step3.html"><div class="n">3</div><div class="t">Registrati</div><div class="d">Passaggi illustrati, supera il KYC al primo tentativo</div><span class="arr">›</span></a>
+      <a class="step" href="step4.html"><div class="n">4</div><div class="t">Acquista USDT</div><div class="d">Il modo giusto per finanziare il tuo account</div><span class="arr">›</span></a>
+      <a class="step" href="step5.html"><div class="n">5</div><div class="t">Acquista la tua prima moneta</div><div class="d">Ordine spot + custodia sicura</div></a>
+    </div>
+  </section>
+
+  <section>
+    <div class="card article prose">
+      <h2>Cinque criteri per scegliere un exchange</h2>
+      <ol>
+        <li><strong>Dimensioni e liquidità.</strong> Le piattaforme ad alto volume hanno spread stretti e poco slippage sugli ordini di grandi dimensioni, e una probabilità relativamente più bassa di sparire. Ai principianti basta la fascia più alta a livello globale.</li>
+        <li><strong>Commissioni.</strong> Le tariffe spot si concentrano tra 0.08% e 0.10% e sembrano simili; le tariffe taker futures vanno dallo 0.05% allo 0.06%, e per i trader attivi si accumulano in soldi veri. Consulta la tabella di confronto e il calcolatore qui sotto.</li>
+        <li><strong>Storico di sicurezza.</strong> Ha subito gravi violazioni? Pubblica la prova delle riserve? Quando le cose sono andate storte, gli utenti sono stati risarciti? Sono tutti indicatori concreti.</li>
+        <li><strong>Lingua e supporto.</strong> Quando qualcosa si rompe, riesci a raggiungere una persona e a leggere l’interfaccia? Per i principianti conta più di quanto sembri.</li>
+        <li><strong>Canali di finanziamento.</strong> Supporta il trading P2P in valuta fiat nella tua valuta? I prelievi sono fluidi? Ci sono limiti strani?</li>
+      </ol>
+
+      <h2>I quattro grandi in sintesi</h2>
+      <div class="table-wrap">
+        <table class="fee num">
+          <thead><tr><th>Exchange</th><th>Commissione spot</th><th>Taker futures</th><th>In una riga</th><th>Recensione</th></tr></thead>
+          <tbody>
+            <tr><td class="name">Binance</td><td>0.10%</td><td>0.05%</td><td>La liquidità più profonda al mondo, il maggior numero di quotazioni</td><td><a href="../reviews/binance.html">Leggi →</a></td></tr>
+            <tr><td class="name">OKX</td><td>da 0.08%</td><td>0.05%</td><td>La gamma di prodotti più completa, wallet Web3 integrato</td><td><a href="../reviews/okx.html">Leggi →</a></td></tr>
+            <tr><td class="name">Bybit</td><td>0.10%</td><td>0.055%</td><td>Esperienza futures fluida, campagne frequenti</td><td><a href="../reviews/bybit.html">Leggi →</a></td></tr>
+            <tr><td class="name">Bitget</td><td>0.10%</td><td>0.06%</td><td>Copy trading solido, adatto ai principianti</td><td><a href="../reviews/bitget.html">Leggi →</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>La tabella completa delle commissioni, le politiche di rimborso e il calcolatore del costo andata e ritorno si trovano nella <a href="../exchanges.html">pagina di confronto tra exchange</a>. Consiglio diretto per i principianti: <strong>se compri solo le principali monete in spot, Binance e OKX sono entrambe scelte sicure</strong>; se pensi ai futures, calcola prima i costi.</p>
+
+      <h2>Tre trappole da evitare assolutamente</h2>
+      <ul>
+        <li><strong>Exchange oscuri di cui non hai mai sentito parlare.</strong>Le proposte “Zero commissioni” e “bonus di registrazione” sono esche. Le piccole piattaforme che si appropriano dei fondi, manipolano i prezzi o scappano con i soldi degli utenti finiscono sui giornali ogni anno.</li>
+        <li><strong>Gruppi di “mentori” e account gestiti.</strong>Chiunque ti chieda di inviare soldi a una persona o a una piattaforma sconosciuta per “fare trading per te” sta usando il trucco più vecchio del mondo.</li>
+        <li><strong>App false e siti web falsi.</strong>Scarica solo dai siti ufficiali o dagli app store ufficiali. Il “sito ufficiale” negli annunci di ricerca è spesso un sosia: una lettera in più nel dominio può costarti tutto.</li>
+      </ul>
+
+      <div class="callout"><b>Buono a sapersi:</b>registrarsi tramite i nostri link di rimborso non cambia il tuo listino commissioni: l'exchange ti restituisce parte delle sue commissioni. Stesso prezzo, sconto integrato. Ogni link è dichiarato.</div>
+
+      <p>Piattaforma scelta? Il prossimo passo è registrazione e verifica: circa 10 minuti se hai il documento pronto, e c’è un modo per passare al primo tentativo.</p>
+    </div>
+
+    <div class="stepnav">
+      <a href="step1.html"><span><span class="sm">Passaggio precedente</span>Passaggio 1: Conosci Bitcoin</span></a>
+      <a class="next" href="step3.html"><span><span class="sm">Passaggio successivo</span>Passaggio 3: Registrati</span><span>→</span></a>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Home</a><a href="../airdrops.html">Airdrop giornalieri</a><a href="../exchanges.html">Confronto tra exchange</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principianti</b><a href="step1.html">Percorso per principianti</a><a href="step2.html">Scegli un exchange</a><a href="step5.html">Acquista la tua prima moneta</a></div>
+      <div class="col" style="flex:1;"><b>Recensioni</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Strumenti</b><a href="../tools.html#watchlist">Avvisi della watchlist</a><a href="../tools.html#calendar">Calendario degli eventi</a><a href="../exchanges.html#calculator">Calcolatore delle commissioni</a></div>
+    </div>
+    <div class="disclosure">Questo sito contiene link di affiliazione. Registrarsi tramite i nostri link non ti costa nulla in più. I prezzi delle criptovalute sono estremamente volatili; nulla qui è un consiglio di investimento: valuta tu stesso i rischi.</div>
+  </div>
+</footer>
+
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>

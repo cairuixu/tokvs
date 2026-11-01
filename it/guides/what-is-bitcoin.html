@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<script src="/js/route-guard-404.js?v=20261031a"></script>
+<!-- tokvs-lang-router -->
+<script>
+(function () {
+  try {
+    var KEY = 'tokvs_lang';
+    var LANGS = ['zh', 'en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko'];
+    var _ua = navigator.userAgent || '';
+    if (/bot|crawl|spider|slurp|googlebot|bingbot|yandex|baidu|duckduckbot|gptbot|ccbot|anthropic|facebookexternalhit|twitterbot/i.test(_ua)) return;
+    function norm(p) {
+      if (!p) return '/';
+      if (p.slice(-11) === '/index.html') p = p.slice(0, -10);
+      if (p === 'index.html') p = '/';
+      if (p.length > 5 && p.slice(-5) === '.html') p = p.slice(0, -5);
+      if (p.length > 1 && p.slice(-1) === '/') p = p.slice(0, -1);
+      return p || '/';
+    }
+    function treeOf(p) {
+      var seg = norm(p).split('/')[1] || '';
+      return LANGS.indexOf(seg) !== -1 && seg !== 'zh' ? seg : 'zh';
+    }
+    function mapLang(s) {
+      s = String(s || '').toLowerCase();
+      if (s.indexOf('zh') === 0) return 'zh';
+      var c = ['es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'en'];
+      for (var i = 0; i < c.length; i++) { if (s.indexOf(c[i]) === 0) return c[i]; }
+      return null;
+    }
+    function destFor(want, cur) {
+      var c = norm(cur), tree = treeOf(c), rest;
+      if (tree === 'zh') rest = c === '/' ? '' : c;
+      else rest = c.slice(3);
+      if (want === 'zh') return rest === '' ? '/' : rest;
+      if (rest === '') return '/' + want + '/';
+      return '/' + want + rest;
+    }
+    var PAGES = ["airdrops", "disclosure", "exchanges", "guides/airdrop-guide", "guides/avoid-scams", "guides/best-crypto-exchange-2026", "guides/best-crypto-exchange-for-beginners", "guides/best-crypto-wallet-for-beginners", "guides/binance-vs-coinbase", "guides/binance-vs-okx", "guides/binance-vs-okx-fees-2026", "guides/bitcoin-vs-ethereum", "guides/buy-usdt", "guides/can-you-buy-usdt-with-paypal", "guides/choose-exchange", "guides/crypto-fees", "guides/crypto-futures-fees-comparison", "guides/crypto-taxes-for-beginners", "guides/exchanges-to-avoid", "guides/how-to-buy-bitcoin", "guides/how-to-buy-bitcoin-with-paypal", "guides/how-to-buy-crypto-for-beginners", "guides/how-to-buy-dogecoin", "guides/how-to-buy-ethereum", "guides/how-to-buy-solana", "guides/how-to-buy-usdt-in-australia", "guides/how-to-buy-usdt-in-brazil", "guides/how-to-buy-usdt-in-canada", "guides/how-to-buy-usdt-in-eea", "guides/how-to-buy-usdt-in-europe", "guides/how-to-buy-usdt-in-india", "guides/how-to-buy-usdt-in-nigeria", "guides/how-to-buy-usdt-in-philippines", "guides/how-to-buy-usdt-in-turkey", "guides/how-to-buy-usdt-in-uk", "guides/how-to-buy-usdt-in-usa", "guides/how-to-buy-usdt-in-vietnam", "guides/how-to-buy-usdt-on-binance-p2p", "guides/how-to-buy-usdt-with-bank-transfer", "guides/how-to-buy-usdt-with-debit-card", "guides/how-to-buy-xrp", "guides/how-to-keep-your-binance-account-safe", "guides/how-to-sell-crypto", "guides/how-to-withdraw-from-binance", "guides/index", "guides/is-binance-safe", "guides/leverage-guide", "guides/lowest-fee-crypto-exchange", "guides/okx-vs-bybit", "guides/stablecoins", "guides/wallet-safety", "guides/what-is-bitcoin", "guides/what-is-cryptocurrency", "guides/what-is-usdt", "", "methodology", "reviews/binance", "reviews/bitget", "reviews/bybit", "reviews/okx", "start/step1", "start/step2", "start/step3", "start/step4", "start/step5", "tools", "tools/quiz"];
+    function existsPage(dest) {
+      var d = norm(dest);
+      var tree = treeOf(d), rest = tree === 'zh' ? (d === '/' ? '' : d.slice(1)) : d.slice(4);
+      return PAGES.indexOf(rest) !== -1 || rest === 'guides' || rest.indexOf('guides/') === 0;
+    }
+    var cur = norm(location.pathname);
+    var curTree = treeOf(cur);
+    document.addEventListener('click', function (e) {
+      try {
+        var t = e && e.target;
+        var a = t && t.closest ? t.closest('a') : null;
+        if (!a || !a.pathname) return;
+        if (a.host && location.host && a.host !== location.host) return;
+        var tt = treeOf(norm(a.pathname));
+        if (tt !== curTree) { try { localStorage.setItem(KEY, tt); } catch (ignore1) {} }
+      } catch (ignore2) {}
+    });
+    function bindSelect() {
+      var sel = document.querySelector('.lang-select');
+      if (!sel) return;
+      sel.value = curTree;
+      sel.addEventListener('change', function () {
+        var want = sel.value;
+        if (LANGS.indexOf(want) === -1) return;
+        try { localStorage.setItem(KEY, want); } catch (ignore3) {}
+        var dest = destFor(want, cur);
+        if (dest !== cur && existsPage(dest)) location.href = dest + location.search + location.hash;
+      });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindSelect);
+    else bindSelect();
+    var pref = null;
+    try { pref = localStorage.getItem(KEY); } catch (ignore4) {}
+    var want = null;
+    if (pref && LANGS.indexOf(pref) !== -1) want = pref;
+    else {
+      var langs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || ''];
+      for (var j = 0; j < langs.length; j++) { var m = mapLang(langs[j]); if (m) { want = m; break; } }
+      if (!want) want = 'en';
+    }
+    if (want === curTree) return;
+    var dest = destFor(want, cur);
+    if (!existsPage(dest)) return;
+    location.replace(dest + location.search + location.hash);
+  } catch (ignore0) {}
+})();
+</script>
+
+<title>Cos'è Bitcoin? Guida semplice per principianti — TokVS</title>
+<meta name="description" content="Cos'è Bitcoin, in parole semplici: da dove viene nel 2009, come funzionano blockchain e mining, perché esisteranno solo 21 milioni, come acquistarlo, e i rischi detti onestamente. Nessuna previsione.">
+<link rel="canonical" href="https://tokvs.com/it/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="zh-CN" href="https://tokvs.com/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="en" href="https://tokvs.com/en/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="es" href="https://tokvs.com/es/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="fr" href="https://tokvs.com/fr/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="de" href="https://tokvs.com/de/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="it" href="https://tokvs.com/it/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="pt" href="https://tokvs.com/pt/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="ja" href="https://tokvs.com/ja/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="ko" href="https://tokvs.com/ko/guides/what-is-bitcoin">
+<link rel="alternate" hreflang="x-default" href="https://tokvs.com/en/guides/what-is-bitcoin">
+<meta property="og:title" content="Cos'è Bitcoin? Guida semplice — TokVS">
+<meta property="og:site_name" content="TokVS">
+<meta property="og:description" content="Bitcoin spiegato senza gergo: origini, blockchain, mining, il tetto di 21 milioni, come acquistare, e rischi onesti.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://tokvs.com/it/guides/what-is-bitcoin">
+<meta property="og:locale" content="it_IT">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../../styles.css?v=20261031a">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#12150F">
+<!-- tokvs-jsonld -->
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@graph": [{"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "TokVS", "item": "https://tokvs.com/it/"}, {"@type": "ListItem", "position": 2, "name": "Guide", "item": "https://tokvs.com/it/guides/"}, {"@type": "ListItem", "position": 3, "name": "Cos'è Bitcoin?", "item": "https://tokvs.com/it/guides/what-is-bitcoin"}]}, {"@type": "Article", "headline": "Cos'è Bitcoin?", "description": "Cos'è Bitcoin, in parole semplici: da dove viene nel 2009, come funzionano blockchain e mining, perché esisteranno solo 21 milioni, come acquistarlo, e i rischi detti onestamente. Nessuna previsione.", "datePublished": "2026-10-28", "author": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "publisher": {"@type": "Organization", "name": "TokVS", "url": "https://tokvs.com/"}, "mainEntityOfPage": {"@type": "WebPage", "@id": "https://tokvs.com/it/guides/what-is-bitcoin", "dateModified": "2026-10-30"}, "inLanguage": "it"}]}
+</script>
+<script type="application/ld+json">
+{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Chi controlla Bitcoin?", "acceptedAnswer": {"@type": "Answer", "text": "Nessuna singola persona, azienda, o governo controlla Bitcoin. Le sue regole vivono in software open-source gestito da migliaia di partecipanti indipendenti; cambiare le regole richiede ampio accordo tra miner, operatori di nodi, e utenti."}}, {"@type": "Question", "name": "Bitcoin può essere copiato o duplicato?", "acceptedAnswer": {"@type": "Answer", "text": "Chiunque può copiare il software, ma una copia non eredita la rete di Bitcoin, la sua storia di ledger, o i suoi detentori. Il valore viene dalla rete live che tutti usano davvero, non dal solo codice."}}, {"@type": "Question", "name": "Quanti bitcoin esisteranno mai?", "acceptedAnswer": {"@type": "Answer", "text": "21 milioni, imposti dal codice. Le nuove monete entrano solo tramite ricompense di mining, che si dimezzano circa ogni quattro anni, quindi l'emissione rallenta secondo un programma che chiunque può verificare."}}, {"@type": "Question", "name": "Devo acquistare un bitcoin intero?", "acceptedAnswer": {"@type": "Answer", "text": "No. Bitcoin si divide in 100 milioni di satoshi per moneta, quindi puoi acquistare esattamente 10 $ di valore. La maggior parte dei principianti possiede una frazione di moneta, non una intera."}}, {"@type": "Question", "name": "Bitcoin è anonimo?", "acceptedAnswer": {"@type": "Answer", "text": "No — è pseudonimo. Le transazioni sono pubbliche sulla blockchain per sempre, e gli exchange regolamentati collegano indirizzi a identità reali. Presumi che la tua attività on-chain sia tracciabile."}}, {"@type": "Question", "name": "Cosa succede quando tutti i 21 milioni saranno minati?", "acceptedAnswer": {"@type": "Answer", "text": "Le ricompense di mining finiscono e i miner saranno pagati solo dalle commissioni di transazione. Quella transizione è lontana decenni ed è già parte del design; non spegne la rete."}}]}
+</script>
+<style>.updated{font-size:12.5px;color:#8A9082;margin:10px 0 0}</style>
+<!-- tokvs-ga -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKCZ5P0BLR"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-ZKCZ5P0BLR');
+document.addEventListener('click', function (e) {
+  var a = e.target && e.target.closest ? e.target.closest('a') : null;
+  if (!a || !a.href) return;
+  var h = a.hostname || '';
+  var ex = h.indexOf('binance') !== -1 ? 'binance' : h.indexOf('okx') !== -1 ? 'okx' : h.indexOf('bybit') !== -1 ? 'bybit' : h.indexOf('bitget') !== -1 ? 'bitget' : null;
+  if (!ex) return;
+  try { gtag('event', 'referral_click', { exchange: ex, page: location.pathname }); } catch (e2) {}
+});
+</script>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="wrap topbar-in">
+    <a class="logo" href="../index.html"><svg width="26" height="26" viewBox="0 0 120 120" aria-hidden="true" focusable="false"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg><span class="logo-name">TokVS</span></a>
+    <nav class="main">
+      <a href="../start/step1.html">Percorso per principianti</a><a href="index.html" class="on">Guide</a><a href="../exchanges.html">Exchange</a><a href="../airdrops.html">Airdrop</a><a href="../tools.html">Strumenti</a>
+    </nav>
+    <div class="top-right"><select class="lang-select" aria-label="Language"><option value="zh">中文</option><option value="en">English</option><option value="es">Español</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="it" selected>Italiano</option><option value="pt">Português</option><option value="ja">日本語</option><option value="ko">한국어</option></select></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <div class="page-head">
+    <div class="card">
+      <div class="crumbs"><a href="../index.html">Home</a> / <a href="index.html">Guide</a> / Cos'è Bitcoin?</div>
+      <h1>Cos'è Bitcoin?</h1>
+      <p class="sub">Nessuna azienda, nessuna sede, nessuna previsione: solo cos'è Bitcoin, come funziona, e cosa dovresti sapere prima di acquistarne.</p>
+      <p class="updated">Aggiornato ottobre 2026 · Di TokVS · 10 min di lettura</p>
+      <p class="note">Fonti e metodo: <a href="../methodology.html">come verifichiamo</a> · <a href="../exchanges.html#availability">tabella di disponibilità per paese</a> · i dati cambiano, verifica sulla pagina ufficiale prima di agire.</p>
+      <!-- tokvs-hero-cta -->
+      <div class="ref-btns hero-cta"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Il più grande al mondo, la liquidità più profonda</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Iscriviti su Binance →</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Gamma completa di prodotti, buon supporto linguistico</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea un account OKX</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">App adatta ai principianti, liquidità profonda</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Iscriviti su Bybit</a></div></div>
+    </div>
+  </div>
+
+  <section>
+    <div class="card article prose">
+
+      <h2>La risposta breve</h2>
+      <p>Bitcoin è una valuta digitale decentralizzata: denaro che si muove su internet senza banche, società di pagamento, o una singola azienda al comando. È stato lanciato nel 2009, gira su un ledger pubblico chiamato blockchain, e la sua offerta totale è limitata a 21 milioni di monete — un limite scritto nel suo codice che nessuno può cambiare unilateralmente. La gente lo usa per conservare valore, per inviare denaro oltre confine, e, sempre più, come punto di ingresso nel più ampio mercato crypto. Se ricordi solo una frase, ricorda questa: <strong>Bitcoin è denaro senza emittente, tenuto onesto da una rete invece che da un'istituzione.</strong></p>
+      <h2>Da dove viene Bitcoin</h2>
+      <p>Nell'ottobre 2008, nel mezzo di una crisi finanziaria globale, una persona o gruppo usando lo pseudonimo Satoshi Nakamoto pubblicò un breve paper intitolato «Bitcoin: A Peer-to-Peer Electronic Cash System». Il paper descriveva un modo per le persone di inviare valore direttamente l'una all'altra online senza fidarsi di una banca o processore di pagamenti che facesse da intermediario. Nel gennaio 2009 la rete andò live con il suo primo blocco, e l'idea smise di essere un paper. Nessuno sa chi fosse Satoshi, e questo fa parte del design piuttosto che un mistero da risolvere: Bitcoin non ha fondatore da arrestare, nessun CEO da pressare, e nessuna azienda che possa cambiare le regole per proprio beneficio. Lo sviluppo è aperto — chiunque può leggere il codice, proporre cambiamenti, e far girare il software.</p>
+      <p>Quella storia di origine conta perché spiega le proprietà insolite di Bitcoin. Il denaro tradizionale funziona perché ti fidi dell'emittente: una banca centrale gestisce l'offerta e un sistema bancario la muove. Bitcoin funziona perché non devi fidarti di nessuna singola parte: le regole sono pubbliche, il ledger è pubblico, e migliaia di partecipanti indipendenti applicano le stesse regole. Se sembra astratto, la prossima sezione lo rende concreto.</p>
+      <h2>Come funziona davvero Bitcoin</h2>
+      <p>Tre pezzi fanno tutto il lavoro. Primo, la <strong>blockchain</strong>: un ledger pubblico, copiato su migliaia di computer in tutto il mondo, che registra ogni transazione Bitcoin mai fatta. Le transazioni sono raggruppate in «blocchi», e ogni blocco si collega a quello precedente, formando una catena. Una volta che un blocco è sepolto sotto abbastanza blocchi successivi, cambiarlo richiederebbe riscrivere tutto ciò che segue su una maggioranza di copie — praticamente impossibile, motivo per cui il ledger è trattato come finale.</p>
+      <p>Secondo, <strong>mining</strong>: il processo che aggiunge nuovi blocchi ed emette nuove monete. I miner sono computer che competono per risolvere un puzzle computazionale; il vincitore aggiunge il blocco successivo e riceve bitcoin appena creati come ricompensa. Il mining fa due lavori contemporaneamente: ordina le transazioni onestamente (barare richiede superare in calcolo la maggioranza onesta, il che costa elettricità e hardware reali) e controlla il rilascio di nuove monete secondo un programma fisso. Terzo, <strong>chiavi</strong>: i tuoi bitcoin sono controllati da una chiave privata — un lungo numero segreto — e il tuo indirizzo pubblico ne deriva. Chiunque abbia la chiave privata può spendere le monete; chiunque non ce l'abbia non può. Quel singolo fatto spiega sia la sicurezza di Bitcoin sia il suo rischio più famoso: perdi la chiave, perdi le monete, senza reset della password.</p>
+      <h2>Perché 21 milioni contano</h2>
+      <p>Il codice di Bitcoin limita l'offerta totale a 21 milioni di monete, e le nuove monete entrano in circolazione tramite ricompense di mining che si riducono nel tempo. Circa ogni quattro anni, un evento chiamato <strong>halving</strong> dimezza la ricompensa di mining, rallentando la nuova offerta secondo un programma che chiunque può verificare in anticipo. Questo è l'opposto di come funziona il denaro fiat, dove una banca centrale può espandere l'offerta a volontà. La scarsità da sola non rende qualcosa di valore — molte cose scarse sono senza valore — ma un'offerta prevedibile e immutabile è il motivo per cui la gente descrive Bitcoin come «oro digitale»: un asset la cui emissione futura nessuno può gonfiare silenziosamente.</p>
+      <p>Seguono due conseguenze pratiche. Uno, Bitcoin è divisibile: non devi mai acquistare una moneta intera. Un bitcoin si divide in 100 milioni di unità più piccole chiamate satoshi, quindi puoi possedere esattamente 10 $ di Bitcoin come possiedi 10 $ di polvere d'oro. Due, le monete perse sono perse per sempre — le monete le cui chiavi sono state perse contano ancora verso i 21 milioni, il che significa che l'offerta spendibile è minore del numero principale. Nessun fatto richiede che tu creda a una previsione di prezzo; sono meccanica, e la meccanica è ciò su cui dovresti basare le decisioni.</p>
+      <h2>Bitcoin vs il denaro nella tua banca</h2>
+      <div class="table-wrap"><table class="fee">
+        <thead><tr><th>Caratteristica</th><th>Bitcoin</th><th>Denaro bancario</th></tr></thead>
+        <tbody>
+          <tr><td>Emittente</td><td>Nessuno — regole di rete</td><td>Banca centrale + banche</td></tr>
+          <tr><td>Offerta totale</td><td>Limitata a 21 milioni</td><td>Espandibile per politica</td></tr>
+          <tr><td>Orari</td><td>24/7, incluse le festività</td><td>Orari lavorativi + ritardi di regolamento</td></tr>
+          <tr><td>Trasferimento transfrontaliero</td><td>Stesso processo ovunque</td><td>Banche corrispondenti, giorni, commissioni</td></tr>
+          <tr><td>Reversibilità</td><td>Le transazioni sono finali</td><td>Chargeback possibili</td></tr>
+          <tr><td>Rischio di congelamento dell'account</td><td>Nessuno se detieni le tue chiavi</td><td>Banca o tribunale possono congelare</td></tr>
+          <tr><td>Stabilità dei prezzi</td><td>Altamente volatile</td><td>Stabile nella propria valuta</td></tr>
+        </tbody>
+      </table></div>
+      <p>Quella tabella è anche il trade-off onesto: Bitcoin vince su resistenza alla censura, assenza di confini, e offerta prevedibile, e perde nettamente su stabilità dei prezzi e protezione dei consumatori. Un bonifico può essere invertito quando vieni truffato; un trasferimento Bitcoin no. Un conto bancario è denominato in una valuta che il tuo padrone di casa accetta; il prezzo di Bitcoin può oscillare bruscamente in una settimana. Nessun lato di quel ledger è di per sé un motivo per acquistare o evitare Bitcoin — è il contesto per decidere quanto, se mai, appartiene alle tue finanze.</p>
+      <h2>Come la gente acquista bitcoin</h2>
+      <p>Il percorso standard per principianti passa da un exchange: registrati, verifica la tua identità, acquista USDT con denaro fiat, poi usa USDT per acquistare BTC su una coppia spot. La nostra <a href="how-to-buy-bitcoin.html">guida passo passo a bitcoin</a> copre quel flusso passo passo, e la nostra <a href="how-to-buy-crypto-for-beginners.html">guida all'acquisto per principianti</a> copre lo stesso terreno per crypto in generale. Dopo l'acquisto, scegli la conservazione: lascialo sull'exchange mentre l'importo è piccolo e stai imparando, o spostalo nel tuo wallet — dove solo tu detieni la chiave privata — una volta che l'importo conta. La nostra <a href="wallet-safety.html">guida alla sicurezza del wallet</a> spiega le seed phrase, le dodici o ventiquattro parole che fanno backup di un wallet in autocustodia, e la disciplina che richiedono.</p>
+      <p>Cosa non dovresti fare il primo giorno: acquistare con leva, inseguire una moneta perché qualcuno online ha promesso rendimenti, o inviare bitcoin a qualsiasi indirizzo ti abbia dato uno sconosciuto per qualsiasi motivo — «giveaway», «supporto», «raddoppio investimento», tutto quanto. La finalità di Bitcoin è una funzionalità per trasferimenti onesti e un'arma per truffatori; la difesa è noiosa e assoluta: verifica tu stesso gli indirizzi, non condividere mai chiavi o codici, e presumi che ogni offerta non richiesta sia una trappola finché non provato altrimenti.</p>
+      <h2>Come si regola un pagamento Bitcoin</h2>
+      <p>Quando invii bitcoin, il tuo wallet trasmette una transazione firmata alla rete, dove attende in un'area di staging chiamata mempool. I miner scelgono transazioni dal mempool — in genere preferendo quelle con commissioni più alte quando lo spazio è stretto — e il miner vincente include la tua nel blocco successivo, circa dieci minuti dopo. Quel primo blocco è la tua prima conferma. La maggior parte dei destinatari considera un pagamento regolato dopo diverse conferme, perché ogni blocco aggiuntivo sepolto sopra rende esponenzialmente più difficile invertire la transazione. Per piccoli importi quotidiani, una conferma è di solito sufficiente; per grandi importi, attendere sei è la convenzione comune. Nulla di questo richiede fidarsi del destinatario o di un intermediario — le regole condivise della rete fanno la verifica, e il tuo wallet mostra il conteggio delle conferme man mano che cresce.</p>
+      <p>Due abitudini pratiche seguono da quella lezione di meccanica. Primo, le commissioni sono un mercato, non un menu: quando il mempool è affollato, le commissioni salgono, e pagare la commissione suggerita dal wallet è di solito giusto per i principianti. Secondo, non trattare mai una transazione non confermata come denaro finito. Se un venditore rilascia beni prima della conferma e la transazione poi fallisce o viene sostituita, non c'è nessuno a cui appellarsi. La pazienza fa parte del protocollo: dieci minuti per un blocco, qualche blocco per fiducia, e nessuna scorciatoia che salti entrambi.</p>
+      <h2>I rischi, detti chiaramente</h2>
+      <p><strong>Volatilità.</strong> Il prezzo di Bitcoin è ripetutamente sceso della metà o più dai picchi e ha impiegato mesi o anni per recuperare. Chiunque non possa guardare la propria detenzione scendere bruscamente senza vendere in panico dovrebbe dimensionarsi di conseguenza o restare fuori.</p>
+      <p><strong>Irreversibilità.</strong> Un indirizzo sbagliato o l'indirizzo di un truffatore significa che le monete sono perse. Non c'è help desk, nessun chargeback, e nessun fondo assicurativo per errore dell'utente.</p>
+      <p><strong>Responsabilità di autocustodia.</strong> Detenere le tue chiavi rimuove il rischio di exchange e lo sostituisce con responsabilità personale: fai backup della seed phrase offline, non fotografarla mai, non digitarla mai in un sito web.</p>
+      <p><strong>La regolamentazione varia.</strong> Le regole differiscono per paese e cambiano nel tempo — trattamento fiscale, disponibilità di exchange, e persino legalità. Controlla le tue regole locali prima di acquistare, e conserva i record di ogni transazione per il momento delle tasse.</p>
+      <p><strong>Le truffe si raggruppano attorno al nome di Bitcoin.</strong> Exchange falsi, account di supporto falsi, giveaway falsi, e «servizi di recupero» che addebitano due volte alle vittime usano tutti la fama di Bitcoin come esca. La nostra <a href="avoid-scams.html">guida alle truffe</a> elenca le otto frodi che i principianti incontrano davvero.</p>
+      <h2>Miti che non muoiono</h2>
+      <ul>
+        <li><strong>«Bitcoin è anonimo.»</strong> È pseudonimo: gli indirizzi non sono nomi, ma ogni transazione è pubblica per sempre, e gli exchange collegano indirizzi a identità. Trattalo come tracciabile, non invisibile.</li>
+        <li><strong>«Bitcoin è solo per il crimine.»</strong> L'uso illecito esiste, come per il contante, ma la stragrande maggioranza del volume è trading, detenzione, e trasferimenti legittimi su sedi regolamentate.</li>
+        <li><strong>«Bitcoin è un'azienda che potrebbe fallire.»</strong> Non c'è azienda. La rete è software gestito da partecipanti indipendenti; continua finché la gente lo gestisce.</li>
+        <li><strong>«È troppo tardi per acquistare.»</strong> Quella è un'opinione di prezzo travestita da fatto. Se Bitcoin si adatta alle tue finanze dipende dai tuoi obiettivi e tolleranza al rischio, non da che anno sia.</li>
+        <li><strong>«Bitcoin non è sostenuto da nulla.»</strong> Così è ogni moderna valuta fiat. Bitcoin è sostenuto dalla sicurezza della sua rete, dal suo programma di offerta fisso, e dalla volontà delle persone di accettarlo — lo stesso tipo di sostegno sociale, meno l'emittente.</li>
+      </ul>
+
+      <!-- tokvs-end-cta -->
+      <div class="callout good cta-end">
+<b>Pronto?</b> La registrazione richiede circa 10 minuti: verifica una volta, attiva la 2FA, poi segui i passaggi sopra. Le guide di questo sito ti accompagnano nel resto.
+<div class="ref-btns"><div class="ref-btn"><div class="cic" style="background:#F7931A;">B</div><div><div class="tt">Binance</div><div class="dd">Il più grande al mondo, la liquidità più profonda</div></div><a class="go" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Iscriviti su Binance</a></div><div class="ref-btn"><div class="cic" style="background:#12150F;">O</div><div><div class="tt">OKX</div><div class="dd">Gamma completa di prodotti, buon supporto linguistico</div></div><a class="go" href="https://www.okx.com/join/AZTPA7SQ" target="_blank" rel="nofollow noopener">Crea un account OKX</a></div><div class="ref-btn"><div class="cic" style="background:#F7A600;">Y</div><div><div class="tt">Bybit</div><div class="dd">App adatta ai principianti, liquidità profonda</div></div><a class="go" href="https://www.bybit.com/invite?ref=NMAYO7&medium=referral&utm_campaign=evergreen&share_to=link" target="_blank" rel="nofollow noopener">Iscriviti su Bybit</a></div></div>
+<p class="note">Stesse commissioni della registrazione diretta — il nostro link non ti costa nulla in più.</p>
+</div>
+      
+      <h3>Chi controlla Bitcoin?</h3>
+      <p>Nessuna singola persona, azienda, o governo controlla Bitcoin. Le sue regole vivono in software open-source gestito da migliaia di partecipanti indipendenti; cambiare le regole richiede ampio accordo tra miner, operatori di nodi, e utenti.</p>
+      <h3>Bitcoin può essere copiato o duplicato?</h3>
+      <p>Chiunque può copiare il software, ma una copia non eredita la rete di Bitcoin, la sua storia di ledger, o i suoi detentori. Il valore viene dalla rete live che tutti usano davvero, non dal solo codice.</p>
+      <h3>Quanti bitcoin esisteranno mai?</h3>
+      <p>21 milioni, imposti dal codice. Le nuove monete entrano solo tramite ricompense di mining, che si dimezzano circa ogni quattro anni, quindi l'emissione rallenta secondo un programma che chiunque può verificare.</p>
+      <h3>Devo acquistare un bitcoin intero?</h3>
+      <p>No. Bitcoin si divide in 100 milioni di satoshi per moneta, quindi puoi acquistare esattamente 10 $ di valore. La maggior parte dei principianti possiede una frazione di moneta, non una intera.</p>
+      <h3>Bitcoin è anonimo?</h3>
+      <p>No — è pseudonimo. Le transazioni sono pubbliche sulla blockchain per sempre, e gli exchange regolamentati collegano indirizzi a identità reali. Presumi che la tua attività on-chain sia tracciabile.</p>
+      <h3>Cosa succede quando tutti i 21 milioni saranno minati?</h3>
+      <p>Le ricompense di mining finiscono e i miner saranno pagati solo dalle commissioni di transazione. Quella transizione è lontana decenni ed è già parte del design; non spegne la rete.</p>
+      <h2>Continua a leggere</h2>
+      <ul>
+        <li><a href="how-to-buy-bitcoin.html">Come acquistare bitcoin: guida completa</a></li>
+        <li><a href="what-is-cryptocurrency.html">Cos'è la criptovaluta?</a></li>
+        <li><a href="wallet-safety.html">Sicurezza del wallet e della seed phrase</a></li>
+        <li><a href="bitcoin-vs-ethereum.html">Bitcoin vs Ethereum</a></li>
+      </ul>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <div class="foot-card">
+    <div class="foot">
+      <div class="col" style="flex:1.4;">
+        <div class="flogo"><svg width="22" height="22" viewBox="0 0 120 120" aria-hidden="true" focusable="false" style="vertical-align:-5px;margin-right:9px"><line x1="35" y1="27" x2="35" y2="73" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="53" x2="60" y2="95" stroke="#E5322D" stroke-width="4" stroke-linecap="round"/><line x1="86" y1="15" x2="86" y2="65" stroke="#00C853" stroke-width="4" stroke-linecap="round"/><rect x="27.5" y="35" width="15" height="29" rx="3.5" fill="#00C853"/><rect x="52.5" y="61" width="15" height="25" rx="3.5" fill="#E5322D"/><rect x="78.5" y="23" width="15" height="33" rx="3.5" fill="#00C853"/><polyline points="35,27 60,53 86,15" fill="none" stroke="#FFFFFF" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/><polygon points="86,3 96,14 78,17" fill="#FFFFFF" opacity=".95"/></svg>TokVS</div>
+        <a href="../index.html" style="margin-top:10px;">Home</a><a href="../airdrops.html">Airdrop giornalieri</a><a href="../exchanges.html">Confronto tra exchange</a>
+      </div>
+      <div class="col" style="flex:1;"><b>Principianti</b><a href="../start/step1.html">Percorso per principianti</a><a href="index.html">Guide</a><a href="../start/step5.html">Acquista la tua prima moneta</a></div>
+      <div class="col" style="flex:1;"><b>Recensioni</b><a href="../reviews/binance.html">Binance</a><a href="../reviews/okx.html">OKX</a><a href="../reviews/bybit.html">Bybit</a><a href="../reviews/bitget.html">Bitget</a></div>
+      <div class="col" style="flex:1;"><b>Strumenti</b><a href="../tools.html#watchlist">Avvisi della watchlist</a><a href="../tools.html#calendar">Calendario degli eventi</a><a href="../exchanges.html#calculator">Calcolatore delle commissioni</a></div>
+    </div>
+    <div class="disclosure">Questo sito contiene link di affiliazione. Registrarsi tramite i nostri link non ti costa nulla in più. I prezzi delle criptovalute sono estremamente volatili; nulla qui è un consiglio di investimento: valuta tu stesso i rischi.</div>
+  </div>
+</footer>
+
+<style>.sticky-cta{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;border-top:1px solid #E5E7E0;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 -6px 20px rgba(0,0,0,.08)}.sticky-cta span{font-size:13.5px;font-weight:700;color:#2A2E27;flex:1}.sticky-cta .btn-ref{padding:9px 18px;font-size:13.5px}.sticky-cta .sx{background:none;border:none;font-size:20px;line-height:1;color:#8A9082;cursor:pointer;padding:4px 8px}@media (min-width:641px){.sticky-cta{display:none!important}}</style>
+<div class="sticky-cta" id="stickyCta"><span>Non hai ancora un account? Registrati in 3 minuti →</span><a class="btn-ref" href="https://account.binance.com/register?ref=76257270&?registerChannel=user_center" target="_blank" rel="nofollow noopener">Registrati</a><button class="sx" aria-label="Chiudi" onclick="document.getElementById('stickyCta').style.display='none'">×</button></div>
+<script>
+/* mobile footer accordion: collapse footer groups on small screens */
+(function(){if(!window.matchMedia||!window.matchMedia('(max-width:640px)').matches)return;document.querySelectorAll('.foot .col').forEach(function(col){var t=null;for(var i=0;i<col.children.length;i++){if(col.children[i].tagName==='B'){t=col.children[i];break;}}if(!t||col.classList.contains('acc'))return;col.classList.add('acc');t.setAttribute('role','button');t.setAttribute('tabindex','0');t.setAttribute('aria-expanded','false');function tg(){var o=col.classList.toggle('open');t.setAttribute('aria-expanded',o?'true':'false');}t.addEventListener('click',tg);t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();tg();}});});})();
+</script>
+<script src="../../js/mobile-read.js?v=20261030i" defer></script>
+</body>
+</html>
