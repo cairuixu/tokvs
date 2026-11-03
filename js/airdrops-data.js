@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261104-asentum',
+    name_zh: 'Asentum 激励测试网 XP（ASE 空投积分）',
+    name_en: 'Asentum Incentivized Testnet XP (ASE Airdrop Points)',
+    desc_zh: '约 30 分钟上手 + 每天几分钟链上操作 · 测试网 0 资金：激励测试网自 9 月 17 日上线（链 ID 1423），做验证、换币、加流动性、签到与社交任务赚 XP，官方文档明确 XP 即未来 ASE 空投的计分方式；但转换公式、快照日期与 6000 万 ASE 之类的传闻数字均未公布，属未确认潜在机会。可选：质押真实主网 ASE 可获 2–10 倍 XP 加成，但有价格波动风险，非必需。需连接钱包，测试网请用全新钱包，只认官方域名 asentum.com / airdrop.asentum.com，不索要私钥/助记词。',
+    desc_en: '~30 minutes to start + a few minutes of daily on-chain activity · zero cost on testnet: the incentivized testnet has been live since Sep 17 (chain ID 1423) — earn XP by validating, swapping, adding liquidity, daily check-ins and social tasks. Official docs state XP is how the future ASE airdrop is scored, but the conversion formula, snapshot dates and rumored figures such as 60M ASE are unpublished — unconfirmed potential only. Optional: staking real mainnet ASE multiplies XP 2x–10x but carries price risk and is not required. Wallet connection required; use a fresh wallet on testnet. Official domains only: asentum.com / airdrop.asentum.com, never share private keys/mnemonics.',
+    deadline: '',
+    tags: [
+      { zh: '测试网交互', en: 'Testnet' },
+      { zh: '潜在空投（XP 计分、规则未公布）', en: 'Potential airdrop (XP-scored, rules TBA)' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '0 资金（可选真实质押加成）', en: 'Zero cost (optional real-stake boost)' }
+    ],
+    link: 'https://airdrop.asentum.com',
+    checklist_zh: [
+      '打开官方空投面板 airdrop.asentum.com（认准官方域名）',
+      '连接钱包并完成注册签名，把 Asentum 测试网（链 ID 1423）加进钱包',
+      '从官方水龙头领测试 ASE，开始验证、换币或加流动性赚 XP',
+      '每天做签到与链上任务保持 XP 累积，注意每日上限',
+      '留意官方公布的 XP 转换公式与快照规则，不轻信传闻的分配数字'
+    ],
+    checklist_en: [
+      'Open the official airdrop dashboard airdrop.asentum.com (verify the official domain)',
+      'Connect your wallet, sign the registration message, and add the Asentum testnet (chain ID 1423) to your wallet',
+      'Claim test ASE from the official faucet, then validate, swap or add liquidity to earn XP',
+      'Do the daily check-ins and on-chain tasks to keep XP accumulating, minding the daily caps',
+      'Watch for the official XP conversion formula and snapshot rules — do not trust rumored allocation figures'
+    ],
+    checklist_links: ['https://airdrop.asentum.com', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261101-titan',
     name_zh: 'Titan Exchange 测试网积分（Canton 隐私永续合约测试网）',
     name_en: 'Titan Exchange Testnet Points (Canton Privacy Perpetuals Testnet)',
@@ -218,35 +248,5 @@ window.TOKVS_AIRDROPS = [
       'Complete available quests on The Grand Heist quest page'
     ],
     checklist_links: ['https://heist.dogeos.com', 'https://faucet.testnet.dogeos.com', 'guides/wallet-safety.html', '', '']
-  },
-  {
-    id: 'airdrop-20261014-allox',
-    name_zh: 'AlloX（$ALLOX）积分与 Gems 奖励',
-    name_en: 'AlloX ($ALLOX) Points & Gems Rewards',
-    desc_zh: '注册约 15–20 分钟起、每日任务约 10 分钟 · 需真实资金：组合在链上执行、投入的是真钱（有市场波动风险，非测试网）· 需连接钱包 + X 账号。35% 的 $ALLOX 总量预留给社区，官方确认积分将计入未来 $ALLOX 奖励（具体分配规则待公布）；$100 万公募 10 月 12 日已在 Coinbase 旗下 Sonar 以 $0.065 开启。只认官方域名 app.allox.ai，谨防仿冒。',
-    desc_en: '~15–20 minutes to set up, ~10 minutes daily · requires real funds: portfolios execute on-chain with real money (market risk — this is NOT a testnet) · wallet + X account required. 35% of $ALLOX supply is reserved for the community, and the team confirmed Points count toward future $ALLOX rewards (allocation rules TBA); a $1M public sale opened Oct 12 on Coinbase-owned Sonar at $0.065. Official domain only: app.allox.ai — beware of copycats.',
-    deadline: '',
-    tags: [
-      { zh: '积分/Gems', en: 'Points/Gems' },
-      { zh: '潜在空投', en: 'Potential airdrop' },
-      { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '需真实资金', en: 'Real funds needed' }
-    ],
-    link: 'https://app.allox.ai',
-    checklist_zh: [
-      '打开官方应用 app.allox.ai 并连接钱包（认准官方域名）',
-      '领取 5000 积分迎新奖励，完成每日签到任务',
-      '用 AI 创建一个叙事组合（投入少量真实资金，注意市场风险）',
-      '分享组合卡片到 X，参与 Gems 奖励活动',
-      '开启推荐链接，邀请好友创建组合赚多级奖励'
-    ],
-    checklist_en: [
-      'Open the official app at app.allox.ai and connect your wallet (verify the official domain)',
-      'Claim the 5,000-Point welcome bonus and complete daily check-in tasks',
-      'Create a narrative portfolio with the AI (invest a small amount of real funds — mind the market risk)',
-      'Share your portfolio card on X to join the Gems rewards campaign',
-      'Activate your referral link and earn multi-tier rewards when friends create portfolios'
-    ],
-    checklist_links: ['https://app.allox.ai', '', 'guides/wallet-safety.html', '', '']
   },
 ];
