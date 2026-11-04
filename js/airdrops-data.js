@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261105-incentiv',
+    name_zh: 'Incentiv 主网 Epoch 0 XP 活动（$CENT 空投积分）',
+    name_en: 'Incentiv Mainnet Epoch 0 XP Campaign ($CENT Airdrop Points)',
+    desc_zh: '约 30 分钟上手 + 持续链上操作 · 主网操作可能产生 gas/桥接成本：EVM 兼容 PoW Layer 1 Incentiv 的主网 XP 活动 Epoch 0 进行中，在官方 Portal 创建主网钱包、做链上转账/兑换/桥接等 UserOps 赚 XP，活动期间符合条件的新 UserOps XP 享 3 倍加成；XP 路线需至少 1000 XP 才有资格，初始分配池为用户类别 8500 万枚 $CENT（含 XP、测试网与社区贡献，不只面向新参与者）。注意：达标不保证获得分配，个人分配额与领取日期尚未公布，奖励按 3 个月锁仓 + 12 个月线性释放；已在交易所交易的 CENT 与 Epoch 0 空投分配是两回事。需连接/创建主网钱包，只认官方域名 portal.incentiv.io / docs.incentiv.io，不索要私钥/助记词。',
+    desc_en: '~30 minutes to start + ongoing on-chain activity · mainnet activity may incur gas/bridge costs: EVM-compatible PoW Layer 1 Incentiv\'s mainnet XP campaign Epoch 0 is live — create a mainnet wallet in the official Portal and earn XP from on-chain transfers, swaps, bridging and other UserOps, with a temporary 3x boost on eligible new UserOps XP. The XP route requires at least 1,000 XP to qualify; the initial Users-category pool is 85M $CENT (covering XP, testnet and community contributions, not only new participants). Note: qualifying does not guarantee an allocation, individual amounts and claim dates are unannounced, and rewards vest over a 3-month cliff plus 12 months linear; CENT already trading on exchanges is separate from Epoch 0 airdrop allocations. Wallet connection/creation required; official domains only: portal.incentiv.io / docs.incentiv.io, never share private keys/mnemonics.',
+    deadline: '2026-11-30',
+    tags: [
+      { zh: '积分计划', en: 'Points program' },
+      { zh: '主网交互', en: 'Mainnet activity' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '可能产生 gas/桥接成本', en: 'Possible gas/bridge costs' }
+    ],
+    link: 'https://portal.incentiv.io/',
+    checklist_zh: [
+      '打开官方 Portal portal.incentiv.io（认准官方域名，勿点第三方空投链接）',
+      '创建主网钱包并连接社交账号，查看 XP 与徽章面板',
+      '做链上 UserOps（转账、兑换、桥接等）赚 XP，争取 3 倍加成期内的操作',
+      '累积至少 1000 XP 以满足 XP 路线资格门槛，并留意 Mystery Box 与成就任务',
+      '11 月 30 日 10:00（UTC）截止前完成操作，之后按官方公告等分配与领取规则'
+    ],
+    checklist_en: [
+      'Open the official Portal portal.incentiv.io (verify the official domain; do not click third-party airdrop links)',
+      'Create a mainnet wallet, connect social accounts, and check your XP and badges panel',
+      'Do on-chain UserOps (transfers, swaps, bridging) to earn XP, using the 3x boost window while it lasts',
+      'Reach at least 1,000 XP to meet the XP-route qualification threshold, and check Mystery Boxes and achievement tasks',
+      'Finish activity before the Nov 30, 10:00 UTC deadline, then wait for official allocation and claim rules'
+    ],
+    checklist_links: ['https://portal.incentiv.io/', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261104-asentum',
     name_zh: 'Asentum 激励测试网 XP（ASE 空投积分）',
     name_en: 'Asentum Incentivized Testnet XP (ASE Airdrop Points)',
@@ -218,35 +248,5 @@ window.TOKVS_AIRDROPS = [
       'Check your ranking after the season and claim USDC rewards per official rules'
     ],
     checklist_links: ['https://www.binance.com/', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261015-dogeos',
-    name_zh: 'DogeOS「The Grand Heist」测试网任务',
-    name_en: 'DogeOS "The Grand Heist" Testnet Quests',
-    desc_zh: '约 30–60 分钟（一次性） · 0 资金，测试 DOGE 从官方水龙头免费领，无需真实资金。需连接钱包。MyDoge V3 与 25+ 测试网应用于 10 月 8 日上线，10 月 12 日官方宣布任务完成数突破 10 万。注意：官方未公布代币与空投条款，属未确认潜在机会；测试网请用全新钱包，只认官方域名，不索要私钥/助记词。',
-    desc_en: '~30–60 minutes one-time · zero cost — test DOGE is free from the official faucet, no real funds needed. Wallet connection required. MyDoge V3 and 25+ testnet apps went live Oct 8, and the team announced 100K+ completed quests on Oct 12. Note: no token or airdrop terms announced — unconfirmed potential only; use a fresh wallet on testnet, official domains only, never share private keys/mnemonics.',
-    deadline: '',
-    tags: [
-      { zh: '测试网交互', en: 'Testnet' },
-      { zh: '潜在空投（未确认）', en: 'Potential airdrop (unconfirmed)' },
-      { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '0 资金', en: 'Zero cost' }
-    ],
-    link: 'https://heist.dogeos.com',
-    checklist_zh: [
-      '打开官方任务平台 heist.dogeos.com（认准官方域名）',
-      '在官方水龙头 faucet.testnet.dogeos.com 领取测试 DOGE',
-      '把 DogeOS 测试网添加到钱包（以官方文档的 Chain ID 为准）',
-      '体验 Moar Finance 等测试网应用（供应/借出/还款等）',
-      '完成 The Grand Heist 任务页的可用任务'
-    ],
-    checklist_en: [
-      'Open the official quest platform heist.dogeos.com (verify the official domain)',
-      'Claim test DOGE from the official faucet faucet.testnet.dogeos.com',
-      'Add the DogeOS testnet to your wallet (use the Chain ID from official docs)',
-      'Try testnet apps like Moar Finance (supply/borrow/repay etc.)',
-      'Complete available quests on The Grand Heist quest page'
-    ],
-    checklist_links: ['https://heist.dogeos.com', 'https://faucet.testnet.dogeos.com', 'guides/wallet-safety.html', '', '']
   },
 ];
