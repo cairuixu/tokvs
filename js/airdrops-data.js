@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261108-vearl',
+    name_zh: 'Vearl 公开 GPU 挖矿测试网（0.7% 主网供应分配）',
+    name_en: 'Vearl Public GPU-Mining Testnet (0.7% of Mainnet Supply)',
+    desc_zh: '需 GPU 与电费 + 至少 3 天活跃挖矿 · 测试网挖矿：公开 GPU 挖矿测试网 10 月 23 日上线，官方参与页明确为本轮测试网的合格矿工预留主网最大供应量的 0.7%（五轮测试网合计 7%）；每出 1 个块得 1 分、付费任务 1.5 分，达标需至少 3 个活跃日、占总积分至少 0.005% 并签署奖励地址注册。注意：需自备 GPU 与电费，挖矿软件只从官网 vearl.org 下载，不要在存有主钱包的机器上跑矿机；分配以官方规则为准。只认官方域名 vearl.org，不索要私钥/助记词。',
+    desc_en: 'GPU and electricity costs + at least 3 active days of mining · testnet mining: the public GPU-mining testnet opened on Oct 23, and the official participate page reserves 0.7% of maximum mainnet supply for this testnet\'s eligible miners (7% across five planned testnets); miners earn 1 point per block and 1.5 points for paid work. Qualifying needs at least 3 active days, at least 0.005% of total points and a signed reward-address registration. Note: you need your own GPU and electricity; download the miner only from the official site vearl.org and never run mining software on a machine holding your main wallet. Official rules prevail. Official domain only: vearl.org, never share private keys/mnemonics.',
+    deadline: '',
+    tags: [
+      { zh: '测试网交互', en: 'Testnet' },
+      { zh: '挖矿', en: 'GPU mining' },
+      { zh: '需 GPU 与电费', en: 'GPU and electricity costs' },
+      { zh: '已明确分配 0.7%', en: 'Defined 0.7% allocation' }
+    ],
+    link: 'https://vearl.org/',
+    checklist_zh: [
+      '打开官网 vearl.org（认准官方域名，只从官网下载矿机软件）',
+      '在官网完成奖励地址注册并签署注册信息',
+      '在不存主钱包的机器上安装矿机并开始挖矿，累计至少 3 个活跃日',
+      '争取占总积分至少 0.005%，留意付费任务 1.5 分的加成',
+      '留意官方公布的测试网结束与分配规则，核对奖励地址'
+    ],
+    checklist_en: [
+      'Open the official site vearl.org (verify the official domain; download the miner only from there)',
+      'Complete the reward-address registration on the official site and sign it',
+      'Install the miner on a machine that holds no main wallet and start mining for at least 3 active days',
+      'Aim for at least 0.005% of total points, and note the 1.5-point bonus for paid work',
+      'Watch official announcements for the testnet close and allocation rules, and double-check your reward address'
+    ],
+    checklist_links: ['https://vearl.org/', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261105-incentiv',
     name_zh: 'Incentiv 主网 Epoch 0 XP 活动（$CENT 空投积分）',
     name_en: 'Incentiv Mainnet Epoch 0 XP Campaign ($CENT Airdrop Points)',
@@ -219,34 +249,5 @@ window.TOKVS_AIRDROPS = [
       'Note: the leveraged portion of RLUSD obtained by borrowing USDT/USDC/USD1 etc. counts at only 40%; market risk is on you'
     ],
     checklist_links: ['https://www.binance.com/en/square/post/379640270716781', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261020-binance-pick',
-    name_zh: 'Binance「Pick」预测市场活动（最高 100 万 USDC 奖池）',
-    name_en: 'Binance "Pick" Prediction Campaign (Up to 1M USDC Prize Pool)',
-    desc_zh: '报名 10–20 分钟 + 每天几分钟签到 · 预测使用活动积分（Scores，仅活动积分、无货币价值，不可兑换现金），奖池按早鸟预约人数浮动、最高 100 万 USDC：50 万赛季排行榜（前 2 万名）、每周 10 万 USDC（共 4 周）、10 万参与奖（完成至少 5 次签到，每人最高 5 USDC）。早鸟预约 10 月 19 日–20 日 23:59（UTC）；预测期 10 月 21 日–11 月 15 日。部分任务（如交易类）需真实资金；需币安账号 + KYC，任务可用性因地区而异；只认官方域名 www.binance.com，不索要私钥/助记词，谨防仿冒活动页。',
-    desc_en: '10–20 minutes to sign up + a few minutes of daily check-ins · predictions spend campaign-only Scores (no monetary value, cannot be redeemed for cash). The prize pool scales with early-bird sign-ups, up to 1M USDC: 500K season leaderboard (top 20,000), 100K USDC per week for 4 weeks, and a 100K participation pool (at least 5 check-ins, up to 5 USDC each). Early-bird reservations Oct 19–20, 23:59 UTC; prediction period Oct 21–Nov 15. Some tasks (e.g. trading) require real funds; Binance account + KYC required, task availability varies by region. Official domain only: www.binance.com, never share private keys/mnemonics, beware of fake campaign pages.',
-    deadline: '2026-11-15',
-    tags: [
-      { zh: '交易所活动', en: 'Exchange campaign' },
-      { zh: '预测市场', en: 'Prediction markets' },
-      { zh: '签到+任务积分', en: 'Check-ins + task scores' }
-    ],
-    link: 'https://www.binance.com/',
-    checklist_zh: [
-      '注册币安账号并完成 KYC（认准官方域名 www.binance.com）',
-      '在 10 月 20 日 23:59（UTC）前完成 Pick 活动早鸟预约',
-      '预测期（10 月 21 日–11 月 15 日）每天签到、做任务赚取 Scores',
-      '用 Scores 在预测市场中做预测，冲赛季榜与每周榜',
-      '赛季结束后核对排名，按官方规则领取 USDC 奖励'
-    ],
-    checklist_en: [
-      'Register a Binance account and complete KYC (verify the official domain www.binance.com)',
-      'Complete the Pick campaign early-bird reservation before 23:59 UTC on Oct 20',
-      'During the prediction period (Oct 21–Nov 15), check in daily and complete tasks to earn Scores',
-      'Use Scores to make predictions in the prediction markets; chase the season and weekly leaderboards',
-      'Check your ranking after the season and claim USDC rewards per official rules'
-    ],
-    checklist_links: ['https://www.binance.com/', '', '', '', '']
   },
 ];
