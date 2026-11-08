@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261109-aster-stage6',
+    name_zh: 'Aster Stage 6 领取窗口（6400 万 ASTER，100% 归属）',
+    name_en: 'Aster Stage 6 Claim Window (64M ASTER, 100% Vested)',
+    desc_zh: '约 10 分钟核对 + 连接钱包领取 · 0 新增资金（仅 gas）：仅面向 Stage 6 老参与者——2026 年 2 月 2 日至 3 月 29 日 Stage 6 积分满 10000 且在 4 月 20 日至 5 月 2 日选了 6 个月全额归属的用户；6400 万枚 ASTER（占总量 0.8%）已于 11 月 4 日 20:00（北京时间）开放领取，领取后 100% 解锁、无后续锁仓。注意：官方窗口至 12 月 4 日 20:00（北京时间），但按安全线请在 11 月 28 日 20:00 前完成领取；新用户无法参与，已在 5 月领过 50% 的用户剩余部分已销毁、无可领。只认官方页 asterdex.com/en/airdrop，不索要私钥/助记词，谨防仿冒领取站。',
+    desc_en: '~10 minutes to check + connect wallet to claim · no new funds (gas only): for Stage 6 participants only — those who scored at least 10,000 Stage 6 points (Feb 2–Mar 29, 2026) and chose the 6-month full-vesting option between Apr 20 and May 2. The 64M ASTER pool (0.8% of supply) opened for claims on Nov 4 at 12:00 UTC; claimed tokens are 100% unlocked with no further vesting. Note: the official window runs to Dec 4, 12:00 UTC, but claim by Nov 28, 20:00 Beijing time as the safe line. New users cannot join; anyone who took the 50% early claim in May has nothing left (the rest was burned). Official page only: asterdex.com/en/airdrop. Never share private keys/mnemonics; beware of fake claim sites.',
+    deadline: '2026-11-28',
+    tags: [
+      { zh: '空投领取', en: 'Airdrop claim' },
+      { zh: '仅限老参与者', en: 'Existing participants only' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '0 新增资金', en: 'No new funds' }
+    ],
+    link: 'https://www.asterdex.com/en/airdrop',
+    checklist_zh: [
+      '直接在浏览器输入 asterdex.com/en/airdrop 打开官方领取页（勿点私信、回复或广告里的领取链接）',
+      '连接 Stage 6 赚积分时用的同一钱包，核对 Stage 6（Convergence）分配',
+      '确认领取数量与 100% 解锁状态，提交领取交易（按官方说明，仅需少量 gas）',
+      '领取后在 Aster 应用内现货余额核对到账 ASTER',
+      '11 月 28 日 20:00（北京时间）前完成领取，不要拖到官方窗口最后一天'
+    ],
+    checklist_en: [
+      'Type asterdex.com/en/airdrop into your browser to open the official claim page (never click claim links from DMs, replies or ads)',
+      'Connect the same wallet you used to earn Stage 6 points and check your Stage 6 (Convergence) allocation',
+      'Confirm the claim amount and 100% unlocked status, then submit the claim transaction (only a small gas fee per official instructions)',
+      'Verify the ASTER credit in your Aster app spot balance after claiming',
+      'Finish before Nov 28, 20:00 Beijing time — do not leave it to the last day of the official window'
+    ],
+    checklist_links: ['https://www.asterdex.com/en/airdrop', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261108-vearl',
     name_zh: 'Vearl 公开 GPU 挖矿测试网（0.7% 主网供应分配）',
     name_en: 'Vearl Public GPU-Mining Testnet (0.7% of Mainnet Supply)',
@@ -190,36 +220,6 @@ window.TOKVS_AIRDROPS = [
       'Watch official rules and APR changes through the bonus month (Oct 17–Nov 15)'
     ],
     checklist_links: ['https://www.bybit.com/', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261024-elyon',
-    name_zh: 'ELYON Chain「Incentivized Testnet Season 1」测试网任务',
-    name_en: 'ELYON Chain "Incentivized Testnet Season 1" Testnet Quests',
-    desc_zh: '约 1–2 小时完成全部任务 + 每天几分钟签到 · 0 资金：激励测试网第一季，连接钱包（仅签名、无需 gas）、从官方水龙头领测试 ELN、发测试交易、委托验证者、铸造任务徽章等 8 个任务，单次做完共 390 积分；另有每日任务、社交任务与推荐奖励（推荐人拿被推荐人 10% 积分）。注意：官方未公布代币分配规则，积分≠未来代币，属未确认潜在机会；测试网请用全新钱包，需连接钱包，只认官方域名 airdrop.elyon.network，不索要私钥/助记词。',
-    desc_en: '~1–2 hours for all quests + a few minutes daily · zero cost: Incentivized Testnet Season 1 — connect a wallet (one signature, no gas), claim test ELN from the official faucet, send test transactions, delegate to a validator, mint a quest badge and more across 8 quests (390 points for one-time completion). Extra points from daily quests, social tasks and referrals (referrers earn 10% of referred friends\' points). Note: no confirmed token allocation — points do NOT guarantee future tokens; unconfirmed potential only. Use a fresh wallet, connect via the official domain only: airdrop.elyon.network, never share private keys/mnemonics.',
-    deadline: '',
-    tags: [
-      { zh: '测试网交互', en: 'Testnet' },
-      { zh: '潜在空投（未确认）', en: 'Potential airdrop (unconfirmed)' },
-      { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '0 资金', en: 'Zero cost' }
-    ],
-    link: 'https://airdrop.elyon.network',
-    checklist_zh: [
-      '打开官方活动网站 airdrop.elyon.network（认准官方域名）',
-      '连接钱包完成签名（仅签名、不消耗 gas），创建活动档案',
-      '在官方水龙头领取测试 ELN（每日可领，计 20 积分任务）',
-      '完成发送测试交易、委托验证者 10 测试 ELN、铸造任务徽章',
-      '每天做一次每日任务（水龙头、交易、发推文）持续累积积分'
-    ],
-    checklist_en: [
-      'Open the official campaign site airdrop.elyon.network (verify the official domain)',
-      'Connect your wallet and sign (signature only, no gas) to create your campaign profile',
-      'Claim test ELN from the official faucet (daily task worth 20 points)',
-      'Send a test transaction, delegate 10 test ELN to a validator, mint the quest badge',
-      'Do the daily tasks each day (faucet claim, test transaction, tweet) to keep earning points'
-    ],
-    checklist_links: ['https://airdrop.elyon.network', '', '', '', '']
   },
   {
     id: 'airdrop-20261023-binance-rlusd-xrp',
