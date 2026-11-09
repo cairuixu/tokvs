@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261110-infinifi',
+    name_zh: 'infiniFi（INFI）空投登记（Season 1/2 积分持有者，今晚截止）',
+    name_en: 'infiniFi (INFI) Airdrop Registration (Season 1/2 Points Holders, Closes Tonight)',
+    desc_zh: '约 5 分钟登记 · 0 资金（仅连接钱包）：仅限 Season 1/2 攒过积分的钱包，须在官网 app.infinifi.xyz/infi 连接钱包登记并选择分配方案，登记截止 11 月 10 日 23:30（北京时间），错过等于放弃；TGE 在 2026 年四季度，具体日期待官方公布。注意：新钱包无法参与，登记本身不产生收益，分配细则以官方公告为准；只认官方域名 app.infinifi.xyz，不索要私钥/助记词，谨防仿冒登记页。',
+    desc_en: '~5 minutes to register · no funds (wallet connection only): for Season 1/2 points holders only — register your wallet and choose a distribution plan at the official site app.infinifi.xyz/infi before the Nov 10, 23:30 Beijing time deadline; missing it means forfeiting. TGE is planned for Q4 2026, exact date TBA. Note: new wallets cannot join, registration itself pays nothing, and allocation terms follow official announcements. Official domain only: app.infinifi.xyz, never share private keys/mnemonics; beware of fake registration pages.',
+    deadline: '2026-11-10',
+    tags: [
+      { zh: '空投登记', en: 'Airdrop registration' },
+      { zh: '仅限老参与者', en: 'Existing participants only' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '0 资金', en: 'No funds' }
+    ],
+    link: 'https://app.infinifi.xyz/infi',
+    checklist_zh: [
+      '直接在浏览器输入 app.infinifi.xyz/infi 打开官方登记页（勿点私信、回复或广告里的登记链接）',
+      '连接 Season 1/2 攒过积分的钱包，核对积分余额',
+      '查看分配方案选项并选择适合自己的方案',
+      '提交登记并确认登记成功（截图保存登记凭证）',
+      '11 月 10 日 23:30（北京时间）前完成登记，之后按官方公告等 TGE 与领取规则'
+    ],
+    checklist_en: [
+      'Type app.infinifi.xyz/infi into your browser to open the official registration page (never click registration links from DMs, replies or ads)',
+      'Connect the wallet that earned Season 1/2 points and check your points balance',
+      'Review the distribution-plan options and pick the one that fits you',
+      'Submit the registration and confirm it went through (save a screenshot as proof)',
+      'Finish before Nov 10, 23:30 Beijing time, then wait for official TGE and claim rules'
+    ],
+    checklist_links: ['https://app.infinifi.xyz/infi', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261109-aster-stage6',
     name_zh: 'Aster Stage 6 领取窗口（6400 万 ASTER，100% 归属）',
     name_en: 'Aster Stage 6 Claim Window (64M ASTER, 100% Vested)',
@@ -132,36 +162,6 @@ window.TOKVS_AIRDROPS = [
       'Watch for the official XP conversion formula and snapshot rules — do not trust rumored allocation figures'
     ],
     checklist_links: ['https://airdrop.asentum.com', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261101-titan',
-    name_zh: 'Titan Exchange 测试网积分（Canton 隐私永续合约测试网）',
-    name_en: 'Titan Exchange Testnet Points (Canton Privacy Perpetuals Testnet)',
-    desc_zh: '约 30 分钟上手 + 每周交易攒积分 · 0 资金：Canton Network 上的隐私永续合约交易所测试网（10 月 1 日上线），应用内免费领 1 万测试 USDC，完成首笔交易教程拿 250 积分奖励，每周按交易量与盈亏结算积分并上排行榜，邀请好友可获额外积分加成。注意：官方未确认代币与空投，积分用途未公布，属未确认潜在机会；等候名单条款亦说明加入名单本身不给任何代币或分配。测试网请用全新钱包，需连接钱包（支持 Canton/EVM 钱包或邮箱登录），只认官方域名 titanx.cc，不索要私钥/助记词。',
-    desc_en: '~30 minutes to start + weekly trading for points · zero cost: a privacy-focused perpetuals exchange testnet on Canton Network (live since Oct 1) — claim 10,000 free test USDC in the app, earn a 250-point bonus for completing the first-trade tutorial, then weekly points based on trading volume and PnL with a public leaderboard, plus referral point bonuses. Note: no token or airdrop is confirmed and the purpose of points is unpublished — unconfirmed potential only; the waitlist terms also state joining gives no token or allocation. Use a fresh wallet on testnet; wallet connection required (Canton/EVM wallets or email login). Official domain only: titanx.cc, never share private keys/mnemonics.',
-    deadline: '',
-    tags: [
-      { zh: '测试网交互', en: 'Testnet' },
-      { zh: '潜在空投（未确认）', en: 'Potential airdrop (unconfirmed)' },
-      { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '0 资金', en: 'Zero cost' }
-    ],
-    link: 'https://testnet.titanx.cc/',
-    checklist_zh: [
-      '打开官方测试网 testnet.titanx.cc（认准官方域名 titanx.cc，勿与同名 Solana 聚合器 titan.exchange 混淆）',
-      '连接 Canton 或 EVM 钱包（或邮箱登录），完成等候名单签名',
-      '在应用内领取 1 万测试 USDC（余额低于 2000 可免费补充）',
-      '完成首笔交易教程拿 250 积分，之后每周按交易量与盈亏攒积分',
-      '在 Rewards 页查看积分与排行榜，留意官方主网与积分用途公告'
-    ],
-    checklist_en: [
-      'Open the official testnet testnet.titanx.cc (verify the official domain titanx.cc — not the unrelated Solana aggregator titan.exchange)',
-      'Connect a Canton or EVM wallet (or log in by email) and sign the waitlist message',
-      'Claim 10,000 test USDC in the app (top up free once your balance drops under 2,000)',
-      'Complete the first-trade tutorial for a 250-point bonus, then earn weekly points from volume and PnL',
-      'Check your points and rank on the Rewards page and watch official mainnet and points announcements'
-    ],
-    checklist_links: ['https://testnet.titanx.cc/', '', '', '', '']
   },
   {
     id: 'airdrop-20261031-hyperlynx',
