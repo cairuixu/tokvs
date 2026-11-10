@@ -14,34 +14,34 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
-    id: 'airdrop-20261110-infinifi',
-    name_zh: 'infiniFi（INFI）空投登记（Season 1/2 积分持有者，今晚截止）',
-    name_en: 'infiniFi (INFI) Airdrop Registration (Season 1/2 Points Holders, Closes Tonight)',
-    desc_zh: '约 5 分钟登记 · 0 资金（仅连接钱包）：仅限 Season 1/2 攒过积分的钱包，须在官网 app.infinifi.xyz/infi 连接钱包登记并选择分配方案，登记截止 11 月 10 日 23:30（北京时间），错过等于放弃；TGE 在 2026 年四季度，具体日期待官方公布。注意：新钱包无法参与，登记本身不产生收益，分配细则以官方公告为准；只认官方域名 app.infinifi.xyz，不索要私钥/助记词，谨防仿冒登记页。',
-    desc_en: '~5 minutes to register · no funds (wallet connection only): for Season 1/2 points holders only — register your wallet and choose a distribution plan at the official site app.infinifi.xyz/infi before the Nov 10, 23:30 Beijing time deadline; missing it means forfeiting. TGE is planned for Q4 2026, exact date TBA. Note: new wallets cannot join, registration itself pays nothing, and allocation terms follow official announcements. Official domain only: app.infinifi.xyz, never share private keys/mnemonics; beware of fake registration pages.',
-    deadline: '2026-11-10',
+    id: 'airdrop-20261111-standx',
+    name_zh: 'StandX DUSD 空投领取（取消发币，改发稳定币 DUSD，12 月 31 日截止）',
+    name_en: 'StandX DUSD Airdrop Claim (Token Cancelled, Paid in DUSD Stablecoin, Closes Dec 31)',
+    desc_zh: '约 10 分钟核对 + 连接钱包领取 · 0 新增资金（仅 gas）：仅限 StandX 老参与者——在 StandX 攒过积分或通过 Kaito 计划获分配的用户；项目 10 月 15 日宣布取消发币、改为一次性发放 DUSD 稳定币（无锁仓），领取窗口 11 月 2 日至 12 月 31 日 08:00（UTC），逾期未领作废；最终提现与 DUSD 赎回截止 2027 年 1 月 31 日。注意：新用户无法参与，分配额以官方查询页为准，官方明确不会通过私信索要助记词、不收解锁费；只认官方域名 standx.com，不索要私钥/助记词，谨防仿冒领取站。',
+    desc_en: '~10 minutes to check + connect wallet to claim · no new funds (gas only): for existing StandX participants only — users who earned StandX points or received an allocation through the Kaito program. The project announced on Oct 15 it will not launch a token and will instead pay a one-time DUSD stablecoin distribution with no lockup; the claim window runs Nov 2 to Dec 31, 08:00 UTC, and unclaimed allocations expire. Final withdrawals and DUSD redemptions end Jan 31, 2027. Note: new users cannot join; amounts follow the official checker. The team will never DM you for a seed phrase or charge a fee to unlock a claim. Official domain only: standx.com, never share private keys/mnemonics; beware of fake claim sites.',
+    deadline: '2026-12-31',
     tags: [
-      { zh: '空投登记', en: 'Airdrop registration' },
+      { zh: '空投领取', en: 'Airdrop claim' },
       { zh: '仅限老参与者', en: 'Existing participants only' },
       { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '0 资金', en: 'No funds' }
+      { zh: '0 新增资金', en: 'No new funds' }
     ],
-    link: 'https://app.infinifi.xyz/infi',
+    link: 'https://standx.com/airdrop',
     checklist_zh: [
-      '直接在浏览器输入 app.infinifi.xyz/infi 打开官方登记页（勿点私信、回复或广告里的登记链接）',
-      '连接 Season 1/2 攒过积分的钱包，核对积分余额',
-      '查看分配方案选项并选择适合自己的方案',
-      '提交登记并确认登记成功（截图保存登记凭证）',
-      '11 月 10 日 23:30（北京时间）前完成登记，之后按官方公告等 TGE 与领取规则'
+      '直接在浏览器输入 standx.com/airdrop 打开官方领取页（勿点私信、回复或广告里的领取链接）',
+      '连接在 StandX 活动时用的同一钱包（BNB Chain 或 Solana），核对 DUSD 分配额',
+      '在 12 月 31 日 08:00（UTC）前提交领取，确认 DUSD 到账',
+      '如需换回 USDT，按官方门户指引在 2027 年 1 月 31 日前完成赎回申请',
+      '全程不向任何人提供助记词/私钥，不付任何“解锁费”'
     ],
     checklist_en: [
-      'Type app.infinifi.xyz/infi into your browser to open the official registration page (never click registration links from DMs, replies or ads)',
-      'Connect the wallet that earned Season 1/2 points and check your points balance',
-      'Review the distribution-plan options and pick the one that fits you',
-      'Submit the registration and confirm it went through (save a screenshot as proof)',
-      'Finish before Nov 10, 23:30 Beijing time, then wait for official TGE and claim rules'
+      'Type standx.com/airdrop into your browser to open the official claim page (never click claim links from DMs, replies or ads)',
+      'Connect the same wallet you used on StandX (BNB Chain or Solana) and check your DUSD allocation',
+      'Submit the claim before Dec 31, 08:00 UTC and confirm the DUSD credit',
+      'To convert back to USDT, follow the official portal and submit the redemption request before Jan 31, 2027',
+      'Never share your seed phrase or private key with anyone, and never pay any “unlock fee”'
     ],
-    checklist_links: ['https://app.infinifi.xyz/infi', '', '', '', '']
+    checklist_links: ['https://standx.com/airdrop', '', '', '', '']
   },
   {
     id: 'airdrop-20261109-aster-stage6',
