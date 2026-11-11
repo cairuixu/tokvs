@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261112-grass-stage2',
+    name_zh: 'Grass Stage 2 USDC 领取（仅限老参与者，2027 年 1 月 22 日截止）',
+    name_en: 'Grass Stage 2 USDC Claim (Existing Participants Only, Closes Jan 22, 2027)',
+    desc_zh: '约 10 分钟核对 + 连接钱包领取 · 0 新增资金（仅 Solana gas + 每笔 0.15 美元 Turnkey 手续费）：仅限 2024 年 10 月 14 日至 2026 年 6 月 8 日期间分享带宽赚过 Network Points（Epoch 1–19，须大于 0 分）的老用户；奖励按每 Network Point 0.0049 USDC 折算，以 USDC（Solana）发放，不新增发 GRASS 代币，持有 GRASS 不影响资格；领取窗口 2026 年 7 月 22 日至 2027 年 1 月 22 日，逾期未领作废，且全部领完可能提前关闭。注意：新用户无法参与；只认官方仪表盘 app.grass.io/dashboard（奖励条款指定的唯一领取站），不索要私钥/助记词，谨防仿冒领取站。',
+    desc_en: '~10 minutes to check + connect wallet to claim · no new funds (Solana gas only + a $0.15 Turnkey fee per transaction): for existing Grass users only — those who earned Network Points (Epochs 1–19, more than 0 points) by sharing bandwidth between Oct 14, 2024 and Jun 8, 2026. Rewards convert at $0.0049 USDC per Network Point and pay out in USDC on Solana; no new GRASS is minted and holding GRASS does not affect eligibility. The claim window runs Jul 22, 2026 to Jan 22, 2027; unclaimed rewards expire and the window may close early once all allocations are claimed. Note: new users cannot join. Official dashboard only: app.grass.io/dashboard — the only claim site named in the Rewards Terms. Never share private keys/mnemonics; beware of fake claim sites.',
+    deadline: '2027-01-22',
+    tags: [
+      { zh: '空投领取', en: 'Airdrop claim' },
+      { zh: '仅限老参与者', en: 'Existing participants only' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: 'USDC 发放', en: 'Paid in USDC' }
+    ],
+    link: 'https://app.grass.io/dashboard',
+    checklist_zh: [
+      '直接在浏览器输入 app.grass.io/dashboard 打开官方仪表盘（勿点私信、回复或广告里的领取链接）',
+      '登录 Stage 2 分享带宽时用的同一 Grass 账号，核对 USDC 分配额',
+      '确认分配额与到账钱包（Solana），提交领取并支付少量 gas 与 0.15 美元 Turnkey 手续费',
+      '在仪表盘核对 USDC 到账，不要买入 GRASS——持币不影响本次领取资格',
+      '在 2027 年 1 月 22 日前完成领取，窗口可能提前关闭，不要拖到最后一天'
+    ],
+    checklist_en: [
+      'Type app.grass.io/dashboard into your browser to open the official dashboard (never click claim links from DMs, replies or ads)',
+      'Sign in with the same Grass account you used to share bandwidth in Stage 2 and check your USDC allocation',
+      'Confirm the allocation and the receiving wallet (Solana), then submit the claim and pay the small gas fee plus the $0.15 Turnkey fee',
+      'Verify the USDC credit on the dashboard — do not buy GRASS, as holding it does not affect this claim',
+      'Finish before Jan 22, 2027; the window may close early, so do not leave it to the last day'
+    ],
+    checklist_links: ['https://app.grass.io/dashboard', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261111-standx',
     name_zh: 'StandX DUSD 空投领取（取消发币，改发稳定币 DUSD，12 月 31 日截止）',
     name_en: 'StandX DUSD Airdrop Claim (Token Cancelled, Paid in DUSD Stablecoin, Closes Dec 31)',
@@ -191,35 +221,6 @@ window.TOKVS_AIRDROPS = [
       'Watch official TGE announcements and claim $LYNX pro-rata by points at TGE'
     ],
     checklist_links: ['https://www.hyperlynx.fi/', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261028-bybit-usd1',
-    name_zh: 'Bybit「USD1 持币赚币」加码月（2700 万 WLFI 奖池）',
-    name_en: 'Bybit "USD1 Hold & Earn" Bonus Month (27M WLFI Pool)',
-    desc_zh: '约 5 分钟设置 + 每日自动计息 · 需真实资金：在 Bybit 账户持有至少 1 枚 USD1 即自动参与，无需质押/锁仓/申购；加码月 10 月 17 日–11 月 15 日，2700 万 WLFI 奖池，每日按小时快照的有效持仓与当日 APR 计息，次日约 06:00（UTC）发放到主账户资金账户；前 50 名大户另有持仓排行榜。注意：APR 随总参与量与市场价浮动，官方未公布固定收益率；需 KYC，资格与发奖以 Bybit 官方规则为准；只认官方域名 www.bybit.com，不索要私钥/助记词。',
-    desc_en: '~5 minutes to set up + automatic daily accrual · requires real funds: hold at least 1 USD1 in your Bybit account to join automatically — no staking, subscription or lock-up. Bonus month Oct 17–Nov 15: a 27,000,000 WLFI pool, daily rewards from hourly snapshots of effective holdings and the day\'s APR, credited to the Main Account Funding Wallet around 06:00 UTC the next day; a Top-50 holder leaderboard runs alongside. Note: APR varies with total participation and market prices — no fixed yield is published; KYC required, official rules prevail. Official domain only: www.bybit.com, never share private keys/mnemonics.',
-    deadline: '2026-11-15',
-    tags: [
-      { zh: '交易所活动', en: 'Exchange campaign' },
-      { zh: '需真实资金（持仓）', en: 'Real funds needed (holding)' },
-      { zh: '每日发放', en: 'Daily payouts' }
-    ],
-    link: 'https://www.bybit.com/',
-    checklist_zh: [
-      '注册 Bybit 账号并完成 KYC 认证（认准官方域名 www.bybit.com）',
-      '在账户中持有至少 1 枚 USD1（无需质押或锁仓，自动参与）',
-      '保持持仓稳定：每日按小时快照的有效持仓决定当日奖励',
-      '次日约 06:00（UTC）核查主账户资金账户到账的 WLFI',
-      '加码月 10 月 17 日–11 月 15 日结束前留意官方规则与 APR 变化'
-    ],
-    checklist_en: [
-      'Register a Bybit account and complete KYC (verify the official domain www.bybit.com)',
-      'Hold at least 1 USD1 in your account (no staking or lock-up — participation is automatic)',
-      'Keep your balance stable: daily rewards are based on hourly snapshots of effective holdings',
-      'Check your Main Account Funding Wallet around 06:00 UTC the next day for the WLFI credit',
-      'Watch official rules and APR changes through the bonus month (Oct 17–Nov 15)'
-    ],
-    checklist_links: ['https://www.bybit.com/', '', '', '', '']
   },
   {
     id: 'airdrop-20261023-binance-rlusd-xrp',
