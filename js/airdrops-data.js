@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261116-vibevibe',
+    name_zh: 'VIBEVIBE 测试网（Robinhood Chain，5% 总量测试网奖励池）',
+    name_en: 'VIBEVIBE Testnet (Robinhood Chain, 5% of Supply for Testnet Rewards)',
+    desc_zh: '约 30 分钟上手 + 持续测试网操作 · 测试网 0 资金（免费测试 ETH）：Seedify 团队做的 Robinhood Chain 无许可发币平台 vibe/vibe，测试网已上线（Season 0 进行中）；官方代币经济确认测试网用户与创作者共分 5% 总量（5000 万枚 VIBEVIBE），另有 25% 分给 SPARK 持币者（快照尚未进行，在 11 月 12 日公售之后）；TGE 预计 11 月，确切日期与个人分配公式均未公布。注意：测试网不需要持有 SPARK；公售需 KYC 且有地域限制，与测试网奖励是两回事；只用免费测试 ETH，不索要私钥/助记词，只认官方域名 vibevibe.fun / testnet.vibevibe.fun，谨防仿冒。',
+    desc_en: '~30 minutes to start + ongoing testnet activity · zero cost on testnet (free test ETH): vibe/vibe, a permissionless token launchpad on Robinhood Chain from the Seedify team, has its testnet live (Season 0 in progress). Official tokenomics reserve 5% of supply (50M VIBEVIBE) for testnet users and builders, plus 25% for SPARK holders (snapshot not yet taken — it follows the Nov 12 public sale). TGE is expected in November, but the exact date and the per-user allocation formula are unannounced. Note: testnet participation does not require holding SPARK; the public sale needs KYC, has geographic restrictions, and is separate from testnet rewards. Only free test ETH is used; never share private keys/mnemonics. Official domains only: vibevibe.fun / testnet.vibevibe.fun — beware of fakes.',
+    deadline: '',
+    tags: [
+      { zh: '测试网交互', en: 'Testnet' },
+      { zh: '潜在空投（5% 已确认分配）', en: 'Potential airdrop (5% allocation confirmed)' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '0 资金（测试网）', en: 'Zero cost (testnet)' }
+    ],
+    link: 'https://testnet.vibevibe.fun',
+    checklist_zh: [
+      '打开官方测试网 testnet.vibevibe.fun（认准官方域名，勿点第三方空投链接）',
+      '在钱包添加 Robinhood Chain 测试网（链 ID 46630），并从官方水龙头领免费测试 ETH',
+      '用全新测试钱包连接测试网，体验发币、交易与项目创建功能',
+      '参与 Season 0 活动，留意官方排行榜与毕业空投注册（vibevibe.fun/airdrops）',
+      '留意官方公布的 TGE 日期与个人分配规则，不轻信非官方代币合约'
+    ],
+    checklist_en: [
+      'Open the official testnet testnet.vibevibe.fun (verify the official domain; do not click third-party airdrop links)',
+      'Add the Robinhood Chain Testnet (chain ID 46630) to your wallet and claim free test ETH from the official faucet',
+      'Connect with a fresh test wallet and try token launches, trading and project creation',
+      'Take part in Season 0 and watch the official leaderboards and graduation-airdrop registration (vibevibe.fun/airdrops)',
+      'Watch official announcements for the TGE date and per-user allocation rules — do not trust unofficial token contracts'
+    ],
+    checklist_links: ['https://testnet.vibevibe.fun', 'https://faucet.testnet.chain.robinhood.com', '', 'https://vibevibe.fun/airdrops', '']
+  },
+  {
     id: 'airdrop-20261112-grass-stage2',
     name_zh: 'Grass Stage 2 USDC 领取（仅限老参与者，2027 年 1 月 22 日截止）',
     name_en: 'Grass Stage 2 USDC Claim (Existing Participants Only, Closes Jan 22, 2027)',
@@ -192,35 +222,6 @@ window.TOKVS_AIRDROPS = [
       'Watch for the official XP conversion formula and snapshot rules — do not trust rumored allocation figures'
     ],
     checklist_links: ['https://airdrop.asentum.com', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261031-hyperlynx',
-    name_zh: 'Hyperlynx「The Hunt」积分计划（3 亿 $LYNX 奖池）',
-    name_en: 'Hyperlynx "The Hunt" Points Program (300M $LYNX Pool)',
-    desc_zh: '约 30 分钟上手 + 持续做市/交易 · 需真实资金：HyperEVM 上的现货 DEX 与交易终端，积分计划 The Hunt 已确认 3 亿枚 $LYNX（占固定 10 亿总量的 30%），TGE（官方窗口 2026 年 10–11 月，具体日期未公布）时按积分占比瓜分；积分 70% 来自提供流动性、30% 来自交易，创世期 2 倍加成已结束。需连接 HyperEVM 兼容钱包并投入真实 HYPE/USDC 做市或交易，有无常损失与市场波动风险；积分在 TGE 前不可转让，具体分配以官方规则为准；只认官方域名 hyperlynx.fi，不索要私钥/助记词。',
-    desc_en: '~30 minutes to start + ongoing LP/trading · requires real funds: a spot DEX and trading terminal on HyperEVM. The Hunt points program is confirmed at 300M $LYNX (30% of the fixed 1B supply), claimable pro-rata by points share at TGE (official window Oct–Nov 2026, exact date TBA); 70% of points come from providing liquidity, 30% from trading; the 2x Genesis bonus has ended. Requires a HyperEVM-compatible wallet plus real HYPE/USDC for LP or trading — impermanent loss and market risk apply; points are non-transferable until TGE and official rules prevail. Official domain only: hyperlynx.fi, never share private keys/mnemonics.',
-    deadline: '',
-    tags: [
-      { zh: '积分计划', en: 'Points program' },
-      { zh: '需真实资金（做市/交易）', en: 'Real funds needed (LP/trading)' },
-      { zh: '需连接钱包', en: 'Wallet required' }
-    ],
-    link: 'https://www.hyperlynx.fi/',
-    checklist_zh: [
-      '打开官方网站 hyperlynx.fi（认准官方域名）',
-      '连接 HyperEVM 兼容钱包，并准备 HYPE 与 USDC',
-      '在现货交易终端完成交易赚取交易积分（占积分池 30%）',
-      '在 HYPE 相关池子提供区间流动性赚取做市积分（占 70%）',
-      '留意官方 TGE 公告，TGE 时按积分占比领取 $LYNX'
-    ],
-    checklist_en: [
-      'Open the official site hyperlynx.fi (verify the official domain)',
-      'Connect a HyperEVM-compatible wallet and prepare HYPE and USDC',
-      'Trade on the spot terminal to earn trading points (30% of the points pool)',
-      'Provide in-range liquidity in HYPE pools to earn LP points (70%)',
-      'Watch official TGE announcements and claim $LYNX pro-rata by points at TGE'
-    ],
-    checklist_links: ['https://www.hyperlynx.fi/', '', '', '', '']
   },
   {
     id: 'airdrop-20261023-binance-rlusd-xrp',
