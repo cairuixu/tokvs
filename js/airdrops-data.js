@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261117-gate-candydrop-wlfi',
+    name_zh: 'Gate CandyDrop × WLFI（分享 906,120 WLFI，11 月 23 日截止）',
+    name_en: 'Gate CandyDrop x WLFI (Share 906,120 WLFI, Closes Nov 23)',
+    desc_zh: '约 10 分钟上手 + 交易任务 · 需真实资金（现货交易）：Gate 第 192 期 CandyDrop，活动 11 月 13 日 10:00 至 11 月 23 日 10:00（UTC），总奖池 906,120 WLFI；首次在 Gate 做现货交易且 USD1 现货交易量 ≥800 美元可固定得 100 WLFI（先到先得，总池 10 万枚），交易 WLFI 赚糖果分 60 万枚奖池，邀好友再分 206,120 WLFI（每人上限 1000 枚）；奖励在活动结束后 14 个工作日内发放。注意：需 Gate 账号并完成 KYC，交易量按 USD1 交易对计算（USDT/USD1 与 USD1/USDT 除外），先到先得部分可能提前分完，奖励不保证人人有份；只认 Gate 官方公告页，不索要私钥/助记词，谨防仿冒活动页。',
+    desc_en: '~10 minutes to start + trading tasks · requires real funds (spot trading): Gate\'s 192nd CandyDrop runs Nov 13, 10:00 to Nov 23, 10:00 (UTC) with a 906,120 WLFI prize pool. A first-ever spot trade on Gate with USD1 spot volume of at least $800 earns a fixed 100 WLFI (first-come, first-served; 100,000 WLFI pool); trading WLFI earns candies toward a 600,000 WLFI pool, and inviting friends shares a further 206,120 WLFI (up to 1,000 WLFI per person). Rewards are distributed within 14 working days after the event ends. Note: a Gate account and KYC are required; volume counts only on USD1 pairs (USDT/USD1 and USD1/USDT excluded), and first-come, first-served portions may run out — rewards are not guaranteed for everyone. Official Gate announcement page only; never share private keys/mnemonics; beware of fake campaign pages.',
+    deadline: '2026-11-23',
+    tags: [
+      { zh: '交易所活动', en: 'Exchange campaign' },
+      { zh: '需真实资金（交易）', en: 'Real funds needed (trading)' },
+      { zh: '需 KYC', en: 'KYC required' },
+      { zh: '先到先得', en: 'First-come, first-served' }
+    ],
+    link: 'https://www.gate.com/announcements/article/102764',
+    checklist_zh: [
+      '打开 Gate 官方公告页，确认第 192 期 CandyDrop 的活动时间与任务规则',
+      '注册/登录 Gate 账号并完成 KYC（认准官方域名 www.gate.com）',
+      '在活动期内做 USD1 现货交易：首次现货交易量 ≥800 USD1 可领固定 100 WLFI（先到先得）',
+      '交易 WLFI 赚糖果参与 60 万枚奖池分红，邀请好友再分邀请奖池（每人上限 1000 WLFI）',
+      '活动结束后 14 个工作日内在 Gate 账户核对 WLFI 到账；只认官方公告页，不点第三方活动链接'
+    ],
+    checklist_en: [
+      'Open the official Gate announcement page and confirm the 192nd CandyDrop dates and task rules',
+      'Register or sign in to a Gate account and complete KYC (verify the official domain www.gate.com)',
+      'Trade USD1 spot pairs during the event: a first-ever spot volume of at least 800 USD1 earns a fixed 100 WLFI (first-come, first-served)',
+      'Trade WLFI to earn candies toward the 600,000 WLFI pool, and invite friends to share the referral pool (up to 1,000 WLFI per person)',
+      'Check your Gate account for the WLFI credit within 14 working days after the event; use the official announcement page only, never third-party campaign links'
+    ],
+    checklist_links: ['https://www.gate.com/announcements/article/102764', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261116-vibevibe',
     name_zh: 'VIBEVIBE 测试网（Robinhood Chain，5% 总量测试网奖励池）',
     name_en: 'VIBEVIBE Testnet (Robinhood Chain, 5% of Supply for Testnet Rewards)',
@@ -223,33 +253,5 @@ window.TOKVS_AIRDROPS = [
     ],
     checklist_links: ['https://airdrop.asentum.com', '', '', '', '']
   },
-  {
-    id: 'airdrop-20261023-binance-rlusd-xrp',
-    name_zh: 'Binance「持有 RLUSD 分享 60 万 XRP」持仓空投',
-    name_en: 'Binance "Hold RLUSD to Share 600,000 XRP" Holding Airdrop',
-    desc_zh: '约 10 分钟操作 + 持仓 4 周 · 需真实资金：在币安任意账户持有 RLUSD（每日快照取当日最低余额），按 7 日均余额分享 60 万 XRP 奖池，分 4 周发放；奖励每周六 02:00 前（东八区）直接空投到主账户现货账户。奖励自 10 月 23 日 08:00（东八区）起计。注意：用借入的 USDT/USDC/USD1 等稳定币换来的 RLUSD，杠杆部分只按 40% 折算计入；细则以币安官方公告为准；不索要私钥/助记词，谨防仿冒公告。',
-    desc_en: '~10 minutes to set up + 4-week holding period · requires real funds: hold RLUSD in any Binance account (daily eligible balance = the lowest balance in hourly snapshots that day) to share a 600,000 XRP prize pool by 7-day average balance, paid weekly over 4 weeks directly to your main account\'s Spot account (by 02:00 UTC+8 every Saturday). Rewards start accruing from Oct 23, 08:00 (UTC+8). Note: RLUSD obtained by borrowing other stablecoins (USDT/USDC/USD1 etc.) counts the leveraged portion at only 40%; official announcement terms prevail. No private keys/mnemonics needed — beware of fake announcements.',
-    deadline: '2026-11-20',
-    tags: [
-      { zh: '交易所活动', en: 'Exchange campaign' },
-      { zh: '需真实资金（持仓）', en: 'Real funds needed (holding)' },
-      { zh: '每周发放', en: 'Weekly payouts' }
-    ],
-    link: 'https://www.binance.com/en/square/post/379640270716781',
-    checklist_zh: [
-      '注册币安账号并完成 KYC（认准官方域名 www.binance.com）',
-      '阅读「持有 RLUSD 分享 60 万 XRP」官方公告，确认活动周期与计息规则',
-      '在现货/资金/杠杆等任意账户持有 RLUSD（每日保持余额稳定，快照取当日最低值）',
-      '每周六 02:00（东八区）前核查主账户现货账户到账的 XRP',
-      '注意：用借入的 USDT/USDC/USD1 等换 RLUSD 的杠杆部分只按 40% 计入；波动风险自担'
-    ],
-    checklist_en: [
-      'Register a Binance account and complete KYC (verify the official domain www.binance.com)',
-      'Read the official "Hold RLUSD to Share 600,000 XRP" announcement and confirm the campaign terms',
-      'Hold RLUSD in any Spot / Funding / Margin account (keep the balance stable — snapshots take the day\'s lowest balance)',
-      'Check your main account\'s Spot account each Saturday (before 02:00 UTC+8) for the XRP airdrop',
-      'Note: the leveraged portion of RLUSD obtained by borrowing USDT/USDC/USD1 etc. counts at only 40%; market risk is on you'
-    ],
-    checklist_links: ['https://www.binance.com/en/square/post/379640270716781', '', '', '', '']
-  },
+
 ];
