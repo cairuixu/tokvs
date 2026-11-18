@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261119-aura-protocol',
+    name_zh: 'Aura Protocol Airdrop ZERO（LitVM 测试网，1.5 亿 AURA 奖励池）',
+    name_en: 'Aura Protocol Airdrop ZERO (LitVM Testnet, 150M AURA Pool)',
+    desc_zh: '约 30 分钟上手 + 持续测试网操作 · 测试网 0 资金（免费测试 zkLTC）：LitVM 上的硬件与 RWA 项目发行平台 Aura Protocol 激励测试网进行中，最终轮 Bonus Epoch 已开放；官方文档确认 Airdrop ZERO 共分配 1.5 亿枚 AURA（总量 30%），其中 Bonus Epoch 占 1500 万枚；每笔测试网交易得 15 分，质押、投票、社交任务与每日签到也可赚分，完成人性验证得 5000 分；快照资格要求至少 10000 分 + 绑定 X 账号 + 至少 1 笔 dApp 交易，低于 10000 分无奖励。注意：AURA 尚未发行，合约地址待公布，快照与领取日期均未公布，积分与 AURA 不是 1:1 兑换；官方明确付费 Booster（1–4 美元/级，Arbitrum 主网 ETH 支付）非必需且不保证换成代币，建议跳过付费项；项目未公布团队与审计信息，只认官方域名 auralaunch.org / beta.auralaunch.org，不索要私钥/助记词，谨防同名仿冒项目。',
+    desc_en: '~30 minutes to start + ongoing testnet activity · zero cost on testnet (free test zkLTC): Aura Protocol, a launchpad for hardware and RWA projects on LitVM, runs an incentivized testnet with the final Bonus Epoch now open. Official docs confirm Airdrop ZERO allocates 150M AURA (30% of supply), with 15M AURA in the Bonus Epoch. Each testnet transaction earns 15 points; staking, voting, social tasks and daily logins also earn points, and the humanity check is worth 5,000 points. Snapshot eligibility requires at least 10,000 points, a linked X account and at least one dApp transaction — below 10,000 points there is no reward. Note: AURA is not live yet, the contract address is TBA, and snapshot and claim dates are unannounced; points do not convert 1:1 into AURA. The official docs say paid Boosters ($1–$4 per level, paid in ETH on Arbitrum One mainnet) are not required and do not guarantee tokens — skip the paid items. The project names no team and no audit; official domains only: auralaunch.org / beta.auralaunch.org. Never share private keys/mnemonics; beware of lookalike projects also called Aura.',
+    deadline: '',
+    tags: [
+      { zh: '测试网交互', en: 'Testnet' },
+      { zh: '潜在空投（1.5 亿 AURA 已确认分配）', en: 'Potential airdrop (150M AURA allocation confirmed)' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '0 资金（测试网）', en: 'Zero cost (testnet)' }
+    ],
+    link: 'https://beta.auralaunch.org/incentives',
+    checklist_zh: [
+      '打开官方激励页 beta.auralaunch.org/incentives（认准官方域名 auralaunch.org，勿点同名仿冒项目链接）',
+      '在钱包添加 LitVM LiteForge 测试网（链 ID 4441，gas 代币 zkLTC），从激励页水龙头领免费测试 zkLTC',
+      '连接钱包并绑定 X 账号，完成人性验证（5000 分），领取每日签到奖励',
+      '做测试网交易（质押、投票、参与测试发售或部署代币），每笔得 15 分，持续累积至 10000 分以上',
+      '确保至少完成 1 笔 Aura dApp 交易；可选参加 11 月 30 日截止的 Token Quest，留意官方公布的快照与领取规则，不买付费 Booster'
+    ],
+    checklist_en: [
+      'Open the official incentives page beta.auralaunch.org/incentives (verify the official domain auralaunch.org; do not click lookalike projects also called Aura)',
+      'Add the LitVM LiteForge testnet to your wallet (chain ID 4441, gas token zkLTC) and claim free test zkLTC from the faucet on the incentives page',
+      'Connect your wallet, link your X account, complete the humanity check (5,000 points) and claim the daily login bonus',
+      'Do testnet transactions (stake, vote, join test sales or deploy a token) at 15 points each and keep accumulating past 10,000 points',
+      'Make sure you complete at least one Aura dApp transaction; optionally enter the Token Quest before its Nov 30 deadline, watch official announcements for snapshot and claim rules, and do not buy paid Boosters'
+    ],
+    checklist_links: ['https://beta.auralaunch.org/incentives', 'https://beta.auralaunch.org/incentives', '', '', '']
+  },
+  {
     id: 'airdrop-20261117-gate-candydrop-wlfi',
     name_zh: 'Gate CandyDrop × WLFI（分享 906,120 WLFI，11 月 23 日截止）',
     name_en: 'Gate CandyDrop x WLFI (Share 906,120 WLFI, Closes Nov 23)',
@@ -162,36 +192,6 @@ window.TOKVS_AIRDROPS = [
       'Finish before Nov 28, 20:00 Beijing time — do not leave it to the last day of the official window'
     ],
     checklist_links: ['https://www.asterdex.com/en/airdrop', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261108-vearl',
-    name_zh: 'Vearl 公开 GPU 挖矿测试网（0.7% 主网供应分配）',
-    name_en: 'Vearl Public GPU-Mining Testnet (0.7% of Mainnet Supply)',
-    desc_zh: '需 GPU 与电费 + 至少 3 天活跃挖矿 · 测试网挖矿：公开 GPU 挖矿测试网 10 月 23 日上线，官方参与页明确为本轮测试网的合格矿工预留主网最大供应量的 0.7%（五轮测试网合计 7%）；每出 1 个块得 1 分、付费任务 1.5 分，达标需至少 3 个活跃日、占总积分至少 0.005% 并签署奖励地址注册。注意：需自备 GPU 与电费，挖矿软件只从官网 vearl.org 下载，不要在存有主钱包的机器上跑矿机；分配以官方规则为准。只认官方域名 vearl.org，不索要私钥/助记词。',
-    desc_en: 'GPU and electricity costs + at least 3 active days of mining · testnet mining: the public GPU-mining testnet opened on Oct 23, and the official participate page reserves 0.7% of maximum mainnet supply for this testnet\'s eligible miners (7% across five planned testnets); miners earn 1 point per block and 1.5 points for paid work. Qualifying needs at least 3 active days, at least 0.005% of total points and a signed reward-address registration. Note: you need your own GPU and electricity; download the miner only from the official site vearl.org and never run mining software on a machine holding your main wallet. Official rules prevail. Official domain only: vearl.org, never share private keys/mnemonics.',
-    deadline: '',
-    tags: [
-      { zh: '测试网交互', en: 'Testnet' },
-      { zh: '挖矿', en: 'GPU mining' },
-      { zh: '需 GPU 与电费', en: 'GPU and electricity costs' },
-      { zh: '已明确分配 0.7%', en: 'Defined 0.7% allocation' }
-    ],
-    link: 'https://vearl.org/',
-    checklist_zh: [
-      '打开官网 vearl.org（认准官方域名，只从官网下载矿机软件）',
-      '在官网完成奖励地址注册并签署注册信息',
-      '在不存主钱包的机器上安装矿机并开始挖矿，累计至少 3 个活跃日',
-      '争取占总积分至少 0.005%，留意付费任务 1.5 分的加成',
-      '留意官方公布的测试网结束与分配规则，核对奖励地址'
-    ],
-    checklist_en: [
-      'Open the official site vearl.org (verify the official domain; download the miner only from there)',
-      'Complete the reward-address registration on the official site and sign it',
-      'Install the miner on a machine that holds no main wallet and start mining for at least 3 active days',
-      'Aim for at least 0.005% of total points, and note the 1.5-point bonus for paid work',
-      'Watch official announcements for the testnet close and allocation rules, and double-check your reward address'
-    ],
-    checklist_links: ['https://vearl.org/', '', '', '', '']
   },
   {
     id: 'airdrop-20261105-incentiv',
