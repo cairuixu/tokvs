@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261120-hyperlynx',
+    name_zh: 'Hyperlynx The Hunt 积分（HyperEVM 现货 DEX，3 亿 LYNX 已确认分配）',
+    name_en: 'Hyperlynx The Hunt Points (HyperEVM Spot DEX, 300M LYNX Allocation Confirmed)',
+    desc_zh: '约 30 分钟上手 + 持续链上操作 · 需真实资金（HyperEVM 上交易/做市，HYPE 作 gas）：HyperEVM 现货 DEX 与交易终端 Hyperlynx 的积分计划 The Hunt 进行中，官网确认 3 亿枚 LYNX（固定总量 10 亿枚的 30%）按积分占比在 TGE 时分配，积分权重为交易 30%、做市 70%，积分在 TGE 前不可转让。注意：TGE 目标为 2026 年 10–11 月，但至今未公布确切日期与领取规则，存在延期可能；官网首页仍标注 Genesis 2 倍加成，但 10 月第三方核查称该加成已结束，请以官网当前页面为准；做市与交易均有真实资金风险，不保证人人有分配。需连接钱包，只认官方域名 hyperlynx.fi，不索要私钥/助记词，谨防仿冒。',
+    desc_en: '~30 minutes to start + ongoing on-chain activity · requires real funds (trade or provide liquidity on HyperEVM, HYPE for gas): Hyperlynx, a spot DEX and trading terminal on HyperEVM, runs The Hunt points program. The official site confirms 300M LYNX (30% of the fixed 1B supply) will be distributed at TGE in proportion to points earned, weighted 30% trading and 70% liquidity provision; points are non-transferable until TGE. Note: TGE is targeted for October–November 2026, but no exact date or claim rules have been published, so a delay is possible. The homepage still shows a Genesis 2x boost, but a third-party check in October said that boost had ended — follow what the official site currently shows. Trading and liquidity provision carry real capital risk, and an allocation is not guaranteed for everyone. Wallet connection required; official domain only: hyperlynx.fi. Never share private keys/mnemonics; beware of fakes.',
+    deadline: '',
+    tags: [
+      { zh: '积分计划', en: 'Points program' },
+      { zh: '主网交互', en: 'Mainnet activity' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '需真实资金（交易/做市）', en: 'Real funds needed (trading/LP)' }
+    ],
+    link: 'https://www.hyperlynx.fi/',
+    checklist_zh: [
+      '打开官网 hyperlynx.fi，核对 The Hunt 积分规则与 3 亿 LYNX 分配说明（认准官方域名，勿点第三方空投链接）',
+      '在钱包添加 HyperEVM 网络，并准备少量 HYPE 作 gas 与用于交易/做市的 HYPE、USDC',
+      '在交易终端做现货兑换赚积分（权重 30%），或在流动性页开区间做市仓位赚积分（权重 70%）',
+      '留意官网公布的 TGE 确切日期与领取规则，积分在 TGE 前不可转让，不要轻信非官方代币合约',
+      '做市前先小额试水并理解无常损失风险，只用能承受损失的资金参与'
+    ],
+    checklist_en: [
+      'Open the official site hyperlynx.fi and check The Hunt points rules and the 300M LYNX allocation (verify the official domain; do not click third-party airdrop links)',
+      'Add the HyperEVM network to your wallet and prepare a small amount of HYPE for gas plus HYPE and USDC for trading or liquidity',
+      'Earn points with spot swaps in the trading terminal (30% weighting) or by opening in-range liquidity positions (70% weighting)',
+      'Watch official announcements for the exact TGE date and claim rules; points are non-transferable before TGE, and do not trust unofficial token contracts',
+      'Start with a small test amount for liquidity provision, understand impermanent-loss risk, and only use funds you can afford to lose'
+    ],
+    checklist_links: ['https://www.hyperlynx.fi/', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261119-aura-protocol',
     name_zh: 'Aura Protocol Airdrop ZERO（LitVM 测试网，1.5 亿 AURA 奖励池）',
     name_en: 'Aura Protocol Airdrop ZERO (LitVM Testnet, 150M AURA Pool)',
@@ -223,35 +253,4 @@ window.TOKVS_AIRDROPS = [
     ],
     checklist_links: ['https://portal.incentiv.io/', '', '', '', '']
   },
-  {
-    id: 'airdrop-20261104-asentum',
-    name_zh: 'Asentum 激励测试网 XP（ASE 空投积分）',
-    name_en: 'Asentum Incentivized Testnet XP (ASE Airdrop Points)',
-    desc_zh: '约 30 分钟上手 + 每天几分钟链上操作 · 测试网 0 资金：激励测试网自 9 月 17 日上线（链 ID 1423），做验证、换币、加流动性、签到与社交任务赚 XP，官方文档明确 XP 即未来 ASE 空投的计分方式；但转换公式、快照日期与 6000 万 ASE 之类的传闻数字均未公布，属未确认潜在机会。可选：质押真实主网 ASE 可获 2–10 倍 XP 加成，但有价格波动风险，非必需。需连接钱包，测试网请用全新钱包，只认官方域名 asentum.com / airdrop.asentum.com，不索要私钥/助记词。',
-    desc_en: '~30 minutes to start + a few minutes of daily on-chain activity · zero cost on testnet: the incentivized testnet has been live since Sep 17 (chain ID 1423) — earn XP by validating, swapping, adding liquidity, daily check-ins and social tasks. Official docs state XP is how the future ASE airdrop is scored, but the conversion formula, snapshot dates and rumored figures such as 60M ASE are unpublished — unconfirmed potential only. Optional: staking real mainnet ASE multiplies XP 2x–10x but carries price risk and is not required. Wallet connection required; use a fresh wallet on testnet. Official domains only: asentum.com / airdrop.asentum.com, never share private keys/mnemonics.',
-    deadline: '',
-    tags: [
-      { zh: '测试网交互', en: 'Testnet' },
-      { zh: '潜在空投（XP 计分、规则未公布）', en: 'Potential airdrop (XP-scored, rules TBA)' },
-      { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '0 资金（可选真实质押加成）', en: 'Zero cost (optional real-stake boost)' }
-    ],
-    link: 'https://airdrop.asentum.com',
-    checklist_zh: [
-      '打开官方空投面板 airdrop.asentum.com（认准官方域名）',
-      '连接钱包并完成注册签名，把 Asentum 测试网（链 ID 1423）加进钱包',
-      '从官方水龙头领测试 ASE，开始验证、换币或加流动性赚 XP',
-      '每天做签到与链上任务保持 XP 累积，注意每日上限',
-      '留意官方公布的 XP 转换公式与快照规则，不轻信传闻的分配数字'
-    ],
-    checklist_en: [
-      'Open the official airdrop dashboard airdrop.asentum.com (verify the official domain)',
-      'Connect your wallet, sign the registration message, and add the Asentum testnet (chain ID 1423) to your wallet',
-      'Claim test ASE from the official faucet, then validate, swap or add liquidity to earn XP',
-      'Do the daily check-ins and on-chain tasks to keep XP accumulating, minding the daily caps',
-      'Watch for the official XP conversion formula and snapshot rules — do not trust rumored allocation figures'
-    ],
-    checklist_links: ['https://airdrop.asentum.com', '', '', '', '']
-  },
-
 ];
