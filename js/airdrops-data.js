@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261121-tzero',
+    name_zh: 'Tzero Pre-flight 积分 Season 0（Zero 链首个发币平台，5% 总量测试网奖励）',
+    name_en: 'Tzero Pre-flight Points Season 0 (First Launchpad on Zero, 5% of Supply for Testnet)',
+    desc_zh: '约 30 分钟上手 + 持续测试网操作 · 测试网 0 资金（免费测试 ETH，Base Sepolia）：LayerZero 自有 Layer 1 区块链 Zero 的首个发币平台 Tzero 的积分计划 Pre-flight Season 0 进行中，官方确认 11% 的 $T0 总量预留给用户，其中 Season 0（测试网）占 5%、后续主网季占 6%；积分按钱包占比分配，单个钱包上限为总量 0.1%，至少 500 分才有资格，快照日期尚未公布（将提前 7 天通知），快照前有公开的反女巫审查，积分在快照前均为暂定。注意：Zero 主网定于 11 月 30 日上线，Tzero 将在主网开放部署后迁移；$T0 尚未发行，合约地址待公布；做任务只用免费测试 ETH，不索要私钥/助记词，只认官方域名 tzer0.fun / testnet.tzer0.fun，谨防仿冒（注意域名是 tzer0 不是 t0）。',
+    desc_en: '~30 minutes to start + ongoing testnet activity · zero cost on testnet (free test ETH on Base Sepolia): Tzero, the first token launchpad on Zero — LayerZero\'s own Layer 1 blockchain — runs its Pre-flight Points Season 0. The team confirms 11% of the $T0 supply is reserved for users: 5% for Season 0 (testnet) and 6% for later mainnet seasons. Points are shared among eligible wallets in proportion to points, capped at 0.1% of supply per wallet, with a 500-point minimum to qualify. The snapshot date is unannounced (7 days\' notice promised) and a public anti-Sybil review runs before it; all points are provisional until the snapshot. Note: Zero mainnet is set for Nov 30, 2026, and Tzero plans to migrate once deployment opens; $T0 is not live yet and the contract address is TBA. Only free test ETH is used; never share private keys/mnemonics. Official domains only: tzer0.fun / testnet.tzer0.fun — beware of lookalikes (the domain is tzer0, not t0).',
+    deadline: '',
+    tags: [
+      { zh: '测试网交互', en: 'Testnet' },
+      { zh: '潜在空投（5% 已确认分配）', en: 'Potential airdrop (5% allocation confirmed)' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '0 资金（测试网）', en: 'Zero cost (testnet)' }
+    ],
+    link: 'https://testnet.tzer0.fun/points',
+    checklist_zh: [
+      '打开官方积分页 testnet.tzer0.fun/points（认准官方域名 tzer0.fun，勿点第三方空投链接）',
+      '在钱包添加 Base Sepolia 测试网，连接钱包后记下仪表盘上的钱包代码（T0-XXXX 格式），并从官方水龙头领免费测试 ETH',
+      '完成 Signal 任务：在 X 上回复或引用官方 Season 0 公告并附上钱包代码（+200 分），关注 @T0dotfun 并在仪表盘确认（+100 分）',
+      '做 Fuel 任务：买入看好的任务代币并持有 60 分钟，每 1 测试 ETH 得 1000 分（每天每钱包最多 1 ETH 计入）；或在任务起飞前支持它赚 Crew 加成（每个 +150 分，每天最多 5 个）',
+      '可选：自己发一个任务代币，凑够 5 个以上其他钱包支持并起飞可得 500 分；或买入测试 $T0 并质押，每天分享 5000 分质押池（每钱包每天上限 1000 分）'
+    ],
+    checklist_en: [
+      'Open the official points page testnet.tzer0.fun/points (verify the official domain tzer0.fun; do not click third-party airdrop links)',
+      'Add the Base Sepolia testnet to your wallet, connect it, note the wallet code on the dashboard (format T0-XXXX), and claim free test ETH from the official faucet',
+      'Do the Signal tasks: reply to or quote the official Season 0 announcement on X with your wallet code (+200 points), then follow @T0dotfun and confirm it on the dashboard (+100 points)',
+      'Do Fuel tasks: buy mission tokens and hold for 60 minutes to earn 1,000 points per 1 test ETH (up to 1 ETH counted per wallet per day); or back missions before liftoff for Crew bonuses (+150 points each, up to 5 per day)',
+      'Optionally launch your own mission token — 500 points if it lifts off with at least five other wallets backing it — or buy test $T0 and stake it to share the 5,000-point daily staking pool (capped at 1,000 points per wallet per day)'
+    ],
+    checklist_links: ['https://testnet.tzer0.fun/points', '', '', '', '']
+  },
+  {
     id: 'airdrop-20261120-hyperlynx',
     name_zh: 'Hyperlynx The Hunt 积分（HyperEVM 现货 DEX，3 亿 LYNX 已确认分配）',
     name_en: 'Hyperlynx The Hunt Points (HyperEVM Spot DEX, 300M LYNX Allocation Confirmed)',
@@ -72,36 +102,6 @@ window.TOKVS_AIRDROPS = [
       'Make sure you complete at least one Aura dApp transaction; optionally enter the Token Quest before its Nov 30 deadline, watch official announcements for snapshot and claim rules, and do not buy paid Boosters'
     ],
     checklist_links: ['https://beta.auralaunch.org/incentives', 'https://beta.auralaunch.org/incentives', '', '', '']
-  },
-  {
-    id: 'airdrop-20261117-gate-candydrop-wlfi',
-    name_zh: 'Gate CandyDrop × WLFI（分享 906,120 WLFI，11 月 23 日截止）',
-    name_en: 'Gate CandyDrop x WLFI (Share 906,120 WLFI, Closes Nov 23)',
-    desc_zh: '约 10 分钟上手 + 交易任务 · 需真实资金（现货交易）：Gate 第 192 期 CandyDrop，活动 11 月 13 日 10:00 至 11 月 23 日 10:00（UTC），总奖池 906,120 WLFI；首次在 Gate 做现货交易且 USD1 现货交易量 ≥800 美元可固定得 100 WLFI（先到先得，总池 10 万枚），交易 WLFI 赚糖果分 60 万枚奖池，邀好友再分 206,120 WLFI（每人上限 1000 枚）；奖励在活动结束后 14 个工作日内发放。注意：需 Gate 账号并完成 KYC，交易量按 USD1 交易对计算（USDT/USD1 与 USD1/USDT 除外），先到先得部分可能提前分完，奖励不保证人人有份；只认 Gate 官方公告页，不索要私钥/助记词，谨防仿冒活动页。',
-    desc_en: '~10 minutes to start + trading tasks · requires real funds (spot trading): Gate\'s 192nd CandyDrop runs Nov 13, 10:00 to Nov 23, 10:00 (UTC) with a 906,120 WLFI prize pool. A first-ever spot trade on Gate with USD1 spot volume of at least $800 earns a fixed 100 WLFI (first-come, first-served; 100,000 WLFI pool); trading WLFI earns candies toward a 600,000 WLFI pool, and inviting friends shares a further 206,120 WLFI (up to 1,000 WLFI per person). Rewards are distributed within 14 working days after the event ends. Note: a Gate account and KYC are required; volume counts only on USD1 pairs (USDT/USD1 and USD1/USDT excluded), and first-come, first-served portions may run out — rewards are not guaranteed for everyone. Official Gate announcement page only; never share private keys/mnemonics; beware of fake campaign pages.',
-    deadline: '2026-11-23',
-    tags: [
-      { zh: '交易所活动', en: 'Exchange campaign' },
-      { zh: '需真实资金（交易）', en: 'Real funds needed (trading)' },
-      { zh: '需 KYC', en: 'KYC required' },
-      { zh: '先到先得', en: 'First-come, first-served' }
-    ],
-    link: 'https://www.gate.com/announcements/article/102764',
-    checklist_zh: [
-      '打开 Gate 官方公告页，确认第 192 期 CandyDrop 的活动时间与任务规则',
-      '注册/登录 Gate 账号并完成 KYC（认准官方域名 www.gate.com）',
-      '在活动期内做 USD1 现货交易：首次现货交易量 ≥800 USD1 可领固定 100 WLFI（先到先得）',
-      '交易 WLFI 赚糖果参与 60 万枚奖池分红，邀请好友再分邀请奖池（每人上限 1000 WLFI）',
-      '活动结束后 14 个工作日内在 Gate 账户核对 WLFI 到账；只认官方公告页，不点第三方活动链接'
-    ],
-    checklist_en: [
-      'Open the official Gate announcement page and confirm the 192nd CandyDrop dates and task rules',
-      'Register or sign in to a Gate account and complete KYC (verify the official domain www.gate.com)',
-      'Trade USD1 spot pairs during the event: a first-ever spot volume of at least 800 USD1 earns a fixed 100 WLFI (first-come, first-served)',
-      'Trade WLFI to earn candies toward the 600,000 WLFI pool, and invite friends to share the referral pool (up to 1,000 WLFI per person)',
-      'Check your Gate account for the WLFI credit within 14 working days after the event; use the official announcement page only, never third-party campaign links'
-    ],
-    checklist_links: ['https://www.gate.com/announcements/article/102764', '', '', '', '']
   },
   {
     id: 'airdrop-20261116-vibevibe',
