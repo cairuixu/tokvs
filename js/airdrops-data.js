@@ -14,6 +14,36 @@
                                   只许用官方门户/条目 link 的官网/站内页，禁止编造 URL */
 window.TOKVS_AIRDROPS = [
   {
+    id: 'airdrop-20261126-flop-network',
+    name_zh: 'FLOP Network 创世空投测试网（Arthur Hayes 的 AI 算力链，44 亿 FLOP 创世池）',
+    name_en: 'FLOP Network Genesis Airdrop Testnet (Arthur Hayes AI Compute Chain, 4.4B FLOP Genesis Pool)',
+    desc_zh: '约 30 分钟上手 + 持续测试网操作 · 测试网 0 资金（免费测试 FLOP）：BitMEX 联合创始人 Arthur Hayes 创立的 AI 算力链 FLOP Network 测试网已于 11 月 24 日上线（当前为未计分开局，计分阶段随后开启，最长约 90 天）；官方确认整个 44 亿枚 FLOP 创世供应全部通过测试网工作赚取，无预售、无风投分配，矿工/验证者/AI 代理各 12 亿枚 + 8 亿枚生态储备，主网与 TGE 目标 2027 年一季度。普通用户最易参与的是代理角色：只需去中心化身份 DID + 钱包，用测试代币购买推理算力即可计分；矿工需 16GB+ 显存 GPU，验证者需 8 核 CPU/64GB 内存/4TB NVMe 服务器。注意：计分规则仍为草案、黄皮书尚未定稿，细则可能调整；测试网可能重置历史与余额；目前无 FLOP 代币，任何售卖或领取页面均为诈骗；只认官方域名 flop.finance，不索要私钥/助记词，谨防仿冒。',
+    desc_en: '~30 minutes to start + ongoing testnet activity · zero cost on testnet (free test FLOP): FLOP Network, the AI compute chain founded by BitMEX co-founder Arthur Hayes, opened its testnet on Nov 24, 2026 (currently an unscored opening, with the scored phase to follow, running up to about 90 days). The official site confirms the entire 4.4B FLOP genesis supply is earned through testnet work only — no presale and no VC allocation — split 1.2B each for miners, validators and AI agents plus an 0.8B ecosystem reserve, with mainnet and TGE targeted for Q1 2027. The easiest role for ordinary users is agent: only a decentralized identifier (DID) and a wallet are needed, and buying inference with test tokens earns credit. Miners need a GPU with 16GB+ VRAM; validators need an 8-core CPU, 64GB RAM and 4TB NVMe server. Note: scoring rules are still a draft and the Yellow Paper is not final, so details may change; the testnet may reset history and balances. No FLOP token exists yet — any sale or claim page is a scam. Official domain only: flop.finance. Never share private keys/mnemonics; beware of fakes.',
+    deadline: '',
+    tags: [
+      { zh: '测试网交互', en: 'Testnet' },
+      { zh: '潜在空投（44 亿 FLOP 创世池已确认）', en: 'Potential airdrop (4.4B FLOP genesis pool confirmed)' },
+      { zh: '需连接钱包', en: 'Wallet required' },
+      { zh: '0 资金（测试网）', en: 'Zero cost (testnet)' }
+    ],
+    link: 'https://flop.finance/testnet',
+    checklist_zh: [
+      '打开官方测试网页 flop.finance/testnet 通读规则（认准官方域名 flop.finance，勿点第三方空投链接）',
+      '用全新测试钱包连接公开 WebSocket RPC，并在官方浏览器 FLOPScan 查看链上状态',
+      '普通用户走代理角色：创建去中心化身份 DID 与钱包，从官方水龙头领测试 FLOP，在 technocore.chat 购买推理算力或与其他代理交易',
+      '有 16GB+ 显存 GPU 可做矿工：按官方文档安装矿工客户端、注册并校准硬件后承接推理任务；验证者按官方规格部署节点并在 GitHub 注册前 50 个席位',
+      '通读官方空投页的创世分配与解锁规则，留意计分阶段开启时间与快照区块高度；全程不买任何自称 FLOP 的代币，不点任何领取页面'
+    ],
+    checklist_en: [
+      'Open the official testnet page flop.finance/testnet and read the rules (verify the official domain flop.finance; do not click third-party airdrop links)',
+      'Connect with a fresh test wallet to the public WebSocket RPC and check chain status on the official explorer FLOPScan',
+      'Ordinary users should take the agent role: create a decentralized identifier (DID) and a wallet, claim test FLOP from the official faucet, and buy inference on technocore.chat or transact with other agents',
+      'With a GPU with 16GB+ VRAM you can mine: install the miner client per the official docs, register and calibrate the hardware, then take inference sessions; validators deploy a node to the official spec and register for the first 50 seats on GitHub',
+      'Read the official airdrop page for the genesis allocation and unlock rules, and watch for the scored phase start and the snapshot block height; never buy any token claiming to be FLOP and never open any claim page'
+    ],
+    checklist_links: ['https://flop.finance/testnet', 'https://testnet.flopscan.io', '', 'https://docs.flop.network', 'https://flop.finance/airdrop']
+  },
+  {
     id: 'airdrop-20261121-tzero',
     name_zh: 'Tzero Pre-flight 积分 Season 0（Zero 链首个发币平台，5% 总量测试网奖励）',
     name_en: 'Tzero Pre-flight Points Season 0 (First Launchpad on Zero, 5% of Supply for Testnet)',
@@ -42,36 +72,6 @@ window.TOKVS_AIRDROPS = [
       'Optionally launch your own mission token — 500 points if it lifts off with at least five other wallets backing it — or buy test $T0 and stake it to share the 5,000-point daily staking pool (capped at 1,000 points per wallet per day)'
     ],
     checklist_links: ['https://testnet.tzer0.fun/points', '', '', '', '']
-  },
-  {
-    id: 'airdrop-20261120-hyperlynx',
-    name_zh: 'Hyperlynx The Hunt 积分（HyperEVM 现货 DEX，3 亿 LYNX 已确认分配）',
-    name_en: 'Hyperlynx The Hunt Points (HyperEVM Spot DEX, 300M LYNX Allocation Confirmed)',
-    desc_zh: '约 30 分钟上手 + 持续链上操作 · 需真实资金（HyperEVM 上交易/做市，HYPE 作 gas）：HyperEVM 现货 DEX 与交易终端 Hyperlynx 的积分计划 The Hunt 进行中，官网确认 3 亿枚 LYNX（固定总量 10 亿枚的 30%）按积分占比在 TGE 时分配，积分权重为交易 30%、做市 70%，积分在 TGE 前不可转让。注意：TGE 目标为 2026 年 10–11 月，但至今未公布确切日期与领取规则，存在延期可能；官网首页仍标注 Genesis 2 倍加成，但 10 月第三方核查称该加成已结束，请以官网当前页面为准；做市与交易均有真实资金风险，不保证人人有分配。需连接钱包，只认官方域名 hyperlynx.fi，不索要私钥/助记词，谨防仿冒。',
-    desc_en: '~30 minutes to start + ongoing on-chain activity · requires real funds (trade or provide liquidity on HyperEVM, HYPE for gas): Hyperlynx, a spot DEX and trading terminal on HyperEVM, runs The Hunt points program. The official site confirms 300M LYNX (30% of the fixed 1B supply) will be distributed at TGE in proportion to points earned, weighted 30% trading and 70% liquidity provision; points are non-transferable until TGE. Note: TGE is targeted for October–November 2026, but no exact date or claim rules have been published, so a delay is possible. The homepage still shows a Genesis 2x boost, but a third-party check in October said that boost had ended — follow what the official site currently shows. Trading and liquidity provision carry real capital risk, and an allocation is not guaranteed for everyone. Wallet connection required; official domain only: hyperlynx.fi. Never share private keys/mnemonics; beware of fakes.',
-    deadline: '',
-    tags: [
-      { zh: '积分计划', en: 'Points program' },
-      { zh: '主网交互', en: 'Mainnet activity' },
-      { zh: '需连接钱包', en: 'Wallet required' },
-      { zh: '需真实资金（交易/做市）', en: 'Real funds needed (trading/LP)' }
-    ],
-    link: 'https://www.hyperlynx.fi/',
-    checklist_zh: [
-      '打开官网 hyperlynx.fi，核对 The Hunt 积分规则与 3 亿 LYNX 分配说明（认准官方域名，勿点第三方空投链接）',
-      '在钱包添加 HyperEVM 网络，并准备少量 HYPE 作 gas 与用于交易/做市的 HYPE、USDC',
-      '在交易终端做现货兑换赚积分（权重 30%），或在流动性页开区间做市仓位赚积分（权重 70%）',
-      '留意官网公布的 TGE 确切日期与领取规则，积分在 TGE 前不可转让，不要轻信非官方代币合约',
-      '做市前先小额试水并理解无常损失风险，只用能承受损失的资金参与'
-    ],
-    checklist_en: [
-      'Open the official site hyperlynx.fi and check The Hunt points rules and the 300M LYNX allocation (verify the official domain; do not click third-party airdrop links)',
-      'Add the HyperEVM network to your wallet and prepare a small amount of HYPE for gas plus HYPE and USDC for trading or liquidity',
-      'Earn points with spot swaps in the trading terminal (30% weighting) or by opening in-range liquidity positions (70% weighting)',
-      'Watch official announcements for the exact TGE date and claim rules; points are non-transferable before TGE, and do not trust unofficial token contracts',
-      'Start with a small test amount for liquidity provision, understand impermanent-loss risk, and only use funds you can afford to lose'
-    ],
-    checklist_links: ['https://www.hyperlynx.fi/', '', '', '', '']
   },
   {
     id: 'airdrop-20261119-aura-protocol',
